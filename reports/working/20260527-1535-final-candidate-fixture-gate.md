@@ -44,11 +44,15 @@
 - `npm run verify`: pass
 - `git diff --check`: pass
 - `pre-commit run --files ...`: pass
+- GitHub Actions PR checks: pass
+  - run `26495206771`: all jobs pass
+  - run `26495208880`: all jobs pass
 
 ## PR コメント
 
 - 受け入れ条件確認: https://github.com/tsuji-tomonori/saphnexa/pull/1#issuecomment-4552024966
 - セルフレビュー: https://github.com/tsuji-tomonori/saphnexa/pull/1#issuecomment-4552026609
+- task 完了更新セルフレビュー: https://github.com/tsuji-tomonori/saphnexa/pull/1#issuecomment-4552035821
 
 ## Fit 評価
 
