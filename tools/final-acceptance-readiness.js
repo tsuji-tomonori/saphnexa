@@ -1,20 +1,11 @@
 import { mkdirSync, writeFileSync } from "node:fs";
 import { dirname } from "node:path";
+import { acceptanceCatalog, acceptanceCatalogPath, priorityByAcceptanceId } from "./acceptance-ids.js";
 import { buildExternalAcceptanceActionPlan, externalActionPlanPath } from "./external-acceptance-actions.js";
 import { buildFinalEvidenceCandidateStatus, finalCandidateStatusPath } from "./final-evidence-candidate.js";
 import { readJson, readText } from "./lib.js";
 
 export const finalReadinessPath = "dist/acceptance/final_readiness.json";
-
-const priorityById = {
-  "AC-001": "P0",
-  "AC-002": "P0",
-  "AC-004": "P0",
-  "AC-081": "P1",
-  "AC-150": "P0",
-  "AC-151": "P0",
-  "AC-152": "P1"
-};
 
 export function buildFinalAcceptanceReadiness(outputPath = finalReadinessPath) {
   const traceRows = parseTraceRows(readText("docs/acceptance/traceability.md"));
@@ -25,7 +16,7 @@ export function buildFinalAcceptanceReadiness(outputPath = finalReadinessPath) {
     .filter((row) => row.state !== "local_verified")
     .map((row) => ({
       id: row.id,
-      priority: priorityById[row.id] || "unknown",
+      priority: priorityByAcceptanceId[row.id] || "unknown",
       state: row.state,
       evidence: row.evidence
     }));
@@ -41,6 +32,11 @@ export function buildFinalAcceptanceReadiness(outputPath = finalReadinessPath) {
     generated_by: "tools/build-final-acceptance-readiness.js",
     final_acceptance_ready: false,
     readiness_reason: "Final acceptance still requires release, AWS/UAT, published artifact, CloudFormation, and signed checklist evidence.",
+    source_catalog: {
+      path: acceptanceCatalogPath,
+      item_count: acceptanceCatalog.item_count,
+      priority_counts: acceptanceCatalog.priority_counts
+    },
     trace_state_counts: countStates(traceRows),
     blocking_acceptance_ids: blockers,
     priority_gates: {

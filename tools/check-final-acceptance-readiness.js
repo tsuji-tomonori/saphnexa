@@ -1,6 +1,6 @@
 import { existsSync } from "node:fs";
 import { finalReadinessPath } from "./final-acceptance-readiness.js";
-import { acceptanceIds } from "./acceptance-ids.js";
+import { acceptanceCatalog, acceptanceCatalogPath, acceptanceIds } from "./acceptance-ids.js";
 import { assert, readJson, readText } from "./lib.js";
 
 assert(existsSync(finalReadinessPath), `final readiness file missing: ${finalReadinessPath}`);
@@ -12,6 +12,9 @@ const blockingIds = readiness.blocking_acceptance_ids.map((row) => row.id);
 
 assert(readiness.schema_version === "saphnexa-final-acceptance-readiness.v1", "final readiness schema version mismatch");
 assert(readiness.final_acceptance_ready === false, "final readiness must not claim completion while blockers remain");
+assert(readiness.source_catalog.path === acceptanceCatalogPath, "final readiness source catalog path mismatch");
+assert(readiness.source_catalog.item_count === acceptanceCatalog.item_count, "final readiness source catalog item count mismatch");
+assert(JSON.stringify(readiness.source_catalog.priority_counts) === JSON.stringify(acceptanceCatalog.priority_counts), "final readiness source priority counts mismatch");
 assert(readiness.trace_state_counts.requires_aws > 0, "final readiness must preserve AWS blockers");
 assert(readiness.release_gate.ready === false, "release gate must remain pending");
 assert(readiness.aws_gate.ready === false, "AWS gate must remain pending");

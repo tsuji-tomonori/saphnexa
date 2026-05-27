@@ -56,6 +56,7 @@ for (const command of [
   "npm run offline-artifacts:check",
   "npm run restore:drill:check",
   "npm run test:contract",
+  "npm run acceptance:source:check",
   "npm run acceptance:check",
   "npm run evidence:check",
   "npm run acceptance:external-actions:build",

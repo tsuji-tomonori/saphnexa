@@ -33,6 +33,7 @@ npm run edge:security:check
 npm run admin:workflow:check
 npm run offline-artifacts:check
 npm run restore:drill:check
+npm run acceptance:source:check
 npm run acceptance:external-actions:build
 npm run acceptance:external-actions:check
 npm run acceptance:final-candidate:check
@@ -73,6 +74,7 @@ git diff --check
 - user import の create/update/delete/invalid row、文書登録 5 件、版 activation、評価 run 3 件、admin event、audit event のローカル workflow。
 - chunk/reference/BM25F/parser を含む offline artifact inventory のローカル manifest。
 - in-memory domain state の restore drill report、RTO/RPO threshold、snapshot/restored checksum。
+- `docs/acceptance/source/acceptance_catalog.json` が検収 checklist v1.0 の 102 行、P0/P1/P2 件数、traceability 全 ID と同期していること。
 - `dist/acceptance/external_action_plan.json` に Git tag/release、AWS deploy/publish、CloudFormation capture、final checklist signoff の外部実行 action plan を生成し、各 action が pending かつ確認必須のまま残ること。
 - final evidence candidate が未配置なら `not_ready` として記録し、配置済みの場合は実 Git tag/release/AWS/公開 URL/checklist を検査すること。
 - `dist/acceptance/final_readiness.json` に最終検収 readiness を生成し、release/AWS/publish/checklist 未達がある限り ready にならないこと。

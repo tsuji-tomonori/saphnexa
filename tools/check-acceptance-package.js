@@ -1,5 +1,5 @@
 import { existsSync } from "node:fs";
-import { acceptanceIds } from "./acceptance-ids.js";
+import { acceptanceCatalog, acceptanceCatalogPath, acceptanceIds, acceptanceItemById } from "./acceptance-ids.js";
 import { assert, readJson, readText } from "./lib.js";
 
 const manifest = readJson("dist/acceptance/evidence_manifest.draft.json");
@@ -33,6 +33,9 @@ assert(manifest.git_tag === "pending-release-tag", "draft manifest must not pret
 assert(manifest.cloudformation_inventory.draft_path === "dist/acceptance/cloudformation_inventory.draft.json", "manifest CloudFormation inventory path mismatch");
 assert(manifest.cloudformation_inventory.final_acceptance_eligible === false, "manifest CloudFormation inventory must be draft-only");
 assert(manifest.cloudformation_inventory.aws_capture_required === true, "manifest CloudFormation inventory must require AWS capture");
+assert(manifest.source_catalog.path === acceptanceCatalogPath, "manifest source catalog path mismatch");
+assert(manifest.source_catalog.item_count === acceptanceCatalog.item_count, "manifest source catalog item count mismatch");
+assert(JSON.stringify(manifest.source_catalog.priority_counts) === JSON.stringify(acceptanceCatalog.priority_counts), "manifest source priority counts mismatch");
 assert(manifest.final_readiness.path === "dist/acceptance/final_readiness.json", "manifest final readiness path mismatch");
 assert(manifest.final_readiness.final_acceptance_ready === false, "manifest final readiness must remain false");
 assert(manifest.final_readiness.blocking_acceptance_ids.length > 0, "manifest final readiness blockers must be explicit");
@@ -53,6 +56,10 @@ for (const row of rows) {
   for (const key of ["ID", "state", "result", "evidence_link", "reviewer", "checked_date", "note"]) {
     assert(String(row[key] || "").length > 0, `checklist ${row.ID} has empty ${key}`);
   }
+  const source = acceptanceItemById[row.ID];
+  assert(row.area === source.area, `${row.ID} checklist area must match source catalog`);
+  assert(row.priority === source.priority, `${row.ID} checklist priority must match source catalog`);
+  assert(row.item === source.item, `${row.ID} checklist item must match source catalog`);
   if (row.state === "requires_aws") {
     assert(row.result === "PENDING_AWS", `${row.ID} requires_aws must remain PENDING_AWS`);
   }
@@ -64,6 +71,9 @@ for (const row of rows) {
 assert(defects.blocker_critical_open_count === 0, "blocker/critical defects must be 0 in snapshot");
 assert(Array.isArray(defects.open_issues), "defect snapshot open_issues must be an array");
 assert(summary.checklist_rows === acceptanceIds.length, "summary checklist row count mismatch");
+assert(summary.source_catalog_path === acceptanceCatalogPath, "summary source catalog path mismatch");
+assert(summary.source_catalog_items === acceptanceCatalog.item_count, "summary source catalog item count mismatch");
+assert(JSON.stringify(summary.source_priority_counts) === JSON.stringify(acceptanceCatalog.priority_counts), "summary source priority counts mismatch");
 assert(summary.cloudformation_inventory_draft_path === "dist/acceptance/cloudformation_inventory.draft.json", "summary CloudFormation inventory path mismatch");
 assert(summary.final_readiness_path === "dist/acceptance/final_readiness.json", "summary final readiness path mismatch");
 assert(summary.final_readiness_ready === false, "summary final readiness must remain false");

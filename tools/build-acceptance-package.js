@@ -1,6 +1,6 @@
 import { existsSync, mkdirSync, readFileSync, statSync, writeFileSync } from "node:fs";
 import { dirname, join, resolve } from "node:path";
-import { acceptanceIds } from "./acceptance-ids.js";
+import { acceptanceCatalog, acceptanceCatalogPath, acceptanceIds, acceptanceItemById } from "./acceptance-ids.js";
 import { buildCloudFormationInventoryDraft, cloudFormationInventoryPath } from "./cloudformation-inventory.js";
 import { buildExternalAcceptanceActionPlan, externalActionPlanPath } from "./external-acceptance-actions.js";
 import { buildFinalAcceptanceReadiness, finalReadinessPath } from "./final-acceptance-readiness.js";
@@ -73,6 +73,11 @@ const manifest = {
     external_action_plan_path: externalActionPlanPath,
     external_actions_pending: externalActionPlan.pending_action_ids
   },
+  source_catalog: {
+    path: acceptanceCatalogPath,
+    item_count: acceptanceCatalog.item_count,
+    priority_counts: acceptanceCatalog.priority_counts
+  },
   draft_status: "draft_not_for_final_acceptance",
   pending_final_evidence: [
     "GitHub release and immutable Git tag",
@@ -90,6 +95,9 @@ const summary = {
   generated_by: "tools/build-acceptance-package.js",
   git_commit_sha: gitCommit,
   trace_state_counts: counts,
+  source_catalog_path: acceptanceCatalogPath,
+  source_catalog_items: acceptanceCatalog.item_count,
+  source_priority_counts: acceptanceCatalog.priority_counts,
   checklist_rows: checklist.length,
   blocker_critical_open_count: defectSnapshot.blocker_critical_open_count,
   cloudformation_inventory_draft_path: cloudFormationInventoryPath,
@@ -125,9 +133,13 @@ function buildChecklist(items) {
   const byId = new Map(items.map((item) => [item.id, item]));
   return acceptanceIds.map((id) => {
     const row = byId.get(id);
+    const source = acceptanceItemById[id];
     const result = row.state === "local_verified" ? "PASS_LOCAL" : "PENDING_AWS";
     return {
       ID: id,
+      area: source.area,
+      priority: source.priority,
+      item: source.item,
       state: row.state,
       result,
       evidence_link: row.evidence,
@@ -139,7 +151,7 @@ function buildChecklist(items) {
 }
 
 function renderCsv(items) {
-  const headers = ["ID", "state", "result", "evidence_link", "reviewer", "checked_date", "note"];
+  const headers = ["ID", "area", "priority", "item", "state", "result", "evidence_link", "reviewer", "checked_date", "note"];
   return `${headers.join(",")}\n${items.map((item) => headers.map((key) => csv(item[key])).join(",")).join("\n")}\n`;
 }
 

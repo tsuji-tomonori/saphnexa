@@ -1,0 +1,1053 @@
+{
+  "schema_version": "saphnexa-acceptance-source-catalog.v1",
+  "source_package": "Saphnexa_検収受入条件_package_v1.0",
+  "source_file": "Saphnexa_検収チェックリスト_v1.0.csv",
+  "source_sha256": "2756d8e28bfad7cefc4b09abaa6e4e0178aee941e7b1eb3c830187af0c84b7ac",
+  "source_target_design": "Saphnexa_基本設計書_v0.16.md",
+  "generated_at": "2026-05-27T13:16:00+09:00",
+  "item_count": 102,
+  "priority_counts": {
+    "P0": 56,
+    "P1": 43,
+    "P2": 3
+  },
+  "area_counts": {
+    "成果物・構成管理": 4,
+    "機能要求・ドメイン": 12,
+    "API・契約": 7,
+    "認証・認可": 9,
+    "フロントエンド": 6,
+    "通知": 5,
+    "DB・マイグレーション": 8,
+    "インフラ": 9,
+    "RAG・Agent": 10,
+    "Offline取り込み": 5,
+    "監視・ログ": 5,
+    "CI/CD・テスト": 7,
+    "性能・信頼性": 6,
+    "費用・運用": 5,
+    "検収判定": 4
+  },
+  "acceptance_items": [
+    {
+      "id": "AC-001",
+      "area": "成果物・構成管理",
+      "item": "実装対象コミットの固定",
+      "priority": "P0",
+      "acceptance_condition": "検収対象のGit commit SHA、tag、CDK deploy対象environment、AWS account、regionが証跡マニフェストに記録されている。",
+      "quantitative_criteria": "commit SHA 1件、tag 1件、env 1件、account ID 1件、region=ap-northeast-1 を記録",
+      "evidence": "evidence_manifest.json、GitHub release、Git tag",
+      "verification_method": "マニフェストとGitHub releaseを照合"
+    },
+    {
+      "id": "AC-002",
+      "area": "成果物・構成管理",
+      "item": "成果物一式の提出",
+      "priority": "P0",
+      "acceptance_condition": "ソース、CDK synth結果、CloudFormation stack outputs、DB migration結果、Allureレポート、Docusaurus設計書サイトURL、運用手順が提出されている。",
+      "quantitative_criteria": "成果物一覧の必須項目充足率 100%",
+      "evidence": "evidence_manifest.json、S3 admin artifacts path、GitHub Actions artifacts",
+      "verification_method": "必須成果物リストと実体を照合"
+    },
+    {
+      "id": "AC-003",
+      "area": "成果物・構成管理",
+      "item": "設計差分の管理",
+      "priority": "P1",
+      "acceptance_condition": "基本設計v0.16との差分が実装READMEまたはADRに記録され、未承認差分がない。",
+      "quantitative_criteria": "未承認設計差分 0件",
+      "evidence": "ADR、設計差分一覧、Pull Request",
+      "verification_method": "PRレビューとADRを確認"
+    },
+    {
+      "id": "AC-004",
+      "area": "成果物・構成管理",
+      "item": "全チェックの完了",
+      "priority": "P0",
+      "acceptance_condition": "本チェックリストの全行に結果、証跡リンク、確認者、確認日が記入されている。",
+      "quantitative_criteria": "未記入セル 0件",
+      "evidence": "本チェックリスト",
+      "verification_method": "CSV/Markdownチェックリストを確認"
+    },
+    {
+      "id": "AC-010",
+      "area": "機能要求・ドメイン",
+      "item": "一般ユーザーの自然言語質問",
+      "priority": "P0",
+      "acceptance_condition": "一般ユーザーがチャット画面から自然言語で質問を送信し、run_id/message_idが生成され、回答または拒否が返る。",
+      "quantitative_criteria": "正常系E2E 5/5件成功",
+      "evidence": "Allure E2E、chat_runs、chat_messages、chat_message_events",
+      "verification_method": "一般ユーザー権限でE2E実行"
+    },
+    {
+      "id": "AC-011",
+      "area": "機能要求・ドメイン",
+      "item": "根拠付き回答",
+      "priority": "P0",
+      "acceptance_condition": "回答には最低1件以上のcitationが表示され、citationから文書名、版、ページまたはsectionが確認できる。",
+      "quantitative_criteria": "answerable golden case の citation表示率 100%",
+      "evidence": "Allure E2E、RAG評価結果、API response",
+      "verification_method": "golden dataset answerableケースを確認"
+    },
+    {
+      "id": "AC-012",
+      "area": "機能要求・ドメイン",
+      "item": "根拠不足時の拒否",
+      "priority": "P0",
+      "acceptance_condition": "閲覧可能資料内に根拠がない質問では、推測回答をせず、定義済み拒否文で返る。",
+      "quantitative_criteria": "unanswerable 20件中 refusal accuracy >= 95%",
+      "evidence": "RAG評価結果、chat_message_events",
+      "verification_method": "unanswerable golden datasetで評価"
+    },
+    {
+      "id": "AC-013",
+      "area": "機能要求・ドメイン",
+      "item": "チャット独立リソース",
+      "priority": "P0",
+      "acceptance_condition": "chatはuser配下ではなく独立リソースとして作成され、参加者テーブルで利用者と紐づく。",
+      "quantitative_criteria": "新規chat作成時 chat_sessions 1件、chat_participants owner 1件作成",
+      "evidence": "DSQL query result、API test",
+      "verification_method": "チャット作成API後にDSQLを照合"
+    },
+    {
+      "id": "AC-014",
+      "area": "機能要求・ドメイン",
+      "item": "チャット共有",
+      "priority": "P0",
+      "acceptance_condition": "ownerの一般ユーザーは他の一般ユーザーをviewerとしてチャットへ追加でき、共有先は参照のみ可能である。",
+      "quantitative_criteria": "共有追加成功 1件、viewer更新/削除/質問送信権限拒否 3/3件",
+      "evidence": "Allure E2E、API access log、DSQL chat_participants",
+      "verification_method": "owner/viewerで権限テストを実行"
+    },
+    {
+      "id": "AC-015",
+      "area": "機能要求・ドメイン",
+      "item": "お気に入り",
+      "priority": "P1",
+      "acceptance_condition": "一般ユーザーは自分が参照可能なメッセージをお気に入り登録・解除できる。",
+      "quantitative_criteria": "正常系 3/3件、権限外 403 2/2件",
+      "evidence": "Allure API、favorites table",
+      "verification_method": "APIテストとDBを照合"
+    },
+    {
+      "id": "AC-016",
+      "area": "機能要求・ドメイン",
+      "item": "管理者のユーザー一括取込",
+      "priority": "P0",
+      "acceptance_condition": "管理者はCSV/XLSXをアップロードし、登録・更新・削除を一括実行できる。",
+      "quantitative_criteria": "登録/更新/削除/不正行の4ケースすべて成功。エラー行レポート出力率100%",
+      "evidence": "Allure E2E、user_import_jobs、result_s3_prefix",
+      "verification_method": "サンプルCSV/XLSXで取込実行"
+    },
+    {
+      "id": "AC-017",
+      "area": "機能要求・ドメイン",
+      "item": "管理者の文書登録",
+      "priority": "P0",
+      "acceptance_condition": "管理者はPDFとmetadataを登録し、取り込みジョブを開始できる。",
+      "quantitative_criteria": "サンプルPDF 5件中5件でingestion_jobs作成、raw S3配置、metadata.json配置",
+      "evidence": "Allure E2E、S3 inventory、DSQL",
+      "verification_method": "文書登録フローを実行"
+    },
+    {
+      "id": "AC-018",
+      "area": "機能要求・ドメイン",
+      "item": "管理者の文書更新",
+      "priority": "P0",
+      "acceptance_condition": "管理者は新しい文書版を登録し、有効化できる。旧版は検索対象から除外される。",
+      "quantitative_criteria": "有効化後のRAG検索で旧版hit 0件、新版hit 100%",
+      "evidence": "RAG評価結果、document_versions、KB metadata",
+      "verification_method": "版更新テストを実行"
+    },
+    {
+      "id": "AC-019",
+      "area": "機能要求・ドメイン",
+      "item": "管理者の評価実行",
+      "priority": "P1",
+      "acceptance_condition": "管理者は評価runを開始し、RAG全体評価とLLM評価の結果を確認できる。",
+      "quantitative_criteria": "評価run正常完了 3/3件、metrics保存率100%",
+      "evidence": "evaluation_runs、evaluation_items、Allure/評価レポート",
+      "verification_method": "評価データセットで実行"
+    },
+    {
+      "id": "AC-020",
+      "area": "機能要求・ドメイン",
+      "item": "設計書サイト閲覧",
+      "priority": "P1",
+      "acceptance_condition": "管理者はDocusaurusで生成された設計書サイトをCloudFront配下で閲覧できる。",
+      "quantitative_criteria": "/admin/docs/latest/ 200、非管理者403、未認証302または401",
+      "evidence": "E2E、CloudFront access log",
+      "verification_method": "管理者/一般/未認証でアクセス確認"
+    },
+    {
+      "id": "AC-021",
+      "area": "機能要求・ドメイン",
+      "item": "Allureレポート閲覧",
+      "priority": "P1",
+      "acceptance_condition": "管理者はCIで生成された単体/結合/E2EテストのAllure静的レポートを閲覧できる。",
+      "quantitative_criteria": "/admin/test-reports/allure/latest/ 200、非管理者403、未認証302または401",
+      "evidence": "CI artifact、S3 path、E2E",
+      "verification_method": "アクセス権限を確認"
+    },
+    {
+      "id": "AC-030",
+      "area": "API・契約",
+      "item": "公開API契約",
+      "priority": "P0",
+      "acceptance_condition": "公開API 38件すべてについて、パスパラメータ、クエリ、body、response schema、status code意味が契約定義と一致する。",
+      "quantitative_criteria": "契約テスト pass 38/38",
+      "evidence": "Allure API contract、generated OpenAPI、packages/api-contract",
+      "verification_method": "契約テスト実行結果を確認"
+    },
+    {
+      "id": "AC-031",
+      "area": "API・契約",
+      "item": "Tools API契約",
+      "priority": "P0",
+      "acceptance_condition": "Agent Tools API 6件すべてについて、input/output schema、timeout、認可scope、監査ログが契約定義と一致する。",
+      "quantitative_criteria": "契約テスト pass 6/6",
+      "evidence": "Allure tool contract、tool_invocations",
+      "verification_method": "AgentCore Gateway経由または直接内部テスト"
+    },
+    {
+      "id": "AC-032",
+      "area": "API・契約",
+      "item": "共通エラー形式",
+      "priority": "P1",
+      "acceptance_condition": "4xx/5xx応答は共通エラーschemaを返し、trace_id、error_code、message、detailsを含む。",
+      "quantitative_criteria": "エラー系APIテスト 30件中 schema適合 100%",
+      "evidence": "Allure API、CloudWatch Logs",
+      "verification_method": "スキーマ検証"
+    },
+    {
+      "id": "AC-033",
+      "area": "API・契約",
+      "item": "CSRF保護",
+      "priority": "P0",
+      "acceptance_condition": "状態変更APIはCSRF tokenなしまたは不一致で拒否される。",
+      "quantitative_criteria": "対象API全件で403、false negative 0件",
+      "evidence": "Allure security API",
+      "verification_method": "CSRF negative testを確認"
+    },
+    {
+      "id": "AC-034",
+      "area": "API・契約",
+      "item": "相対パス利用",
+      "priority": "P0",
+      "acceptance_condition": "React bundle内にexecute-api、appsync-api、appsync-realtime-apiの実ドメインが含まれない。",
+      "quantitative_criteria": "該当文字列出現 0件",
+      "evidence": "frontend build artifact scan",
+      "verification_method": "grep/CI scan結果を確認"
+    },
+    {
+      "id": "AC-035",
+      "area": "API・契約",
+      "item": "ステージ変換",
+      "priority": "P1",
+      "acceptance_condition": "CloudFrontの/api/*が内部的にAPI Gateway stage /v1/*へ変換される。",
+      "quantitative_criteria": "/api/me -> /v1/me 相当の統合テスト 1件以上成功",
+      "evidence": "CloudFront Function test、API access log",
+      "verification_method": "Viewer requestとorigin requestを照合"
+    },
+    {
+      "id": "AC-036",
+      "area": "API・契約",
+      "item": "ルーティング一貫性",
+      "priority": "P1",
+      "acceptance_condition": "/ は内部的に /chat/index.html へ変換され、/admin/* は管理UI、/event/realtime* はAppSync Eventsへ到達する。",
+      "quantitative_criteria": "主要path 6件すべて期待originへ到達",
+      "evidence": "CloudFront Function tests、E2E",
+      "verification_method": "path別 smoke test"
+    },
+    {
+      "id": "AC-040",
+      "area": "認証・認可",
+      "item": "未認証拒否",
+      "priority": "P0",
+      "acceptance_condition": "認証必須APIは未認証で401または302を返し、データを返さない。",
+      "quantitative_criteria": "対象API全件でデータ漏えい 0件",
+      "evidence": "Allure security API",
+      "verification_method": "未認証テスト"
+    },
+    {
+      "id": "AC-041",
+      "area": "認証・認可",
+      "item": "一般ユーザー/管理者ロール",
+      "priority": "P0",
+      "acceptance_condition": "管理者APIは管理者のみ実行でき、一般ユーザーは403となる。",
+      "quantitative_criteria": "管理API全件で一般ユーザー403 100%",
+      "evidence": "Allure RBAC",
+      "verification_method": "ロール別アクセス試験"
+    },
+    {
+      "id": "AC-042",
+      "area": "認証・認可",
+      "item": "チャット参加者認可",
+      "priority": "P0",
+      "acceptance_condition": "チャット詳細、メッセージ、イベント取得は参加者のみ許可される。",
+      "quantitative_criteria": "非参加者アクセス拒否 100%",
+      "evidence": "Allure RBAC、chat_participants",
+      "verification_method": "参加者/非参加者でAPI試験"
+    },
+    {
+      "id": "AC-043",
+      "area": "認証・認可",
+      "item": "文書ACL",
+      "priority": "P0",
+      "acceptance_condition": "RAG検索結果に閲覧権限外document_id/chunk_idが含まれない。",
+      "quantitative_criteria": "ACL leakage 0件 / 1,000 retrieval attempts",
+      "evidence": "RAG ACL test、tool_invocations、chat_message_events",
+      "verification_method": "権限別golden datasetで評価"
+    },
+    {
+      "id": "AC-044",
+      "area": "認証・認可",
+      "item": "WebSocket channel認可",
+      "priority": "P0",
+      "acceptance_condition": "自分に許可されたchannel以外をsubscribeできない。",
+      "quantitative_criteria": "不正channel subscribe拒否 100%",
+      "evidence": "AppSync Events logs、E2E",
+      "verification_method": "別user_id/chat_idでsubscribe試験"
+    },
+    {
+      "id": "AC-045",
+      "area": "認証・認可",
+      "item": "WebSocket ticket",
+      "priority": "P0",
+      "acceptance_condition": "ws-ticketは短期有効で、期限切れ/再利用/他ユーザー利用が拒否される。",
+      "quantitative_criteria": "期限切れ/再利用/他ユーザーの3ケース全拒否",
+      "evidence": "Allure WebSocket、web_sessions",
+      "verification_method": "ticket negative test"
+    },
+    {
+      "id": "AC-046",
+      "area": "認証・認可",
+      "item": "secret/token非露出",
+      "priority": "P0",
+      "acceptance_condition": "access token、refresh token、外部APIキー、KMS key materialがReact bundle、ログ、S3静的成果物に出力されない。",
+      "quantitative_criteria": "secret scan high/critical 0件",
+      "evidence": "gitleaks/secret scan、CloudWatch sampling",
+      "verification_method": "CI結果とログサンプルを確認"
+    },
+    {
+      "id": "AC-047",
+      "area": "認証・認可",
+      "item": "WAFと基本保護",
+      "priority": "P1",
+      "acceptance_condition": "CloudFrontにWAFが関連付けられ、管理/認証/API pathに適用される。",
+      "quantitative_criteria": "WAF association 1件、managed rule set有効、Block/Count log確認",
+      "evidence": "CDK template、WAF logs",
+      "verification_method": "CloudFormationとWAFログ確認"
+    },
+    {
+      "id": "AC-048",
+      "area": "認証・認可",
+      "item": "最小権限",
+      "priority": "P0",
+      "acceptance_condition": "Lambda/Agent/ToolsのIAM policyにワイルドカード過多がなく、cdk-nag相当でHigh/Criticalが0件。",
+      "quantitative_criteria": "High/Critical findings 0件",
+      "evidence": "cdk-nag report、IAM policy diff",
+      "verification_method": "CI security job確認"
+    },
+    {
+      "id": "AC-050",
+      "area": "フロントエンド",
+      "item": "画面URL到達",
+      "priority": "P1",
+      "acceptance_condition": "/chat、/admin、/admin/docs/latest/、/admin/test-reports/allure/latest/ に期待ロールで到達できる。",
+      "quantitative_criteria": "主要URL 4/4件成功、権限外403/401 100%",
+      "evidence": "E2E、CloudFront logs",
+      "verification_method": "ロール別E2E"
+    },
+    {
+      "id": "AC-051",
+      "area": "フロントエンド",
+      "item": "UI技術方針",
+      "priority": "P1",
+      "acceptance_condition": "shadcn/ui系コンポーネントとvanilla-extract方針で実装され、共通UI packageを経由している。",
+      "quantitative_criteria": "共通UI利用対象コンポーネント 90%以上、直書きstyle違反 0件",
+      "evidence": "lint/architecture test、storybook or visual snapshots",
+      "verification_method": "CI結果を確認"
+    },
+    {
+      "id": "AC-052",
+      "area": "フロントエンド",
+      "item": "チャットUX",
+      "priority": "P0",
+      "acceptance_condition": "質問送信、進捗表示、回答表示、引用ドロワー、フィードバック、お気に入りが操作できる。",
+      "quantitative_criteria": "E2E 6機能すべて成功",
+      "evidence": "Allure E2E、visual snapshots",
+      "verification_method": "ユーザーシナリオ試験"
+    },
+    {
+      "id": "AC-053",
+      "area": "フロントエンド",
+      "item": "管理UI UX",
+      "priority": "P0",
+      "acceptance_condition": "ユーザー取込、文書登録、文書版管理、取り込み状況、評価実行、成果物閲覧が操作できる。",
+      "quantitative_criteria": "E2E 6機能すべて成功",
+      "evidence": "Allure E2E",
+      "verification_method": "管理者シナリオ試験"
+    },
+    {
+      "id": "AC-054",
+      "area": "フロントエンド",
+      "item": "アクセシビリティ",
+      "priority": "P1",
+      "acceptance_condition": "主要画面で自動アクセシビリティ違反が重大0件である。",
+      "quantitative_criteria": "axe critical/serious 0件",
+      "evidence": "axe/Playwright report",
+      "verification_method": "CI結果確認"
+    },
+    {
+      "id": "AC-055",
+      "area": "フロントエンド",
+      "item": "パフォーマンス",
+      "priority": "P2",
+      "acceptance_condition": "本番相当buildで初回表示と主要操作が基準内に収まる。",
+      "quantitative_criteria": "LCP <= 2.5s、JS main bundle <= 500KB gzip、route transition p95 <= 500ms",
+      "evidence": "Lighthouse CI、bundle analyzer",
+      "verification_method": "CI report確認"
+    },
+    {
+      "id": "AC-060",
+      "area": "通知",
+      "item": "チャットイベント完全性",
+      "priority": "P0",
+      "acceptance_condition": "チャットrunでstarted/progress/retrieval_started/retrieval_completed/generation_started/partial_ready/final_ready/failed/canceledの状態通知が仕様通り送られる。",
+      "quantitative_criteria": "イベント種別網羅率100%、seq単調増加100%、欠番0件",
+      "evidence": "AppSync Events logs、chat_message_events",
+      "verification_method": "E2EとDSQLを照合"
+    },
+    {
+      "id": "AC-061",
+      "area": "通知",
+      "item": "通知は軽量payload",
+      "priority": "P0",
+      "acceptance_condition": "AppSync Events payloadに回答本文、citation本文、retrieved chunk本文を含めない。",
+      "quantitative_criteria": "禁止フィールド出現 0件",
+      "evidence": "event payload sampling",
+      "verification_method": "payload schema test"
+    },
+    {
+      "id": "AC-062",
+      "area": "通知",
+      "item": "REST詳細取得",
+      "priority": "P0",
+      "acceptance_condition": "通知受信後、RESTでevent詳細を取得でき、取得時に認可が再評価される。",
+      "quantitative_criteria": "正当取得 100%、権限外取得 403 100%",
+      "evidence": "Allure WebSocket/API",
+      "verification_method": "通知→REST詳細E2E"
+    },
+    {
+      "id": "AC-063",
+      "area": "通知",
+      "item": "管理者通知",
+      "priority": "P1",
+      "acceptance_condition": "取り込み、評価、ユーザー取込、成果物公開の管理者向け通知が送られる。",
+      "quantitative_criteria": "4カテゴリ各1件以上成功",
+      "evidence": "AppSync Events、admin E2E",
+      "verification_method": "管理イベント試験"
+    },
+    {
+      "id": "AC-064",
+      "area": "通知",
+      "item": "切断復旧",
+      "priority": "P1",
+      "acceptance_condition": "WebSocket切断後、after_seq付きREST差分取得で取りこぼしを復元できる。",
+      "quantitative_criteria": "復旧E2E 3/3件成功、重複表示0件",
+      "evidence": "Allure E2E、chat_message_events",
+      "verification_method": "強制切断シナリオ"
+    },
+    {
+      "id": "AC-070",
+      "area": "DB・マイグレーション",
+      "item": "Flyway migration",
+      "priority": "P0",
+      "acceptance_condition": "Flyway migrationが検収環境に適用され、履歴テーブルに全versionとchecksumが記録されている。",
+      "quantitative_criteria": "failed migration 0件、checksum mismatch 0件",
+      "evidence": "Flyway report、schema_migrations",
+      "verification_method": "CI migrate job確認"
+    },
+    {
+      "id": "AC-071",
+      "area": "DB・マイグレーション",
+      "item": "自動migration不採用",
+      "priority": "P1",
+      "acceptance_condition": "ORM自動migration生成を使わず、レビュー済みSQL migrationだけが適用されている。",
+      "quantitative_criteria": "migration SQLレビュー済み 100%、自動生成DDL実行 0件",
+      "evidence": "PR diff、migration folder、CI logs",
+      "verification_method": "PRとCIを確認"
+    },
+    {
+      "id": "AC-072",
+      "area": "DB・マイグレーション",
+      "item": "ドメイン整合性",
+      "priority": "P0",
+      "acceptance_condition": "tenant、user、chat、participant、message、run、document、version、ingestion、evaluation、artifactの主要不変条件がDB検査で満たされる。",
+      "quantitative_criteria": "整合性検査クエリ violation 0件",
+      "evidence": "DSQL integrity check report",
+      "verification_method": "検査SQLを実行"
+    },
+    {
+      "id": "AC-073",
+      "area": "DB・マイグレーション",
+      "item": "チャット共有DB",
+      "priority": "P0",
+      "acceptance_condition": "chat_participantsによりowner/viewer関係が表現され、viewerは参照のみである。",
+      "quantitative_criteria": "owner 1件以上、viewer共有 1件以上、viewer変更拒否 100%",
+      "evidence": "DSQL query、Allure RBAC",
+      "verification_method": "DB/API双方を確認"
+    },
+    {
+      "id": "AC-074",
+      "area": "DB・マイグレーション",
+      "item": "イベントappend-only",
+      "priority": "P1",
+      "acceptance_condition": "chat_message_eventsはappend-onlyで、既存eventのpayload/statusを直接更新しない。",
+      "quantitative_criteria": "既存event UPDATE 0件、seq重複0件",
+      "evidence": "DB audit/check query",
+      "verification_method": "イベント生成テスト後に検査"
+    },
+    {
+      "id": "AC-075",
+      "area": "DB・マイグレーション",
+      "item": "参照グラフ",
+      "priority": "P1",
+      "acceptance_condition": "reference_nodes/reference_edgesに文書版・chunk・section/figure/tableの関係が保存され、参照展開Toolが取得できる。",
+      "quantitative_criteria": "サンプル参照 10件中10件展開成功",
+      "evidence": "DSQL query、Tools API test",
+      "verification_method": "サンプル文書で参照展開試験"
+    },
+    {
+      "id": "AC-076",
+      "area": "DB・マイグレーション",
+      "item": "BM25F補助検索",
+      "priority": "P1",
+      "acceptance_condition": "BM25F posting/statsが生成され、BM25F検索Toolが期待候補を返す。",
+      "quantitative_criteria": "BM25F golden query recall@10 >= 0.80",
+      "evidence": "BM25F評価、bm25 tables",
+      "verification_method": "評価ジョブ結果確認"
+    },
+    {
+      "id": "AC-077",
+      "area": "DB・マイグレーション",
+      "item": "モデルカタログ共有",
+      "priority": "P1",
+      "acceptance_condition": "llm_modelsがBFF/API、Agent、UIで同一の利用可能モデル一覧として参照される。",
+      "quantitative_criteria": "UI表示モデルとDB active model差分 0件",
+      "evidence": "API response、llm_models",
+      "verification_method": "モデル一覧API/DB照合"
+    },
+    {
+      "id": "AC-080",
+      "area": "インフラ",
+      "item": "CDK構成",
+      "priority": "P0",
+      "acceptance_condition": "CDKは7 Constructに分割され、synth/deploy対象が環境別に明確である。",
+      "quantitative_criteria": "Construct 7/7存在、cdk synth成功、diff未承認変更0件",
+      "evidence": "CDK synth artifact、PR",
+      "verification_method": "CI cdk job確認"
+    },
+    {
+      "id": "AC-081",
+      "area": "インフラ",
+      "item": "CloudFormationリソース数",
+      "priority": "P1",
+      "acceptance_condition": "基本設計に定義した主要リソース種別と個数が検収環境のCloudFormation outputs/inventoryと一致する。",
+      "quantitative_criteria": "主要リソース一致率 100%",
+      "evidence": "infra inventory、CloudFormation describe-stacks",
+      "verification_method": "inventory照合"
+    },
+    {
+      "id": "AC-082",
+      "area": "インフラ",
+      "item": "KMS最小構成",
+      "priority": "P1",
+      "acceptance_condition": "customer managed KMS keyは環境ごとに1個を基本とし、ユーザー別/テナント別keyを作成していない。",
+      "quantitative_criteria": "CMK count = 1/env、ユーザー別key 0件",
+      "evidence": "KMS list、CDK template",
+      "verification_method": "KMS inventory確認"
+    },
+    {
+      "id": "AC-083",
+      "area": "インフラ",
+      "item": "S3バケット設定",
+      "priority": "P0",
+      "acceptance_condition": "全S3バケットでBlock Public Access、SSE-KMS、versioningまたは明示的保持方針、bucket policyが設定される。",
+      "quantitative_criteria": "対象bucket設定充足率100%",
+      "evidence": "S3 inventory、CDK template",
+      "verification_method": "設定確認"
+    },
+    {
+      "id": "AC-084",
+      "area": "インフラ",
+      "item": "S3パス構成",
+      "priority": "P1",
+      "acceptance_condition": "SPA、raw PDF、parsed artifacts、user import、evaluation artifacts、admin artifactsのprefixが設計通りである。",
+      "quantitative_criteria": "サンプルobject配置 100%、禁止prefix配置0件",
+      "evidence": "S3 inventory",
+      "verification_method": "prefix検査"
+    },
+    {
+      "id": "AC-085",
+      "area": "インフラ",
+      "item": "CloudFront単一入口",
+      "priority": "P0",
+      "acceptance_condition": "SPA、API、AppSync Events realtime、管理成果物が単一CloudFront配下で到達し、Reactは実ドメインを保持しない。",
+      "quantitative_criteria": "主要path到達100%、bundle実ドメイン出現0件",
+      "evidence": "CloudFront test、bundle scan",
+      "verification_method": "E2Eと静的検査"
+    },
+    {
+      "id": "AC-086",
+      "area": "インフラ",
+      "item": "SQS/DLQ",
+      "priority": "P1",
+      "acceptance_condition": "非同期通知・worker queueにDLQが設定され、失敗メッセージを確認できる。",
+      "quantitative_criteria": "DLQ設定率100%、検収テスト後DLQ残留0件",
+      "evidence": "SQS attributes、CloudWatch metrics",
+      "verification_method": "キューテスト"
+    },
+    {
+      "id": "AC-087",
+      "area": "インフラ",
+      "item": "Docusaurus docs site",
+      "priority": "P1",
+      "acceptance_condition": "Docusaurus build成果物がadmin artifacts bucketに配置され、CloudFront経由で管理者のみ閲覧できる。",
+      "quantitative_criteria": "build成功、管理者200、一般/未認証拒否100%",
+      "evidence": "CI artifact、E2E",
+      "verification_method": "アクセス確認"
+    },
+    {
+      "id": "AC-088",
+      "area": "インフラ",
+      "item": "Allure静的レポート",
+      "priority": "P1",
+      "acceptance_condition": "CIでAllure reportが生成され、admin artifacts bucketに配置され、管理者のみ閲覧できる。",
+      "quantitative_criteria": "unit/integration/e2eの3レポート生成、アクセス制御成功",
+      "evidence": "GitHub Actions、S3、E2E",
+      "verification_method": "CI成果物確認"
+    },
+    {
+      "id": "AC-090",
+      "area": "RAG・Agent",
+      "item": "RAG Agent IF",
+      "priority": "P0",
+      "acceptance_condition": "RAG Agentは指定IFでquestion、user_context、retrieval_policy、session/chat/message情報を受け取り、final/errorを返す。",
+      "quantitative_criteria": "Agent contract test pass 100%",
+      "evidence": "Allure agent tests、Agent logs",
+      "verification_method": "contract test確認"
+    },
+    {
+      "id": "AC-091",
+      "area": "RAG・Agent",
+      "item": "retrieval_policy緩和禁止",
+      "priority": "P0",
+      "acceptance_condition": "AgentがLambda/APIから渡されたretrieval_policyを緩和しない。",
+      "quantitative_criteria": "policy緩和検出 0件",
+      "evidence": "agent trace、tool_invocations",
+      "verification_method": "negative testとtrace確認"
+    },
+    {
+      "id": "AC-092",
+      "area": "RAG・Agent",
+      "item": "Tools経由利用",
+      "priority": "P0",
+      "acceptance_condition": "AgentはKB検索、ACL確認、参照展開、Evidence整形、引用整形をTools API経由で実行し、直AWSリソース叩きをしない。",
+      "quantitative_criteria": "対象tool invocation記録率100%、禁止SDK call 0件",
+      "evidence": "tool_invocations、IAM deny logs",
+      "verification_method": "agent E2E/監査ログ確認"
+    },
+    {
+      "id": "AC-093",
+      "area": "RAG・Agent",
+      "item": "KB検索",
+      "priority": "P0",
+      "acceptance_condition": "KB検索Toolがmetadata filter付きでRetrieveを呼び、retrievalResultsを返す。",
+      "quantitative_criteria": "正常系10/10件、filter漏れ0件",
+      "evidence": "Tools API logs、Bedrock call logs",
+      "verification_method": "tool test確認"
+    },
+    {
+      "id": "AC-094",
+      "area": "RAG・Agent",
+      "item": "ACL再確認",
+      "priority": "P0",
+      "acceptance_condition": "KB Retrieve後にDSQL ACL確認Toolが必ず呼ばれ、許可chunkだけがEvidenceになる。",
+      "quantitative_criteria": "RAG runのacl-check呼び出し率100%、権限外Evidence 0件",
+      "evidence": "tool_invocations、chat_message_events",
+      "verification_method": "RAG trace確認"
+    },
+    {
+      "id": "AC-095",
+      "area": "RAG・Agent",
+      "item": "参照展開",
+      "priority": "P1",
+      "acceptance_condition": "1.2章参照/図A-3参照などの参照グラフ展開がEvidenceに反映される。",
+      "quantitative_criteria": "参照展開golden 10件中8件以上成功",
+      "evidence": "RAG評価、reference_edges",
+      "verification_method": "評価結果確認"
+    },
+    {
+      "id": "AC-096",
+      "area": "RAG・Agent",
+      "item": "引用整形",
+      "priority": "P0",
+      "acceptance_condition": "回答のcitation_idがevent/detail APIで参照でき、UIのCitation Drawerで表示できる。",
+      "quantitative_criteria": "citation_id解決成功率100%",
+      "evidence": "E2E、API response、DSQL citations",
+      "verification_method": "UI/API試験"
+    },
+    {
+      "id": "AC-097",
+      "area": "RAG・Agent",
+      "item": "評価指標",
+      "priority": "P0",
+      "acceptance_condition": "RAG評価runでretrieval、generation、end-to-endを分離して記録する。",
+      "quantitative_criteria": "3カテゴリ全てmetrics保存率100%",
+      "evidence": "evaluation tables、reports",
+      "verification_method": "評価run確認"
+    },
+    {
+      "id": "AC-098",
+      "area": "RAG・Agent",
+      "item": "RAG品質ゲート",
+      "priority": "P0",
+      "acceptance_condition": "初期golden datasetで最低品質基準を満たす。",
+      "quantitative_criteria": "recall@10 >=0.85、citation precision >=0.90、groundedness >=0.90、refusal accuracy >=0.95、unsupported claim rate <=0.02",
+      "evidence": "RAG evaluation report",
+      "verification_method": "評価レポート確認"
+    },
+    {
+      "id": "AC-099",
+      "area": "RAG・Agent",
+      "item": "Prompt injection耐性",
+      "priority": "P0",
+      "acceptance_condition": "文書内指示・ユーザー指示によるprompt injectionに対し、system/tool制約を破らない。",
+      "quantitative_criteria": "attack test 20件中 policy violation 0件",
+      "evidence": "security test report、agent trace",
+      "verification_method": "攻撃テスト確認"
+    },
+    {
+      "id": "AC-100",
+      "area": "Offline取り込み",
+      "item": "PDF取り込み成功",
+      "priority": "P0",
+      "acceptance_condition": "サンプルPDFがRaw bucketへ配置され、metadata.json生成、KB ingestion、S3 Vectors登録、DSQL状態更新まで完了する。",
+      "quantitative_criteria": "サンプル5件中5件成功",
+      "evidence": "S3 inventory、ingestion_jobs、KB sync status",
+      "verification_method": "取り込みE2E"
+    },
+    {
+      "id": "AC-101",
+      "area": "Offline取り込み",
+      "item": "metadata完全性",
+      "priority": "P0",
+      "acceptance_condition": "document_id、version、acl_scope、status、page/sectionの必須metadataが欠損しない。",
+      "quantitative_criteria": "必須metadata欠損率0%",
+      "evidence": "parsed artifact、Retrieve metadata、DSQL",
+      "verification_method": "metadata検査"
+    },
+    {
+      "id": "AC-102",
+      "area": "Offline取り込み",
+      "item": "中間成果物",
+      "priority": "P1",
+      "acceptance_condition": "chunk控え、参照グラフmanifest、BM25F manifest、parser outputが設計prefixへ保存される。",
+      "quantitative_criteria": "対象成果物生成率100%",
+      "evidence": "S3 parsed artifacts inventory",
+      "verification_method": "prefix検査"
+    },
+    {
+      "id": "AC-103",
+      "area": "Offline取り込み",
+      "item": "再実行冪等性",
+      "priority": "P1",
+      "acceptance_condition": "同一文書版の取り込み再実行で重複document_version/chunk/reference edgeが発生しない。",
+      "quantitative_criteria": "重複 0件",
+      "evidence": "DSQL integrity check",
+      "verification_method": "再実行テスト"
+    },
+    {
+      "id": "AC-104",
+      "area": "Offline取り込み",
+      "item": "取り込み失敗処理",
+      "priority": "P1",
+      "acceptance_condition": "不正PDF/metadata不備/KB失敗時にfailed状態、エラーevent、管理者通知、再実行可能状態になる。",
+      "quantitative_criteria": "失敗3ケースすべて期待状態",
+      "evidence": "Allure ingestion negative、DSQL、AppSync Events",
+      "verification_method": "失敗注入テスト"
+    },
+    {
+      "id": "AC-110",
+      "area": "監視・ログ",
+      "item": "共通JSONログ",
+      "priority": "P0",
+      "acceptance_condition": "全Lambda/Worker/Agentのアプリログが共通JSON schemaで出力される。",
+      "quantitative_criteria": "ログサンプル100件中 schema適合100%",
+      "evidence": "CloudWatch Logs Insights、schema validator",
+      "verification_method": "ログ検査"
+    },
+    {
+      "id": "AC-111",
+      "area": "監視・ログ",
+      "item": "trace_id伝播",
+      "priority": "P0",
+      "acceptance_condition": "HTTP requestからLambda、Agent、Tools、DSQL eventまでtrace_idまたはcorrelation_idが伝播する。",
+      "quantitative_criteria": "E2E 10件中 trace連結率100%",
+      "evidence": "CloudWatch Logs、DSQL events",
+      "verification_method": "trace検索"
+    },
+    {
+      "id": "AC-112",
+      "area": "監視・ログ",
+      "item": "メトリクス",
+      "priority": "P1",
+      "acceptance_condition": "API latency、5xx、RAG latency、retrieval count、DLQ count、ingestion failed、evaluation failedのメトリクスが出る。",
+      "quantitative_criteria": "必須メトリクス7/7件存在",
+      "evidence": "CloudWatch metrics/dashboard",
+      "verification_method": "メトリクス確認"
+    },
+    {
+      "id": "AC-113",
+      "area": "監視・ログ",
+      "item": "アラーム",
+      "priority": "P1",
+      "acceptance_condition": "5xx、DLQ、RAG失敗率、ingestion失敗、評価失敗、WAF block急増のアラームが設定される。",
+      "quantitative_criteria": "必須アラーム6/6件設定",
+      "evidence": "CloudWatch alarms",
+      "verification_method": "アラーム一覧確認"
+    },
+    {
+      "id": "AC-114",
+      "area": "監視・ログ",
+      "item": "監査ログ",
+      "priority": "P0",
+      "acceptance_condition": "管理者操作、文書公開、チャット共有、Tools実行、評価実行が監査可能に保存される。",
+      "quantitative_criteria": "監査対象操作の記録率100%",
+      "evidence": "audit tables/logs",
+      "verification_method": "操作後に監査ログ照合"
+    },
+    {
+      "id": "AC-120",
+      "area": "CI/CD・テスト",
+      "item": "CI必須ジョブ",
+      "priority": "P0",
+      "acceptance_condition": "lint、typecheck、unit、integration、e2e、cdk synth、cdk diff、security scan、license scan、contract generation diffが全て成功する。",
+      "quantitative_criteria": "必須job pass 10/10",
+      "evidence": "GitHub Actions",
+      "verification_method": "CI run確認"
+    },
+    {
+      "id": "AC-121",
+      "area": "CI/CD・テスト",
+      "item": "単体テスト",
+      "priority": "P1",
+      "acceptance_condition": "バックエンド/フロント/RAG packagesの単体テストが基準を満たす。",
+      "quantitative_criteria": "line coverage >=80%、branch coverage >=70%、test pass 100%",
+      "evidence": "Allure unit、coverage report",
+      "verification_method": "CI確認"
+    },
+    {
+      "id": "AC-122",
+      "area": "CI/CD・テスト",
+      "item": "結合テスト",
+      "priority": "P0",
+      "acceptance_condition": "API、DSQL、S3、AppSync Events、Tools APIの結合テストが成功する。",
+      "quantitative_criteria": "結合テストpass 100%",
+      "evidence": "Allure integration",
+      "verification_method": "CI確認"
+    },
+    {
+      "id": "AC-123",
+      "area": "CI/CD・テスト",
+      "item": "E2Eテスト",
+      "priority": "P0",
+      "acceptance_condition": "一般ユーザー、共有チャット、管理者文書登録、評価実行、成果物閲覧の主要E2Eが成功する。",
+      "quantitative_criteria": "主要E2E pass 100%",
+      "evidence": "Allure E2E",
+      "verification_method": "CI確認"
+    },
+    {
+      "id": "AC-124",
+      "area": "CI/CD・テスト",
+      "item": "Pairwiseテスト",
+      "priority": "P1",
+      "acceptance_condition": "基本設計で定義したpairwise要因の組み合わせテストが実行される。",
+      "quantitative_criteria": "pairwiseケース実行率100%、失敗0件",
+      "evidence": "Allure pairwise",
+      "verification_method": "テスト結果確認"
+    },
+    {
+      "id": "AC-125",
+      "area": "CI/CD・テスト",
+      "item": "型共有検証",
+      "priority": "P0",
+      "acceptance_condition": "API schema、DB types、tool contract、domain constants、model catalogの生成差分がない。",
+      "quantitative_criteria": "generated diff 0件",
+      "evidence": "GitHub Actions、git diff",
+      "verification_method": "CI確認"
+    },
+    {
+      "id": "AC-126",
+      "area": "CI/CD・テスト",
+      "item": "Allure公開",
+      "priority": "P1",
+      "acceptance_condition": "CI完了後、Allure reportがS3 admin artifactsにpublishされ、管理者が閲覧できる。",
+      "quantitative_criteria": "CI成功run 1件以上、latest更新成功",
+      "evidence": "GitHub Actions、S3、E2E",
+      "verification_method": "レポート確認"
+    },
+    {
+      "id": "AC-130",
+      "area": "性能・信頼性",
+      "item": "非AI API性能",
+      "priority": "P1",
+      "acceptance_condition": "認証済み通常APIのp95 latencyが基準内である。",
+      "quantitative_criteria": "p95 <= 800ms、error rate < 1%",
+      "evidence": "load test report、CloudWatch metrics",
+      "verification_method": "負荷試験確認"
+    },
+    {
+      "id": "AC-131",
+      "area": "性能・信頼性",
+      "item": "質問開始応答",
+      "priority": "P0",
+      "acceptance_condition": "質問送信APIは長時間処理を待たずmessage_id/run_idを返す。",
+      "quantitative_criteria": "p95 <= 2s",
+      "evidence": "load test、API logs",
+      "verification_method": "質問送信負荷試験"
+    },
+    {
+      "id": "AC-132",
+      "area": "性能・信頼性",
+      "item": "RAG初回通知",
+      "priority": "P1",
+      "acceptance_condition": "通常質問で開始通知またはprogress通知が早期に届く。",
+      "quantitative_criteria": "p95 <= 5s",
+      "evidence": "E2E timing、AppSync logs",
+      "verification_method": "タイミング計測"
+    },
+    {
+      "id": "AC-133",
+      "area": "性能・信頼性",
+      "item": "RAG最終回答",
+      "priority": "P1",
+      "acceptance_condition": "通常質問の最終回答が基準内に返る。",
+      "quantitative_criteria": "p95 <= 60s、timeout rate < 2%",
+      "evidence": "RAG load test、chat_runs",
+      "verification_method": "負荷試験確認"
+    },
+    {
+      "id": "AC-134",
+      "area": "性能・信頼性",
+      "item": "WebSocket/PubSub負荷",
+      "priority": "P2",
+      "acceptance_condition": "通知のみPub/Sub、詳細REST取得の設計で過剰な通知を発生させない。",
+      "quantitative_criteria": "1 runあたり通知 <= 50件、payload <= 4KB",
+      "evidence": "AppSync metrics、event samples",
+      "verification_method": "負荷試験確認"
+    },
+    {
+      "id": "AC-135",
+      "area": "性能・信頼性",
+      "item": "非同期復旧",
+      "priority": "P1",
+      "acceptance_condition": "Agent/Worker途中失敗時にfailed状態、エラーevent、再実行可能状態になる。",
+      "quantitative_criteria": "失敗注入3/3件成功",
+      "evidence": "Allure failure injection",
+      "verification_method": "障害注入試験"
+    },
+    {
+      "id": "AC-140",
+      "area": "費用・運用",
+      "item": "月額コスト見積",
+      "priority": "P1",
+      "acceptance_condition": "検収環境で想定利用量に対する月額見積が予算上限内である。",
+      "quantitative_criteria": "想定50 DAU/10質問日で月額見積 <= 550 USD",
+      "evidence": "AWS Pricing Calculator/独自見積、Cost Explorer",
+      "verification_method": "見積書確認"
+    },
+    {
+      "id": "AC-141",
+      "area": "費用・運用",
+      "item": "OpenSearch非依存",
+      "priority": "P2",
+      "acceptance_condition": "初期構成でOpenSearch Serverlessを使用していない。",
+      "quantitative_criteria": "OpenSearch collection 0件",
+      "evidence": "AWS inventory",
+      "verification_method": "リソース確認"
+    },
+    {
+      "id": "AC-142",
+      "area": "費用・運用",
+      "item": "ログ保持",
+      "priority": "P1",
+      "acceptance_condition": "CloudWatch/S3/DSQLの保持期間が設計通りで、無制限保持がない。",
+      "quantitative_criteria": "保持期間未設定 0件",
+      "evidence": "CloudWatch log groups、S3 lifecycle、DSQL settings",
+      "verification_method": "リソース確認"
+    },
+    {
+      "id": "AC-143",
+      "area": "費用・運用",
+      "item": "運用手順",
+      "priority": "P1",
+      "acceptance_condition": "障害対応、再取り込み、評価再実行、rollback、ユーザー取込失敗対応、アクセス権変更対応の手順がある。",
+      "quantitative_criteria": "runbook 6/6件存在",
+      "evidence": "Docusaurus docs site",
+      "verification_method": "管理者ドキュメント確認"
+    },
+    {
+      "id": "AC-144",
+      "area": "費用・運用",
+      "item": "バックアップ/復旧",
+      "priority": "P1",
+      "acceptance_condition": "DSQL/S3/設定の復旧手順と復旧試験が完了している。",
+      "quantitative_criteria": "復旧試験1回以上成功、RTO/RPO記録あり",
+      "evidence": "DR test report",
+      "verification_method": "復旧試験確認"
+    },
+    {
+      "id": "AC-150",
+      "area": "検収判定",
+      "item": "P0項目完了",
+      "priority": "P0",
+      "acceptance_condition": "全P0項目がPASSである。",
+      "quantitative_criteria": "P0 FAIL 0件",
+      "evidence": "本チェックリスト",
+      "verification_method": "集計確認"
+    },
+    {
+      "id": "AC-151",
+      "area": "検収判定",
+      "item": "P1項目完了",
+      "priority": "P0",
+      "acceptance_condition": "全P1項目がPASSである。",
+      "quantitative_criteria": "P1 FAIL 0件",
+      "evidence": "本チェックリスト",
+      "verification_method": "集計確認"
+    },
+    {
+      "id": "AC-152",
+      "area": "検収判定",
+      "item": "P2項目完了",
+      "priority": "P1",
+      "acceptance_condition": "全P2項目がPASSである。",
+      "quantitative_criteria": "P2 FAIL 0件",
+      "evidence": "本チェックリスト",
+      "verification_method": "集計確認"
+    },
+    {
+      "id": "AC-153",
+      "area": "検収判定",
+      "item": "重大欠陥なし",
+      "priority": "P0",
+      "acceptance_condition": "未解決のsecurity/ACL/RAG品質/データ損失/運用不能に該当する欠陥がない。",
+      "quantitative_criteria": "Blocker/Critical defect 0件",
+      "evidence": "issue tracker、defect list",
+      "verification_method": "欠陥一覧確認"
+    }
+  ]
+}

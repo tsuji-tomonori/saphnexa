@@ -1,4 +1,4 @@
-import { acceptanceIds, allowedTraceStates } from "./acceptance-ids.js";
+import { acceptanceCatalog, acceptanceCatalogPath, acceptanceIds, allowedTraceStates } from "./acceptance-ids.js";
 import { assert, readText } from "./lib.js";
 
 const trace = readText("docs/acceptance/traceability.md");
@@ -14,5 +14,6 @@ for (const [id, state] of seen) {
   assert(allowedTraceStates.includes(state), `${id} has invalid state ${state}`);
 }
 
-assert(seen.size === acceptanceIds.length, `expected ${acceptanceIds.length} AC rows, got ${seen.size}`);
+assert(seen.size === acceptanceIds.length, `expected ${acceptanceIds.length} AC rows from ${acceptanceCatalogPath}, got ${seen.size}`);
+assert(seen.size === acceptanceCatalog.item_count, "traceability row count must match source catalog item_count");
 console.log("acceptance trace check passed");
