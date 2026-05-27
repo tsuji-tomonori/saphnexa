@@ -32,6 +32,8 @@
 - `dist/acceptance/defect_list.json`
 - `dist/acceptance/summary.json`
 - `docs/acceptance/defects/open_issues_snapshot.json`
+- PR 受け入れ条件コメント: https://github.com/tsuji-tomonori/saphnexa/pull/1#issuecomment-4550747455
+- PR セルフレビューコメント: https://github.com/tsuji-tomonori/saphnexa/pull/1#issuecomment-4550747469
 
 ## 検証
 

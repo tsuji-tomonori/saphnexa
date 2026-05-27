@@ -1,6 +1,6 @@
 # acceptance package draft 生成
 
-- 状態: doing
+- 状態: done
 - タスク種別: 機能追加
 - 作成日時: 2026-05-27 11:25 JST
 - 対象 PR: #1
@@ -27,7 +27,7 @@ AWS 実環境・release 操作前に、最終提出物の下書きとして acce
 - [x] acceptance package check を追加する。
 - [x] docs/trace/CI/admin report を同期する。
 - [x] 対象検証と `npm run verify` を通す。
-- [ ] PR へ受け入れ条件コメントとセルフレビューコメントを追加する。
+- [x] PR へ受け入れ条件コメントとセルフレビューコメントを追加する。
 
 ## Done 条件
 
