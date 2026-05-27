@@ -170,7 +170,9 @@
           "type": "string"
         },
         "report_url": {
-          "type": "string"
+          "type": "string",
+          "description": "Final RAG evaluation HTML report URL. Use the CloudFront viewer path /admin/evaluation-reports/{evaluation_run_id}/ or the S3 origin prefix reports/evaluations/{evaluation_run_id}/.",
+          "pattern": "^(https://.*/admin/evaluation-reports/[^/]+/|s3://.*/reports/evaluations/[^/]+/).*$"
         }
       }
     },

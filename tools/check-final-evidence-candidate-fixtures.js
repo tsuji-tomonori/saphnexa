@@ -176,6 +176,17 @@ try {
   assert(missingCostUsageBasisStatus.ready === false, "missing cost usage basis fixture must not be ready");
   assert(missingCostUsageBasisStatus.errors.some((error) => error.includes("manifest.cost_estimate.assumption_usage_basis")), "missing cost usage basis fixture must reject missing usage basis");
 
+  const mismatchedRagEvaluationReport = buildReadyCandidate();
+  mismatchedRagEvaluationReport.manifest.rag_evaluation.report_url = "s3://saphnexa-acceptance-artifacts/reports/evaluations/eval-other-run/";
+  const mismatchedRagEvaluationReportPaths = writeCandidateFiles(join(root, "mismatched-rag-evaluation-report"), mismatchedRagEvaluationReport);
+  const mismatchedRagEvaluationReportStatus = buildFinalEvidenceCandidateStatus(join(root, "mismatched-rag-evaluation-report-status.json"), {
+    candidatePaths: mismatchedRagEvaluationReportPaths,
+    resolveGitTagCommit,
+    resolveGitRepository
+  });
+  assert(mismatchedRagEvaluationReportStatus.ready === false, "mismatched RAG evaluation report fixture must not be ready");
+  assert(mismatchedRagEvaluationReportStatus.errors.some((error) => error.includes("manifest.rag_evaluation.report_url_evaluation_run")), "mismatched RAG evaluation report fixture must reject report URL that does not match evaluation_run_id");
+
   for (const [fixtureName, monthlyUsd, message] of [
     ["null-cost", null, "null cost estimate"],
     ["negative-cost", -1, "negative cost estimate"],
@@ -333,7 +344,7 @@ function buildReadyCandidate() {
       },
       rag_evaluation: {
         evaluation_run_id: "eval-20260527-uat-final",
-        report_url: "s3://saphnexa-acceptance-artifacts/rag/eval-20260527-uat-final.json"
+        report_url: "s3://saphnexa-acceptance-artifacts/reports/evaluations/eval-20260527-uat-final/"
       },
       cost_estimate: {
         monthly_usd: 420,

@@ -31,7 +31,7 @@
   },
   "rag_evaluation": {
     "evaluation_run_id": "example-evaluation-run-id",
-    "report_url": "s3://example-evaluation-artifacts/reports/example/"
+    "report_url": "s3://example-evaluation-artifacts/reports/evaluations/example-evaluation-run-id/"
   },
   "cost_estimate": {
     "monthly_usd": 550,
