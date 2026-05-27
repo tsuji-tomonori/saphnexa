@@ -22,3 +22,19 @@ tasks:
     desc: Ensure web source does not embed AWS service domains
     cmds:
       - npm run scan:bundle-domains
+  ci:check:
+    desc: Verify GitHub Actions workflow shape locally
+    cmds:
+      - npm run ci:check
+  docs:check:
+    desc: Verify acceptance and operations documents locally
+    cmds:
+      - npm run docs:check
+  evidence:check:
+    desc: Verify acceptance evidence manifest example locally
+    cmds:
+      - npm run evidence:check
+  security:scan:
+    desc: Run local secret and security baseline checks
+    cmds:
+      - npm run security:scan

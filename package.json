@@ -8,11 +8,22 @@
     "packages/*"
   ],
   "scripts": {
+    "lint": "node tools/check-repo-lint.js",
+    "typecheck": "node tools/check-type-surface.js",
     "test": "node --test tests/*.test.js",
     "test:contract": "node tools/check-contracts.js",
     "test:integration:local": "node --test tests/integration-local.test.js",
+    "test:e2e:local": "node --test tests/e2e-local.test.js",
+    "cdk:synth:local": "node tools/check-cdk-inventory.js",
+    "cdk:diff:local": "node tools/check-cdk-diff-baseline.js",
+    "security:scan": "node tools/check-security-scan.js",
+    "license:scan": "node tools/check-license-scan.js",
+    "docs:check": "node tools/check-docs.js",
+    "evidence:check": "node tools/check-evidence-manifest.js",
+    "acceptance:check": "node tools/check-acceptance-trace.js",
+    "ci:check": "node tools/check-ci-workflow.js",
     "scan:bundle-domains": "node tools/scan-bundle-domains.js",
-    "verify": "npm run test:contract && npm run test:integration:local && npm run scan:bundle-domains"
+    "verify": "npm run lint && npm run typecheck && npm run test:contract && npm run test:integration:local && npm run test:e2e:local && npm run cdk:synth:local && npm run cdk:diff:local && npm run security:scan && npm run license:scan && npm run docs:check && npm run evidence:check && npm run acceptance:check && npm run scan:bundle-domains"
   },
   "engines": {
     "node": ">=20"

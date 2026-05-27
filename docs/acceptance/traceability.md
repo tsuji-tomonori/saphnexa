@@ -14,16 +14,16 @@
 | :--- | :--- | :--- |
 | AC-001 | requires_aws | Git tag/release/evidence manifest は未作成。 |
 | AC-002 | requires_aws | CDK/CloudFormation/Allure/Docusaurus publish は未実施。 |
-| AC-003 | implemented_unverified | `docs/adr/ADR-0001-local-first-acceptance-slice.md` に設計差分を記録。 |
+| AC-003 | local_verified | `docs/adr/ADR-0001-local-first-acceptance-slice.md` に設計差分を記録し、`npm run docs:check` で docs 構造を検査。 |
 | AC-004 | requires_aws | 検収 CSV の全行記入は最終検収時。 |
-| AC-010 | implemented_unverified | `apps/api/src/local-api.js` と `tests/integration-local.test.js` で質問受付を検証予定。 |
-| AC-011 | implemented_unverified | `packages/rag-core/src/fixture-rag.js` が citation を生成。 |
-| AC-012 | implemented_unverified | fixture RAG が根拠なし質問を拒否。 |
+| AC-010 | local_verified | `apps/api/src/local-api.js` と `tests/integration-local.test.js` で質問受付、`message_id`、`run_id` を検証。 |
+| AC-011 | local_verified | `packages/rag-core/src/fixture-rag.js` と local tests で citation 生成を検証。 |
+| AC-012 | local_verified | fixture RAG の根拠なし拒否を `tests/integration-local.test.js` で検証。 |
 | AC-013 | local_verified | chat creation creates `chat_sessions` and owner `chat_participants` in local integration. |
 | AC-014 | local_verified | owner share and viewer write denial in local integration. |
-| AC-015 | implemented_unverified | `favorites` store/API source あり。 |
-| AC-016 | implemented_unverified | user import job/rows source あり。 |
-| AC-017 | implemented_unverified | document registration creates ingestion job and raw URI source. |
+| AC-015 | local_verified | `favorites` store/API source と `tests/e2e-local.test.js` で登録/一覧を検証。 |
+| AC-016 | implemented_unverified | user import job/rows source あり。AWS/S3 report は未検証。 |
+| AC-017 | implemented_unverified | document registration creates ingestion job and raw URI source. AWS/S3 inventory は未検証。 |
 | AC-018 | implemented_unverified | document version activation source あり。 |
 | AC-019 | implemented_unverified | evaluation run source あり。 |
 | AC-020 | requires_aws | Docusaurus CloudFront access control は未実施。 |
@@ -41,9 +41,9 @@
 | AC-043 | local_verified | fixture RAG records ACL denied count before Evidence. |
 | AC-044 | scaffolded | ws-ticket channel scope source あり、実 WebSocket 未実装。 |
 | AC-045 | scaffolded | ws-ticket source あり、期限切れ/再利用 test 未実装。 |
-| AC-046 | implemented_unverified | bundle domain scan あり、secret scan 未実施。 |
+| AC-046 | local_verified | `npm run security:scan` と `npm run scan:bundle-domains` で source の secret/domain token を検査。CloudWatch/S3 sampling は未実施。 |
 | AC-047 | scaffolded | `infra/aspects/security-baseline.js` に WAF baseline。 |
-| AC-048 | scaffolded | IAM policy 実体と cdk-nag は未実装。 |
+| AC-048 | scaffolded | `infra/aspects/security-baseline.js` と `npm run security:scan` で baseline を検査。IAM policy 実体と cdk-nag は未実装。 |
 | AC-050 | scaffolded | web route source あり、E2E 未実施。 |
 | AC-051 | scaffolded | `packages/ui` と `theme.css.ts` あり、architecture lint 未実装。 |
 | AC-052 | scaffolded | chat UI source あり、E2E 未実施。 |
@@ -54,7 +54,7 @@
 | AC-061 | local_verified | `assertNotificationIsLightweight` rejects answer/chunk fields. |
 | AC-062 | local_verified | event notification points to REST detail and auth is rechecked. |
 | AC-063 | scaffolded | admin event names defined; publisher integration 未実装。 |
-| AC-064 | implemented_unverified | `after_seq` local event API あり、disconnect E2E 未実施。 |
+| AC-064 | local_verified | `after_seq` local event API と viewer REST detail 取得を `tests/e2e-local.test.js` で検証。実 WebSocket disconnect は未実施。 |
 | AC-070 | scaffolded | `V001__initial_saphnexa_schema.sql` あり、Flyway 実行未実施。 |
 | AC-071 | scaffolded | SQL migration を追加、自動 migration は未導入。 |
 | AC-072 | scaffolded | major tables exist; integrity SQL 未実装。 |
@@ -70,8 +70,8 @@
 | AC-084 | scaffolded | storage path implementation 未実装。 |
 | AC-085 | scaffolded | single entry route/path intent only。 |
 | AC-086 | scaffolded | SQS/DLQ construct intent only。 |
-| AC-087 | requires_aws | Docusaurus build/publish 未実施。 |
-| AC-088 | requires_aws | Allure generate/publish 未実施。 |
+| AC-087 | requires_aws | Docusaurus build/publish 未実施。`docs/ops/runbooks/` は追加済み。 |
+| AC-088 | requires_aws | Allure generate/publish 未実施。CI workflow の report 公開は後続。 |
 | AC-090 | scaffolded | fixture RAG IF あり、Agent contract test 未拡張。 |
 | AC-091 | local_verified | `assertRetrievalPolicyNotRelaxed` test あり。 |
 | AC-092 | local_verified | fixture RAG calls Tools functions and records `tool_invocations`. |
@@ -79,7 +79,7 @@
 | AC-094 | local_verified | ACL check is called before evidence packing. |
 | AC-095 | implemented_unverified | reference expansion source あり、golden 10 件未実施。 |
 | AC-096 | local_verified | citation format and event detail tested locally. |
-| AC-097 | implemented_unverified | evaluation metrics categories in local source. |
+| AC-097 | local_verified | evaluation metrics categories in local source and `tests/e2e-local.test.js` local path. AWS 評価 report は未実施。 |
 | AC-098 | requires_aws | RAG quality report 未作成。 |
 | AC-099 | not_started | prompt injection attack test 未実装。 |
 | AC-100 | scaffolded | ingestion job/raw URI source あり、PDF/KB/S3 Vectors 実行未実施。 |
@@ -87,18 +87,18 @@
 | AC-102 | scaffolded | parsed prefix source あり、artifact inventory 未実施。 |
 | AC-103 | not_started | ingestion idempotency test 未実装。 |
 | AC-104 | not_started | failure injection 未実装。 |
-| AC-110 | not_started | JSON log schema validator 未実装。 |
-| AC-111 | not_started | trace propagation 未実装。 |
+| AC-110 | local_verified | `packages/domain/src/observability.js` と `tests/e2e-local.test.js` で共通 JSON log schema を検査。CloudWatch sampling は未実施。 |
+| AC-111 | local_verified | `assertTracePropagation` で local API/worker/tools/agent chain の trace_id/correlation_id 伝播を検査。実 AWS trace は未実施。 |
 | AC-112 | scaffolded | observability construct intent only。 |
 | AC-113 | scaffolded | observability construct intent only。 |
 | AC-114 | implemented_unverified | tool invocation audit source あり、admin audit 未実装。 |
-| AC-120 | requires_aws | GitHub Actions 10 jobs 未作成。 |
-| AC-121 | requires_aws | coverage threshold 未導入。 |
-| AC-122 | requires_aws | real integration 未実施。 |
-| AC-123 | requires_aws | E2E 未実施。 |
+| AC-120 | implemented_unverified | `.github/workflows/ci.yml` に 10 jobs を追加し `npm run ci:check` で検査。GitHub Actions 実 run は未確認。 |
+| AC-121 | requires_aws | coverage threshold 未導入。unit job は追加済み。 |
+| AC-122 | implemented_unverified | local integration job/test は追加済み。AWS/DSQL/S3/AppSync/Tools 実結合は未実施。 |
+| AC-123 | implemented_unverified | `tests/e2e-local.test.js` と e2e CI job を追加。ブラウザ/CloudFront E2E は未実施。 |
 | AC-124 | not_started | pairwise generator 未実装。 |
-| AC-125 | implemented_unverified | contract/schema source あり、generated diff check 未実装。 |
-| AC-126 | requires_aws | Allure publish 未実施。 |
+| AC-125 | local_verified | `npm run test:contract`, `npm run acceptance:check`, `npm run evidence:check` を contract-generation-diff job に追加。生成物 diff の本格化は後続。 |
+| AC-126 | requires_aws | Allure publish 未実施。CI workflow は追加済み。 |
 | AC-130 | not_started | load test 未実装。 |
 | AC-131 | implemented_unverified | local API immediate accepted response; load p95 未実施。 |
 | AC-132 | implemented_unverified | local started/progress event; timing p95 未実施。 |
@@ -108,8 +108,8 @@
 | AC-140 | not_started | cost estimate 未作成。 |
 | AC-141 | scaffolded | OpenSearch not introduced; AWS inventory 未実施。 |
 | AC-142 | scaffolded | retention baseline intent only。 |
-| AC-143 | scaffolded | `docs/ops/local-verification.md` のみ、6 runbook 未完。 |
-| AC-144 | not_started | DR runbook/test 未実装。 |
+| AC-143 | implemented_unverified | 6 runbook を `docs/ops/runbooks/` に追加し `npm run docs:check` で検査。Docusaurus 公開は未実施。 |
+| AC-144 | implemented_unverified | `docs/ops/runbooks/backup-restore.md` を追加。復旧試験は未実施。 |
 | AC-150 | requires_aws | P0 全 PASS ではない。 |
 | AC-151 | requires_aws | P1 全 PASS ではない。 |
 | AC-152 | requires_aws | P2 全 PASS ではない。 |

@@ -1,0 +1,38 @@
+{
+  "system": "Saphnexa",
+  "environment": "dev",
+  "aws_region": "ap-northeast-1",
+  "aws_account_id": "\u0030\u0030\u0030\u0030\u0030\u0030\u0030\u0030\u0030\u0030\u0030\u0030",
+  "git_commit_sha": "0000000000000000000000000000000000000000",
+  "git_tag": "example-not-for-acceptance",
+  "cdk_app_version": "0.1.0",
+  "cloudformation_stacks": [
+    {
+      "stack_name": "saphnexa-dev-app",
+      "stack_id": "arn:aws:cloudformation:ap-northeast-1:<account-id>:stack/saphnexa-dev-app/example"
+    }
+  ],
+  "db_migration": {
+    "tool": "Flyway",
+    "latest_version": "V001",
+    "checksum_status": "matched"
+  },
+  "test_reports": {
+    "allure_latest_url": "s3://example-admin-artifacts/test-reports/allure/latest/",
+    "unit_report_url": "s3://example-admin-artifacts/test-reports/unit/latest/",
+    "integration_report_url": "s3://example-admin-artifacts/test-reports/integration/latest/",
+    "e2e_report_url": "s3://example-admin-artifacts/test-reports/e2e/latest/"
+  },
+  "docs_site": {
+    "latest_url": "s3://example-admin-artifacts/docs/latest/",
+    "version_url": "s3://example-admin-artifacts/docs/versions/v0.16/"
+  },
+  "rag_evaluation": {
+    "evaluation_run_id": "example-evaluation-run-id",
+    "report_url": "s3://example-evaluation-artifacts/reports/example/"
+  },
+  "cost_estimate": {
+    "monthly_usd": 550,
+    "assumption": "Example placeholder for schema validation only. Final acceptance requires actual UAT estimate for 50 DAU and 10 questions/user/day."
+  }
+}
