@@ -1,6 +1,6 @@
 # final release tag/url consistency gate
 
-状態: do
+状態: done
 
 ## 背景
 
@@ -104,7 +104,13 @@ final evidence candidate の検査で、`github_release_url` が `git_tag` と�
 - `npm run evidence:check`: pass
 - `npm run verify`: pass
 - `git diff --check`: pass
-- `pre-commit run --files docs/acceptance/evidence/evidence_manifest.schema.json docs/ops/runbooks/final-acceptance.md tools/check-evidence-manifest.js tools/check-final-evidence-candidate-fixtures.js tools/final-evidence-candidate.js tasks/do/20260527-1718-final-release-tag-url-consistency.md`: pass
+- `pre-commit run --files docs/acceptance/evidence/evidence_manifest.schema.json docs/ops/runbooks/final-acceptance.md tools/check-evidence-manifest.js tools/check-final-evidence-candidate-fixtures.js tools/final-evidence-candidate.js tasks/done/20260527-1718-final-release-tag-url-consistency.md`: pass
+
+## PR コメント
+
+- 受け入れ条件確認: https://github.com/tsuji-tomonori/saphnexa/pull/1#issuecomment-4552776352
+- セルフレビュー: https://github.com/tsuji-tomonori/saphnexa/pull/1#issuecomment-4552779256
+- GitHub Apps comment は 403 `Resource not accessible by integration` のため、`gh pr comment` で代替した。
 
 ## PR レビュー観点
 
@@ -115,5 +121,5 @@ final evidence candidate の検査で、`github_release_url` が `git_tag` と�
 
 ## リスク
 
-- Git tag に URL encode が必要な文字を含む場合、単純比較では誤判定する可能性があるため `encodeURIComponent` を使う。
+- Git tag に URL encode が必要な文字を含む場合、単純比較では誤判定する可能性があるため `decodeURIComponent` で URL path segment を復元して比較する。
 - GitHub release URL の repository owner/name は現時点で `https://github.com/` 配下のみを許容しており、既存の repository 固定までは行わない。
