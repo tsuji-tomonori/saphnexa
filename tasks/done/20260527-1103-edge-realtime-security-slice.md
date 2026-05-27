@@ -91,6 +91,7 @@ AWS 実環境なしで確認可能な edge/realtime/security/IaC intent を構�
 - `npm run verify`: pass
 - `git diff --check`: pass
 - `pre-commit run --files ...`: pass
+- PR #1 GitHub Actions `Saphnexa CI`: pass（14 jobs）
 
 ## PR コメント
 

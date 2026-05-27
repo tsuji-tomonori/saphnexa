@@ -54,6 +54,7 @@
 - `npm run verify`: pass
 - `git diff --check`: pass
 - `pre-commit run --files ...`: pass
+- PR #1 GitHub Actions `Saphnexa CI`: pass（14 jobs）
 
 ## Fit 評価
 
@@ -65,4 +66,4 @@
 
 - AWS deployed resource、IAM policy simulator、KMS key policy、SQS/DLQ 実体、AppSync Events 実接続、cdk-nag 実行は未検証。
 - intent catalog は設計・実装予定の静的根拠であり、deploy 後の構成 drift 検出の代替ではない。
-- PR #1 の最新 GitHub Actions 結果は push 後に確認する。
+- PR #1 の最新 GitHub Actions は確認済みで、14 jobs が pass。
