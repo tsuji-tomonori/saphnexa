@@ -1,6 +1,6 @@
 # final readiness check freshness
 
-- 状態: doing
+- 状態: done
 - タスク種別: 修正
 - 作成日時: 2026-05-27 16:58 JST
 - 対象 PR: #1
@@ -51,7 +51,12 @@
 - [x] `acceptance:final:check` の script を self-refreshing にする。
 - [x] local verification docs に final readiness check freshness を追記する。
 - [x] 対象検証と `npm run verify` を通す。
-- [ ] PR へ受け入れ条件コメントとセルフレビューコメントを追加する。
+- [x] PR へ受け入れ条件コメントとセルフレビューコメントを追加する。
+
+## PR コメント
+
+- 受け入れ条件確認: https://github.com/tsuji-tomonori/saphnexa/pull/1#issuecomment-4552623492
+- セルフレビュー: https://github.com/tsuji-tomonori/saphnexa/pull/1#issuecomment-4552625401
 
 ## Done 条件
 
