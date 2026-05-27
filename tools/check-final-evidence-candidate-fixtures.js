@@ -74,6 +74,17 @@ try {
   assert(missingCdkAppVersionStatus.ready === false, "missing CDK app version fixture must not be ready");
   assert(missingCdkAppVersionStatus.errors.some((error) => error === "manifest.cdk_app_version: required"), "missing CDK app version fixture must reject missing required field");
 
+  const mismatchedCdkAppVersion = buildReadyCandidate();
+  mismatchedCdkAppVersion.manifest.cdk_app_version = "9.9.9";
+  const mismatchedCdkAppVersionPaths = writeCandidateFiles(join(root, "mismatched-cdk-app-version"), mismatchedCdkAppVersion);
+  const mismatchedCdkAppVersionStatus = buildFinalEvidenceCandidateStatus(join(root, "mismatched-cdk-app-version-status.json"), {
+    candidatePaths: mismatchedCdkAppVersionPaths,
+    resolveGitTagCommit,
+    resolveGitRepository
+  });
+  assert(mismatchedCdkAppVersionStatus.ready === false, "mismatched CDK app version fixture must not be ready");
+  assert(mismatchedCdkAppVersionStatus.errors.some((error) => error.includes("manifest.cdk_app_version_package_version")), "mismatched CDK app version fixture must reject package version mismatch");
+
   const invalidRequiredValues = buildReadyCandidate();
   invalidRequiredValues.manifest.cdk_app_version = "";
   invalidRequiredValues.manifest.db_migration.tool = "Liquibase";

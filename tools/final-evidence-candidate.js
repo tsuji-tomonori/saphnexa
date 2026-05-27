@@ -62,6 +62,7 @@ export function buildFinalEvidenceCandidateStatus(outputPath = finalCandidateSta
 
 function validateManifest(path, checks, errors, options = {}) {
   const manifest = readJson(path);
+  const packageJson = readJson("package.json");
   const resolveGitTagCommit = options.resolveGitTagCommit || gitTagCommit;
   const resolveGitRepository = options.resolveGitRepository || currentGitRepository;
   const required = [
@@ -99,6 +100,7 @@ function validateManifest(path, checks, errors, options = {}) {
   check(Boolean(currentRepository), "manifest.github_release_url_current_repo_available", checks, errors, "current GitHub repository must be resolvable from remote.origin.url");
   check(releaseRef?.repository === currentRepository, "manifest.github_release_url_repository", checks, errors, "must point to the current GitHub repository release");
   check(isFinalText(manifest.cdk_app_version), "manifest.cdk_app_version", checks, errors, "must include final CDK app version");
+  check(manifest.cdk_app_version === packageJson.version, "manifest.cdk_app_version_package_version", checks, errors, "must match package.json version");
   check(Array.isArray(manifest.cloudformation_stacks) && manifest.cloudformation_stacks.length > 0, "manifest.cloudformation_stacks", checks, errors, "must include deployed stacks");
   for (const stack of manifest.cloudformation_stacks || []) {
     const stackArn = parseCloudFormationStackArn(stack.stack_id);
