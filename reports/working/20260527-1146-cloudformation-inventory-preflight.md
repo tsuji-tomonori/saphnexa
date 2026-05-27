@@ -33,6 +33,8 @@
 - `docs/ops/runbooks/cloudformation-inventory.md`
 - `npm run cfn:inventory:build`
 - `npm run cfn:inventory:check`
+- PR 受け入れ条件コメント: https://github.com/tsuji-tomonori/saphnexa/pull/1#issuecomment-4550793989
+- PR セルフレビューコメント: https://github.com/tsuji-tomonori/saphnexa/pull/1#issuecomment-4550793990
 
 ## 検証
 
