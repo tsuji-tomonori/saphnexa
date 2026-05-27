@@ -27,6 +27,7 @@ npm run db:migration:check
 npm run db:integrity:check
 npm run search:local:check
 npm run observability:check
+npm run edge:security:check
 npm run admin:workflow:check
 npm run offline-artifacts:check
 npm run restore:drill:check
@@ -58,6 +59,7 @@ git diff --check
 - local DB-like store の主要ドメイン整合性と chat event append-only invariant。
 - 参照グラフ sample 10/10 と BM25F golden recall@10 >= 0.80。
 - required metrics 7/7、alarms 6/6、retention 未設定 0件の catalog。
+- CloudFront Function、single-entry route、ws-ticket、WAF/IAM/KMS/SQS/DLQ/cdk-nag の static intent catalog。
 - user import の create/update/delete/invalid row、文書登録 5 件、版 activation、評価 run 3 件、admin event、audit event のローカル workflow。
 - chunk/reference/BM25F/parser を含む offline artifact inventory のローカル manifest。
 - in-memory domain state の restore drill report、RTO/RPO threshold、snapshot/restored checksum。
@@ -70,5 +72,6 @@ git diff --check
 - 実ブラウザ操作による chat/admin E2E、CloudFront 経由のロール別導線確認。
 - Bedrock KB、S3 Vectors、AgentCore Runtime、Bedrock Evaluations を使った実 RAG 品質評価。
 - Aurora DSQL への Flyway 実適用、CloudWatch metrics/alarms、S3 lifecycle、DSQL retention settings の実リソース確認。
+- CloudFront Function、WAF、IAM policy、KMS key policy、SQS/DLQ、AppSync Events、cdk-nag の実リソース/実行結果確認。
 - 実 S3 の offline artifact inventory、実 parser/KB/S3 Vectors ingestion、実バックアップからの restore drill。
 - Git tag、GitHub release、検収用 `evidence_manifest.json` の最終確定。

@@ -88,6 +88,7 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: "22"
+      - run: npm run edge:security:check
       - run: npm run security:scan
 
   license-scan:

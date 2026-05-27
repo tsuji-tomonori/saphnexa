@@ -33,17 +33,17 @@
 | AC-032 | local_verified | `errorResponseSchema` and local API error response shape. |
 | AC-033 | local_verified | state-changing route metadata has `csrfRequired`; `apps/api/src/local-api.js` の runtime guard と `tests/integration-local.test.js` で token 欠落/不一致 403 を検証。 |
 | AC-034 | local_verified | `tools/scan-bundle-domains.js` scans web/API client source. |
-| AC-035 | scaffolded | viewer/internal path metadata exists; CloudFront Function 未実装。 |
-| AC-036 | scaffolded | `apps/web/src/routes.ts` に主要 path を定義。 |
+| AC-035 | local_verified | `infra/constructs/edge-static` の CloudFront Function routing intent と `npm run edge:security:check` で viewer/internal path metadata を検査。実 CloudFront Function は未実装。 |
+| AC-036 | local_verified | `apps/web/src/routes.ts` と `npm run edge:security:check` で `/` rewrite、`/chat`、`/admin`、admin artifact path の single-entry route intent を検査。 |
 | AC-040 | local_verified | local API returns 401/403 for missing/unauthorized actor paths in tests. |
 | AC-041 | local_verified | admin APIs reject general user in local integration. |
 | AC-042 | local_verified | non-participant chat event/detail access is rejected. |
 | AC-043 | local_verified | fixture RAG records ACL denied count before Evidence. |
-| AC-044 | scaffolded | ws-ticket channel scope source あり、実 WebSocket 未実装。 |
+| AC-044 | local_verified | `infra/constructs/realtime` の channel policy intent と local ws-ticket の TTL/single-use/user scope を `npm run edge:security:check` で検査。実 AppSync Events は未実施。 |
 | AC-045 | local_verified | local ws-ticket の期限切れ/再利用/他ユーザー利用拒否を `tests/integration-local.test.js` で検証。実 AppSync Events は未実施。 |
 | AC-046 | local_verified | `npm run security:scan` と `npm run scan:bundle-domains` で source の secret/domain token を検査。CloudWatch/S3 sampling は未実施。 |
-| AC-047 | scaffolded | `infra/aspects/security-baseline.js` に WAF baseline。 |
-| AC-048 | scaffolded | `infra/aspects/security-baseline.js` と `npm run security:scan` で baseline を検査。IAM policy 実体と cdk-nag は未実装。 |
+| AC-047 | local_verified | `infra/aspects/security-baseline.js` と EdgeStaticConstruct の `wafAttached` intent を `npm run edge:security:check` で検査。実 WAF ACL は未確認。 |
+| AC-048 | local_verified | ObservabilityCicdConstruct の IAM wildcard review / cdk-nag / permissions boundary intent と baseline を `npm run edge:security:check` で検査。IAM policy 実体と cdk-nag 実行は未実施。 |
 | AC-050 | local_verified | `npm run web:flow:check` で `/chat`、`/admin`、admin docs/report paths の role route と local access flow を検査。実ブラウザ/CloudFront ロール別 E2E は未実施。 |
 | AC-051 | local_verified | `apps/web/src/*` が `packages/ui` を経由し、直書き `style` が 0 件であることを `npm run ui:check` で検査。 |
 | AC-052 | local_verified | `npm run web:flow:check` で chat UI の質問入力、送信、event 表示、empty/disabled state と local API flow を検査。実ブラウザ E2E は未実施。 |
@@ -65,11 +65,11 @@
 | AC-077 | local_verified | model catalog shared by API/store. |
 | AC-080 | local_verified | 7 construct inventory exists and is tested. |
 | AC-081 | requires_aws | CloudFormation inventory 未実施。 |
-| AC-082 | scaffolded | DataConstruct KMS policy intent only。 |
-| AC-083 | scaffolded | security baseline only。 |
+| AC-082 | local_verified | DataConstruct の KMS rotation / SSE-KMS / service principal / public access deny intent を `npm run edge:security:check` で検査。実 KMS policy は未確認。 |
+| AC-083 | local_verified | `infra/aspects/security-baseline.js` の S3/WAF/IAM/cdk-nag/SQS/log retention baseline を `npm run edge:security:check` と `npm run security:scan` で検査。実 AWS Security Hub 等は未実施。 |
 | AC-084 | local_verified | local raw/parsed prefix と OpenSearch 非依存を `npm run storage:check` で検査。S3 inventory は未実施。 |
-| AC-085 | scaffolded | single entry route/path intent only。 |
-| AC-086 | scaffolded | SQS/DLQ construct intent only。 |
+| AC-085 | local_verified | EdgeStaticConstruct と `apps/web/src/routes.ts` の single-entry route/path intent を `npm run edge:security:check` で検査。実 CloudFront deploy は未実施。 |
+| AC-086 | local_verified | RagProcessingConstruct の queues/DLQs/maxReceiveCount/visibilityTimeout intent を `npm run edge:security:check` で検査。実 SQS/DLQ は未確認。 |
 | AC-087 | implemented_unverified | `npm run admin-artifacts:build` で `dist/admin/docs/latest/` と `dist/admin/docs/versions/v0.16/` を生成し、runbooks/ADR/trace を manifest に含める。Docusaurus/CloudFront/S3 publish は未実施。 |
 | AC-088 | implemented_unverified | `npm run admin-artifacts:build` で `dist/admin/test-reports/allure/latest/` の Allure 互換 local report を生成し、`npm run artifacts:check` で manifest/source/checksum を検査。Allure CLI/CloudFront/S3 publish は未実施。 |
 | AC-090 | local_verified | `npm run rag:quality:check` で fixture RAG Agent IF が question/actor/retrieval_policy/run context を受け final/refusal output と tool invocation を返すことを検査。実 AgentCore Runtime logs は未実施。 |

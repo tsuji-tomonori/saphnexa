@@ -30,6 +30,7 @@ for (const command of [
   "npm run test:e2e:local",
   "npm run cdk:synth:local",
   "npm run cdk:diff:local",
+  "npm run edge:security:check",
   "npm run security:scan",
   "npm run license:scan",
   "npm run admin-artifacts:build",

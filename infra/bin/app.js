@@ -6,6 +6,15 @@ export function synthLocalInventory(env = "dev") {
     env,
     region: saphnexaEnvironmentConfig.defaultRegion,
     construct_count: saphnexaConstructs.length,
-    constructs: saphnexaConstructs.map((item) => item.name)
+    constructs: saphnexaConstructs.map((item) => item.name),
+    intent_catalog: Object.fromEntries(saphnexaConstructs.map((item) => [item.name, {
+      resources: item.resources,
+      outputs: item.outputs,
+      edgeRoutingIntent: item.edgeRoutingIntent || null,
+      channelPolicyIntent: item.channelPolicyIntent || null,
+      kmsPolicyIntent: item.kmsPolicyIntent || null,
+      queuePolicyIntent: item.queuePolicyIntent || null,
+      iamReviewIntent: item.iamReviewIntent || null
+    }]))
   };
 }
