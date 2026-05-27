@@ -35,6 +35,8 @@
 - `npm run cfn:inventory:check`
 - PR 受け入れ条件コメント: https://github.com/tsuji-tomonori/saphnexa/pull/1#issuecomment-4550793989
 - PR セルフレビューコメント: https://github.com/tsuji-tomonori/saphnexa/pull/1#issuecomment-4550793990
+- PR task 完了セルフレビューコメント: https://github.com/tsuji-tomonori/saphnexa/pull/1#issuecomment-4550799097
+- GitHub Actions run: https://github.com/tsuji-tomonori/saphnexa/actions/runs/26487727209
 
 ## 検証
 
@@ -48,6 +50,7 @@
 - `npm run admin-artifacts:build`: pass
 - `npm run artifacts:check`: pass
 - `npm run verify`: pass
+- PR #1 GitHub Actions `Saphnexa CI` 14 jobs: pass
 
 ## fit 評価
 
