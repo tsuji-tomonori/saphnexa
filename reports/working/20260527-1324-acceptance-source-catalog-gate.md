@@ -50,6 +50,13 @@
 - `npm run verify`: pass
 - `git diff --check`: pass
 - `pre-commit run --files ...`: pass
+- PR #1 GitHub Actions: run `26490764547` / `26490765787` の 14 jobs が pass
+
+## PR コメント
+
+- 受け入れ条件確認: https://github.com/tsuji-tomonori/saphnexa/pull/1#issuecomment-4551264269
+- セルフレビュー: https://github.com/tsuji-tomonori/saphnexa/pull/1#issuecomment-4551266879
+- task 完了更新セルフレビュー: https://github.com/tsuji-tomonori/saphnexa/pull/1#issuecomment-4551334657
 
 ## Fit 評価
 
@@ -61,4 +68,4 @@
 - AC-001/002/004/081/150/151/152 は引き続き `requires_aws`。
 - Git tag/release、AWS deploy/publish、CloudFormation 実 capture、final evidence 作成、checklist signoff は未実行。
 - `.workspace` の検収 package が更新された場合、source catalog snapshot の再生成と checksum 更新が必要。
-- GitHub Actions の最新実行結果は push 後に確認する。
+- レポート更新 commit 後の GitHub Actions は別途確認する。
