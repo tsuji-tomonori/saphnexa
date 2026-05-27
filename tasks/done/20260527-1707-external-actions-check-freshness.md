@@ -1,6 +1,6 @@
 # external actions check freshness
 
-- 状態: doing
+- 状態: done
 - タスク種別: 修正
 - 作成日時: 2026-05-27 17:07 JST
 - 対象 PR: #1
@@ -51,7 +51,12 @@
 - [x] `acceptance:external-actions:check` の script を self-refreshing にする。
 - [x] local verification docs に external action check freshness を追記する。
 - [x] 対象検証と `npm run verify` を通す。
-- [ ] PR へ受け入れ条件コメントとセルフレビューコメントを追加する。
+- [x] PR へ受け入れ条件コメントとセルフレビューコメントを追加する。
+
+## PR コメント
+
+- 受け入れ条件確認: https://github.com/tsuji-tomonori/saphnexa/pull/1#issuecomment-4552690333
+- セルフレビュー: https://github.com/tsuji-tomonori/saphnexa/pull/1#issuecomment-4552693400
 
 ## Done 条件
 

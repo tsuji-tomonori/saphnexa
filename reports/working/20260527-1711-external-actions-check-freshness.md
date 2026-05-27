@@ -21,7 +21,8 @@
 
 - `package.json` の `acceptance:external-actions:check` を `npm run acceptance:external-actions:build && node tools/check-external-acceptance-actions.js` に変更。
 - `docs/ops/local-verification.md` に external action check が再生成してから検査することを追記。
-- `tasks/do/20260527-1707-external-actions-check-freshness.md` を作成し、なぜなぜ分析、受け入れ条件、検証計画を記録。
+- `tasks/done/20260527-1707-external-actions-check-freshness.md` を作成し、なぜなぜ分析、受け入れ条件、検証計画を記録。
+- PR へ受け入れ条件確認コメントとセルフレビューコメントを追加。
 
 ## 成果物
 
@@ -36,6 +37,14 @@
 - `npm run docs:check`: pass
 - `npm run ci:check`: pass
 - `npm run verify`: pass
+- `git diff --check`: pass
+- `pre-commit run --files docs/ops/local-verification.md package.json reports/working/20260527-1711-external-actions-check-freshness.md tasks/do/20260527-1707-external-actions-check-freshness.md`: pass
+- `pre-commit run --files reports/working/20260527-1711-external-actions-check-freshness.md tasks/done/20260527-1707-external-actions-check-freshness.md`: pass
+
+## PR コメント
+
+- 受け入れ条件確認: https://github.com/tsuji-tomonori/saphnexa/pull/1#issuecomment-4552690333
+- セルフレビュー: https://github.com/tsuji-tomonori/saphnexa/pull/1#issuecomment-4552693400
 
 ## Fit 評価
 
