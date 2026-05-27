@@ -1,6 +1,6 @@
 # final cost assumption gate
 
-状態: doing
+状態: done
 
 ## 背景
 
@@ -73,18 +73,18 @@ AC-140 は「想定50 DAU/10質問日で月額見積 <= 550 USD」を検収条�
 
 ## 受け入れ条件
 
-- [ ] final candidate verifier が `cost_estimate.assumption` の `50 DAU` 前提を検査する。
-- [ ] final candidate verifier が `cost_estimate.assumption` の `10 questions/user/day` 前提を検査する。
-- [ ] 前提欠落 fixture が `manifest.cost_estimate.assumption_usage_basis` を検出する。
-- [ ] 関連 acceptance / cost / evidence / verify checks が pass する。
-- [ ] 外部 state を変更せず、未実施外部 action を pending として維持する。
+- [x] final candidate verifier が `cost_estimate.assumption` の `50 DAU` 前提を検査する。
+- [x] final candidate verifier が `cost_estimate.assumption` の `10 questions/user/day` 前提を検査する。
+- [x] 前提欠落 fixture が `manifest.cost_estimate.assumption_usage_basis` を検出する。
+- [x] 関連 acceptance / cost / evidence / verify checks が pass する。
+- [x] 外部 state を変更せず、未実施外部 action を pending として維持する。
 
 ## Done 条件
 
-- [ ] 実装差分が PR branch に commit / push されている。
-- [ ] 受け入れ条件確認コメントとセルフレビューコメントを PR に投稿している。
-- [ ] task md に PR コメント URL と検証結果を記録し、`tasks/done/` へ移動している。
-- [ ] 作業レポートを `reports/working/` に保存している。
+- [x] 実装差分が PR branch に commit / push されている。
+- [x] 受け入れ条件確認コメントとセルフレビューコメントを PR に投稿している。
+- [x] task md に PR コメント URL と検証結果を記録し、`tasks/done/` へ移動している。
+- [x] 作業レポートを `reports/working/` に保存している。
 
 ## 検証計画
 
@@ -99,7 +99,23 @@ AC-140 は「想定50 DAU/10質問日で月額見積 <= 550 USD」を検収条�
 
 ## PR コメント
 
-- 未投稿。PR push 後に受け入れ条件確認とセルフレビューを記録する。
+- 受け入れ条件確認: https://github.com/tsuji-tomonori/saphnexa/pull/1#issuecomment-4553978508
+- セルフレビュー: https://github.com/tsuji-tomonori/saphnexa/pull/1#issuecomment-4553980530
+
+## 実装 commit
+
+- `80ce695` `✅ test: final cost assumption検査を追加`
+
+## 検証結果
+
+- `npm run acceptance:final-candidate:fixture:check`: pass
+- `npm run acceptance:final-candidate:check`: pass。final files 未配置のため `not ready` 表示は継続するが、errors なしで exit 0。
+- `npm run cost:check`: pass
+- `npm run acceptance:package:check`: pass
+- `npm run evidence:check`: pass
+- `npm run verify`: pass
+- `git diff --check`: pass
+- `pre-commit run --files tools/final-evidence-candidate.js tools/check-final-evidence-candidate-fixtures.js tasks/do/20260527-2005-final-cost-assumption-gate.md reports/working/20260527-2008-final-cost-assumption-gate.md`: pass
 
 ## PR レビュー観点
 
