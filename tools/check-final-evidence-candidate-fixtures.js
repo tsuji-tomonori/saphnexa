@@ -229,6 +229,21 @@ try {
   assert(missingMajorResourceStatus.ready === false, "missing major resource fixture must not be ready");
   assert(missingMajorResourceStatus.errors.some((error) => error.includes(`cloudformation.major_resource_type.${expectedMajorResourceTypes[0]}`)), "missing major resource fixture must reject missing expected resource type");
 
+  const invalidResourceDetails = buildReadyCandidate();
+  delete invalidResourceDetails.inventory.stack_resources[0].LogicalResourceId;
+  invalidResourceDetails.inventory.stack_resources[1].PhysicalResourceId = "";
+  invalidResourceDetails.inventory.stack_resources[2].ResourceStatus = "UPDATE_IN_PROGRESS";
+  const invalidResourceDetailsPaths = writeCandidateFiles(join(root, "invalid-resource-details"), invalidResourceDetails);
+  const invalidResourceDetailsStatus = buildFinalEvidenceCandidateStatus(join(root, "invalid-resource-details-status.json"), {
+    candidatePaths: invalidResourceDetailsPaths,
+    resolveGitTagCommit,
+    resolveGitRepository
+  });
+  assert(invalidResourceDetailsStatus.ready === false, "invalid resource details fixture must not be ready");
+  assert(invalidResourceDetailsStatus.errors.some((error) => error.includes(`cloudformation.resource.${expectedMajorResourceTypes[0]}.LogicalResourceId`)), "invalid resource details fixture must reject missing logical resource id");
+  assert(invalidResourceDetailsStatus.errors.some((error) => error.includes("PhysicalResourceId")), "invalid resource details fixture must reject missing physical resource id");
+  assert(invalidResourceDetailsStatus.errors.some((error) => error.includes("ResourceStatus")), "invalid resource details fixture must reject non-complete resource status");
+
   const invalidStackStatusOutputs = buildReadyCandidate();
   invalidStackStatusOutputs.inventory.stack_status = "ROLLBACK_COMPLETE";
   invalidStackStatusOutputs.inventory.stack_outputs = [];
@@ -401,7 +416,8 @@ function buildReadyCandidate() {
         ...expectedMajorResourceTypes.map((resourceType, index) => ({
           LogicalResourceId: `ExpectedMajorResource${index}`,
           PhysicalResourceId: `saphnexa-uat-resource-${index}`,
-          ResourceType: resourceType
+          ResourceType: resourceType,
+          ResourceStatus: "UPDATE_COMPLETE"
         }))
       ]
     }

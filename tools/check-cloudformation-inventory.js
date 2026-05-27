@@ -36,6 +36,8 @@ for (const key of ["stack_id", "stack_status", "stack_outputs", "stack_resources
 assert(schema.properties.stack_outputs.minItems === 1, "CloudFormation inventory schema must require non-empty stack_outputs");
 assert(JSON.stringify(schema.properties.stack_outputs.items.required) === JSON.stringify(["OutputKey", "OutputValue"]), "CloudFormation inventory schema must require OutputKey and OutputValue");
 assert(schema.properties.stack_resources.minItems === 1, "CloudFormation inventory schema must require non-empty stack_resources");
+assert(JSON.stringify(schema.properties.stack_resources.items.required) === JSON.stringify(["LogicalResourceId", "PhysicalResourceId", "ResourceType", "ResourceStatus"]), "CloudFormation inventory schema must require resource detail fields");
+assert(schema.properties.stack_resources.items.properties.ResourceStatus.enum.includes("UPDATE_COMPLETE"), "CloudFormation inventory schema must include complete resource statuses");
 assert(schema.properties.stack_status.enum.includes("UPDATE_COMPLETE"), "CloudFormation inventory schema must include complete stack statuses");
 assert(localSourceCondition.then.properties.final_acceptance_eligible.const === false, "local source schema must not be final acceptance eligible");
 assert(localSourceCondition.then.properties.aws_capture_required.const === true, "local source schema must require AWS capture");

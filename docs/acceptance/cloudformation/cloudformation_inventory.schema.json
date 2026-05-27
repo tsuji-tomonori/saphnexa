@@ -47,7 +47,25 @@
     "stack_resources": {
       "type": "array",
       "minItems": 1,
-      "items": { "type": "object" }
+      "items": {
+        "type": "object",
+        "required": ["LogicalResourceId", "PhysicalResourceId", "ResourceType", "ResourceStatus"],
+        "properties": {
+          "LogicalResourceId": { "type": "string", "minLength": 1 },
+          "PhysicalResourceId": { "type": "string", "minLength": 1 },
+          "ResourceType": { "type": "string", "pattern": "^AWS::" },
+          "ResourceStatus": {
+            "type": "string",
+            "enum": [
+              "CREATE_COMPLETE",
+              "UPDATE_COMPLETE",
+              "UPDATE_ROLLBACK_COMPLETE",
+              "IMPORT_COMPLETE",
+              "IMPORT_ROLLBACK_COMPLETE"
+            ]
+          }
+        }
+      }
     },
     "source": { "type": "string", "enum": ["local-cdk-intent", "aws-cloudformation-inventory"] },
     "generated_by": { "type": "string" },

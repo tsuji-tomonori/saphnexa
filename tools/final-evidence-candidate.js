@@ -190,6 +190,13 @@ function validateCloudFormationInventory(path, checks, errors) {
   for (const outputKey of expectedMajorOutputKeys) {
     check(outputKeys.has(normalizeOutputKey(outputKey)), `cloudformation.major_output_key.${outputKey}`, checks, errors, "must include expected major output key");
   }
+  for (const resource of inventory.stack_resources || []) {
+    const label = resource.LogicalResourceId || resource.ResourceType || "unknown";
+    check(isFinalText(resource.LogicalResourceId), `cloudformation.resource.${label}.LogicalResourceId`, checks, errors, "must include logical resource id");
+    check(isFinalText(resource.PhysicalResourceId), `cloudformation.resource.${label}.PhysicalResourceId`, checks, errors, "must include physical resource id");
+    check(/^AWS::/.test(resource.ResourceType || ""), `cloudformation.resource.${label}.ResourceType`, checks, errors, "must include AWS resource type");
+    check(isCompleteCloudFormationResourceStatus(resource.ResourceStatus), `cloudformation.resource.${label}.ResourceStatus`, checks, errors, "must include a complete resource status");
+  }
   const resourceTypes = new Set((inventory.stack_resources || []).map((resource) => resource.ResourceType).filter(Boolean));
   for (const resourceType of expectedMajorResourceTypes) {
     check(resourceTypes.has(resourceType), `cloudformation.major_resource_type.${resourceType}`, checks, errors, "must include expected major resource type");
@@ -300,6 +307,16 @@ function isIsoDateOnOrBefore(value, currentDate) {
 }
 
 function isCompleteCloudFormationStackStatus(value) {
+  return [
+    "CREATE_COMPLETE",
+    "UPDATE_COMPLETE",
+    "UPDATE_ROLLBACK_COMPLETE",
+    "IMPORT_COMPLETE",
+    "IMPORT_ROLLBACK_COMPLETE"
+  ].includes(value);
+}
+
+function isCompleteCloudFormationResourceStatus(value) {
   return [
     "CREATE_COMPLETE",
     "UPDATE_COMPLETE",
