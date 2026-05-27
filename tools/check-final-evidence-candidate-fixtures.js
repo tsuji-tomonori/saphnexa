@@ -63,6 +63,17 @@ try {
   assert(wrongTagCommitStatus.ready === false, "wrong tag commit fixture must not be ready");
   assert(wrongTagCommitStatus.errors.some((error) => error.includes("manifest.git_tag_commit")), "wrong tag commit fixture must reject tag commit mismatch");
 
+  const missingCdkAppVersion = buildReadyCandidate();
+  delete missingCdkAppVersion.manifest.cdk_app_version;
+  const missingCdkAppVersionPaths = writeCandidateFiles(join(root, "missing-cdk-app-version"), missingCdkAppVersion);
+  const missingCdkAppVersionStatus = buildFinalEvidenceCandidateStatus(join(root, "missing-cdk-app-version-status.json"), {
+    candidatePaths: missingCdkAppVersionPaths,
+    resolveGitTagCommit,
+    resolveGitRepository
+  });
+  assert(missingCdkAppVersionStatus.ready === false, "missing CDK app version fixture must not be ready");
+  assert(missingCdkAppVersionStatus.errors.some((error) => error === "manifest.cdk_app_version: required"), "missing CDK app version fixture must reject missing required field");
+
   const invalidRequiredValues = buildReadyCandidate();
   invalidRequiredValues.manifest.cdk_app_version = "";
   invalidRequiredValues.manifest.db_migration.tool = "Liquibase";

@@ -72,6 +72,7 @@ function validateManifest(path, checks, errors, options = {}) {
     "git_commit_sha",
     "git_tag",
     "github_release_url",
+    "cdk_app_version",
     "cloudformation_stacks",
     "db_migration",
     "test_reports",
