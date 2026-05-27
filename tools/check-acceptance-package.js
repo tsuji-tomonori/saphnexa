@@ -8,12 +8,14 @@ import {
   finalReviewerColumn,
   sourceChecklistValue
 } from "./acceptance-checklist-format.js";
+import { currentGitCommit } from "./git-context.js";
 import { assert, readJson, readText } from "./lib.js";
 
 const manifest = readJson("dist/acceptance/evidence_manifest.draft.json");
 const summary = readJson("dist/acceptance/summary.json");
 const defects = readJson("dist/acceptance/defect_list.json");
 const checklist = readText("dist/acceptance/acceptance_checklist.draft.csv");
+const currentCommit = currentGitCommit();
 
 for (const path of [
   "dist/acceptance/evidence_manifest.draft.json",
@@ -34,6 +36,7 @@ for (const key of ["system", "environment", "aws_region", "aws_account_id", "git
 assert(manifest.system === "Saphnexa", "manifest system mismatch");
 assert(manifest.aws_region === "ap-northeast-1", "manifest region mismatch");
 assert(/^[a-f0-9]{40}$/.test(manifest.git_commit_sha), "manifest git commit must be 40 hex chars");
+assert(manifest.git_commit_sha === currentCommit, "manifest git commit must match current Git ref");
 assert(manifest.draft_status === "draft_not_for_final_acceptance", "manifest must be marked as draft");
 assert(manifest.pending_final_evidence.length >= 5, "manifest pending final evidence must be explicit");
 assert(manifest.aws_account_id === "pending-aws-account-id", "draft manifest must not pretend to know AWS account id");
@@ -80,6 +83,8 @@ for (const row of rows) {
 
 assert(defects.blocker_critical_open_count === 0, "blocker/critical defects must be 0 in snapshot");
 assert(Array.isArray(defects.open_issues), "defect snapshot open_issues must be an array");
+assert(summary.git_commit_sha === currentCommit, "summary git commit must match current Git ref");
+assert(summary.git_commit_sha === manifest.git_commit_sha, "summary git commit must match manifest git commit");
 assert(summary.checklist_rows === acceptanceIds.length, "summary checklist row count mismatch");
 assert(summary.source_catalog_path === acceptanceCatalogPath, "summary source catalog path mismatch");
 assert(summary.source_catalog_items === acceptanceCatalog.item_count, "summary source catalog item count mismatch");
