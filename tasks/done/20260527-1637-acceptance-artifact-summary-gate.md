@@ -1,6 +1,6 @@
 # acceptance artifact summary gate
 
-- 状態: doing
+- 状態: done
 - タスク種別: 機能追加
 - 作成日時: 2026-05-27 16:37 JST
 - 対象 PR: #1
@@ -26,7 +26,12 @@ acceptance package に AC-002 の提出成果物一覧を表す `artifact_summar
 - [x] acceptance package checker で artifact summary draft を検査する。
 - [x] manifest / summary / trace に artifact summary path を反映する。
 - [x] 対象検証と `npm run verify` を通す。
-- [ ] PR へ受け入れ条件コメントとセルフレビューコメントを追加する。
+- [x] PR へ受け入れ条件コメントとセルフレビューコメントを追加する。
+
+## PR コメント
+
+- 受け入れ条件確認: https://github.com/tsuji-tomonori/saphnexa/pull/1#issuecomment-4552499465
+- セルフレビュー: https://github.com/tsuji-tomonori/saphnexa/pull/1#issuecomment-4552501565
 
 ## Done 条件
 

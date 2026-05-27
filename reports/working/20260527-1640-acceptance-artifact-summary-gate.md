@@ -22,7 +22,8 @@
 - `tools/build-acceptance-package.js` で `dist/acceptance/artifact_summary.draft.json` を生成。
 - `tools/check-acceptance-package.js` で artifact summary の schema、必須カテゴリ、外部 pending 状態を検査。
 - `docs/acceptance/traceability.md` の AC-002 根拠を `artifact_summary.draft.json` に同期。
-- `tasks/do/20260527-1637-acceptance-artifact-summary-gate.md` を作成し、受け入れ条件と検証計画を記録。
+- `tasks/done/20260527-1637-acceptance-artifact-summary-gate.md` を作成し、受け入れ条件と検証計画を記録。
+- PR へ受け入れ条件確認コメントとセルフレビューコメントを追加。
 
 ## 成果物
 
@@ -37,6 +38,14 @@
 - `npm run acceptance:check`: pass
 - `npm run evidence:check`: pass
 - `npm run verify`: pass
+- `git diff --check`: pass
+- `pre-commit run --files docs/acceptance/traceability.md reports/working/20260527-1640-acceptance-artifact-summary-gate.md tasks/do/20260527-1637-acceptance-artifact-summary-gate.md tools/build-acceptance-package.js tools/check-acceptance-package.js`: pass
+- `pre-commit run --files reports/working/20260527-1640-acceptance-artifact-summary-gate.md tasks/done/20260527-1637-acceptance-artifact-summary-gate.md`: pass
+
+## PR コメント
+
+- 受け入れ条件確認: https://github.com/tsuji-tomonori/saphnexa/pull/1#issuecomment-4552499465
+- セルフレビュー: https://github.com/tsuji-tomonori/saphnexa/pull/1#issuecomment-4552501565
 
 ## Fit 評価
 
