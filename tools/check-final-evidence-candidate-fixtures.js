@@ -79,6 +79,23 @@ try {
   assert(invalidRequiredValuesStatus.errors.some((error) => error.includes("manifest.db_migration.latest_version")), "invalid required values fixture must reject draft DB migration version");
   assert(invalidRequiredValuesStatus.errors.some((error) => error.includes("manifest.cost_estimate.assumption")), "invalid required values fixture must reject pending cost assumption");
 
+  for (const [fixtureName, monthlyUsd, message] of [
+    ["null-cost", null, "null cost estimate"],
+    ["negative-cost", -1, "negative cost estimate"],
+    ["excess-cost", 550.01, "excess cost estimate"]
+  ]) {
+    const invalidCostEstimate = buildReadyCandidate();
+    invalidCostEstimate.manifest.cost_estimate.monthly_usd = monthlyUsd;
+    const invalidCostEstimatePaths = writeCandidateFiles(join(root, fixtureName), invalidCostEstimate);
+    const invalidCostEstimateStatus = buildFinalEvidenceCandidateStatus(join(root, `${fixtureName}-status.json`), {
+      candidatePaths: invalidCostEstimatePaths,
+      resolveGitTagCommit,
+      resolveGitRepository
+    });
+    assert(invalidCostEstimateStatus.ready === false, `${message} fixture must not be ready`);
+    assert(invalidCostEstimateStatus.errors.some((error) => error.includes("manifest.cost_estimate.monthly_usd")), `${message} fixture must reject invalid monthly_usd`);
+  }
+
   const mismatchedInventory = buildReadyCandidate();
   mismatchedInventory.inventory.stack_id = "arn:aws:cloudformation:ap-northeast-1:999999999999:stack/saphnexa-other-app/abc12345";
   mismatchedInventory.inventory.stack_name = "saphnexa-other-app";
@@ -133,6 +150,18 @@ try {
   assert(invalidChecklistValuesStatus.errors.some((error) => error.includes(`checklist.${acceptanceIds[0]}.証跡リンク_url`)), "invalid checklist values fixture must reject non-URL evidence link");
   assert(invalidChecklistValuesStatus.errors.some((error) => error.includes(`checklist.${acceptanceIds[1]}.確認者`)), "invalid checklist values fixture must reject pending reviewer");
   assert(invalidChecklistValuesStatus.errors.some((error) => error.includes(`checklist.${acceptanceIds[2]}.確認日_date`)), "invalid checklist values fixture must reject invalid checked date");
+
+  const futureChecklistDate = buildReadyCandidate();
+  futureChecklistDate.checklistRows[3].確認日 = "2999-01-01";
+  const futureChecklistDatePaths = writeCandidateFiles(join(root, "future-checklist-date"), futureChecklistDate);
+  const futureChecklistDateStatus = buildFinalEvidenceCandidateStatus(join(root, "future-checklist-date-status.json"), {
+    candidatePaths: futureChecklistDatePaths,
+    resolveGitTagCommit,
+    resolveGitRepository,
+    currentDate: "2026-05-27"
+  });
+  assert(futureChecklistDateStatus.ready === false, "future checklist date fixture must not be ready");
+  assert(futureChecklistDateStatus.errors.some((error) => error.includes(`checklist.${acceptanceIds[3]}.確認日_not_future`)), "future checklist date fixture must reject future checked date");
 
   console.log("final evidence candidate fixture check passed");
 } finally {

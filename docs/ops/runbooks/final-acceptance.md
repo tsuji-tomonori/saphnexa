@@ -25,6 +25,7 @@ AC-001、AC-002、AC-004、AC-150、AC-151、AC-152 の最終検収で、draft �
 
 - final evidence manifest に placeholder、draft、example、pending が含まれないこと。
 - final evidence manifest の `cdk_app_version`、`db_migration.tool`、`db_migration.latest_version`、`cost_estimate.assumption` が空ではなく、draft/pending 値ではないこと。
+- final evidence manifest の `cost_estimate.monthly_usd` は数値で、0 以上 550 以下であること。
 - AWS account id は実 12 桁であること。
 - final evidence manifest の `git_commit_sha` は検証実行時の Git ref と一致していること。
 - final evidence manifest の `git_tag` は repository に存在し、検証実行時の Git ref と同じ commit を指していること。
@@ -32,7 +33,7 @@ AC-001、AC-002、AC-004、AC-150、AC-151、AC-152 の最終検収で、draft �
 - GitHub release URL が検収対象 repository の `https://github.com/<owner>/<repo>/releases/tag/<git_tag>` として、final evidence manifest の `git_tag` と同じ tag を指すこと。
 - final evidence manifest の全 `cloudformation_stacks` は、stack ARN 内の account、region、stack name が manifest の `aws_account_id`、`aws_region`、`stack_name` と一致すること。
 - final evidence manifest と CloudFormation inventory が同じ AWS account、region、environment、stack name、stack ARN を指していること。
-- checklist は source checklist 列を保ち、全 AC 行が `結果=PASS` で、`証跡リンク` が `https://` または `s3://` URL、`確認者` が final reviewer 名、`確認日` が `YYYY-MM-DD` の実在日付であること。
+- checklist は source checklist 列を保ち、全 AC 行が `結果=PASS` で、`証跡リンク` が `https://` または `s3://` URL、`確認者` が final reviewer 名、`確認日` が `YYYY-MM-DD` の実在日付かつ未来日でないこと。
 - CloudFormation inventory は `source=aws-cloudformation-inventory`、`final_acceptance_eligible=true` であること。
 
 ## 証跡

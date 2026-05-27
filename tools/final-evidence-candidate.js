@@ -36,7 +36,7 @@ export function buildFinalEvidenceCandidateStatus(outputPath = finalCandidateSta
 
   if (missing_files.length === 0) {
     const manifest = validateManifest(paths.evidence_manifest, checks, errors, options);
-    validateChecklist(paths.acceptance_checklist, checks, errors);
+    validateChecklist(paths.acceptance_checklist, checks, errors, options);
     const cloudFormationInventory = validateCloudFormationInventory(paths.cloudformation_inventory, checks, errors);
     validateManifestCloudFormationConsistency(manifest, cloudFormationInventory, checks, errors);
   }
@@ -118,13 +118,14 @@ function validateManifest(path, checks, errors, options = {}) {
   check(manifest.db_migration?.tool === "Flyway", "manifest.db_migration.tool", checks, errors, "must be Flyway");
   check(isFinalText(manifest.db_migration?.latest_version), "manifest.db_migration.latest_version", checks, errors, "must include final DB migration version");
   check(manifest.db_migration?.checksum_status === "matched", "manifest.db_migration.checksum_status", checks, errors, "must be matched");
-  check(Number(manifest.cost_estimate?.monthly_usd) <= 550, "manifest.cost_estimate.monthly_usd", checks, errors, "must be <= 550");
+  check(isAcceptedMonthlyUsd(manifest.cost_estimate?.monthly_usd), "manifest.cost_estimate.monthly_usd", checks, errors, "must be a finite number between 0 and 550");
   check(isFinalText(manifest.cost_estimate?.assumption), "manifest.cost_estimate.assumption", checks, errors, "must include final cost assumption");
   return manifest;
 }
 
-function validateChecklist(path, checks, errors) {
+function validateChecklist(path, checks, errors, options = {}) {
   const rows = parseCsv(readText(path));
+  const currentDate = options.currentDate || todayIsoDate();
   checkSourceColumns(rows.headers, checks, errors);
   check(rows.length === acceptanceIds.length, "checklist.row_count", checks, errors, `must contain ${acceptanceIds.length} rows`);
   for (const id of acceptanceIds) {
@@ -143,6 +144,7 @@ function validateChecklist(path, checks, errors) {
     check(isArtifactUrl(sourceChecklistValue(row, finalEvidenceColumn)), `checklist.${id}.${finalEvidenceColumn}_url`, checks, errors, "must be a final http(s) or s3 evidence URL");
     check(isFinalReviewer(sourceChecklistValue(row, finalReviewerColumn)), `checklist.${id}.${finalReviewerColumn}_reviewer`, checks, errors, "must name a final reviewer");
     check(isIsoDate(sourceChecklistValue(row, finalCheckedDateColumn)), `checklist.${id}.${finalCheckedDateColumn}_date`, checks, errors, "must be a YYYY-MM-DD calendar date");
+    check(isIsoDateOnOrBefore(sourceChecklistValue(row, finalCheckedDateColumn), currentDate), `checklist.${id}.${finalCheckedDateColumn}_not_future`, checks, errors, "must not be a future date");
     check(!/PENDING|PASS_LOCAL|requires_aws/i.test(Object.values(row).join(" ")), `checklist.${id}.no_draft_status`, checks, errors, "must not contain draft status markers");
   }
 }
@@ -218,6 +220,10 @@ function isArtifactUrl(value) {
   return typeof value === "string" && /^(https:\/\/|s3:\/\/)/.test(value) && !/example|pending|placeholder|dist\//i.test(value);
 }
 
+function isAcceptedMonthlyUsd(value) {
+  return typeof value === "number" && Number.isFinite(value) && value >= 0 && value <= 550;
+}
+
 function isFinalReviewer(value) {
   return isFinalText(value?.trim?.()) && !/\s{2,}/.test(value);
 }
@@ -226,6 +232,18 @@ function isIsoDate(value) {
   if (typeof value !== "string" || !/^\d{4}-\d{2}-\d{2}$/.test(value)) return false;
   const date = new Date(`${value}T00:00:00.000Z`);
   return !Number.isNaN(date.getTime()) && date.toISOString().slice(0, 10) === value;
+}
+
+function isIsoDateOnOrBefore(value, currentDate) {
+  return isIsoDate(value) && isIsoDate(currentDate) && value <= currentDate;
+}
+
+function todayIsoDate() {
+  const now = new Date();
+  const year = now.getFullYear();
+  const month = String(now.getMonth() + 1).padStart(2, "0");
+  const day = String(now.getDate()).padStart(2, "0");
+  return `${year}-${month}-${day}`;
 }
 
 function parseGitHubReleaseUrl(value) {
