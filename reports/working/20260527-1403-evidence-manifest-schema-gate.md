@@ -29,7 +29,7 @@
 - `docs/acceptance/evidence/evidence_manifest.schema.json`
 - `docs/acceptance/evidence/evidence_manifest.example.json`
 - `tools/check-evidence-manifest.js`
-- `tasks/do/20260527-1400-evidence-manifest-schema-gate.md`
+- `tasks/done/20260527-1400-evidence-manifest-schema-gate.md`
 
 ## 検証
 
