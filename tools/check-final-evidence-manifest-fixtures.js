@@ -64,6 +64,71 @@ try {
       }),
     "aws_account_id must match"
   );
+  assertThrows(
+    () =>
+      buildFinalEvidenceManifest({
+        input: { ...manifestInputFixture(), github_release_url: "https://github.com/tsuji-tomonori/saphnexa/releases/tag/v0.16.0-acceptance.2" },
+        inventory: cloudFormationInventoryFixture(),
+        gitCommitSha: currentGitCommit(),
+        packageJson: readJson("package.json")
+      }),
+    "github_release_url must point to git_tag"
+  );
+  assertThrows(
+    () =>
+      buildFinalEvidenceManifest({
+        input: {
+          ...manifestInputFixture(),
+          test_reports: { ...manifestInputFixture().test_reports, allure_latest_url: "s3://saphnexa-uat-admin-artifacts/test-reports/allure/runs/unit-20260527/" }
+        },
+        inventory: cloudFormationInventoryFixture(),
+        gitCommitSha: currentGitCommit(),
+        packageJson: readJson("package.json")
+      }),
+    "allure_latest_url must point to the Allure latest report path"
+  );
+  assertThrows(
+    () =>
+      buildFinalEvidenceManifest({
+        input: {
+          ...manifestInputFixture(),
+          docs_site: { ...manifestInputFixture().docs_site, latest_url: "s3://saphnexa-uat-admin-artifacts/docs/latest/" }
+        },
+        inventory: cloudFormationInventoryFixture(),
+        gitCommitSha: currentGitCommit(),
+        packageJson: readJson("package.json")
+      }),
+    "docs_site.latest_url must point to"
+  );
+  assertThrows(
+    () =>
+      buildFinalEvidenceManifest({
+        input: {
+          ...manifestInputFixture(),
+          rag_evaluation: {
+            ...manifestInputFixture().rag_evaluation,
+            report_url: "s3://saphnexa-uat-admin-artifacts/reports/evaluations/eval-20260527-other/"
+          }
+        },
+        inventory: cloudFormationInventoryFixture(),
+        gitCommitSha: currentGitCommit(),
+        packageJson: readJson("package.json")
+      }),
+    "rag_evaluation.report_url must point to evaluation_run_id"
+  );
+  assertThrows(
+    () =>
+      buildFinalEvidenceManifest({
+        input: {
+          ...manifestInputFixture(),
+          cost_estimate: { ...manifestInputFixture().cost_estimate, assumption: "UAT monthly estimate." }
+        },
+        inventory: cloudFormationInventoryFixture(),
+        gitCommitSha: currentGitCommit(),
+        packageJson: readJson("package.json")
+      }),
+    "cost_estimate.assumption must mention 50 DAU and 10 questions/user/day"
+  );
 
   console.log("final evidence manifest fixture check passed");
 } finally {
