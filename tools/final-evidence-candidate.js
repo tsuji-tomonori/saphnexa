@@ -11,7 +11,7 @@ import {
 } from "./acceptance-checklist-format.js";
 import { currentGitCommit, currentGitRepository, gitTagCommit } from "./git-context.js";
 import { expectedMajorOutputKeys, expectedMajorResourceTypeMinimumCounts, expectedMajorResourceTypes } from "./cloudformation-inventory.js";
-import { listFiles, readJson, readText } from "./lib.js";
+import { currentJstTimestamp, listFiles, readJson, readText } from "./lib.js";
 
 export const finalCandidateStatusPath = "dist/acceptance/final_candidate_status.json";
 export const finalEvidenceManifestPath = "docs/acceptance/final/evidence_manifest.json";
@@ -45,7 +45,7 @@ export function buildFinalEvidenceCandidateStatus(outputPath = finalCandidateSta
 
   const status = {
     schema_version: "saphnexa-final-evidence-candidate-status.v1",
-    generated_at: "2026-05-27T12:02:00+09:00",
+    generated_at: currentJstTimestamp(),
     generated_by: "tools/check-final-evidence-candidate.js",
     ready: missing_files.length === 0 && errors.length === 0,
     status: missing_files.length > 0 ? "not_ready" : errors.length === 0 ? "ready" : "invalid",

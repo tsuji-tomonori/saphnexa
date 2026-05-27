@@ -2,7 +2,7 @@ import { existsSync } from "node:fs";
 import { artifactSummaryPath, requiredArtifactIds } from "./acceptance-artifact-summary.js";
 import { finalReadinessPath } from "./final-acceptance-readiness.js";
 import { acceptanceCatalog, acceptanceCatalogPath, acceptanceIds } from "./acceptance-ids.js";
-import { assert, readJson, readText } from "./lib.js";
+import { assert, isCurrentJstTimestamp, readJson, readText } from "./lib.js";
 
 assert(existsSync(finalReadinessPath), `final readiness file missing: ${finalReadinessPath}`);
 
@@ -12,6 +12,7 @@ const unresolvedTraceIds = traceRows.filter((row) => row.state !== "local_verifi
 const blockingIds = readiness.blocking_acceptance_ids.map((row) => row.id);
 
 assert(readiness.schema_version === "saphnexa-final-acceptance-readiness.v1", "final readiness schema version mismatch");
+assert(isCurrentJstTimestamp(readiness.generated_at), "final readiness generated_at must be current JST timestamp");
 assert(readiness.final_acceptance_ready === false, "final readiness must not claim completion while blockers remain");
 assert(readiness.source_catalog.path === acceptanceCatalogPath, "final readiness source catalog path mismatch");
 assert(readiness.source_catalog.item_count === acceptanceCatalog.item_count, "final readiness source catalog item count mismatch");

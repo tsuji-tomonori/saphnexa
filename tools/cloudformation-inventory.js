@@ -2,6 +2,7 @@ import { createHash } from "node:crypto";
 import { mkdirSync, writeFileSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { synthLocalInventory } from "../infra/bin/app.js";
+import { currentJstTimestamp } from "./lib.js";
 
 export const cloudFormationInventoryPath = "dist/acceptance/cloudformation_inventory.draft.json";
 
@@ -72,7 +73,7 @@ export function buildCloudFormationInventoryDraft(outputPath = cloudFormationInv
     stack_name: "saphnexa-uat-app",
     source: "local-cdk-intent",
     generated_by: "tools/build-cloudformation-inventory.js",
-    generated_at: "2026-05-27T11:41:00+09:00",
+    generated_at: currentJstTimestamp(),
     final_acceptance_eligible: false,
     aws_capture_required: true,
     local_cdk_inventory: {

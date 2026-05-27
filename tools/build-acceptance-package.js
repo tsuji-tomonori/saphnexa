@@ -7,13 +7,15 @@ import { buildCloudFormationInventoryDraft, cloudFormationInventoryPath } from "
 import { buildExternalAcceptanceActionPlan, externalActionPlanPath } from "./external-acceptance-actions.js";
 import { buildFinalAcceptanceReadiness, finalReadinessPath } from "./final-acceptance-readiness.js";
 import { currentGitCommit } from "./git-context.js";
-import { readJson, readText } from "./lib.js";
+import { currentJstDate, currentJstTimestamp, readJson, readText } from "./lib.js";
 
 const outputRoot = "dist/acceptance";
 const trace = readText("docs/acceptance/traceability.md");
 const packageJson = readJson("package.json");
 const defectSnapshot = readJson("docs/acceptance/defects/open_issues_snapshot.json");
 const gitCommit = currentGitCommit();
+const generatedAt = currentJstTimestamp();
+const generatedDate = currentJstDate();
 const rows = parseTraceRows(trace);
 const counts = countStates(rows);
 const cloudFormationInventory = buildCloudFormationInventoryDraft(cloudFormationInventoryPath);
@@ -107,7 +109,7 @@ const manifest = {
 const checklist = buildChecklist(rows);
 const summary = {
   schema_version: "saphnexa-acceptance-package-summary.v1",
-  generated_at: "2026-05-27T11:25:00+09:00",
+  generated_at: generatedAt,
   generated_by: "tools/build-acceptance-package.js",
   git_commit_sha: gitCommit,
   trace_state_counts: counts,
@@ -167,7 +169,7 @@ function buildChecklist(items) {
       結果: result,
       証跡リンク: row.evidence,
       確認者: result === "PASS_LOCAL" ? "local-automation" : "pending-final-acceptance",
-      確認日: "2026-05-27",
+      確認日: generatedDate,
       備考: result === "PASS_LOCAL" ? "ローカル検証済み。最終検収では監査証跡URLを確認する。" : "AWS/UATまたは最終検収操作が必要。",
       state: row.state
     };

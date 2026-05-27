@@ -28,3 +28,23 @@ function walk(path, files, predicate) {
 export function assert(condition, message) {
   if (!condition) throw new Error(message);
 }
+
+export function currentJstTimestamp(now = new Date()) {
+  return `${jstIsoBase(now)}+09:00`;
+}
+
+export function currentJstDate(now = new Date()) {
+  return jstIsoBase(now).slice(0, 10);
+}
+
+export function isCurrentJstTimestamp(value, now = new Date()) {
+  return typeof value === "string" && /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\+09:00$/.test(value) && value.slice(0, 10) === currentJstDate(now);
+}
+
+export function isCurrentJstDate(value, now = new Date()) {
+  return typeof value === "string" && /^\d{4}-\d{2}-\d{2}$/.test(value) && value === currentJstDate(now);
+}
+
+function jstIsoBase(now) {
+  return new Date(now.getTime() + 9 * 60 * 60 * 1000).toISOString().slice(0, 19);
+}

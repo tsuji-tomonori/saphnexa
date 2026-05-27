@@ -5,7 +5,7 @@ import { acceptanceCatalog, acceptanceCatalogPath, priorityByAcceptanceId } from
 import { buildExternalAcceptanceActionPlan, externalActionPlanPath } from "./external-acceptance-actions.js";
 import { buildFinalEvidenceCandidateStatus, finalCandidateStatusPath } from "./final-evidence-candidate.js";
 import { currentGitCommit } from "./git-context.js";
-import { readJson, readText } from "./lib.js";
+import { currentJstTimestamp, readJson, readText } from "./lib.js";
 
 export const finalReadinessPath = "dist/acceptance/final_readiness.json";
 
@@ -42,7 +42,7 @@ export function buildFinalAcceptanceReadiness(outputPath = finalReadinessPath, o
 
   const readiness = {
     schema_version: "saphnexa-final-acceptance-readiness.v1",
-    generated_at: "2026-05-27T11:52:00+09:00",
+    generated_at: currentJstTimestamp(),
     generated_by: "tools/build-final-acceptance-readiness.js",
     final_acceptance_ready: finalAcceptanceReady,
     readiness_reason: finalAcceptanceReady

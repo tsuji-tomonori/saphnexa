@@ -1,6 +1,6 @@
 import { existsSync } from "node:fs";
 import { cloudFormationInventoryPath, expectedMajorOutputKeys, expectedMajorResourceTypeMinimumCounts, expectedMajorResourceTypes } from "./cloudformation-inventory.js";
-import { assert, readJson } from "./lib.js";
+import { assert, isCurrentJstTimestamp, readJson } from "./lib.js";
 
 assert(existsSync("docs/acceptance/cloudformation/cloudformation_inventory.schema.json"), "CloudFormation inventory schema missing");
 assert(existsSync(cloudFormationInventoryPath), `CloudFormation inventory draft missing: ${cloudFormationInventoryPath}`);
@@ -57,6 +57,7 @@ assert(inventory.system === "Saphnexa", "CloudFormation inventory system mismatc
 assert(inventory.environment === "uat", "CloudFormation inventory environment mismatch");
 assert(inventory.aws_region === "ap-northeast-1", "CloudFormation inventory region mismatch");
 assert(inventory.source === "local-cdk-intent", "draft inventory must come from local CDK intent");
+assert(isCurrentJstTimestamp(inventory.generated_at), "CloudFormation inventory generated_at must be current JST timestamp");
 assert(inventory.final_acceptance_eligible === false, "draft inventory must not be final acceptance eligible");
 assert(inventory.aws_capture_required === true, "draft inventory must require AWS capture");
 assert(inventory.local_cdk_inventory.construct_count === 7, "CloudFormation inventory construct count mismatch");

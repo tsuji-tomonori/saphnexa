@@ -1,6 +1,6 @@
 import { existsSync } from "node:fs";
 import { externalActionPlanPath, requiredExternalActionIds } from "./external-acceptance-actions.js";
-import { assert, readJson, readText } from "./lib.js";
+import { assert, isCurrentJstTimestamp, readJson, readText } from "./lib.js";
 
 assert(existsSync(externalActionPlanPath), `external action plan missing: ${externalActionPlanPath}`);
 
@@ -10,6 +10,7 @@ const unresolvedTraceIds = parseTraceRows(readText("docs/acceptance/traceability
   .map((row) => row.id);
 
 assert(plan.schema_version === "saphnexa-external-acceptance-action-plan.v1", "external action plan schema mismatch");
+assert(isCurrentJstTimestamp(plan.generated_at), "external action plan generated_at must be current JST timestamp");
 assert(plan.ready === false, "external action plan must remain not ready until actions are completed");
 assert(plan.status === "pending_external_actions", "external action plan status mismatch");
 

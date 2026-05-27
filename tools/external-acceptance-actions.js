@@ -1,6 +1,6 @@
 import { mkdirSync, writeFileSync } from "node:fs";
 import { dirname } from "node:path";
-import { readText } from "./lib.js";
+import { currentJstTimestamp, readText } from "./lib.js";
 
 export const externalActionPlanPath = "dist/acceptance/external_action_plan.json";
 
@@ -99,7 +99,7 @@ export function buildExternalAcceptanceActionPlan(outputPath = externalActionPla
 
   const plan = {
     schema_version: "saphnexa-external-acceptance-action-plan.v1",
-    generated_at: "2026-05-27T12:14:00+09:00",
+    generated_at: currentJstTimestamp(),
     generated_by: "tools/build-external-acceptance-actions.js",
     ready: false,
     status: "pending_external_actions",

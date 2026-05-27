@@ -9,7 +9,7 @@ import {
   sourceChecklistValue
 } from "./acceptance-checklist-format.js";
 import { currentGitCommit } from "./git-context.js";
-import { assert, readJson, readText } from "./lib.js";
+import { assert, isCurrentJstDate, isCurrentJstTimestamp, readJson, readText } from "./lib.js";
 
 const manifest = readJson("dist/acceptance/evidence_manifest.draft.json");
 const artifactSummary = readJson("dist/acceptance/artifact_summary.draft.json");
@@ -87,10 +87,12 @@ for (const row of rows) {
   if (sourceChecklistValue(row, finalResultColumn) === "PASS_LOCAL") {
     assert(row.state === "local_verified", `${row.ID} PASS_LOCAL must map to local_verified`);
   }
+  assert(isCurrentJstDate(sourceChecklistValue(row, finalCheckedDateColumn)), `${row.ID} checklist checked date must be current JST date`);
 }
 
 assert(defects.blocker_critical_open_count === 0, "blocker/critical defects must be 0 in snapshot");
 assert(Array.isArray(defects.open_issues), "defect snapshot open_issues must be an array");
+assert(isCurrentJstTimestamp(summary.generated_at), "summary generated_at must be current JST timestamp");
 assert(summary.git_commit_sha === currentCommit, "summary git commit must match current Git ref");
 assert(summary.git_commit_sha === manifest.git_commit_sha, "summary git commit must match manifest git commit");
 assert(summary.checklist_rows === acceptanceIds.length, "summary checklist row count mismatch");
@@ -111,6 +113,7 @@ assert(summary.trace_state_counts.requires_aws > 0, "draft package must preserve
 assert(summary.final_acceptance_ready === false, "draft package must not claim final acceptance readiness");
 
 assert(artifactSummary.schema_version === "saphnexa-acceptance-artifact-summary.v1", "artifact summary schema mismatch");
+assert(isCurrentJstTimestamp(artifactSummary.generated_at), "artifact summary generated_at must be current JST timestamp");
 assert(artifactSummary.draft_status === "draft_not_for_final_acceptance", "artifact summary must be draft-only");
 assert(artifactSummary.final_acceptance_ready === false, "artifact summary must not claim final acceptance readiness");
 assert(artifactSummary.final_readiness_path === "dist/acceptance/final_readiness.json", "artifact summary final readiness path mismatch");

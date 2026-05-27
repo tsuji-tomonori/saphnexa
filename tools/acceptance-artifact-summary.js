@@ -1,5 +1,6 @@
 import { cloudFormationInventoryPath } from "./cloudformation-inventory.js";
 import { externalActionPlanPath } from "./external-acceptance-actions.js";
+import { currentJstTimestamp } from "./lib.js";
 
 export const artifactSummaryPath = "dist/acceptance/artifact_summary.draft.json";
 const finalReadinessPath = "dist/acceptance/final_readiness.json";
@@ -98,7 +99,7 @@ export function buildAcceptanceArtifactSummary({ gitCommit, finalReadinessReady,
 
   return {
     schema_version: "saphnexa-acceptance-artifact-summary.v1",
-    generated_at: "2026-05-27T16:37:00+09:00",
+    generated_at: currentJstTimestamp(),
     generated_by: "tools/build-acceptance-package.js",
     draft_status: "draft_not_for_final_acceptance",
     final_acceptance_ready: finalReadinessReady,
