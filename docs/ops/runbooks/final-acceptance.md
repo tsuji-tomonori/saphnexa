@@ -16,9 +16,10 @@ AC-001、AC-002、AC-004、AC-150、AC-151、AC-152 の最終検収で、draft �
 1. `docs/acceptance/final/evidence_manifest.json` を作成し、Git tag、GitHub release URL、AWS account、CloudFormation stack、DB migration、docs/Allure、RAG 評価、cost estimate を実値で記録する。
 2. `docs/acceptance/final/acceptance_checklist.csv` を作成し、`docs/acceptance/source/acceptance_catalog.json` の `source_columns` と同じ列で全 AC 行の `結果`、`証跡リンク`、`確認者`、`確認日` を記入する。
 3. `docs/acceptance/cloudformation/cloudformation_inventory.uat.json` を CloudFormation 実取得結果から正規化して保存する。
-4. `npm run acceptance:final-candidate:check` を実行し、final candidate が ready になることを確認する。
-5. `npm run acceptance:final:build` と `npm run acceptance:final:check` を実行し、readiness gate が final candidate の状態を反映することを確認する。
-6. `npm run acceptance:package:build` と `npm run acceptance:package:check` を実行し、最終 package に証跡を含める。
+4. `npm run acceptance:final-candidate:fixture:check` を実行し、validator が ready/invalid の両分岐を検査できる状態であることを確認する。
+5. `npm run acceptance:final-candidate:check` を実行し、final candidate が ready になることを確認する。
+6. `npm run acceptance:final:build` と `npm run acceptance:final:check` を実行し、readiness gate が final candidate の状態を反映することを確認する。
+7. `npm run acceptance:package:build` と `npm run acceptance:package:check` を実行し、最終 package に証跡を含める。
 
 ## 検証
 

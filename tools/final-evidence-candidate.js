@@ -22,15 +22,21 @@ const candidatePaths = [
   finalCloudFormationInventoryPath
 ];
 
-export function buildFinalEvidenceCandidateStatus(outputPath = finalCandidateStatusPath) {
-  const missing_files = candidatePaths.filter((path) => !exists(path));
+export function buildFinalEvidenceCandidateStatus(outputPath = finalCandidateStatusPath, options = {}) {
+  const paths = {
+    evidence_manifest: finalEvidenceManifestPath,
+    acceptance_checklist: finalChecklistPath,
+    cloudformation_inventory: finalCloudFormationInventoryPath,
+    ...(options.candidatePaths || {})
+  };
+  const missing_files = Object.values(paths).filter((path) => !exists(path));
   const checks = [];
   const errors = [];
 
   if (missing_files.length === 0) {
-    validateManifest(checks, errors);
-    validateChecklist(checks, errors);
-    validateCloudFormationInventory(checks, errors);
+    validateManifest(paths.evidence_manifest, checks, errors);
+    validateChecklist(paths.acceptance_checklist, checks, errors);
+    validateCloudFormationInventory(paths.cloudformation_inventory, checks, errors);
   }
 
   const status = {
@@ -39,11 +45,7 @@ export function buildFinalEvidenceCandidateStatus(outputPath = finalCandidateSta
     generated_by: "tools/check-final-evidence-candidate.js",
     ready: missing_files.length === 0 && errors.length === 0,
     status: missing_files.length > 0 ? "not_ready" : errors.length === 0 ? "ready" : "invalid",
-    candidate_paths: {
-      evidence_manifest: finalEvidenceManifestPath,
-      acceptance_checklist: finalChecklistPath,
-      cloudformation_inventory: finalCloudFormationInventoryPath
-    },
+    candidate_paths: paths,
     missing_files,
     checks,
     errors,
@@ -55,8 +57,8 @@ export function buildFinalEvidenceCandidateStatus(outputPath = finalCandidateSta
   return status;
 }
 
-function validateManifest(checks, errors) {
-  const manifest = readJson(finalEvidenceManifestPath);
+function validateManifest(path, checks, errors) {
+  const manifest = readJson(path);
   const required = [
     "system",
     "environment",
@@ -99,8 +101,8 @@ function validateManifest(checks, errors) {
   check(Number(manifest.cost_estimate?.monthly_usd) <= 550, "manifest.cost_estimate.monthly_usd", checks, errors, "must be <= 550");
 }
 
-function validateChecklist(checks, errors) {
-  const rows = parseCsv(readText(finalChecklistPath));
+function validateChecklist(path, checks, errors) {
+  const rows = parseCsv(readText(path));
   checkSourceColumns(rows.headers, checks, errors);
   check(rows.length === acceptanceIds.length, "checklist.row_count", checks, errors, `must contain ${acceptanceIds.length} rows`);
   for (const id of acceptanceIds) {
@@ -132,8 +134,8 @@ function checkSourceColumns(headers, checks, errors) {
   }
 }
 
-function validateCloudFormationInventory(checks, errors) {
-  const inventory = readJson(finalCloudFormationInventoryPath);
+function validateCloudFormationInventory(path, checks, errors) {
+  const inventory = readJson(path);
   check(inventory.schema_version === "saphnexa-cloudformation-inventory.v1", "cloudformation.schema_version", checks, errors, "must match schema");
   check(inventory.source === "aws-cloudformation-inventory", "cloudformation.source", checks, errors, "must come from AWS CloudFormation inventory");
   check(inventory.final_acceptance_eligible === true, "cloudformation.final_acceptance_eligible", checks, errors, "must be final acceptance eligible");

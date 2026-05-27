@@ -62,6 +62,7 @@ for (const command of [
   "npm run acceptance:external-actions:build",
   "npm run acceptance:external-actions:check",
   "npm run acceptance:final-candidate:check",
+  "npm run acceptance:final-candidate:fixture:check",
   "npm run acceptance:final:build",
   "npm run acceptance:final:check",
   "npm run acceptance:package:build",

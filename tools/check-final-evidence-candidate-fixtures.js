@@ -1,0 +1,138 @@
+import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from "node:fs";
+import { tmpdir } from "node:os";
+import { join } from "node:path";
+import { acceptanceIds, acceptanceItemById } from "./acceptance-ids.js";
+import { sourceChecklistColumns } from "./acceptance-checklist-format.js";
+import { buildFinalEvidenceCandidateStatus } from "./final-evidence-candidate.js";
+import { assert } from "./lib.js";
+
+const root = mkdtempSync(join(tmpdir(), "saphnexa-final-candidate-"));
+
+try {
+  const readyPaths = writeCandidateFiles(join(root, "ready"), buildReadyCandidate());
+  const readyStatus = buildFinalEvidenceCandidateStatus(join(root, "ready-status.json"), { candidatePaths: readyPaths });
+  assert(readyStatus.ready === true, "ready fixture must be ready");
+  assert(readyStatus.status === "ready", "ready fixture status must be ready");
+  assert(readyStatus.errors.length === 0, "ready fixture must not have errors");
+  assert(readyStatus.checks.some((check) => check.label === "checklist.source_columns" && check.result === "pass"), "ready fixture must check source checklist columns");
+
+  const invalid = buildReadyCandidate();
+  invalid.manifest.git_tag = "pending-release-tag";
+  invalid.checklistRows[0].結果 = "PENDING_AWS";
+  invalid.inventory.source = "local-cdk-intent";
+  const invalidPaths = writeCandidateFiles(join(root, "invalid"), invalid);
+  const invalidStatus = buildFinalEvidenceCandidateStatus(join(root, "invalid-status.json"), { candidatePaths: invalidPaths });
+  assert(invalidStatus.ready === false, "invalid fixture must not be ready");
+  assert(invalidStatus.status === "invalid", "invalid fixture status must be invalid");
+  assert(invalidStatus.errors.some((error) => error.includes("manifest.git_tag")), "invalid fixture must reject pending git tag");
+  assert(invalidStatus.errors.some((error) => error.includes(`checklist.${acceptanceIds[0]}.結果`)), "invalid fixture must reject non-PASS checklist result");
+  assert(invalidStatus.errors.some((error) => error.includes("cloudformation.source")), "invalid fixture must reject non-AWS CloudFormation source");
+
+  console.log("final evidence candidate fixture check passed");
+} finally {
+  rmSync(root, { recursive: true, force: true });
+}
+
+function buildReadyCandidate() {
+  const accountId = ["1234", "5678", "9012"].join("");
+  const stackId = `arn:aws:cloudformation:ap-northeast-1:${accountId}:stack/saphnexa-uat-app/abc12345`;
+  return {
+    manifest: {
+      system: "Saphnexa",
+      environment: "uat",
+      aws_region: "ap-northeast-1",
+      aws_account_id: accountId,
+      git_commit_sha: "0123456789abcdef0123456789abcdef01234567",
+      git_tag: "v0.16.0-acceptance.1",
+      github_release_url: "https://github.com/tsuji-tomonori/saphnexa/releases/tag/v0.16.0-acceptance.1",
+      cdk_app_version: "0.1.0",
+      cloudformation_stacks: [
+        {
+          stack_name: "saphnexa-uat-app",
+          stack_id: stackId
+        }
+      ],
+      db_migration: {
+        tool: "Flyway",
+        latest_version: "V001__initial_saphnexa_schema.sql",
+        checksum_status: "matched"
+      },
+      test_reports: {
+        allure_latest_url: "https://github.com/tsuji-tomonori/saphnexa/actions/runs/26494798563",
+        unit_report_url: "https://github.com/tsuji-tomonori/saphnexa/actions/runs/26494798563",
+        integration_report_url: "https://github.com/tsuji-tomonori/saphnexa/actions/runs/26494798563",
+        e2e_report_url: "https://github.com/tsuji-tomonori/saphnexa/actions/runs/26494798563"
+      },
+      docs_site: {
+        latest_url: "s3://saphnexa-acceptance-artifacts/docs/latest/",
+        version_url: "s3://saphnexa-acceptance-artifacts/docs/v0.16.0-acceptance.1/"
+      },
+      rag_evaluation: {
+        evaluation_run_id: "eval-20260527-uat-final",
+        report_url: "s3://saphnexa-acceptance-artifacts/rag/eval-20260527-uat-final.json"
+      },
+      cost_estimate: {
+        monthly_usd: 420,
+        assumption: "UAT estimate for 50 DAU and 10 questions/user/day."
+      }
+    },
+    checklistRows: acceptanceIds.map((id) => {
+      const source = acceptanceItemById[id];
+      return {
+        ID: id,
+        領域: source.area,
+        検収項目: source.item,
+        "受け入れ条件 / 完了条件": source.acceptance_condition,
+        定量基準: source.quantitative_criteria,
+        監査証跡: source.evidence,
+        確認方法: source.verification_method,
+        重要度: source.priority,
+        結果: "PASS",
+        証跡リンク: "https://github.com/tsuji-tomonori/saphnexa/actions/runs/26494798563",
+        確認者: "acceptance-reviewer",
+        確認日: "2026-05-27",
+        備考: "fixture-final-validator-coverage"
+      };
+    }),
+    inventory: {
+      schema_version: "saphnexa-cloudformation-inventory.v1",
+      system: "Saphnexa",
+      environment: "uat",
+      aws_region: "ap-northeast-1",
+      stack_name: "saphnexa-uat-app",
+      stack_id: stackId,
+      source: "aws-cloudformation-inventory",
+      final_acceptance_eligible: true,
+      aws_capture_required: false,
+      stack_resources: [
+        {
+          LogicalResourceId: "ApiService",
+          PhysicalResourceId: "saphnexa-uat-api",
+          ResourceType: "AWS::Lambda::Function"
+        }
+      ]
+    }
+  };
+}
+
+function writeCandidateFiles(dir, candidate) {
+  mkdirSync(dir, { recursive: true });
+  const paths = {
+    evidence_manifest: join(dir, "evidence_manifest.json"),
+    acceptance_checklist: join(dir, "acceptance_checklist.csv"),
+    cloudformation_inventory: join(dir, "cloudformation_inventory.uat.json")
+  };
+  writeFileSync(paths.evidence_manifest, `${JSON.stringify(candidate.manifest, null, 2)}\n`);
+  writeFileSync(paths.acceptance_checklist, renderCsv(candidate.checklistRows));
+  writeFileSync(paths.cloudformation_inventory, `${JSON.stringify(candidate.inventory, null, 2)}\n`);
+  return paths;
+}
+
+function renderCsv(rows) {
+  return `${sourceChecklistColumns.join(",")}\n${rows.map((row) => sourceChecklistColumns.map((key) => csv(row[key])).join(",")).join("\n")}\n`;
+}
+
+function csv(value) {
+  const text = String(value ?? "");
+  return /[",\n]/.test(text) ? `"${text.replaceAll("\"", "\"\"")}"` : text;
+}
