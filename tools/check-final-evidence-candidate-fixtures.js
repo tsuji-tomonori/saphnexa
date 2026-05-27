@@ -3,6 +3,7 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { acceptanceIds, acceptanceItemById } from "./acceptance-ids.js";
 import { sourceChecklistColumns } from "./acceptance-checklist-format.js";
+import { expectedMajorResourceTypes } from "./cloudformation-inventory.js";
 import { buildFinalEvidenceCandidateStatus } from "./final-evidence-candidate.js";
 import { currentGitCommit } from "./git-context.js";
 import { assert } from "./lib.js";
@@ -109,6 +110,17 @@ try {
   assert(mismatchedInventoryStatus.errors.some((error) => error.includes("final_evidence.aws_account_consistency")), "mismatched inventory fixture must reject AWS account mismatch");
   assert(mismatchedInventoryStatus.errors.some((error) => error.includes("final_evidence.stack_id_consistency")), "mismatched inventory fixture must reject stack id mismatch");
   assert(mismatchedInventoryStatus.errors.some((error) => error.includes("final_evidence.stack_name_consistency")), "mismatched inventory fixture must reject stack name mismatch");
+
+  const missingMajorResource = buildReadyCandidate();
+  missingMajorResource.inventory.stack_resources = missingMajorResource.inventory.stack_resources.filter((resource) => resource.ResourceType !== expectedMajorResourceTypes[0]);
+  const missingMajorResourcePaths = writeCandidateFiles(join(root, "missing-major-resource"), missingMajorResource);
+  const missingMajorResourceStatus = buildFinalEvidenceCandidateStatus(join(root, "missing-major-resource-status.json"), {
+    candidatePaths: missingMajorResourcePaths,
+    resolveGitTagCommit,
+    resolveGitRepository
+  });
+  assert(missingMajorResourceStatus.ready === false, "missing major resource fixture must not be ready");
+  assert(missingMajorResourceStatus.errors.some((error) => error.includes(`cloudformation.major_resource_type.${expectedMajorResourceTypes[0]}`)), "missing major resource fixture must reject missing expected resource type");
 
   const invalidManifestStacks = buildReadyCandidate();
   invalidManifestStacks.manifest.cloudformation_stacks.push(
@@ -248,11 +260,11 @@ function buildReadyCandidate() {
       final_acceptance_eligible: true,
       aws_capture_required: false,
       stack_resources: [
-        {
-          LogicalResourceId: "ApiService",
-          PhysicalResourceId: "saphnexa-uat-api",
-          ResourceType: "AWS::Lambda::Function"
-        }
+        ...expectedMajorResourceTypes.map((resourceType, index) => ({
+          LogicalResourceId: `ExpectedMajorResource${index}`,
+          PhysicalResourceId: `saphnexa-uat-resource-${index}`,
+          ResourceType: resourceType
+        }))
       ]
     }
   };
