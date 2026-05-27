@@ -11,16 +11,18 @@ import {
 import { currentGitCommit } from "./git-context.js";
 import { assert, isCurrentJstDate, isCurrentJstTimestamp, readJson, readText } from "./lib.js";
 
-const manifest = readJson("dist/acceptance/evidence_manifest.draft.json");
-const artifactSummary = readJson("dist/acceptance/artifact_summary.draft.json");
 const summary = readJson("dist/acceptance/summary.json");
+const finalReady = summary.final_acceptance_ready === true;
+const evidenceManifestPath = summary.evidence_manifest_path || "dist/acceptance/evidence_manifest.draft.json";
+const manifest = readJson(evidenceManifestPath);
+const artifactSummary = readJson("dist/acceptance/artifact_summary.draft.json");
 const defects = readJson("dist/acceptance/defect_list.json");
 const packageJson = readJson("package.json");
 const checklist = readText("dist/acceptance/acceptance_checklist.draft.csv");
 const currentCommit = currentGitCommit();
-const finalReady = summary.final_acceptance_ready === true;
 
 for (const path of [
+  evidenceManifestPath,
   "dist/acceptance/evidence_manifest.draft.json",
   "dist/acceptance/artifact_summary.draft.json",
   "dist/acceptance/acceptance_checklist.draft.csv",
@@ -41,40 +43,43 @@ assert(manifest.system === "Saphnexa", "manifest system mismatch");
 assert(manifest.aws_region === "ap-northeast-1", "manifest region mismatch");
 assert(/^[a-f0-9]{40}$/.test(manifest.git_commit_sha), "manifest git commit must be 40 hex chars");
 assert(manifest.git_commit_sha === currentCommit, "manifest git commit must match current Git ref");
-assert(manifest.draft_status === "draft_not_for_final_acceptance", "manifest must be marked as draft");
-assert(manifest.pending_final_evidence.length >= 5, "manifest pending final evidence must be explicit");
-assert(manifest.aws_account_id === "pending-aws-account-id", "draft manifest must not pretend to know AWS account id");
-assert(manifest.git_tag === "pending-release-tag", "draft manifest must not pretend release tag is created");
-assert(manifest.github_release_url === "pending-github-release-url", "draft manifest must not pretend GitHub release is created");
+if (finalReady) {
+  assert(evidenceManifestPath === "dist/acceptance/evidence_manifest.json", "final package must use final evidence manifest path");
+  assert(!Object.prototype.hasOwnProperty.call(manifest, "draft_status"), "final manifest must not include draft_status");
+  assert(!Object.prototype.hasOwnProperty.call(manifest, "pending_final_evidence"), "final manifest must not include pending_final_evidence");
+  assert(/^[0-9]{12}$/.test(manifest.aws_account_id), "final manifest must include a real AWS account id");
+  assert(isFinalText(manifest.git_tag), "final manifest must include a final Git tag");
+  assert(isGitHubReleaseUrlForTag(manifest.github_release_url, manifest.git_tag), "final manifest release URL must match git_tag");
+} else {
+  assert(evidenceManifestPath === "dist/acceptance/evidence_manifest.draft.json", "draft package must use draft evidence manifest path");
+  assert(manifest.draft_status === "draft_not_for_final_acceptance", "manifest must be marked as draft");
+  assert(manifest.pending_final_evidence.length >= 5, "manifest pending final evidence must be explicit");
+  assert(manifest.aws_account_id === "pending-aws-account-id", "draft manifest must not pretend to know AWS account id");
+  assert(manifest.git_tag === "pending-release-tag", "draft manifest must not pretend release tag is created");
+  assert(manifest.github_release_url === "pending-github-release-url", "draft manifest must not pretend GitHub release is created");
+}
 assert(manifest.cdk_app_version === packageJson.version, "draft manifest CDK app version must match package version");
-assert(manifest.cloudformation_inventory.draft_path === "dist/acceptance/cloudformation_inventory.draft.json", "manifest CloudFormation inventory path mismatch");
-assert(manifest.cloudformation_inventory.final_acceptance_eligible === false, "manifest CloudFormation inventory must be draft-only");
-assert(manifest.cloudformation_inventory.aws_capture_required === true, "manifest CloudFormation inventory must require AWS capture");
-assert(manifest.artifact_summary.draft_path === "dist/acceptance/artifact_summary.draft.json", "manifest artifact summary path mismatch");
-assert(manifest.artifact_summary.item_count >= 8, "manifest artifact summary item count too small");
-assert(
-  finalReady ? manifest.artifact_summary.pending_external_count === 0 : manifest.artifact_summary.pending_external_count > 0,
-  "manifest artifact summary pending external state mismatch"
-);
-assert(manifest.source_catalog.path === acceptanceCatalogPath, "manifest source catalog path mismatch");
-assert(manifest.source_catalog.item_count === acceptanceCatalog.item_count, "manifest source catalog item count mismatch");
-assert(JSON.stringify(manifest.source_catalog.priority_counts) === JSON.stringify(acceptanceCatalog.priority_counts), "manifest source priority counts mismatch");
-assert(manifest.final_readiness.path === "dist/acceptance/final_readiness.json", "manifest final readiness path mismatch");
-assert(manifest.final_readiness.final_acceptance_ready === finalReady, "manifest final readiness state mismatch");
-assert(
-  finalReady ? manifest.final_readiness.blocking_acceptance_ids.length === 0 : manifest.final_readiness.blocking_acceptance_ids.length > 0,
-  "manifest final readiness blockers state mismatch"
-);
-assert(manifest.final_readiness.release_gate_ready === finalReady, "manifest release gate state mismatch");
-assert(manifest.final_readiness.aws_gate_ready === finalReady, "manifest AWS gate state mismatch");
-assert(manifest.final_readiness.checklist_gate_ready === finalReady, "manifest checklist gate state mismatch");
-assert(manifest.final_readiness.final_candidate_status_path === "dist/acceptance/final_candidate_status.json", "manifest final candidate status path mismatch");
-assert(manifest.final_readiness.final_candidate_ready === finalReady, "manifest final candidate state mismatch");
-assert(manifest.final_readiness.external_action_plan_path === "dist/acceptance/external_action_plan.json", "manifest external action plan path mismatch");
-assert(
-  finalReady ? manifest.final_readiness.external_actions_pending.length === 0 : manifest.final_readiness.external_actions_pending.length > 0,
-  "manifest external pending actions state mismatch"
-);
+if (!finalReady) {
+  assert(manifest.cloudformation_inventory.draft_path === "dist/acceptance/cloudformation_inventory.draft.json", "manifest CloudFormation inventory path mismatch");
+  assert(manifest.cloudformation_inventory.final_acceptance_eligible === false, "manifest CloudFormation inventory must be draft-only");
+  assert(manifest.cloudformation_inventory.aws_capture_required === true, "manifest CloudFormation inventory must require AWS capture");
+  assert(manifest.artifact_summary.draft_path === "dist/acceptance/artifact_summary.draft.json", "manifest artifact summary path mismatch");
+  assert(manifest.artifact_summary.item_count >= 8, "manifest artifact summary item count too small");
+  assert(manifest.artifact_summary.pending_external_count > 0, "manifest artifact summary pending external state mismatch");
+  assert(manifest.source_catalog.path === acceptanceCatalogPath, "manifest source catalog path mismatch");
+  assert(manifest.source_catalog.item_count === acceptanceCatalog.item_count, "manifest source catalog item count mismatch");
+  assert(JSON.stringify(manifest.source_catalog.priority_counts) === JSON.stringify(acceptanceCatalog.priority_counts), "manifest source priority counts mismatch");
+  assert(manifest.final_readiness.path === "dist/acceptance/final_readiness.json", "manifest final readiness path mismatch");
+  assert(manifest.final_readiness.final_acceptance_ready === false, "manifest final readiness state mismatch");
+  assert(manifest.final_readiness.blocking_acceptance_ids.length > 0, "manifest final readiness blockers state mismatch");
+  assert(manifest.final_readiness.release_gate_ready === false, "manifest release gate state mismatch");
+  assert(manifest.final_readiness.aws_gate_ready === false, "manifest AWS gate state mismatch");
+  assert(manifest.final_readiness.checklist_gate_ready === false, "manifest checklist gate state mismatch");
+  assert(manifest.final_readiness.final_candidate_status_path === "dist/acceptance/final_candidate_status.json", "manifest final candidate status path mismatch");
+  assert(manifest.final_readiness.final_candidate_ready === false, "manifest final candidate state mismatch");
+  assert(manifest.final_readiness.external_action_plan_path === "dist/acceptance/external_action_plan.json", "manifest external action plan path mismatch");
+  assert(manifest.final_readiness.external_actions_pending.length > 0, "manifest external pending actions state mismatch");
+}
 
 const rows = parseCsv(checklist);
 assertSourceChecklistColumns(rows.headers, assert);
@@ -105,6 +110,7 @@ assert(Array.isArray(defects.open_issues), "defect snapshot open_issues must be 
 assert(isCurrentJstTimestamp(summary.generated_at), "summary generated_at must be current JST timestamp");
 assert(summary.git_commit_sha === currentCommit, "summary git commit must match current Git ref");
 assert(summary.git_commit_sha === manifest.git_commit_sha, "summary git commit must match manifest git commit");
+assert(summary.evidence_manifest_path === evidenceManifestPath, "summary evidence manifest path mismatch");
 assert(summary.checklist_rows === acceptanceIds.length, "summary checklist row count mismatch");
 assert(summary.source_catalog_path === acceptanceCatalogPath, "summary source catalog path mismatch");
 assert(summary.source_catalog_items === acceptanceCatalog.item_count, "summary source catalog item count mismatch");
@@ -196,4 +202,18 @@ function splitCsvLine(line) {
   }
   values.push(current);
   return values;
+}
+
+function isFinalText(value) {
+  return typeof value === "string" && value.trim().length > 0 && !/pending|example|draft|placeholder|not-for-acceptance/i.test(value);
+}
+
+function isGitHubReleaseUrlForTag(value, gitTag) {
+  try {
+    const url = new URL(value);
+    const match = url.pathname.match(/^\/[^/]+\/[^/]+\/releases\/tag\/(.+)$/);
+    return url.protocol === "https:" && url.hostname === "github.com" && decodeURIComponent(match?.[1] || "") === gitTag;
+  } catch {
+    return false;
+  }
 }

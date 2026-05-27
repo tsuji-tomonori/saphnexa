@@ -28,6 +28,8 @@ AC-001、AC-002、AC-004、AC-150、AC-151、AC-152、AC-153 の最終検収で�
 7. `npm run acceptance:final-candidate:check` を実行し、final candidate が ready になることを確認する。
 8. `npm run acceptance:final:build` と `npm run acceptance:final:check` を実行し、readiness gate が final candidate の状態を反映することを確認する。
 9. `npm run acceptance:package:build` と `npm run acceptance:package:check` を実行し、最終 package に証跡を含める。
+   - local preflight では `dist/acceptance/evidence_manifest.draft.json` を検査する。
+   - final-ready 時は `docs/acceptance/final/evidence_manifest.json` 由来の `dist/acceptance/evidence_manifest.json` を主 manifest として検査する。
 
 ## 検証
 
@@ -38,6 +40,7 @@ AC-001、AC-002、AC-004、AC-150、AC-151、AC-152、AC-153 の最終検収で�
 - final evidence manifest の `git_commit_sha` は検証実行時の Git ref と一致していること。
 - final evidence manifest の `git_tag` は repository に存在し、検証実行時の Git ref と同じ commit を指していること。
 - draft package の `git_commit_sha` は検証実行時の Git ref と一致していること。
+- final-ready package では `dist/acceptance/summary.json` の `evidence_manifest_path` が `dist/acceptance/evidence_manifest.json` を指し、draft marker や pending final evidence が含まれないこと。
 - GitHub release URL が検収対象 repository の `https://github.com/<owner>/<repo>/releases/tag/<git_tag>` として、final evidence manifest の `git_tag` と同じ tag を指すこと。
 - final evidence manifest の全 `cloudformation_stacks` は、stack ARN 内の account、region、stack name が manifest の `aws_account_id`、`aws_region`、`stack_name` と一致すること。
 - final evidence manifest と CloudFormation inventory が同じ AWS account、region、environment、stack name、stack ARN を指していること。

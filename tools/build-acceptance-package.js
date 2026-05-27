@@ -10,6 +10,9 @@ import { currentGitCommit } from "./git-context.js";
 import { currentJstDate, currentJstTimestamp, readJson, readText } from "./lib.js";
 
 const outputRoot = "dist/acceptance";
+const draftEvidenceManifestPath = join(outputRoot, "evidence_manifest.draft.json");
+const finalEvidenceManifestSourcePath = "docs/acceptance/final/evidence_manifest.json";
+const finalEvidenceManifestPackagePath = join(outputRoot, "evidence_manifest.json");
 const trace = readText("docs/acceptance/traceability.md");
 const packageJson = readJson("package.json");
 const defectSnapshot = readJson("docs/acceptance/defects/open_issues_snapshot.json");
@@ -22,6 +25,8 @@ const cloudFormationInventory = buildCloudFormationInventoryDraft(cloudFormation
 const externalActionPlan = buildExternalAcceptanceActionPlan(externalActionPlanPath);
 const finalReadiness = buildFinalAcceptanceReadiness(finalReadinessPath);
 const finalAcceptanceReady = finalReadiness.final_acceptance_ready;
+const finalEvidenceManifest = finalAcceptanceReady ? readJson(finalEvidenceManifestSourcePath) : null;
+const evidenceManifestPackagePath = finalAcceptanceReady ? finalEvidenceManifestPackagePath : draftEvidenceManifestPath;
 const effectiveCounts = finalAcceptanceReady
   ? { local_verified: acceptanceIds.length, requires_aws: 0, implemented_unverified: 0, scaffolded: 0, not_started: 0 }
   : counts;
@@ -116,6 +121,7 @@ const summary = {
   generated_at: generatedAt,
   generated_by: "tools/build-acceptance-package.js",
   git_commit_sha: gitCommit,
+  evidence_manifest_path: evidenceManifestPackagePath,
   trace_state_counts: effectiveCounts,
   source_catalog_path: acceptanceCatalogPath,
   source_catalog_items: acceptanceCatalog.item_count,
@@ -138,13 +144,14 @@ const summary = {
     : "Draft package for local evidence consolidation. Final acceptance still requires AWS/UAT evidence for requires_aws rows."
 };
 
-write(join(outputRoot, "evidence_manifest.draft.json"), `${JSON.stringify(manifest, null, 2)}\n`);
+write(draftEvidenceManifestPath, `${JSON.stringify(manifest, null, 2)}\n`);
+if (finalEvidenceManifest) write(finalEvidenceManifestPackagePath, `${JSON.stringify(finalEvidenceManifest, null, 2)}\n`);
 write(artifactSummaryPath, `${JSON.stringify(artifactSummary, null, 2)}\n`);
 write(join(outputRoot, "acceptance_checklist.draft.csv"), renderCsv(checklist));
 write(join(outputRoot, "defect_list.json"), `${JSON.stringify(defectSnapshot, null, 2)}\n`);
 write(join(outputRoot, "summary.json"), `${JSON.stringify(summary, null, 2)}\n`);
 
-console.log(`acceptance package draft generated: ${outputRoot}`);
+console.log(`${finalAcceptanceReady ? "final acceptance package" : "acceptance package draft"} generated: ${outputRoot}`);
 
 function parseTraceRows(body) {
   return [...body.matchAll(/^\| (AC-\d{3}) \| ([a-z_]+) \| (.+) \|$/gm)]
