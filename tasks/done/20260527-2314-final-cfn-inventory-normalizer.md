@@ -1,6 +1,6 @@
 # final CloudFormation inventory normalizer
 
-- 状態: do
+- 状態: done
 - タスク種別: 機能追加
 - 対象ブランチ: `codex/saphnexa-acceptance-impl`
 - 対象PR: `#1`
@@ -34,15 +34,15 @@ AWS `describe-stacks` / `list-stack-resources` の raw JSON から、final candi
 - [x] fixture check が normalizer の positive path と invalid raw input を検査する。
 - [x] runbook / local verification docs が normalizer command と raw input path を示す。
 - [x] AC-081 の外部 CloudFormation capture を完了扱いしない。
-- [ ] 変更範囲に見合う検証を実行し、結果を task / report / PR コメントに残す。
+- [x] 変更範囲に見合う検証を実行し、結果を task / report / PR コメントに残す。
 
 ## Done 条件
 
 - [x] normalizer module / CLI / fixture check / npm script / docs を追加する。
 - [x] 選定した検証コマンドが pass する。
 - [x] 作業レポートを `reports/working/` に作成する。
-- [ ] commit / push し、PR に受け入れ条件確認コメントとセルフレビューコメントを投稿する。
-- [ ] PR コメント後に task を `tasks/done/` へ移動し、その更新も commit / push する。
+- [x] commit / push し、PR に受け入れ条件確認コメントとセルフレビューコメントを投稿する。
+- [x] PR コメント後に task を `tasks/done/` へ移動し、その更新も commit / push する。
 
 ## 実装計画
 
@@ -81,7 +81,10 @@ AWS `describe-stacks` / `list-stack-resources` の raw JSON から、final candi
 
 ## 実施結果
 
+- 実装 commit: `56a62f6`
 - 作業レポート: `reports/working/20260527-2319-final-cfn-inventory-normalizer.md`
+- PR 受け入れ条件確認コメント: https://github.com/tsuji-tomonori/saphnexa/pull/1#issuecomment-4555402592
+- PR セルフレビューコメント: https://github.com/tsuji-tomonori/saphnexa/pull/1#issuecomment-4555407152
 
 ## 検証結果
 
@@ -98,5 +101,4 @@ AWS `describe-stacks` / `list-stack-resources` の raw JSON から、final candi
 
 ## 残件
 
-- PR 受け入れ条件確認コメントとセルフレビューコメントは commit / push 後に投稿する。
 - Git tag/release、AWS deploy/publish、CloudFormation capture、final evidence manifest / checklist の最終作成・署名は未実施。
