@@ -1,6 +1,6 @@
 # final cdk version package consistency
 
-状態: doing
+状態: done
 
 ## 背景
 
@@ -74,18 +74,18 @@ final evidence candidate verifier は `cdk_app_version` の存在と非 placehol
 
 ## 受け入れ条件
 
-- [ ] final candidate verifier が `package.json` version を読み込む。
-- [ ] final `manifest.cdk_app_version` と package version の一致を検査する。
-- [ ] 不一致 fixture が `manifest.cdk_app_version_package_version` を検出する。
-- [ ] 関連 acceptance / evidence / verify checks が pass する。
-- [ ] 外部 state を変更せず、未実施外部 action を pending として維持する。
+- [x] final candidate verifier が `package.json` version を読み込む。
+- [x] final `manifest.cdk_app_version` と package version の一致を検査する。
+- [x] 不一致 fixture が `manifest.cdk_app_version_package_version` を検出する。
+- [x] 関連 acceptance / evidence / verify checks が pass する。
+- [x] 外部 state を変更せず、未実施外部 action を pending として維持する。
 
 ## Done 条件
 
-- [ ] 実装差分が PR branch に commit / push されている。
-- [ ] 受け入れ条件確認コメントとセルフレビューコメントを PR に投稿している。
-- [ ] task md に PR コメント URL と検証結果を記録し、`tasks/done/` へ移動している。
-- [ ] 作業レポートを `reports/working/` に保存している。
+- [x] 実装差分が PR branch に commit / push されている。
+- [x] 受け入れ条件確認コメントとセルフレビューコメントを PR に投稿している。
+- [x] task md に PR コメント URL と検証結果を記録し、`tasks/done/` へ移動している。
+- [x] 作業レポートを `reports/working/` に保存している。
 
 ## 検証計画
 
@@ -99,7 +99,19 @@ final evidence candidate verifier は `cdk_app_version` の存在と非 placehol
 
 ## PR コメント
 
-- 未投稿。PR push 後に受け入れ条件確認とセルフレビューを記録する。
+- 受け入れ条件確認: https://github.com/tsuji-tomonori/saphnexa/pull/1#issuecomment-4553765347
+- セルフレビュー: https://github.com/tsuji-tomonori/saphnexa/pull/1#issuecomment-4553768045
+- GitHub Apps comment は既知の 403 `Resource not accessible by integration` のため、`gh pr comment` fallback で投稿した。
+
+## 検証結果
+
+- `npm run acceptance:final-candidate:fixture:check`: pass
+- `npm run acceptance:final-candidate:check`: pass。final files 未配置のため `not ready` 表示、errors なし。
+- `npm run acceptance:package:check`: pass
+- `npm run evidence:check`: pass
+- `npm run verify`: pass
+- `git diff --check`: pass
+- `pre-commit run --files tools/final-evidence-candidate.js tools/check-final-evidence-candidate-fixtures.js tasks/do/20260527-1935-final-cdk-version-package-consistency.md reports/working/20260527-1937-final-cdk-version-package-consistency.md`: pass
 
 ## PR レビュー観点
 
