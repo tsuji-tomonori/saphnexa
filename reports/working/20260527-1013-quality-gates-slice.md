@@ -54,9 +54,9 @@
 - `npm test`: pass
 - `npm run verify`: pass
 - `git diff --check`: pass
+- PR #1 GitHub Actions `Saphnexa CI`: pass（quality gates job を含む 12 jobs）
 
 ## 未対応・制約・リスク
 
 - axe/Playwright の実 DOM accessibility report、Lighthouse CI、本番 bundler analyzer report は未実施。
 - AWS/CloudWatch を使った load test と実 AgentCore/Lambda failure injection は未実施。
-- 追加した `quality-gates` GitHub Actions job は push 後の CI で確認が必要。

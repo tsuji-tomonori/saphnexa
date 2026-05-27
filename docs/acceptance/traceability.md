@@ -92,7 +92,7 @@
 | AC-112 | scaffolded | observability construct intent only。 |
 | AC-113 | scaffolded | observability construct intent only。 |
 | AC-114 | implemented_unverified | tool invocation audit source あり、admin audit 未実装。 |
-| AC-120 | local_verified | `.github/workflows/ci.yml` に 12 jobs を追加し `npm run ci:check` で検査。PR #1 の GitHub Actions `Saphnexa CI` は品質ゲート追加前の 11 jobs が pass。quality gates 追加後の CI は push 後に確認する。 |
+| AC-120 | local_verified | `.github/workflows/ci.yml` に 12 jobs を追加し `npm run ci:check` で検査。PR #1 の GitHub Actions `Saphnexa CI` で lint/typecheck/unit/integration/e2e/cdk synth/cdk diff/security scan/license scan/admin artifacts/quality gates/contract generation diff が pass。 |
 | AC-121 | local_verified | `npm run coverage:check` で Node test coverage line >=80% / branch >=70% と test pass 100% を検査。Allure unit artifact への publish は未実施。 |
 | AC-122 | implemented_unverified | local integration job/test は追加済み。AWS/DSQL/S3/AppSync/Tools 実結合は未実施。 |
 | AC-123 | implemented_unverified | `tests/e2e-local.test.js` と e2e CI job を追加。ブラウザ/CloudFront E2E は未実施。 |
