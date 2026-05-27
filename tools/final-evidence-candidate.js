@@ -84,6 +84,7 @@ function validateManifest(path, checks, errors, options = {}) {
   ];
   for (const key of required) requireField(manifest, key, `manifest.${key}`, errors);
 
+  validateNoForbiddenManifestMarkers(manifest, checks, errors);
   check(manifest.system === "Saphnexa", "manifest.system", checks, errors, "must be Saphnexa");
   check(manifest.environment === "uat", "manifest.environment", checks, errors, "must be uat");
   check(manifest.aws_region === "ap-northeast-1", "manifest.aws_region", checks, errors, "must be ap-northeast-1");
@@ -168,6 +169,19 @@ function validateChecklistRowIdentity(rows, checks, errors) {
   const rowIds = rows.map((row) => row.ID);
   check(new Set(rowIds).size === rowIds.length, "checklist.unique_ids", checks, errors, "must not contain duplicate IDs");
   check(JSON.stringify(rowIds) === JSON.stringify(acceptanceIds), "checklist.source_order", checks, errors, "must preserve source catalog ID order");
+}
+
+function validateNoForbiddenManifestMarkers(manifest, checks, errors) {
+  for (const [path, value] of objectStringEntries(manifest)) {
+    check(!hasForbiddenFinalMarker(value), `manifest.no_forbidden_markers.${path}`, checks, errors, "must not contain draft, placeholder, example, pending, or not-for-acceptance markers");
+  }
+}
+
+function objectStringEntries(value, prefix = "") {
+  if (typeof value === "string") return [[prefix || "root", value]];
+  if (!value || typeof value !== "object") return [];
+  if (Array.isArray(value)) return value.flatMap((item, index) => objectStringEntries(item, `${prefix}[${index}]`));
+  return Object.entries(value).flatMap(([key, item]) => objectStringEntries(item, prefix ? `${prefix}.${key}` : key));
 }
 
 function checkSourceColumns(headers, checks, errors) {
@@ -261,11 +275,11 @@ function exists(path) {
 }
 
 function isFinalText(value) {
-  return typeof value === "string" && value.length > 0 && !/pending|example|draft|placeholder|not-for-acceptance/i.test(value);
+  return typeof value === "string" && value.length > 0 && !hasForbiddenFinalMarker(value);
 }
 
 function isUrl(value) {
-  return typeof value === "string" && /^https:\/\/github\.com\//.test(value) && !/example|pending|placeholder/i.test(value);
+  return typeof value === "string" && /^https:\/\/github\.com\//.test(value) && !hasForbiddenFinalMarker(value);
 }
 
 function isReleaseUrlForTag(value, gitTag) {
@@ -273,10 +287,14 @@ function isReleaseUrlForTag(value, gitTag) {
 }
 
 function isArtifactUrl(value) {
-  if (typeof value !== "string" || /example|pending|placeholder|dist\//i.test(value)) return false;
+  if (typeof value !== "string" || hasForbiddenFinalMarker(value) || /dist\//i.test(value)) return false;
   if (value.startsWith("s3://")) return true;
   if (!value.startsWith("https://")) return false;
   return isPublicHttpsUrl(value);
+}
+
+function hasForbiddenFinalMarker(value) {
+  return /pending|example|draft|placeholder|not-for-acceptance/i.test(value || "");
 }
 
 function isKnownChecklistEvidenceUrl(value, manifest) {

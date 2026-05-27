@@ -124,6 +124,18 @@ try {
   assert(invalidRequiredValuesStatus.errors.some((error) => error.includes("manifest.db_migration.latest_version")), "invalid required values fixture must reject draft DB migration version");
   assert(invalidRequiredValuesStatus.errors.some((error) => error.includes("manifest.cost_estimate.assumption")), "invalid required values fixture must reject pending cost assumption");
 
+  const draftArtifactUrlMarker = buildReadyCandidate();
+  draftArtifactUrlMarker.manifest.test_reports.unit_report_url = "s3://saphnexa-uat-admin-artifacts/draft/test-reports/allure/runs/unit-20260527/";
+  const draftArtifactUrlMarkerPaths = writeCandidateFiles(join(root, "draft-artifact-url-marker"), draftArtifactUrlMarker);
+  const draftArtifactUrlMarkerStatus = buildFinalEvidenceCandidateStatus(join(root, "draft-artifact-url-marker-status.json"), {
+    candidatePaths: draftArtifactUrlMarkerPaths,
+    resolveGitTagCommit,
+    resolveGitRepository
+  });
+  assert(draftArtifactUrlMarkerStatus.ready === false, "draft artifact URL marker fixture must not be ready");
+  assert(draftArtifactUrlMarkerStatus.errors.some((error) => error.includes("manifest.no_forbidden_markers.test_reports.unit_report_url")), "draft artifact URL marker fixture must reject draft marker inside URL");
+  assert(draftArtifactUrlMarkerStatus.errors.some((error) => error.includes("manifest.test_reports.unit_report_url")), "draft artifact URL marker fixture must reject URL with draft marker");
+
   const mismatchedDbMigrationVersion = buildReadyCandidate();
   mismatchedDbMigrationVersion.manifest.db_migration.latest_version = "V999__wrong_schema.sql";
   const mismatchedDbMigrationVersionPaths = writeCandidateFiles(join(root, "mismatched-db-migration-version"), mismatchedDbMigrationVersion);
