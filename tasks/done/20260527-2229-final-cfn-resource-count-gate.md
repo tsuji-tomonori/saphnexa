@@ -1,6 +1,6 @@
 # final cfn resource count gate
 
-- 状態: do
+- 状態: done
 - タスク種別: 機能追加
 - 対象ブランチ: `codex/saphnexa-acceptance-impl`
 - 対象PR: `#1`
@@ -30,19 +30,19 @@ final CloudFormation inventory に主要 resource type が存在していても�
 
 ## 受け入れ条件
 
-- [ ] final candidate validator が主要 resource type の最小個数不足を `cloudformation.major_resource_type_count.<type>` として拒否する。
-- [ ] fixture が、主要 resource type は存在するが個数不足の inventory を ready にしない。
-- [ ] 既存の ready fixture は設計上の期待最小個数を満たし、引き続き ready になる。
-- [ ] AC-081 の外部 CloudFormation capture を完了扱いしない。
-- [ ] 変更範囲に見合う検証を実行し、結果を task / report / PR コメントに残す。
+- [x] final candidate validator が主要 resource type の最小個数不足を `cloudformation.major_resource_type_count.<type>` として拒否する。
+- [x] fixture が、主要 resource type は存在するが個数不足の inventory を ready にしない。
+- [x] 既存の ready fixture は設計上の期待最小個数を満たし、引き続き ready になる。
+- [x] AC-081 の外部 CloudFormation capture を完了扱いしない。
+- [x] 変更範囲に見合う検証を実行し、結果を task / report / PR コメントに残す。
 
 ## Done 条件
 
-- [ ] 実装と fixture を追加する。
-- [ ] 選定した検証コマンドが pass する。
-- [ ] 作業レポートを `reports/working/` に作成する。
-- [ ] commit / push し、PR に受け入れ条件確認コメントとセルフレビューコメントを投稿する。
-- [ ] PR コメント後に task を `tasks/done/` へ移動し、その更新も commit / push する。
+- [x] 実装と fixture を追加する。
+- [x] 選定した検証コマンドが pass する。
+- [x] 作業レポートを `reports/working/` に作成する。
+- [x] commit / push し、PR に受け入れ条件確認コメントとセルフレビューコメントを投稿する。
+- [x] PR コメント後に task を `tasks/done/` へ移動し、その更新も commit / push する。
 
 ## 実装計画
 
@@ -75,3 +75,27 @@ AC-081 と runbook は既に「種別と個数」の照合を要求している�
 ## リスク
 
 - 期待個数は設計書の「個数」列に基づく最小個数として扱う。`38以上` や `14以上` のような項目は、実装や deploy 方式で増える可能性があるため、完全一致ではなく下限チェックにする。
+
+## 実施結果
+
+- 実装 commit: `b69f09e`
+- 作業レポート: `reports/working/20260527-2232-final-cfn-resource-count-gate.md`
+- PR 受け入れ条件確認コメント: https://github.com/tsuji-tomonori/saphnexa/pull/1#issuecomment-4554993122
+- PR セルフレビューコメント: https://github.com/tsuji-tomonori/saphnexa/pull/1#issuecomment-4554996836
+
+## 検証結果
+
+- `npm run cfn:inventory:build`: pass
+- `npm run cfn:inventory:check`: pass
+- `npm run acceptance:final-candidate:fixture:check`: pass
+- `npm run acceptance:final-candidate:check`: pass（final candidate は最終ファイル未作成のため not ready）
+- `npm run acceptance:package:check`: pass
+- `npm run verify`: pass
+- `git diff --check`: pass
+- `pre-commit run --files docs/acceptance/cloudformation/cloudformation_inventory.schema.json tools/check-cloudformation-inventory.js tools/check-final-evidence-candidate-fixtures.js tools/cloudformation-inventory.js tools/final-evidence-candidate.js tasks/do/20260527-2229-final-cfn-resource-count-gate.md`: pass
+- `pre-commit run --files reports/working/20260527-2232-final-cfn-resource-count-gate.md`: pass
+
+## 残件
+
+- AWS CloudFormation `describe-stacks` / `list-stack-resources` 実取得、AWS deploy/publish、final evidence manifest / checklist の最終作成・署名は未実施。
+- `dist/acceptance/final_readiness.json` は `final_acceptance_ready: false` のまま扱う。
