@@ -5,7 +5,7 @@ import { requiredArtifactIds } from "./acceptance-artifact-summary.js";
 import { acceptanceIds } from "./acceptance-ids.js";
 import { requiredExternalActionIds } from "./external-acceptance-actions.js";
 import { buildFinalAcceptanceReadiness } from "./final-acceptance-readiness.js";
-import { assert } from "./lib.js";
+import { assert, currentJstTimestamp } from "./lib.js";
 
 const root = mkdtempSync(join(tmpdir(), "saphnexa-final-readiness-"));
 
@@ -14,6 +14,7 @@ try {
     traceRows: acceptanceIds.map((id) => ({ id, state: "local_verified", evidence: "fixture final evidence" })),
     defectSnapshot: {
       blocker_critical_open_count: 0,
+      captured_at: currentJstTimestamp(),
       source: "fixture"
     },
     externalActionPlan: buildCompletedExternalActionPlan(),
@@ -52,6 +53,7 @@ try {
     traceRows: acceptanceIds.map((id) => ({ id, state: "local_verified", evidence: "fixture final evidence" })),
     defectSnapshot: {
       blocker_critical_open_count: 0,
+      captured_at: currentJstTimestamp(),
       source: "fixture"
     },
     externalActionPlan: buildCompletedExternalActionPlan(),
@@ -66,6 +68,26 @@ try {
   assert(inconsistentFinalCandidateStatus.final_candidate_gate.ready === false, "inconsistent final candidate status gate must not be ready");
   assert(inconsistentFinalCandidateStatus.final_candidate_gate.status === "invalid", "inconsistent final candidate status must preserve status");
   assert(inconsistentFinalCandidateStatus.final_candidate_gate.errors.length > 0, "inconsistent final candidate errors must be explicit");
+
+  const staleDefectSnapshot = buildFinalAcceptanceReadiness(join(root, "final-readiness-stale-defect-snapshot.json"), {
+    traceRows: acceptanceIds.map((id) => ({ id, state: "local_verified", evidence: "fixture final evidence" })),
+    defectSnapshot: {
+      blocker_critical_open_count: 0,
+      captured_at: "2026-05-27T18:53:00+09:00",
+      source: "fixture"
+    },
+    externalActionPlan: buildCompletedExternalActionPlan(),
+    finalCandidateStatus: {
+      ready: true,
+      status: "ready",
+      missing_files: [],
+      errors: []
+    }
+  });
+  assert(staleDefectSnapshot.final_acceptance_ready === false, "stale defect snapshot fixture must not be ready");
+  assert(staleDefectSnapshot.defect_gate.ready === false, "stale defect snapshot gate must not be ready");
+  assert(staleDefectSnapshot.defect_gate.snapshot_fresh === false, "stale defect snapshot must not be fresh");
+  assert(staleDefectSnapshot.defect_gate.pending.includes("fresh GitHub issue tracker snapshot"), "stale defect snapshot must require refresh");
 
   console.log("final acceptance readiness fixture check passed");
 } finally {

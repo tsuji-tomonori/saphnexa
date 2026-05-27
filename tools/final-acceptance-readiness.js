@@ -5,7 +5,7 @@ import { acceptanceCatalog, acceptanceCatalogPath, priorityByAcceptanceId } from
 import { buildExternalAcceptanceActionPlan, externalActionPlanPath } from "./external-acceptance-actions.js";
 import { buildFinalEvidenceCandidateStatus, finalCandidateStatusPath } from "./final-evidence-candidate.js";
 import { currentGitCommit } from "./git-context.js";
-import { currentJstTimestamp, readJson, readText } from "./lib.js";
+import { currentJstTimestamp, isCurrentJstTimestamp, readJson, readText } from "./lib.js";
 
 export const finalReadinessPath = "dist/acceptance/final_readiness.json";
 
@@ -15,17 +15,19 @@ export function buildFinalAcceptanceReadiness(outputPath = finalReadinessPath, o
   const externalActionPlan = options.externalActionPlan || buildExternalAcceptanceActionPlan(externalActionPlanPath);
   const finalCandidateStatus = options.finalCandidateStatus || buildFinalEvidenceCandidateStatus(finalCandidateStatusPath);
   const finalCandidateReady = isFinalCandidateReady(finalCandidateStatus);
-  const defectSnapshotRequiresRefresh = traceRows.some((row) => row.id === "AC-153" && row.state !== "local_verified");
-  const defectGateReady = defectSnapshot.blocker_critical_open_count === 0 && !defectSnapshotRequiresRefresh;
-  const externalActionGateReady = finalCandidateReady || externalActionPlan.ready === true;
+  const defectSnapshotFresh = isCurrentJstTimestamp(defectSnapshot.captured_at);
+  const defectSnapshotRequiresRefresh = !defectSnapshotFresh || !finalCandidateReady;
+  const defectGateReady = finalCandidateReady && defectSnapshot.blocker_critical_open_count === 0 && defectSnapshotFresh;
+  const externalActionGateReady = (finalCandidateReady && defectGateReady) || externalActionPlan.ready === true;
+  const aggregateEvidenceReady = finalCandidateReady && defectGateReady && externalActionGateReady;
   const artifactSummary = buildAcceptanceArtifactSummary({
     gitCommit: currentGitCommit(),
-    finalReadinessReady: finalCandidateReady && defectGateReady && externalActionGateReady,
+    finalReadinessReady: aggregateEvidenceReady,
     externalActionPlan
   });
   const artifactSummaryStats = summarizeAcceptanceArtifacts(artifactSummary);
   const traceBlockers = traceRows.filter((row) => row.state !== "local_verified");
-  const blockers = (finalCandidateReady ? [] : traceBlockers)
+  const blockers = (aggregateEvidenceReady ? [] : traceBlockers)
     .map((row) => ({
       id: row.id,
       priority: priorityByAcceptanceId[row.id] || "unknown",
@@ -39,7 +41,7 @@ export function buildFinalAcceptanceReadiness(outputPath = finalReadinessPath, o
   };
   const priorityGatesReady = unresolvedByPriority.P0.length === 0 && unresolvedByPriority.P1.length === 0 && unresolvedByPriority.P2.length === 0;
   const artifactSummaryReady = artifactSummaryStats.pending_external_count === 0 && artifactSummaryStats.pending_action_ids.length === 0;
-  const finalAcceptanceReady = finalCandidateReady && defectGateReady && externalActionGateReady && artifactSummaryReady && priorityGatesReady;
+  const finalAcceptanceReady = aggregateEvidenceReady && artifactSummaryReady && priorityGatesReady;
 
   const readiness = {
     schema_version: "saphnexa-final-acceptance-readiness.v1",
@@ -94,6 +96,8 @@ export function buildFinalAcceptanceReadiness(outputPath = finalReadinessPath, o
       ready: defectGateReady,
       blocker_critical_open_count: defectSnapshot.blocker_critical_open_count,
       source: defectSnapshot.source,
+      captured_at: defectSnapshot.captured_at,
+      snapshot_fresh: defectSnapshotFresh,
       snapshot_refresh_required: defectSnapshotRequiresRefresh,
       pending: defectGateReady ? [] : defectPendingReasons(defectSnapshot, defectSnapshotRequiresRefresh)
     },
@@ -136,7 +140,9 @@ export function buildFinalAcceptanceReadiness(outputPath = finalReadinessPath, o
       "npm run acceptance:package:build",
       "npm run acceptance:package:check"
     ],
-    note: "This readiness file is a preflight guard. It must not be used as proof that final acceptance is complete."
+    note: finalAcceptanceReady
+      ? "Final acceptance readiness is true only because final candidate evidence, fresh defect snapshot, artifact, release, AWS, and checklist gates are satisfied."
+      : "This readiness file is a preflight guard. It must not be used as proof that final acceptance is complete."
   };
 
   mkdirSync(dirname(outputPath), { recursive: true });

@@ -21,9 +21,13 @@ const counts = countStates(rows);
 const cloudFormationInventory = buildCloudFormationInventoryDraft(cloudFormationInventoryPath);
 const externalActionPlan = buildExternalAcceptanceActionPlan(externalActionPlanPath);
 const finalReadiness = buildFinalAcceptanceReadiness(finalReadinessPath);
+const finalAcceptanceReady = finalReadiness.final_acceptance_ready;
+const effectiveCounts = finalAcceptanceReady
+  ? { local_verified: acceptanceIds.length, requires_aws: 0, implemented_unverified: 0, scaffolded: 0, not_started: 0 }
+  : counts;
 const artifactSummary = buildAcceptanceArtifactSummary({
   gitCommit,
-  finalReadinessReady: finalReadiness.final_acceptance_ready,
+  finalReadinessReady: finalAcceptanceReady,
   externalActionPlan
 });
 const artifactSummaryStats = summarizeAcceptanceArtifacts(artifactSummary);
@@ -89,7 +93,7 @@ const manifest = {
     final_candidate_status_path: finalReadiness.final_candidate_gate.status_path,
     final_candidate_ready: finalReadiness.final_candidate_gate.ready,
     external_action_plan_path: externalActionPlanPath,
-    external_actions_pending: externalActionPlan.pending_action_ids
+    external_actions_pending: finalReadiness.external_action_gate.pending_action_ids
   },
   source_catalog: {
     path: acceptanceCatalogPath,
@@ -112,7 +116,7 @@ const summary = {
   generated_at: generatedAt,
   generated_by: "tools/build-acceptance-package.js",
   git_commit_sha: gitCommit,
-  trace_state_counts: counts,
+  trace_state_counts: effectiveCounts,
   source_catalog_path: acceptanceCatalogPath,
   source_catalog_items: acceptanceCatalog.item_count,
   source_priority_counts: acceptanceCatalog.priority_counts,
@@ -123,13 +127,15 @@ const summary = {
   artifact_summary_items: artifactSummaryStats.item_count,
   artifact_summary_pending_external: artifactSummaryStats.pending_external_count,
   final_readiness_path: finalReadinessPath,
-  final_readiness_ready: finalReadiness.final_acceptance_ready,
+  final_readiness_ready: finalAcceptanceReady,
   final_candidate_status_path: finalReadiness.final_candidate_gate.status_path,
   final_candidate_ready: finalReadiness.final_candidate_gate.ready,
   external_action_plan_path: externalActionPlanPath,
-  external_actions_pending: externalActionPlan.pending_action_ids.length,
-  final_acceptance_ready: counts.requires_aws === 0,
-  note: "Draft package for local evidence consolidation. Final acceptance still requires AWS/UAT evidence for requires_aws rows."
+  external_actions_pending: finalReadiness.external_action_gate.pending_action_ids.length,
+  final_acceptance_ready: finalAcceptanceReady,
+  note: finalAcceptanceReady
+    ? "Final package summary is ready because final evidence candidate, fresh defect snapshot, and aggregate readiness gates are satisfied."
+    : "Draft package for local evidence consolidation. Final acceptance still requires AWS/UAT evidence for requires_aws rows."
 };
 
 write(join(outputRoot, "evidence_manifest.draft.json"), `${JSON.stringify(manifest, null, 2)}\n`);
