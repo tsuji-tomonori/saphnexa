@@ -1,10 +1,11 @@
 import { mkdirSync, rmSync, writeFileSync } from "node:fs";
 import { createHash } from "node:crypto";
 import { dirname, join } from "node:path";
-import { readText } from "./lib.js";
+import { currentJstTimestamp, readText } from "./lib.js";
 
 const outputRoot = "dist/admin/docs";
 const version = "v0.16";
+const generatedAt = currentJstTimestamp();
 const sourceFiles = [
   "docs/acceptance/traceability.md",
   "docs/adr/ADR-0001-local-first-acceptance-slice.md",
@@ -61,7 +62,7 @@ function artifact(artifact_id, viewer_path, index_path, sources) {
     status: "published-local",
     source_files: sources,
     checksum: `sha256:${sha256(html)}`,
-    generated_at: "2026-05-27T00:00:00.000Z"
+    generated_at: generatedAt
   };
 }
 

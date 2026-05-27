@@ -1,9 +1,10 @@
 import { mkdirSync, rmSync, writeFileSync } from "node:fs";
 import { createHash } from "node:crypto";
 import { dirname, join } from "node:path";
-import { readJson, readText } from "./lib.js";
+import { currentJstTimestamp, readJson, readText } from "./lib.js";
 
 const outputRoot = "dist/admin/test-reports/allure/latest";
+const generatedAt = currentJstTimestamp();
 const packageJson = readJson("package.json");
 const workflow = readText(".github/workflows/ci.yml");
 const suites = [
@@ -65,7 +66,7 @@ const manifest = {
   source_files: ["package.json", ".github/workflows/ci.yml", "tests/contract.test.js", "tests/integration-local.test.js", "tests/e2e-local.test.js"],
   suites,
   checksum: `sha256:${sha256(html)}`,
-  generated_at: "2026-05-27T00:00:00.000Z",
+  generated_at: generatedAt,
   note: "この artifact はローカル検証対象を列挙する。実 pass/fail は npm run verify と GitHub Actions の実行結果を証跡にする。"
 };
 

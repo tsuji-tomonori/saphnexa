@@ -1,7 +1,7 @@
 import { createHash } from "node:crypto";
 import { readFileSync } from "node:fs";
 import { createLocalApi } from "../apps/api/src/local-api.js";
-import { assert, readJson } from "./lib.js";
+import { assert, isCurrentJstTimestamp, readJson } from "./lib.js";
 
 const docsManifest = readJson("dist/admin/docs/manifest.json");
 assert(docsManifest.schema_version === "admin-docs-artifact.v1", "docs manifest schema mismatch");
@@ -16,6 +16,7 @@ for (const source of ["docs/acceptance/traceability.md", "docs/adr/ADR-0001-loca
 const reportManifest = readJson("dist/admin/test-reports/allure/latest/manifest.json");
 assert(reportManifest.schema_version === "admin-test-report-artifact.v1", "test report manifest schema mismatch");
 assertArtifact(reportManifest, "/admin/test-reports/allure/latest/");
+assert(isCurrentJstTimestamp(reportManifest.generated_at), "test report manifest generated_at must be current JST timestamp");
 for (const suite of reportManifest.suites) {
   assert(suite.package_script_defined, `suite package script missing: ${suite.name}`);
   assert(suite.ci_workflow_references_command, `suite command missing from CI workflow: ${suite.command}`);
@@ -40,6 +41,7 @@ console.log("admin artifacts check passed");
 function assertArtifact(artifact, viewerPath) {
   assert(artifact.viewer_path === viewerPath, `artifact viewer path mismatch: ${viewerPath}`);
   assert(artifact.status === "published-local", `artifact status mismatch: ${viewerPath}`);
+  assert(isCurrentJstTimestamp(artifact.generated_at), `artifact generated_at must be current JST timestamp: ${viewerPath}`);
   assert(/^sha256:[a-f0-9]{64}$/.test(artifact.checksum), `artifact checksum format mismatch: ${viewerPath}`);
   const actual = `sha256:${sha256(readFileSync(artifact.index_path))}`;
   assert(artifact.checksum === actual, `artifact checksum content mismatch: ${viewerPath}`);

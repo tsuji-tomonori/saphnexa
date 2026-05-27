@@ -8,7 +8,7 @@ import {
   referenceExpansionGoldenCases,
   unanswerableGoldenCases
 } from "../packages/testing/src/rag-evaluation.js";
-import { assert } from "./lib.js";
+import { assert, currentJstTimestamp, isCurrentJstTimestamp } from "./lib.js";
 
 assertAgentContract();
 const reference = evaluateReferenceExpansion();
@@ -16,7 +16,7 @@ const metrics = evaluateRagQuality();
 const report = {
   schema_version: "rag-quality-local.v1",
   generated_by: "tools/check-rag-quality.js",
-  generated_at: "2026-05-27T00:00:00.000Z",
+  generated_at: currentJstTimestamp(),
   thresholds: ragQualityThresholds,
   metrics,
   reference_expansion: reference
@@ -28,6 +28,7 @@ assert(metrics.citation_precision >= ragQualityThresholds.citation_precision, `c
 assert(metrics.groundedness >= ragQualityThresholds.groundedness, `groundedness below threshold: ${metrics.groundedness}`);
 assert(metrics.refusal_accuracy >= ragQualityThresholds.refusal_accuracy, `refusal accuracy below threshold: ${metrics.refusal_accuracy}`);
 assert(metrics.unsupported_claim_rate <= ragQualityThresholds.unsupported_claim_rate_max, `unsupported claim rate above threshold: ${metrics.unsupported_claim_rate}`);
+assert(isCurrentJstTimestamp(report.generated_at), "RAG quality report generated_at must be current JST timestamp");
 
 writeReport("dist/reports/rag-quality-local.json", report);
 console.log(`RAG quality check passed (recall@10=${metrics.recall_at_10.toFixed(2)}, citation_precision=${metrics.citation_precision.toFixed(2)}, groundedness=${metrics.groundedness.toFixed(2)}, refusal_accuracy=${metrics.refusal_accuracy.toFixed(2)}, unsupported_claim_rate=${metrics.unsupported_claim_rate.toFixed(2)}, reference_expansion=${reference.success_count}/10)`);

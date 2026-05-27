@@ -2,7 +2,7 @@ import { createHash } from "node:crypto";
 import { mkdirSync, rmSync, writeFileSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { bm25Documents, bm25GoldenQueries, referenceGraphSamples } from "../packages/testing/src/search-fixtures.js";
-import { assert, readJson } from "./lib.js";
+import { assert, currentJstTimestamp, isCurrentJstTimestamp, readJson } from "./lib.js";
 
 const outputRoot = "dist/offline-artifacts/local";
 rmSync(outputRoot, { recursive: true, force: true });
@@ -26,12 +26,13 @@ const manifest = {
   source_design_version: "v0.16",
   artifacts,
   checksum: `sha256:${sha256(JSON.stringify(artifacts))}`,
-  generated_at: "2026-05-27T00:00:00.000Z",
+  generated_at: currentJstTimestamp(),
   note: "ローカル検収用の offline artifact inventory。実 S3 Vectors / PDF parsing / KB 同期の実行証跡ではない。"
 };
 write(join(outputRoot, "manifest.json"), `${JSON.stringify(manifest, null, 2)}\n`);
 
 const saved = readJson(join(outputRoot, "manifest.json"));
+assert(isCurrentJstTimestamp(saved.generated_at), "offline artifact manifest generated_at must be current JST timestamp");
 for (const type of ["raw_documents", "parsed_pages", "chunk_manifest", "reference_graph", "bm25f_index", "parser_output"]) {
   assert(saved.artifacts.some((item) => item.artifact_type === type), `offline artifact missing: ${type}`);
 }
