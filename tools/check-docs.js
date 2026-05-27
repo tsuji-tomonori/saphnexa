@@ -72,6 +72,14 @@ for (const command of [
 ]) {
   assert(localVerification.includes(command), `local verification docs missing ${command}`);
 }
+for (const phrase of [
+  "defect-snapshot-refresh",
+  "gh issue list --state open --json number,title,labels,state",
+  "ローカル snapshot だけでは完了扱いにしない",
+  "AC-153 の最終 PASS 判定"
+]) {
+  assert(localVerification.includes(phrase), `local verification docs missing ${phrase}`);
+}
 
 for (const file of listFiles(["docs"], (path) => path.endsWith(".md"))) {
   const body = readText(file);
