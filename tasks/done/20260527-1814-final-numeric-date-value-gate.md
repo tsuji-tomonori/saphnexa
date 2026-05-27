@@ -1,6 +1,6 @@
 # final numeric and checklist date value gate
 
-状態: doing
+状態: done
 
 ## 背景
 
@@ -107,7 +107,9 @@ final evidence candidate の検査で、費用見積の数値が有限・非負�
 
 ## PR コメント
 
-- 未投稿。PR push 後に受け入れ条件確認とセルフレビューを記録する。
+- 受け入れ条件確認: https://github.com/tsuji-tomonori/saphnexa/pull/1#issuecomment-4553198930
+- セルフレビュー: https://github.com/tsuji-tomonori/saphnexa/pull/1#issuecomment-4553201318
+- GitHub Apps comment は既に 403 `Resource not accessible by integration` を確認済みのため、`gh pr comment` で代替した。
 
 ## PR レビュー観点
 
