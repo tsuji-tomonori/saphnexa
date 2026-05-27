@@ -40,6 +40,7 @@ export function buildFinalEvidenceCandidateStatus(outputPath = finalCandidateSta
     validateChecklist(paths.acceptance_checklist, checks, errors, options, manifest);
     const cloudFormationInventory = validateCloudFormationInventory(paths.cloudformation_inventory, checks, errors);
     validateManifestCloudFormationConsistency(manifest, cloudFormationInventory, checks, errors);
+    validateManifestArtifactDeploymentSources(manifest, cloudFormationInventory, checks, errors);
   }
 
   const status = {
@@ -220,6 +221,20 @@ function validateManifestCloudFormationConsistency(manifest, inventory, checks, 
   check(manifestStack?.stack_name === inventory.stack_name, "final_evidence.stack_name_consistency", checks, errors, "CloudFormation inventory stack_name must match the manifest stack name for the same stack_id");
 }
 
+function validateManifestArtifactDeploymentSources(manifest, inventory, checks, errors) {
+  const deploymentSources = artifactDeploymentSources(inventory);
+  check(deploymentSources.size > 0, "final_evidence.artifact_deployment_sources", checks, errors, "CloudFormation inventory must include artifact deployment outputs");
+  for (const [label, value] of manifestArtifactEntries(manifest)) {
+    check(
+      artifactUrlMatchesDeploymentSource(value, deploymentSources),
+      `final_evidence.artifact_deployment_source.${label}`,
+      checks,
+      errors,
+      "artifact URL must point to the CloudFormation distribution or admin artifacts bucket"
+    );
+  }
+}
+
 function requireField(object, key, label, errors) {
   if (!Object.prototype.hasOwnProperty.call(object, key)) errors.push(`${label}: required`);
 }
@@ -265,15 +280,19 @@ function isKnownChecklistEvidenceUrl(value, manifest) {
 }
 
 function manifestArtifactLocations(manifest) {
+  return manifestArtifactEntries(manifest).map(([, value]) => value).filter(isArtifactUrl);
+}
+
+function manifestArtifactEntries(manifest) {
   return [
-    manifest?.test_reports?.allure_latest_url,
-    manifest?.test_reports?.unit_report_url,
-    manifest?.test_reports?.integration_report_url,
-    manifest?.test_reports?.e2e_report_url,
-    manifest?.docs_site?.latest_url,
-    manifest?.docs_site?.version_url,
-    manifest?.rag_evaluation?.report_url
-  ].filter(isArtifactUrl);
+    ["test_reports.allure_latest_url", manifest?.test_reports?.allure_latest_url],
+    ["test_reports.unit_report_url", manifest?.test_reports?.unit_report_url],
+    ["test_reports.integration_report_url", manifest?.test_reports?.integration_report_url],
+    ["test_reports.e2e_report_url", manifest?.test_reports?.e2e_report_url],
+    ["docs_site.latest_url", manifest?.docs_site?.latest_url],
+    ["docs_site.version_url", manifest?.docs_site?.version_url],
+    ["rag_evaluation.report_url", manifest?.rag_evaluation?.report_url]
+  ].filter(([, value]) => isArtifactUrl(value));
 }
 
 function isGitHubRepositoryEvidenceUrl(value, repository) {
@@ -307,6 +326,31 @@ function parseS3Url(value) {
   const match = /^s3:\/\/([^/]+)(?:\/.*)?$/.exec(value || "");
   if (!match) return null;
   return { bucket: match[1] };
+}
+
+function artifactDeploymentSources(inventory) {
+  const sources = new Set();
+  const distributionDomain = stackOutputValue(inventory, "DistributionDomainName");
+  if (isFinalText(distributionDomain)) sources.add(`https://${distributionDomain.toLowerCase()}`);
+  const artifactsBucketArn = stackOutputValue(inventory, "AdminArtifactsBucketArn");
+  const artifactsBucket = parseS3BucketArn(artifactsBucketArn);
+  if (artifactsBucket) sources.add(`s3://${artifactsBucket}`);
+  return sources;
+}
+
+function artifactUrlMatchesDeploymentSource(value, deploymentSources) {
+  const location = artifactLocation(value);
+  return Boolean(location && deploymentSources.has(location));
+}
+
+function stackOutputValue(inventory, outputKey) {
+  const expected = normalizeOutputKey(outputKey);
+  return (inventory?.stack_outputs || []).find((output) => normalizeOutputKey(output.OutputKey) === expected)?.OutputValue;
+}
+
+function parseS3BucketArn(value) {
+  const match = /^arn:aws:s3:::([^/]+)$/.exec(value || "");
+  return match?.[1] || null;
 }
 
 function hasPathSuffix(value, suffix) {

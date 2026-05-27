@@ -197,6 +197,19 @@ try {
   assert(privateArtifactUrlsStatus.errors.some((error) => error.includes("manifest.rag_evaluation.report_url")), "private artifact URL fixture must reject private IP evaluation report URL");
   assert(privateArtifactUrlsStatus.errors.some((error) => error.includes(`checklist.${acceptanceIds[0]}.証跡リンク_url`)), "private artifact URL fixture must reject private checklist evidence URL");
 
+  const unknownArtifactDeploymentSource = buildReadyCandidate();
+  unknownArtifactDeploymentSource.manifest.docs_site.latest_url = "https://artifacts.othercorp.net/admin/docs/latest/";
+  unknownArtifactDeploymentSource.manifest.test_reports.allure_latest_url = "s3://othercorp-acceptance-artifacts/test-reports/allure/latest/";
+  const unknownArtifactDeploymentSourcePaths = writeCandidateFiles(join(root, "unknown-artifact-deployment-source"), unknownArtifactDeploymentSource);
+  const unknownArtifactDeploymentSourceStatus = buildFinalEvidenceCandidateStatus(join(root, "unknown-artifact-deployment-source-status.json"), {
+    candidatePaths: unknownArtifactDeploymentSourcePaths,
+    resolveGitTagCommit,
+    resolveGitRepository
+  });
+  assert(unknownArtifactDeploymentSourceStatus.ready === false, "unknown artifact deployment source fixture must not be ready");
+  assert(unknownArtifactDeploymentSourceStatus.errors.some((error) => error.includes("final_evidence.artifact_deployment_source.docs_site.latest_url")), "unknown artifact deployment source fixture must reject docs URL outside CloudFormation outputs");
+  assert(unknownArtifactDeploymentSourceStatus.errors.some((error) => error.includes("final_evidence.artifact_deployment_source.test_reports.allure_latest_url")), "unknown artifact deployment source fixture must reject Allure URL outside CloudFormation outputs");
+
   const unknownChecklistEvidenceSource = buildReadyCandidate();
   unknownChecklistEvidenceSource.checklistRows[0].証跡リンク = "https://evidence.othercorp.net/admin/docs/latest/";
   const unknownChecklistEvidenceSourcePaths = writeCandidateFiles(join(root, "unknown-checklist-evidence-source"), unknownChecklistEvidenceSource);
@@ -391,18 +404,18 @@ function buildReadyCandidate() {
         checksum_status: "matched"
       },
       test_reports: {
-        allure_latest_url: "s3://saphnexa-acceptance-artifacts/test-reports/allure/latest/",
-        unit_report_url: "s3://saphnexa-acceptance-artifacts/test-reports/allure/runs/unit-20260527/",
-        integration_report_url: "s3://saphnexa-acceptance-artifacts/test-reports/allure/runs/integration-20260527/",
-        e2e_report_url: "s3://saphnexa-acceptance-artifacts/test-reports/allure/runs/e2e-20260527/"
+        allure_latest_url: "s3://saphnexa-uat-admin-artifacts/test-reports/allure/latest/",
+        unit_report_url: "s3://saphnexa-uat-admin-artifacts/test-reports/allure/runs/unit-20260527/",
+        integration_report_url: "s3://saphnexa-uat-admin-artifacts/test-reports/allure/runs/integration-20260527/",
+        e2e_report_url: "s3://saphnexa-uat-admin-artifacts/test-reports/allure/runs/e2e-20260527/"
       },
       docs_site: {
-        latest_url: "s3://saphnexa-acceptance-artifacts/docs-site/latest/",
-        version_url: "s3://saphnexa-acceptance-artifacts/docs-site/releases/v0.16/"
+        latest_url: "s3://saphnexa-uat-admin-artifacts/docs-site/latest/",
+        version_url: "s3://saphnexa-uat-admin-artifacts/docs-site/releases/v0.16/"
       },
       rag_evaluation: {
         evaluation_run_id: "eval-20260527-uat-final",
-        report_url: "s3://saphnexa-acceptance-artifacts/reports/evaluations/eval-20260527-uat-final/"
+        report_url: "s3://saphnexa-uat-admin-artifacts/reports/evaluations/eval-20260527-uat-final/"
       },
       cost_estimate: {
         monthly_usd: 420,
