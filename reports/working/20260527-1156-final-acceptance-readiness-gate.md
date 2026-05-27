@@ -32,6 +32,8 @@
 - `npm run acceptance:final:check`
 - PR 受け入れ条件コメント: https://github.com/tsuji-tomonori/saphnexa/pull/1#issuecomment-4550833331
 - PR セルフレビューコメント: https://github.com/tsuji-tomonori/saphnexa/pull/1#issuecomment-4550833332
+- PR task 完了セルフレビューコメント: https://github.com/tsuji-tomonori/saphnexa/pull/1#issuecomment-4550839261
+- GitHub Actions run: https://github.com/tsuji-tomonori/saphnexa/actions/runs/26488033583
 
 ## 検証
 
@@ -47,6 +49,7 @@
 - `npm run verify`: pass
 - `git diff --check`: pass
 - `pre-commit run --files .github/workflows/ci.yml Taskfile.yml docs/acceptance/traceability.md docs/ops/local-verification.md package.json tools/build-acceptance-package.js tools/build-admin-test-report.js tools/check-acceptance-package.js tools/check-ci-workflow.js tools/check-docs.js tasks/do/20260527-1152-final-acceptance-readiness-gate.md tools/build-final-acceptance-readiness.js tools/check-final-acceptance-readiness.js tools/final-acceptance-readiness.js`: pass
+- PR #1 GitHub Actions `Saphnexa CI` 14 jobs: pass
 
 ## fit 評価
 
