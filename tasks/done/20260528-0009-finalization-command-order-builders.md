@@ -1,6 +1,6 @@
 # finalization command order builders
 
-- 状態: do
+- 状態: done
 - タスク種別: 修正
 - 対象ブランチ: `codex/saphnexa-acceptance-impl`
 - 対象PR: `#1`
@@ -56,11 +56,11 @@ finalization 手順が実際のファイル依存順に沿っており、readine
 
 ## Done 条件
 
-- [ ] runbook / readiness builder / checks を更新する。
-- [ ] 選定した検証コマンドが pass する。
-- [ ] 作業レポートを `reports/working/` に作成する。
-- [ ] commit / push し、PR に受け入れ条件確認コメントとセルフレビューコメントを投稿する。
-- [ ] PR コメント後に task を `tasks/done/` へ移動し、その更新も commit / push する。
+- [x] runbook / readiness builder / checks を更新する。
+- [x] 選定した検証コマンドが pass する。
+- [x] 作業レポートを `reports/working/` に作成する。
+- [x] commit / push し、PR に受け入れ条件確認コメントとセルフレビューコメントを投稿する。
+- [x] PR コメント後に task を `tasks/done/` へ移動し、その更新も commit / push する。
 
 ## 実装計画
 
@@ -98,6 +98,11 @@ final acceptance runbook の手順依存に関わるため、docs を同一 scop
 - `tools/check-final-acceptance-readiness.js` に finalization command の順序検査を追加した。
 - `tools/check-docs.js` に final acceptance runbook の順序検査を追加した。
 - 外部 action は実行せず、pending のまま維持した。
+
+## PR コメント
+
+- 受け入れ条件確認: https://github.com/tsuji-tomonori/saphnexa/pull/1#issuecomment-4555877613
+- セルフレビュー: https://github.com/tsuji-tomonori/saphnexa/pull/1#issuecomment-4555879632
 
 ## PR セルフレビュー観点
 
