@@ -1,6 +1,6 @@
 # final evidence manifest builder strict input
 
-- 状態: do
+- 状態: done
 - タスク種別: 修正
 - 対象ブランチ: `codex/saphnexa-acceptance-impl`
 - 対象PR: `#1`
@@ -57,11 +57,11 @@ final evidence manifest builder が、生成前に final candidate と同じ主�
 
 ## Done 条件
 
-- [ ] builder validation と fixture を更新する。
-- [ ] 選定した検証コマンドが pass する。
-- [ ] 作業レポートを `reports/working/` に作成する。
-- [ ] commit / push し、PR に受け入れ条件確認コメントとセルフレビューコメントを投稿する。
-- [ ] PR コメント後に task を `tasks/done/` へ移動し、その更新も commit / push する。
+- [x] builder validation と fixture を更新する。
+- [x] 選定した検証コマンドが pass する。
+- [x] 作業レポートを `reports/working/` に作成する。
+- [x] commit / push し、PR に受け入れ条件確認コメントとセルフレビューコメントを投稿する。
+- [x] PR コメント後に task を `tasks/done/` へ移動し、その更新も commit / push する。
 
 ## 実装計画
 
@@ -102,6 +102,11 @@ final acceptance runbook は既に builder 実行手順を示している。今�
 - `tools/check-final-evidence-manifest-fixtures.js` に builder 固有の invalid input fixture を追加した。
 - docs は既存 schema / final candidate validator の契約に builder を合わせる変更であり、追加更新不要と判断した。
 - Git tag/release、AWS deploy/publish、CloudFormation capture、final signoff は未実施のまま維持した。
+
+## PR コメント
+
+- 受け入れ条件確認: https://github.com/tsuji-tomonori/saphnexa/pull/1#issuecomment-4555749203
+- セルフレビュー: https://github.com/tsuji-tomonori/saphnexa/pull/1#issuecomment-4555751415
 
 ## PR セルフレビュー観点
 
