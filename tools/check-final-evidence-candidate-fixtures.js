@@ -93,6 +93,32 @@ try {
   assert(mismatchedInventoryStatus.errors.some((error) => error.includes("final_evidence.stack_id_consistency")), "mismatched inventory fixture must reject stack id mismatch");
   assert(mismatchedInventoryStatus.errors.some((error) => error.includes("final_evidence.stack_name_consistency")), "mismatched inventory fixture must reject stack name mismatch");
 
+  const invalidManifestStacks = buildReadyCandidate();
+  invalidManifestStacks.manifest.cloudformation_stacks.push(
+    {
+      stack_name: "saphnexa-uat-wrong-account",
+      stack_id: "arn:aws:cloudformation:ap-northeast-1:999999999999:stack/saphnexa-uat-wrong-account/abc12345"
+    },
+    {
+      stack_name: "saphnexa-uat-wrong-region",
+      stack_id: "arn:aws:cloudformation:us-east-1:123456789012:stack/saphnexa-uat-wrong-region/abc12345"
+    },
+    {
+      stack_name: "saphnexa-uat-declared-name",
+      stack_id: "arn:aws:cloudformation:ap-northeast-1:123456789012:stack/saphnexa-uat-actual-name/abc12345"
+    }
+  );
+  const invalidManifestStacksPaths = writeCandidateFiles(join(root, "invalid-manifest-stacks"), invalidManifestStacks);
+  const invalidManifestStacksStatus = buildFinalEvidenceCandidateStatus(join(root, "invalid-manifest-stacks-status.json"), {
+    candidatePaths: invalidManifestStacksPaths,
+    resolveGitTagCommit,
+    resolveGitRepository
+  });
+  assert(invalidManifestStacksStatus.ready === false, "invalid manifest stacks fixture must not be ready");
+  assert(invalidManifestStacksStatus.errors.some((error) => error.includes("manifest.cloudformation_stacks.saphnexa-uat-wrong-account.stack_account")), "invalid manifest stacks fixture must reject stack account mismatch");
+  assert(invalidManifestStacksStatus.errors.some((error) => error.includes("manifest.cloudformation_stacks.saphnexa-uat-wrong-region.stack_region")), "invalid manifest stacks fixture must reject stack region mismatch");
+  assert(invalidManifestStacksStatus.errors.some((error) => error.includes("manifest.cloudformation_stacks.saphnexa-uat-declared-name.stack_name_arn")), "invalid manifest stacks fixture must reject stack name ARN mismatch");
+
   const invalidChecklistValues = buildReadyCandidate();
   invalidChecklistValues.checklistRows[0].証跡リンク = "manual evidence attached";
   invalidChecklistValues.checklistRows[1].確認者 = "pending-final-acceptance";

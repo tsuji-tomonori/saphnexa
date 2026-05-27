@@ -99,8 +99,12 @@ function validateManifest(path, checks, errors, options = {}) {
   check(isFinalText(manifest.cdk_app_version), "manifest.cdk_app_version", checks, errors, "must include final CDK app version");
   check(Array.isArray(manifest.cloudformation_stacks) && manifest.cloudformation_stacks.length > 0, "manifest.cloudformation_stacks", checks, errors, "must include deployed stacks");
   for (const stack of manifest.cloudformation_stacks || []) {
+    const stackArn = parseCloudFormationStackArn(stack.stack_id);
     check(isFinalText(stack.stack_name), `manifest.cloudformation_stacks.${stack.stack_name || "unknown"}.stack_name`, checks, errors, "must include stack name");
     check(/^arn:aws:cloudformation:ap-northeast-1:[0-9]{12}:stack\//.test(stack.stack_id || ""), `manifest.cloudformation_stacks.${stack.stack_name || "unknown"}.stack_id`, checks, errors, "must include CloudFormation stack ARN");
+    check(stackArn?.region === manifest.aws_region, `manifest.cloudformation_stacks.${stack.stack_name || "unknown"}.stack_region`, checks, errors, "stack ARN region must match manifest.aws_region");
+    check(stackArn?.accountId === manifest.aws_account_id, `manifest.cloudformation_stacks.${stack.stack_name || "unknown"}.stack_account`, checks, errors, "stack ARN account must match manifest.aws_account_id");
+    check(stackArn?.stackName === stack.stack_name, `manifest.cloudformation_stacks.${stack.stack_name || "unknown"}.stack_name_arn`, checks, errors, "stack_name must match stack ARN name");
   }
 
   for (const key of ["allure_latest_url", "unit_report_url", "integration_report_url", "e2e_report_url"]) {
