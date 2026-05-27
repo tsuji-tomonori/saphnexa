@@ -28,7 +28,7 @@
 
 - `dist/acceptance/external_action_plan.json` を生成可能。
 - readiness/package が external action の pending 状態を検査可能。
-- `tasks/do/20260527-1214-external-acceptance-action-plan.md` に受け入れ条件と検証結果を記録。
+- `tasks/done/20260527-1214-external-acceptance-action-plan.md` に受け入れ条件と検証結果を記録。
 
 ## 検証
 
