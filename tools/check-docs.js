@@ -25,7 +25,10 @@ for (const command of [
   "npm run ui:check",
   "npm run web:perf:local",
   "npm run perf:api:local",
-  "npm run failure:check"
+  "npm run failure:check",
+  "npm run rag:quality:check",
+  "npm run rag:security:check",
+  "npm run rag:perf:local"
 ]) {
   assert(localVerification.includes(command), `local verification docs missing ${command}`);
 }

@@ -58,6 +58,18 @@ tasks:
     desc: Verify local async failure injection recovery cases
     cmds:
       - npm run failure:check
+  rag:quality:check:
+    desc: Verify local RAG quality golden metrics and report generation
+    cmds:
+      - npm run rag:quality:check
+  rag:security:check:
+    desc: Verify local prompt injection attack catalog
+    cmds:
+      - npm run rag:security:check
+  rag:perf:local:
+    desc: Verify local RAG first notification and final answer timing gates
+    cmds:
+      - npm run rag:perf:local
   pairwise:check:
     desc: Verify pairwise acceptance test catalog
     cmds:

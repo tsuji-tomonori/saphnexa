@@ -37,6 +37,9 @@ for (const command of [
   "npm run web:perf:local",
   "npm run perf:api:local",
   "npm run failure:check",
+  "npm run rag:quality:check",
+  "npm run rag:security:check",
+  "npm run rag:perf:local",
   "npm run test:contract"
 ]) {
   assert(workflow.includes(command), `workflow missing command: ${command}`);

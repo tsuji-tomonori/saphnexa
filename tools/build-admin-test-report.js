@@ -16,6 +16,9 @@ const suites = [
   suite("web-performance", "npm run web:perf:local"),
   suite("api-performance", "npm run perf:api:local"),
   suite("failure-injection", "npm run failure:check"),
+  suite("rag-quality", "npm run rag:quality:check"),
+  suite("rag-security", "npm run rag:security:check"),
+  suite("rag-performance", "npm run rag:perf:local"),
   suite("acceptance", "npm run acceptance:check"),
   suite("evidence", "npm run evidence:check"),
   suite("admin-artifacts", "npm run artifacts:check")

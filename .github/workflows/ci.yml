@@ -124,6 +124,9 @@ jobs:
       - run: npm run web:perf:local
       - run: npm run perf:api:local
       - run: npm run failure:check
+      - run: npm run rag:quality:check
+      - run: npm run rag:security:check
+      - run: npm run rag:perf:local
 
   contract-generation-diff:
     name: contract generation diff

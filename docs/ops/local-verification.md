@@ -17,6 +17,9 @@ npm run ui:check
 npm run web:perf:local
 npm run perf:api:local
 npm run failure:check
+npm run rag:quality:check
+npm run rag:security:check
+npm run rag:perf:local
 npm test
 git diff --check
 ```
@@ -35,10 +38,14 @@ git diff --check
 - UI source が共通 UI package を経由し、直書き style と基本 a11y 欠落を増やしていないこと。
 - local non-AI API smoke が p95 800ms / error rate 1% 未満を満たすこと。
 - retrieval、generation、worker notify の failure injection で failed 状態、error event、retryable が残ること。
+- local RAG golden dataset で品質 metrics と参照展開が基準を満たすこと。
+- prompt injection attack 20件で policy violation と tool invocation が発生しないこと。
+- local RAG timing smoke で初回通知と最終回答の p95 が基準を満たすこと。
 
 ## ローカルでは完了扱いにしないこと
 
 - AWS dev/UAT での Cognito、DSQL、S3、CloudFront、AppSync Events、Bedrock KB、S3 Vectors、AgentCore の実接続。
 - CDK deploy、CloudFormation outputs、S3 inventory、CloudWatch logs、CloudFront/S3/Docusaurus/Allure 公開 URL。
 - axe/Playwright の実 DOM accessibility report、Lighthouse CI、本番 bundler の analyzer report、AWS load test。
+- Bedrock KB、S3 Vectors、AgentCore Runtime、Bedrock Evaluations を使った実 RAG 品質評価。
 - Git tag、GitHub release、検収用 `evidence_manifest.json` の最終確定。

@@ -72,16 +72,16 @@
 | AC-086 | scaffolded | SQS/DLQ construct intent only。 |
 | AC-087 | implemented_unverified | `npm run admin-artifacts:build` で `dist/admin/docs/latest/` と `dist/admin/docs/versions/v0.16/` を生成し、runbooks/ADR/trace を manifest に含める。Docusaurus/CloudFront/S3 publish は未実施。 |
 | AC-088 | implemented_unverified | `npm run admin-artifacts:build` で `dist/admin/test-reports/allure/latest/` の Allure 互換 local report を生成し、`npm run artifacts:check` で manifest/source/checksum を検査。Allure CLI/CloudFront/S3 publish は未実施。 |
-| AC-090 | scaffolded | fixture RAG IF あり、Agent contract test 未拡張。 |
+| AC-090 | local_verified | `npm run rag:quality:check` で fixture RAG Agent IF が question/actor/retrieval_policy/run context を受け final/refusal output と tool invocation を返すことを検査。実 AgentCore Runtime logs は未実施。 |
 | AC-091 | local_verified | `assertRetrievalPolicyNotRelaxed` test あり。 |
 | AC-092 | local_verified | fixture RAG calls Tools functions and records `tool_invocations`. |
 | AC-093 | local_verified | `kbRetrieve` requires retrieval policy and returns results. |
 | AC-094 | local_verified | ACL check is called before evidence packing. |
-| AC-095 | implemented_unverified | reference expansion source あり、golden 10 件未実施。 |
+| AC-095 | local_verified | `npm run rag:quality:check` で reference expansion golden 10件中10件成功を検査。実 reference_edges/KB 評価は未実施。 |
 | AC-096 | local_verified | citation format and event detail tested locally. |
 | AC-097 | local_verified | evaluation metrics categories in local source and `tests/e2e-local.test.js` local path. AWS 評価 report は未実施。 |
-| AC-098 | requires_aws | RAG quality report 未作成。 |
-| AC-099 | local_verified | prompt injection 風入力を fixture RAG が refusal し、tool 呼び出しをしないことを `tests/integration-local.test.js` で検証。20件 attack test は未実施。 |
+| AC-098 | local_verified | `npm run rag:quality:check` で `dist/reports/rag-quality-local.json` を生成し、recall@10/citation precision/groundedness/refusal accuracy/unsupported claim rate の local thresholds を検査。Bedrock Evaluations/実KB report は未実施。 |
+| AC-099 | local_verified | `npm run rag:security:check` で prompt injection attack 20件中 policy violation 0件、tool invocation 0件を検査。実 AgentCore trace は未実施。 |
 | AC-100 | scaffolded | ingestion job/raw URI source あり、PDF/KB/S3 Vectors 実行未実施。 |
 | AC-101 | local_verified | document metadata 必須 field と raw prefix を `tests/integration-local.test.js` / `npm run storage:check` で検査。Retrieve metadata 実体は未実施。 |
 | AC-102 | implemented_unverified | parsed prefix を `npm run storage:check` で検査。chunk/reference/BM25F/parser artifact inventory は未実施。 |
@@ -101,8 +101,8 @@
 | AC-126 | implemented_unverified | CI workflow に `admin-artifacts` job を追加し、`npm run admin-artifacts:build` / `npm run artifacts:check` を検査対象化。Allure publish URL は未実施。 |
 | AC-130 | local_verified | `npm run perf:api:local` で認証済み local non-AI API p95 <= 800ms、error rate < 1% を検査。AWS load test/CloudWatch metrics は未実施。 |
 | AC-131 | local_verified | `npm run perf:local` で local 質問受付 p95 <= 2s を検査。AWS load test は未実施。 |
-| AC-132 | implemented_unverified | local started/progress event; timing p95 未実施。 |
-| AC-133 | requires_aws | RAG load test 未実施。 |
+| AC-132 | local_verified | `npm run rag:perf:local` で local RAG 初回通知 p95 <= 5s を検査。AppSync logs/E2E timing は未実施。 |
+| AC-133 | local_verified | `npm run rag:perf:local` で local RAG final answer p95 <= 60s、timeout rate < 2% を検査。AWS RAG load test は未実施。 |
 | AC-134 | local_verified | lightweight notification size guard. |
 | AC-135 | local_verified | `npm run failure:check` で retrieval / generation / worker notify の 3 failure injection が failed 状態、`chat.run.failed` event、retryable=true を残すことを検査。実 AgentCore/Lambda failure injection は未実施。 |
 | AC-140 | local_verified | `packages/model-catalog/src/cost-estimate.js` と `npm run cost:check` で 50 DAU/10質問日の local estimate <= 550 USD を検査。AWS Cost Explorer は未実施。 |
