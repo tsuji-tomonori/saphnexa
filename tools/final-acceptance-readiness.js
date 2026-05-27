@@ -1,5 +1,6 @@
 import { mkdirSync, writeFileSync } from "node:fs";
 import { dirname } from "node:path";
+import { buildFinalEvidenceCandidateStatus, finalCandidateStatusPath } from "./final-evidence-candidate.js";
 import { readJson, readText } from "./lib.js";
 
 export const finalReadinessPath = "dist/acceptance/final_readiness.json";
@@ -17,6 +18,7 @@ const priorityById = {
 export function buildFinalAcceptanceReadiness(outputPath = finalReadinessPath) {
   const traceRows = parseTraceRows(readText("docs/acceptance/traceability.md"));
   const defectSnapshot = readJson("docs/acceptance/defects/open_issues_snapshot.json");
+  const finalCandidateStatus = buildFinalEvidenceCandidateStatus(finalCandidateStatusPath);
   const blockers = traceRows
     .filter((row) => row.state !== "local_verified")
     .map((row) => ({
@@ -78,7 +80,15 @@ export function buildFinalAcceptanceReadiness(outputPath = finalReadinessPath) {
       blocker_critical_open_count: defectSnapshot.blocker_critical_open_count,
       source: defectSnapshot.source
     },
+    final_candidate_gate: {
+      ready: finalCandidateStatus.ready,
+      status_path: finalCandidateStatusPath,
+      status: finalCandidateStatus.status,
+      missing_files: finalCandidateStatus.missing_files,
+      errors: finalCandidateStatus.errors
+    },
     finalization_commands: [
+      "npm run acceptance:final-candidate:check",
       "npm run acceptance:package:build",
       "npm run acceptance:package:check",
       "npm run acceptance:final:build",

@@ -34,6 +34,7 @@ const suites = [
   suite("restore-drill", "npm run restore:drill:check"),
   suite("acceptance", "npm run acceptance:check"),
   suite("evidence", "npm run evidence:check"),
+  suite("acceptance-final-candidate", "npm run acceptance:final-candidate:check"),
   suite("acceptance-final-build", "npm run acceptance:final:build"),
   suite("acceptance-final-check", "npm run acceptance:final:check"),
   suite("acceptance-package-build", "npm run acceptance:package:build"),

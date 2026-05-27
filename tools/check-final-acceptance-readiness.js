@@ -17,6 +17,9 @@ assert(readiness.release_gate.ready === false, "release gate must remain pending
 assert(readiness.aws_gate.ready === false, "AWS gate must remain pending");
 assert(readiness.checklist_gate.ready === false, "checklist gate must remain pending");
 assert(readiness.defect_gate.ready === true, "defect gate should be ready when blocker/critical open count is 0");
+assert(readiness.final_candidate_gate.ready === false, "final candidate gate must remain pending until final files exist");
+assert(readiness.final_candidate_gate.status === "not_ready", "final candidate status must be not_ready during local preflight");
+assert(readiness.final_candidate_gate.missing_files.length > 0, "final candidate missing files must be explicit");
 
 for (const id of unresolvedTraceIds) {
   assert(acceptanceIds.includes(id), `unknown acceptance id in trace: ${id}`);

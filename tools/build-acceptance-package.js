@@ -65,7 +65,9 @@ const manifest = {
     blocking_acceptance_ids: finalReadiness.blocking_acceptance_ids.map((row) => row.id),
     release_gate_ready: finalReadiness.release_gate.ready,
     aws_gate_ready: finalReadiness.aws_gate.ready,
-    checklist_gate_ready: finalReadiness.checklist_gate.ready
+    checklist_gate_ready: finalReadiness.checklist_gate.ready,
+    final_candidate_status_path: finalReadiness.final_candidate_gate.status_path,
+    final_candidate_ready: finalReadiness.final_candidate_gate.ready
   },
   draft_status: "draft_not_for_final_acceptance",
   pending_final_evidence: [
@@ -89,6 +91,8 @@ const summary = {
   cloudformation_inventory_draft_path: cloudFormationInventoryPath,
   final_readiness_path: finalReadinessPath,
   final_readiness_ready: finalReadiness.final_acceptance_ready,
+  final_candidate_status_path: finalReadiness.final_candidate_gate.status_path,
+  final_candidate_ready: finalReadiness.final_candidate_gate.ready,
   final_acceptance_ready: counts.requires_aws === 0,
   note: "Draft package for local evidence consolidation. Final acceptance still requires AWS/UAT evidence for requires_aws rows."
 };

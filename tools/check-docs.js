@@ -8,7 +8,8 @@ const requiredRunbooks = [
   "docs/ops/runbooks/user-import-failure.md",
   "docs/ops/runbooks/access-change.md",
   "docs/ops/runbooks/backup-restore.md",
-  "docs/ops/runbooks/cloudformation-inventory.md"
+  "docs/ops/runbooks/cloudformation-inventory.md",
+  "docs/ops/runbooks/final-acceptance.md"
 ];
 
 for (const file of requiredRunbooks) {
@@ -45,6 +46,7 @@ for (const command of [
   "npm run acceptance:package:check",
   "npm run acceptance:final:build",
   "npm run acceptance:final:check",
+  "npm run acceptance:final-candidate:check",
   "npm run cfn:inventory:build",
   "npm run cfn:inventory:check"
 ]) {

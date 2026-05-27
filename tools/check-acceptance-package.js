@@ -12,6 +12,7 @@ for (const path of [
   "dist/acceptance/acceptance_checklist.draft.csv",
   "dist/acceptance/cloudformation_inventory.draft.json",
   "dist/acceptance/final_readiness.json",
+  "dist/acceptance/final_candidate_status.json",
   "dist/acceptance/defect_list.json",
   "dist/acceptance/summary.json"
 ]) {
@@ -37,6 +38,8 @@ assert(manifest.final_readiness.blocking_acceptance_ids.length > 0, "manifest fi
 assert(manifest.final_readiness.release_gate_ready === false, "manifest release gate must remain pending");
 assert(manifest.final_readiness.aws_gate_ready === false, "manifest AWS gate must remain pending");
 assert(manifest.final_readiness.checklist_gate_ready === false, "manifest checklist gate must remain pending");
+assert(manifest.final_readiness.final_candidate_status_path === "dist/acceptance/final_candidate_status.json", "manifest final candidate status path mismatch");
+assert(manifest.final_readiness.final_candidate_ready === false, "manifest final candidate must remain pending");
 
 const rows = parseCsv(checklist);
 assert(rows.length === acceptanceIds.length, `checklist row count mismatch: ${rows.length}`);
@@ -61,6 +64,8 @@ assert(summary.checklist_rows === acceptanceIds.length, "summary checklist row c
 assert(summary.cloudformation_inventory_draft_path === "dist/acceptance/cloudformation_inventory.draft.json", "summary CloudFormation inventory path mismatch");
 assert(summary.final_readiness_path === "dist/acceptance/final_readiness.json", "summary final readiness path mismatch");
 assert(summary.final_readiness_ready === false, "summary final readiness must remain false");
+assert(summary.final_candidate_status_path === "dist/acceptance/final_candidate_status.json", "summary final candidate path mismatch");
+assert(summary.final_candidate_ready === false, "summary final candidate must remain false");
 assert(summary.trace_state_counts.requires_aws > 0, "draft package must preserve remaining AWS blockers");
 assert(summary.final_acceptance_ready === false, "draft package must not claim final acceptance readiness");
 

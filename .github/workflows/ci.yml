@@ -170,6 +170,7 @@ jobs:
       - run: npm run test:contract
       - run: npm run acceptance:check
       - run: npm run evidence:check
+      - run: npm run acceptance:final-candidate:check
       - run: npm run acceptance:final:build
       - run: npm run acceptance:final:check
       - run: npm run acceptance:package:build

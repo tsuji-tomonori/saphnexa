@@ -12,10 +12,10 @@
 
 | ID | 状態 | 根拠または制約 |
 | :--- | :--- | :--- |
-| AC-001 | requires_aws | `npm run acceptance:package:build` で `dist/acceptance/evidence_manifest.draft.json` を生成し、`npm run acceptance:final:check` で Git tag/release/最終 evidence manifest 未確定を検査するが、Git tag/release と最終 evidence manifest は未作成。 |
-| AC-002 | requires_aws | `npm run acceptance:package:build` で artifact summary draft と CloudFormation inventory draft を生成するが、CDK/CloudFormation/Allure/Docusaurus publish は未実施。 |
+| AC-001 | requires_aws | `npm run acceptance:package:build` で `dist/acceptance/evidence_manifest.draft.json` を生成し、`npm run acceptance:final-candidate:check` / `npm run acceptance:final:check` で Git tag/release/最終 evidence manifest 未確定を検査するが、Git tag/release と最終 evidence manifest は未作成。 |
+| AC-002 | requires_aws | `npm run acceptance:package:build` で artifact summary draft と CloudFormation inventory draft を生成し、`npm run acceptance:final-candidate:check` で final artifact URL 候補の未配置を検査するが、CDK/CloudFormation/Allure/Docusaurus publish は未実施。 |
 | AC-003 | local_verified | `docs/adr/ADR-0001-local-first-acceptance-slice.md` に設計差分を記録し、`npm run docs:check` で docs 構造を検査。 |
-| AC-004 | requires_aws | `dist/acceptance/acceptance_checklist.draft.csv` は全行を `PASS_LOCAL` / `PENDING_AWS` で記入し、`npm run acceptance:final:check` で `PENDING_AWS` 残件を検査するが、最終検収 checklist の署名・AWS 証跡確認は未実施。 |
+| AC-004 | requires_aws | `dist/acceptance/acceptance_checklist.draft.csv` は全行を `PASS_LOCAL` / `PENDING_AWS` で記入し、`npm run acceptance:final-candidate:check` で final checklist 候補の未配置、`npm run acceptance:final:check` で `PENDING_AWS` 残件を検査するが、最終検収 checklist の署名・AWS 証跡確認は未実施。 |
 | AC-010 | local_verified | `apps/api/src/local-api.js` と `tests/integration-local.test.js` で質問受付、`message_id`、`run_id` を検証。 |
 | AC-011 | local_verified | `packages/rag-core/src/fixture-rag.js` と local tests で citation 生成を検証。 |
 | AC-012 | local_verified | fixture RAG の根拠なし拒否を `tests/integration-local.test.js` で検証。 |
