@@ -197,6 +197,17 @@ try {
   assert(privateArtifactUrlsStatus.errors.some((error) => error.includes("manifest.rag_evaluation.report_url")), "private artifact URL fixture must reject private IP evaluation report URL");
   assert(privateArtifactUrlsStatus.errors.some((error) => error.includes(`checklist.${acceptanceIds[0]}.証跡リンク_url`)), "private artifact URL fixture must reject private checklist evidence URL");
 
+  const unknownChecklistEvidenceSource = buildReadyCandidate();
+  unknownChecklistEvidenceSource.checklistRows[0].証跡リンク = "https://evidence.othercorp.net/admin/docs/latest/";
+  const unknownChecklistEvidenceSourcePaths = writeCandidateFiles(join(root, "unknown-checklist-evidence-source"), unknownChecklistEvidenceSource);
+  const unknownChecklistEvidenceSourceStatus = buildFinalEvidenceCandidateStatus(join(root, "unknown-checklist-evidence-source-status.json"), {
+    candidatePaths: unknownChecklistEvidenceSourcePaths,
+    resolveGitTagCommit,
+    resolveGitRepository
+  });
+  assert(unknownChecklistEvidenceSourceStatus.ready === false, "unknown checklist evidence source fixture must not be ready");
+  assert(unknownChecklistEvidenceSourceStatus.errors.some((error) => error.includes(`checklist.${acceptanceIds[0]}.証跡リンク_known_source`)), "unknown checklist evidence source fixture must reject evidence outside manifest locations and current repository");
+
   const mismatchedRagEvaluationReport = buildReadyCandidate();
   mismatchedRagEvaluationReport.manifest.rag_evaluation.report_url = "s3://saphnexa-acceptance-artifacts/reports/evaluations/eval-other-run/";
   const mismatchedRagEvaluationReportPaths = writeCandidateFiles(join(root, "mismatched-rag-evaluation-report"), mismatchedRagEvaluationReport);

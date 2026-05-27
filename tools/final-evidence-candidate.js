@@ -37,7 +37,7 @@ export function buildFinalEvidenceCandidateStatus(outputPath = finalCandidateSta
 
   if (missing_files.length === 0) {
     const manifest = validateManifest(paths.evidence_manifest, checks, errors, options);
-    validateChecklist(paths.acceptance_checklist, checks, errors, options);
+    validateChecklist(paths.acceptance_checklist, checks, errors, options, manifest);
     const cloudFormationInventory = validateCloudFormationInventory(paths.cloudformation_inventory, checks, errors);
     validateManifestCloudFormationConsistency(manifest, cloudFormationInventory, checks, errors);
   }
@@ -134,7 +134,7 @@ function validateManifest(path, checks, errors, options = {}) {
   return manifest;
 }
 
-function validateChecklist(path, checks, errors, options = {}) {
+function validateChecklist(path, checks, errors, options = {}, manifest) {
   const rows = parseCsv(readText(path));
   const currentDate = options.currentDate || todayIsoDate();
   checkSourceColumns(rows.headers, checks, errors);
@@ -152,7 +152,9 @@ function validateChecklist(path, checks, errors, options = {}) {
       check(isFinalText(sourceChecklistValue(row, key)), `checklist.${id}.${key}`, checks, errors, "must be populated");
     }
     check(sourceChecklistValue(row, finalResultColumn) === "PASS", `checklist.${id}.${finalResultColumn}`, checks, errors, "must be PASS for final acceptance");
-    check(isArtifactUrl(sourceChecklistValue(row, finalEvidenceColumn)), `checklist.${id}.${finalEvidenceColumn}_url`, checks, errors, "must be a final http(s) or s3 evidence URL");
+    const evidenceUrl = sourceChecklistValue(row, finalEvidenceColumn);
+    check(isArtifactUrl(evidenceUrl), `checklist.${id}.${finalEvidenceColumn}_url`, checks, errors, "must be a final http(s) or s3 evidence URL");
+    check(isKnownChecklistEvidenceUrl(evidenceUrl, manifest), `checklist.${id}.${finalEvidenceColumn}_known_source`, checks, errors, "must point to the current GitHub repository or manifest artifact location");
     check(isFinalReviewer(sourceChecklistValue(row, finalReviewerColumn)), `checklist.${id}.${finalReviewerColumn}_reviewer`, checks, errors, "must name a final reviewer");
     check(isIsoDate(sourceChecklistValue(row, finalCheckedDateColumn)), `checklist.${id}.${finalCheckedDateColumn}_date`, checks, errors, "must be a YYYY-MM-DD calendar date");
     check(isIsoDateOnOrBefore(sourceChecklistValue(row, finalCheckedDateColumn), currentDate), `checklist.${id}.${finalCheckedDateColumn}_not_future`, checks, errors, "must not be a future date");
@@ -253,6 +255,58 @@ function isArtifactUrl(value) {
   if (value.startsWith("s3://")) return true;
   if (!value.startsWith("https://")) return false;
   return isPublicHttpsUrl(value);
+}
+
+function isKnownChecklistEvidenceUrl(value, manifest) {
+  if (!isArtifactUrl(value)) return false;
+  const releaseRepository = parseGitHubReleaseUrl(manifest?.github_release_url)?.repository;
+  if (releaseRepository && isGitHubRepositoryEvidenceUrl(value, releaseRepository)) return true;
+  return manifestArtifactLocations(manifest).some((artifactUrl) => sharesArtifactLocation(value, artifactUrl));
+}
+
+function manifestArtifactLocations(manifest) {
+  return [
+    manifest?.test_reports?.allure_latest_url,
+    manifest?.test_reports?.unit_report_url,
+    manifest?.test_reports?.integration_report_url,
+    manifest?.test_reports?.e2e_report_url,
+    manifest?.docs_site?.latest_url,
+    manifest?.docs_site?.version_url,
+    manifest?.rag_evaluation?.report_url
+  ].filter(isArtifactUrl);
+}
+
+function isGitHubRepositoryEvidenceUrl(value, repository) {
+  try {
+    const url = new URL(value);
+    return url.hostname === "github.com" && (url.pathname === `/${repository}` || url.pathname.startsWith(`/${repository}/`));
+  } catch {
+    return false;
+  }
+}
+
+function sharesArtifactLocation(value, artifactUrl) {
+  const left = artifactLocation(value);
+  const right = artifactLocation(artifactUrl);
+  return Boolean(left && right && left === right);
+}
+
+function artifactLocation(value) {
+  const s3 = parseS3Url(value);
+  if (s3) return `s3://${s3.bucket}`;
+  try {
+    const url = new URL(value);
+    if (url.protocol !== "https:") return null;
+    return `https://${url.hostname.toLowerCase()}`;
+  } catch {
+    return null;
+  }
+}
+
+function parseS3Url(value) {
+  const match = /^s3:\/\/([^/]+)(?:\/.*)?$/.exec(value || "");
+  if (!match) return null;
+  return { bucket: match[1] };
 }
 
 function hasPathSuffix(value, suffix) {
