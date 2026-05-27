@@ -1,6 +1,6 @@
 # final artifact public url gate
 
-- 状態: in_progress
+- 状態: done
 - タスク種別: 機能追加
 - 対象PR: #1
 
@@ -41,11 +41,11 @@ schema pattern を複雑化しすぎず、description に「localhost/internal/p
 
 ## 受け入れ条件
 
-- [ ] final candidate validator が `https://localhost`、loopback/private IP、`.internal`、`.local`、`.test` の artifact URL を reject する。
-- [ ] S3 artifact URL と public HTTPS artifact URL は引き続き許可される。
-- [ ] docs / Allure / RAG evaluation / checklist evidence URL の negative fixture が invalid になる。
-- [ ] evidence manifest schema の説明が validator と矛盾しない。
-- [ ] `npm run acceptance:package:check` と `npm run verify` が pass する。
+- [x] final candidate validator が `https://localhost`、loopback/private IP、`.internal`、`.local`、`.test` の artifact URL を reject する。
+- [x] S3 artifact URL と public HTTPS artifact URL は引き続き許可される。
+- [x] docs / Allure / RAG evaluation / checklist evidence URL の negative fixture が invalid になる。
+- [x] evidence manifest schema の説明が validator と矛盾しない。
+- [x] `npm run acceptance:package:check` と `npm run verify` が pass する。
 
 ## 検証計画
 
@@ -67,3 +67,26 @@ schema pattern を複雑化しすぎず、description に「localhost/internal/p
 
 - 検収環境で一時的に private DNS を証跡 URL として使う運用がある場合、この gate により reject される。ただし AC-002 の published URL 証跡としては public CloudFront または S3 artifact URL を使うべきである。
 - 外部作業が必要な final acceptance 残件はこのタスクでは解消しない。
+
+## 実施結果
+
+- 実装 commit: `2d73450` `✅ test: final artifact public url検査を追加`
+- 作業レポート: `reports/working/20260527-2119-final-artifact-public-url-gate.md`
+- PR 受け入れ条件コメント: https://github.com/tsuji-tomonori/saphnexa/pull/1#issuecomment-4554408300
+- PR セルフレビューコメント: https://github.com/tsuji-tomonori/saphnexa/pull/1#issuecomment-4554411293
+
+## 検証結果
+
+- `npm run acceptance:final-candidate:fixture:check`: pass
+- `npm run evidence:check`: pass
+- `npm run acceptance:final-candidate:check`: pass（final file 未配置のため not ready）
+- `npm run acceptance:package:check`: pass
+- `npm run verify`: pass
+- `git diff --check`: pass
+- `pre-commit run --files docs/acceptance/evidence/evidence_manifest.schema.json tools/check-evidence-manifest.js tools/check-final-evidence-candidate-fixtures.js tools/final-evidence-candidate.js tasks/do/20260527-2114-final-artifact-public-url-gate.md`: pass
+- `pre-commit run --files reports/working/20260527-2119-final-artifact-public-url-gate.md`: pass
+- `pre-commit run --files tasks/done/20260527-2114-final-artifact-public-url-gate.md`: pass
+
+## 残件
+
+- final acceptance は未完了。Git tag/release、AWS deploy/publish、CloudFormation capture、final evidence candidate、final checklist signoff は pending。
