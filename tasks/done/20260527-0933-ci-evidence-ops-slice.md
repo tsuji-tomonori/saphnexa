@@ -92,6 +92,7 @@
 - `npm run verify`: pass
 - `npm test`: pass
 - `git diff --check`: pass
+- GitHub Actions `Saphnexa CI`: pass。PR #1 上で lint/typecheck/unit/integration/e2e/cdk synth/cdk diff/security scan/license scan/contract generation diff の 10 job が成功したことを確認。
 
 ## ドキュメント保守方針
 

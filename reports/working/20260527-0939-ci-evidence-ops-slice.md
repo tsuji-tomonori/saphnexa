@@ -69,10 +69,10 @@
 - `npm run verify`: pass
 - `npm test`: pass
 - `git diff --check`: pass
+- GitHub Actions `Saphnexa CI`: pass。PR #1 上で lint/typecheck/unit/integration/e2e/cdk synth/cdk diff/security scan/license scan/contract generation diff の 10 job が成功したことを確認。
 
 ## 8. 未対応・制約・リスク
 
-- GitHub Actions 実 run はまだ確認していない。
 - AWS dev/UAT の CloudFormation、DSQL/Flyway、S3、CloudWatch、Bedrock、S3 Vectors、AgentCore、AppSync、Cognito 証跡は未作成。
 - `evidence_manifest.example.json` は placeholder を含み、検収提出物ではない。
 - Hono/Zod/OpenAPI/CDK/Flyway/Docusaurus/Allure 実依存は未導入。
