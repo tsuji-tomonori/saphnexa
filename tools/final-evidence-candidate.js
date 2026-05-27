@@ -9,6 +9,7 @@ import {
   finalReviewerColumn,
   sourceChecklistValue
 } from "./acceptance-checklist-format.js";
+import { currentGitCommit } from "./git-context.js";
 import { readJson, readText } from "./lib.js";
 
 export const finalCandidateStatusPath = "dist/acceptance/final_candidate_status.json";
@@ -81,6 +82,7 @@ function validateManifest(path, checks, errors) {
   check(manifest.aws_region === "ap-northeast-1", "manifest.aws_region", checks, errors, "must be ap-northeast-1");
   check(/^[0-9]{12}$/.test(manifest.aws_account_id || "") && manifest.aws_account_id !== "000000000000", "manifest.aws_account_id", checks, errors, "must be a real 12 digit AWS account id");
   check(/^[a-f0-9]{40}$/.test(manifest.git_commit_sha || "") && !/^0{40}$/.test(manifest.git_commit_sha || ""), "manifest.git_commit_sha", checks, errors, "must be a non-placeholder commit SHA");
+  check(manifest.git_commit_sha === currentGitCommit(), "manifest.git_commit_sha_current_ref", checks, errors, "must match current Git ref");
   check(isFinalText(manifest.git_tag), "manifest.git_tag", checks, errors, "must be a final immutable Git tag");
   check(isUrl(manifest.github_release_url), "manifest.github_release_url", checks, errors, "must be an https GitHub release URL");
   check(Array.isArray(manifest.cloudformation_stacks) && manifest.cloudformation_stacks.length > 0, "manifest.cloudformation_stacks", checks, errors, "must include deployed stacks");

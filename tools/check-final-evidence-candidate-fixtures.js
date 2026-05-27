@@ -4,6 +4,7 @@ import { join } from "node:path";
 import { acceptanceIds, acceptanceItemById } from "./acceptance-ids.js";
 import { sourceChecklistColumns } from "./acceptance-checklist-format.js";
 import { buildFinalEvidenceCandidateStatus } from "./final-evidence-candidate.js";
+import { currentGitCommit } from "./git-context.js";
 import { assert } from "./lib.js";
 
 const root = mkdtempSync(join(tmpdir(), "saphnexa-final-candidate-"));
@@ -17,6 +18,7 @@ try {
   assert(readyStatus.checks.some((check) => check.label === "checklist.source_columns" && check.result === "pass"), "ready fixture must check source checklist columns");
 
   const invalid = buildReadyCandidate();
+  invalid.manifest.git_commit_sha = "0123456789abcdef0123456789abcdef01234567";
   invalid.manifest.git_tag = "pending-release-tag";
   invalid.checklistRows[0].結果 = "PENDING_AWS";
   invalid.inventory.source = "local-cdk-intent";
@@ -24,6 +26,7 @@ try {
   const invalidStatus = buildFinalEvidenceCandidateStatus(join(root, "invalid-status.json"), { candidatePaths: invalidPaths });
   assert(invalidStatus.ready === false, "invalid fixture must not be ready");
   assert(invalidStatus.status === "invalid", "invalid fixture status must be invalid");
+  assert(invalidStatus.errors.some((error) => error.includes("manifest.git_commit_sha_current_ref")), "invalid fixture must reject git commit mismatch");
   assert(invalidStatus.errors.some((error) => error.includes("manifest.git_tag")), "invalid fixture must reject pending git tag");
   assert(invalidStatus.errors.some((error) => error.includes(`checklist.${acceptanceIds[0]}.結果`)), "invalid fixture must reject non-PASS checklist result");
   assert(invalidStatus.errors.some((error) => error.includes("cloudformation.source")), "invalid fixture must reject non-AWS CloudFormation source");
@@ -42,7 +45,7 @@ function buildReadyCandidate() {
       environment: "uat",
       aws_region: "ap-northeast-1",
       aws_account_id: accountId,
-      git_commit_sha: "0123456789abcdef0123456789abcdef01234567",
+      git_commit_sha: currentGitCommit(),
       git_tag: "v0.16.0-acceptance.1",
       github_release_url: "https://github.com/tsuji-tomonori/saphnexa/releases/tag/v0.16.0-acceptance.1",
       cdk_app_version: "0.1.0",
