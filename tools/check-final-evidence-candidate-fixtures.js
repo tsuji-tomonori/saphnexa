@@ -49,6 +49,19 @@ try {
   assert(wrongTagCommitStatus.ready === false, "wrong tag commit fixture must not be ready");
   assert(wrongTagCommitStatus.errors.some((error) => error.includes("manifest.git_tag_commit")), "wrong tag commit fixture must reject tag commit mismatch");
 
+  const mismatchedInventory = buildReadyCandidate();
+  mismatchedInventory.inventory.stack_id = "arn:aws:cloudformation:ap-northeast-1:999999999999:stack/saphnexa-other-app/abc12345";
+  mismatchedInventory.inventory.stack_name = "saphnexa-other-app";
+  const mismatchedInventoryPaths = writeCandidateFiles(join(root, "mismatched-inventory"), mismatchedInventory);
+  const mismatchedInventoryStatus = buildFinalEvidenceCandidateStatus(join(root, "mismatched-inventory-status.json"), {
+    candidatePaths: mismatchedInventoryPaths,
+    resolveGitTagCommit
+  });
+  assert(mismatchedInventoryStatus.ready === false, "mismatched inventory fixture must not be ready");
+  assert(mismatchedInventoryStatus.errors.some((error) => error.includes("final_evidence.aws_account_consistency")), "mismatched inventory fixture must reject AWS account mismatch");
+  assert(mismatchedInventoryStatus.errors.some((error) => error.includes("final_evidence.stack_id_consistency")), "mismatched inventory fixture must reject stack id mismatch");
+  assert(mismatchedInventoryStatus.errors.some((error) => error.includes("final_evidence.stack_name_consistency")), "mismatched inventory fixture must reject stack name mismatch");
+
   console.log("final evidence candidate fixture check passed");
 } finally {
   rmSync(root, { recursive: true, force: true });

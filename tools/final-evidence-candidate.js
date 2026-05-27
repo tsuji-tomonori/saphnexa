@@ -35,9 +35,10 @@ export function buildFinalEvidenceCandidateStatus(outputPath = finalCandidateSta
   const errors = [];
 
   if (missing_files.length === 0) {
-    validateManifest(paths.evidence_manifest, checks, errors, options);
+    const manifest = validateManifest(paths.evidence_manifest, checks, errors, options);
     validateChecklist(paths.acceptance_checklist, checks, errors);
-    validateCloudFormationInventory(paths.cloudformation_inventory, checks, errors);
+    const cloudFormationInventory = validateCloudFormationInventory(paths.cloudformation_inventory, checks, errors);
+    validateManifestCloudFormationConsistency(manifest, cloudFormationInventory, checks, errors);
   }
 
   const status = {
@@ -106,6 +107,7 @@ function validateManifest(path, checks, errors, options = {}) {
   check(isArtifactUrl(manifest.rag_evaluation?.report_url), "manifest.rag_evaluation.report_url", checks, errors, "must be a final report URL");
   check(manifest.db_migration?.checksum_status === "matched", "manifest.db_migration.checksum_status", checks, errors, "must be matched");
   check(Number(manifest.cost_estimate?.monthly_usd) <= 550, "manifest.cost_estimate.monthly_usd", checks, errors, "must be <= 550");
+  return manifest;
 }
 
 function validateChecklist(path, checks, errors) {
@@ -149,6 +151,21 @@ function validateCloudFormationInventory(path, checks, errors) {
   check(inventory.aws_capture_required === false, "cloudformation.aws_capture_required", checks, errors, "must not require more AWS capture");
   check(/^arn:aws:cloudformation:ap-northeast-1:[0-9]{12}:stack\//.test(inventory.stack_id || ""), "cloudformation.stack_id", checks, errors, "must include stack ARN");
   check(Array.isArray(inventory.stack_resources) && inventory.stack_resources.length > 0, "cloudformation.stack_resources", checks, errors, "must include resources");
+  return inventory;
+}
+
+function validateManifestCloudFormationConsistency(manifest, inventory, checks, errors) {
+  const manifestStacks = Array.isArray(manifest.cloudformation_stacks) ? manifest.cloudformation_stacks : [];
+  const inventoryStackArn = parseCloudFormationStackArn(inventory.stack_id);
+  const manifestStack = manifestStacks.find((stack) => stack.stack_id === inventory.stack_id);
+
+  check(manifest.system === inventory.system, "final_evidence.system_consistency", checks, errors, "manifest and CloudFormation inventory must use the same system");
+  check(manifest.environment === inventory.environment, "final_evidence.environment_consistency", checks, errors, "manifest and CloudFormation inventory must use the same environment");
+  check(manifest.aws_region === inventory.aws_region, "final_evidence.aws_region_consistency", checks, errors, "manifest and CloudFormation inventory must use the same AWS region");
+  check(inventoryStackArn?.accountId === manifest.aws_account_id, "final_evidence.aws_account_consistency", checks, errors, "CloudFormation inventory stack ARN account must match manifest.aws_account_id");
+  check(inventoryStackArn?.region === manifest.aws_region, "final_evidence.stack_region_consistency", checks, errors, "CloudFormation inventory stack ARN region must match manifest.aws_region");
+  check(Boolean(manifestStack), "final_evidence.stack_id_consistency", checks, errors, "CloudFormation inventory stack_id must be listed in manifest.cloudformation_stacks");
+  check(manifestStack?.stack_name === inventory.stack_name, "final_evidence.stack_name_consistency", checks, errors, "CloudFormation inventory stack_name must match the manifest stack name for the same stack_id");
 }
 
 function requireField(object, key, label, errors) {
@@ -193,6 +210,12 @@ function isReleaseUrlForTag(value, gitTag) {
 
 function isArtifactUrl(value) {
   return typeof value === "string" && /^(https:\/\/|s3:\/\/)/.test(value) && !/example|pending|placeholder|dist\//i.test(value);
+}
+
+function parseCloudFormationStackArn(value) {
+  const match = /^arn:aws:cloudformation:([^:]+):([0-9]{12}):stack\/([^/]+)\/.+$/.exec(value || "");
+  if (!match) return null;
+  return { region: match[1], accountId: match[2], stackName: match[3] };
 }
 
 function parseCsv(body) {
