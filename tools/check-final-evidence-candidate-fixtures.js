@@ -62,6 +62,20 @@ try {
   assert(mismatchedInventoryStatus.errors.some((error) => error.includes("final_evidence.stack_id_consistency")), "mismatched inventory fixture must reject stack id mismatch");
   assert(mismatchedInventoryStatus.errors.some((error) => error.includes("final_evidence.stack_name_consistency")), "mismatched inventory fixture must reject stack name mismatch");
 
+  const invalidChecklistValues = buildReadyCandidate();
+  invalidChecklistValues.checklistRows[0].証跡リンク = "manual evidence attached";
+  invalidChecklistValues.checklistRows[1].確認者 = "pending-final-acceptance";
+  invalidChecklistValues.checklistRows[2].確認日 = "2026-02-30";
+  const invalidChecklistValuesPaths = writeCandidateFiles(join(root, "invalid-checklist-values"), invalidChecklistValues);
+  const invalidChecklistValuesStatus = buildFinalEvidenceCandidateStatus(join(root, "invalid-checklist-values-status.json"), {
+    candidatePaths: invalidChecklistValuesPaths,
+    resolveGitTagCommit
+  });
+  assert(invalidChecklistValuesStatus.ready === false, "invalid checklist values fixture must not be ready");
+  assert(invalidChecklistValuesStatus.errors.some((error) => error.includes(`checklist.${acceptanceIds[0]}.証跡リンク_url`)), "invalid checklist values fixture must reject non-URL evidence link");
+  assert(invalidChecklistValuesStatus.errors.some((error) => error.includes(`checklist.${acceptanceIds[1]}.確認者`)), "invalid checklist values fixture must reject pending reviewer");
+  assert(invalidChecklistValuesStatus.errors.some((error) => error.includes(`checklist.${acceptanceIds[2]}.確認日_date`)), "invalid checklist values fixture must reject invalid checked date");
+
   console.log("final evidence candidate fixture check passed");
 } finally {
   rmSync(root, { recursive: true, force: true });

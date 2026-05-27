@@ -127,6 +127,9 @@ function validateChecklist(path, checks, errors) {
       check(isFinalText(sourceChecklistValue(row, key)), `checklist.${id}.${key}`, checks, errors, "must be populated");
     }
     check(sourceChecklistValue(row, finalResultColumn) === "PASS", `checklist.${id}.${finalResultColumn}`, checks, errors, "must be PASS for final acceptance");
+    check(isArtifactUrl(sourceChecklistValue(row, finalEvidenceColumn)), `checklist.${id}.${finalEvidenceColumn}_url`, checks, errors, "must be a final http(s) or s3 evidence URL");
+    check(isFinalReviewer(sourceChecklistValue(row, finalReviewerColumn)), `checklist.${id}.${finalReviewerColumn}_reviewer`, checks, errors, "must name a final reviewer");
+    check(isIsoDate(sourceChecklistValue(row, finalCheckedDateColumn)), `checklist.${id}.${finalCheckedDateColumn}_date`, checks, errors, "must be a YYYY-MM-DD calendar date");
     check(!/PENDING|PASS_LOCAL|requires_aws/i.test(Object.values(row).join(" ")), `checklist.${id}.no_draft_status`, checks, errors, "must not contain draft status markers");
   }
 }
@@ -210,6 +213,16 @@ function isReleaseUrlForTag(value, gitTag) {
 
 function isArtifactUrl(value) {
   return typeof value === "string" && /^(https:\/\/|s3:\/\/)/.test(value) && !/example|pending|placeholder|dist\//i.test(value);
+}
+
+function isFinalReviewer(value) {
+  return isFinalText(value?.trim?.()) && !/\s{2,}/.test(value);
+}
+
+function isIsoDate(value) {
+  if (typeof value !== "string" || !/^\d{4}-\d{2}-\d{2}$/.test(value)) return false;
+  const date = new Date(`${value}T00:00:00.000Z`);
+  return !Number.isNaN(date.getTime()) && date.toISOString().slice(0, 10) === value;
 }
 
 function parseCloudFormationStackArn(value) {

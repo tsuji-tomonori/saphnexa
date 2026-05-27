@@ -30,7 +30,7 @@ AC-001、AC-002、AC-004、AC-150、AC-151、AC-152 の最終検収で、draft �
 - draft package の `git_commit_sha` は検証実行時の Git ref と一致していること。
 - GitHub release URL が `https://github.com/<owner>/<repo>/releases/tag/<git_tag>` として、final evidence manifest の `git_tag` と同じ tag を指すこと。
 - final evidence manifest と CloudFormation inventory が同じ AWS account、region、environment、stack name、stack ARN を指していること。
-- checklist は source checklist 列を保ち、全 AC 行が `結果=PASS` で、`証跡リンク`、`確認者`、`確認日` が空でないこと。
+- checklist は source checklist 列を保ち、全 AC 行が `結果=PASS` で、`証跡リンク` が `https://` または `s3://` URL、`確認者` が final reviewer 名、`確認日` が `YYYY-MM-DD` の実在日付であること。
 - CloudFormation inventory は `source=aws-cloudformation-inventory`、`final_acceptance_eligible=true` であること。
 
 ## 証跡
