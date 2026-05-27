@@ -46,6 +46,7 @@ assert(JSON.stringify(readiness.finalization_commands) === JSON.stringify([
   "npm run acceptance:external-actions:build",
   "npm run acceptance:external-actions:check",
   "CFN_CAPTURED_AT=<capture-iso-timestamp> npm run cfn:inventory:normalize",
+  "gh issue list --state open --json number,title,labels,state",
   "npm run acceptance:final-manifest:build",
   "npm run acceptance:final-checklist:build",
   "npm run acceptance:final-candidate:fixture:check",
@@ -60,6 +61,16 @@ assert(
   readiness.finalization_commands.indexOf("CFN_CAPTURED_AT=<capture-iso-timestamp> npm run cfn:inventory:normalize") <
     readiness.finalization_commands.indexOf("npm run acceptance:final-manifest:build"),
   "finalization commands must normalize CloudFormation inventory before building manifest"
+);
+assert(
+  readiness.finalization_commands.indexOf("gh issue list --state open --json number,title,labels,state") <
+    readiness.finalization_commands.indexOf("npm run acceptance:final-manifest:build"),
+  "finalization commands must refresh defect snapshot before building manifest"
+);
+assert(
+  readiness.finalization_commands.indexOf("gh issue list --state open --json number,title,labels,state") <
+    readiness.finalization_commands.indexOf("npm run acceptance:final-checklist:build"),
+  "finalization commands must refresh defect snapshot before building checklist"
 );
 assert(
   readiness.finalization_commands.indexOf("npm run acceptance:final-manifest:build") <
