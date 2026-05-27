@@ -1,6 +1,6 @@
 # local verification defect refresh doc sync
 
-- 状態: doing
+- 状態: done
 - タスク種別: 修正
 - 対象ブランチ: `codex/saphnexa-acceptance-impl`
 - 対象PR: `#1`
@@ -55,8 +55,8 @@ local verification docs と docs checker を AC-153 / defect snapshot refresh ga
 - [x] docs / checker を更新する。
 - [x] 選定した検証コマンドが pass する。
 - [x] 作業レポートを `reports/working/` に作成する。
-- [ ] commit / push し、PR に受け入れ条件確認コメントとセルフレビューコメントを投稿する。
-- [ ] PR コメント後に task を `tasks/done/` へ移動し、その更新も commit / push する。
+- [x] commit / push し、PR に受け入れ条件確認コメントとセルフレビューコメントを投稿する。
+- [x] PR コメント後に task を `tasks/done/` へ移動し、その更新も commit / push する。
 
 ## 実装計画
 
@@ -100,6 +100,11 @@ local verification docs と docs checker を AC-153 / defect snapshot refresh ga
 - 変更範囲に見合うテスト
 - RAG の根拠性・認可境界を弱めていないこと
 - benchmark 期待語句・QA sample 固有値・dataset 固有分岐を実装へ入れていないこと
+
+## PR コメント
+
+- 受け入れ条件確認: https://github.com/tsuji-tomonori/saphnexa/pull/1#issuecomment-4556220750
+- セルフレビュー: https://github.com/tsuji-tomonori/saphnexa/pull/1#issuecomment-4556222544
 
 ## リスク
 
