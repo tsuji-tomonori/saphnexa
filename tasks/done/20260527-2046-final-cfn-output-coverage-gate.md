@@ -1,6 +1,6 @@
 # final cfn output coverage gate
 
-- 状態: in_progress
+- 状態: done
 - タスク種別: 機能追加
 - 対象PR: #1
 
@@ -41,11 +41,11 @@ final inventory schema が output の意味を表す場合は、schema または
 
 ## 受け入れ条件
 
-- [ ] final candidate validator が主要 CloudFormation output key の存在を検査する。
-- [ ] ready fixture が主要 output を含み、`npm run acceptance:final-candidate:fixture:check` が pass する。
-- [ ] 主要 output 欠落 fixture が invalid になり、該当 error label を検査する。
-- [ ] `npm run acceptance:final-candidate:check` は final file 未配置を not ready として扱い、完了扱いにしない。
-- [ ] `npm run acceptance:package:check` と `npm run verify` が pass する。
+- [x] final candidate validator が主要 CloudFormation output key の存在を検査する。
+- [x] ready fixture が主要 output を含み、`npm run acceptance:final-candidate:fixture:check` が pass する。
+- [x] 主要 output 欠落 fixture が invalid になり、該当 error label を検査する。
+- [x] `npm run acceptance:final-candidate:check` は final file 未配置を not ready として扱い、完了扱いにしない。
+- [x] `npm run acceptance:package:check` と `npm run verify` が pass する。
 
 ## 検証計画
 
@@ -66,3 +66,27 @@ final inventory schema が output の意味を表す場合は、schema または
 
 - 実 CloudFormation output key の命名と validator の期待名がずれると、最終証跡作成時に調整が必要になる。
 - 外部作業が必要な final acceptance 残件はこのタスクでは解消しない。
+
+## 実施結果
+
+- 実装 commit: `7cfcbc0` `✅ test: final cfn output coverage検査を追加`
+- 作業レポート: `reports/working/20260527-2050-final-cfn-output-coverage-gate.md`
+- PR 受け入れ条件コメント: https://github.com/tsuji-tomonori/saphnexa/pull/1#issuecomment-4554255292
+- PR セルフレビューコメント: https://github.com/tsuji-tomonori/saphnexa/pull/1#issuecomment-4554257381
+
+## 検証結果
+
+- `npm run acceptance:final-candidate:fixture:check`: pass
+- `npm run cfn:inventory:build`: pass
+- `npm run cfn:inventory:check`: pass
+- `npm run acceptance:final-candidate:check`: pass（final file 未配置のため not ready）
+- `npm run acceptance:package:check`: pass
+- `npm run verify`: pass
+- `git diff --check`: pass
+- `pre-commit run --files docs/acceptance/cloudformation/cloudformation_inventory.schema.json tools/check-cloudformation-inventory.js tools/check-final-evidence-candidate-fixtures.js tools/cloudformation-inventory.js tools/final-evidence-candidate.js tasks/do/20260527-2046-final-cfn-output-coverage-gate.md`: pass
+- `pre-commit run --files reports/working/20260527-2050-final-cfn-output-coverage-gate.md`: pass
+- `pre-commit run --files tasks/done/20260527-2046-final-cfn-output-coverage-gate.md`: pass
+
+## 残件
+
+- final acceptance は未完了。Git tag/release、AWS deploy/publish、CloudFormation capture、final evidence candidate、final checklist signoff は pending。
