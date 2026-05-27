@@ -12,10 +12,10 @@
 
 | ID | 状態 | 根拠または制約 |
 | :--- | :--- | :--- |
-| AC-001 | requires_aws | Git tag/release/evidence manifest は未作成。 |
-| AC-002 | requires_aws | CDK/CloudFormation/Allure/Docusaurus publish は未実施。 |
+| AC-001 | requires_aws | `npm run acceptance:package:build` で `dist/acceptance/evidence_manifest.draft.json` を生成するが、Git tag/release と最終 evidence manifest は未作成。 |
+| AC-002 | requires_aws | `npm run acceptance:package:build` で artifact summary draft を生成するが、CDK/CloudFormation/Allure/Docusaurus publish は未実施。 |
 | AC-003 | local_verified | `docs/adr/ADR-0001-local-first-acceptance-slice.md` に設計差分を記録し、`npm run docs:check` で docs 構造を検査。 |
-| AC-004 | requires_aws | 検収 CSV の全行記入は最終検収時。 |
+| AC-004 | requires_aws | `dist/acceptance/acceptance_checklist.draft.csv` は全行を `PASS_LOCAL` / `PENDING_AWS` で記入するが、最終検収 checklist の署名・AWS 証跡確認は未実施。 |
 | AC-010 | local_verified | `apps/api/src/local-api.js` と `tests/integration-local.test.js` で質問受付、`message_id`、`run_id` を検証。 |
 | AC-011 | local_verified | `packages/rag-core/src/fixture-rag.js` と local tests で citation 生成を検証。 |
 | AC-012 | local_verified | fixture RAG の根拠なし拒否を `tests/integration-local.test.js` で検証。 |
@@ -113,4 +113,4 @@
 | AC-150 | requires_aws | P0 全 PASS ではない。 |
 | AC-151 | requires_aws | P1 全 PASS ではない。 |
 | AC-152 | requires_aws | P2 全 PASS ではない。 |
-| AC-153 | requires_aws | defect list/issue tracker 未確認。 |
+| AC-153 | local_verified | `gh issue list --state open --json number,title,labels,state` の snapshot を `docs/acceptance/defects/open_issues_snapshot.json` に保存し、`npm run acceptance:package:check` で Blocker/Critical open defect 0 件を検査。最終検収時は再取得が必要。 |

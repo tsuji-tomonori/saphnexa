@@ -32,6 +32,8 @@ const suites = [
   suite("restore-drill", "npm run restore:drill:check"),
   suite("acceptance", "npm run acceptance:check"),
   suite("evidence", "npm run evidence:check"),
+  suite("acceptance-package-build", "npm run acceptance:package:build"),
+  suite("acceptance-package-check", "npm run acceptance:package:check"),
   suite("admin-artifacts", "npm run artifacts:check")
 ];
 

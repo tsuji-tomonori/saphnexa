@@ -168,5 +168,7 @@ jobs:
       - run: npm run test:contract
       - run: npm run acceptance:check
       - run: npm run evidence:check
+      - run: npm run acceptance:package:build
+      - run: npm run acceptance:package:check
       - run: npm run admin-artifacts:build
       - run: npm run artifacts:check

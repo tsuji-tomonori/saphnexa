@@ -38,6 +38,14 @@ tasks:
     desc: Verify acceptance evidence manifest example locally
     cmds:
       - npm run evidence:check
+  acceptance:package:build:
+    desc: Build draft acceptance package artifacts locally
+    cmds:
+      - npm run acceptance:package:build
+  acceptance:package:check:
+    desc: Verify draft acceptance package artifacts locally
+    cmds:
+      - npm run acceptance:package:check
   security:scan:
     desc: Run local secret and security baseline checks
     cmds:

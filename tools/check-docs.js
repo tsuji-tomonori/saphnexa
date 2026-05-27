@@ -39,7 +39,9 @@ for (const command of [
   "npm run admin:workflow:check",
   "npm run offline-artifacts:check",
   "npm run restore:drill:check",
-  "npm run edge:security:check"
+  "npm run edge:security:check",
+  "npm run acceptance:package:build",
+  "npm run acceptance:package:check"
 ]) {
   assert(localVerification.includes(command), `local verification docs missing ${command}`);
 }
