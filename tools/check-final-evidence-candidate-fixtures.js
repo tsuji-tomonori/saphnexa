@@ -62,6 +62,23 @@ try {
   assert(wrongTagCommitStatus.ready === false, "wrong tag commit fixture must not be ready");
   assert(wrongTagCommitStatus.errors.some((error) => error.includes("manifest.git_tag_commit")), "wrong tag commit fixture must reject tag commit mismatch");
 
+  const invalidRequiredValues = buildReadyCandidate();
+  invalidRequiredValues.manifest.cdk_app_version = "";
+  invalidRequiredValues.manifest.db_migration.tool = "Liquibase";
+  invalidRequiredValues.manifest.db_migration.latest_version = "draft-migration-version";
+  invalidRequiredValues.manifest.cost_estimate.assumption = "pending cost estimate";
+  const invalidRequiredValuesPaths = writeCandidateFiles(join(root, "invalid-required-values"), invalidRequiredValues);
+  const invalidRequiredValuesStatus = buildFinalEvidenceCandidateStatus(join(root, "invalid-required-values-status.json"), {
+    candidatePaths: invalidRequiredValuesPaths,
+    resolveGitTagCommit,
+    resolveGitRepository
+  });
+  assert(invalidRequiredValuesStatus.ready === false, "invalid required values fixture must not be ready");
+  assert(invalidRequiredValuesStatus.errors.some((error) => error.includes("manifest.cdk_app_version")), "invalid required values fixture must reject empty CDK app version");
+  assert(invalidRequiredValuesStatus.errors.some((error) => error.includes("manifest.db_migration.tool")), "invalid required values fixture must reject non-Flyway migration tool");
+  assert(invalidRequiredValuesStatus.errors.some((error) => error.includes("manifest.db_migration.latest_version")), "invalid required values fixture must reject draft DB migration version");
+  assert(invalidRequiredValuesStatus.errors.some((error) => error.includes("manifest.cost_estimate.assumption")), "invalid required values fixture must reject pending cost assumption");
+
   const mismatchedInventory = buildReadyCandidate();
   mismatchedInventory.inventory.stack_id = "arn:aws:cloudformation:ap-northeast-1:999999999999:stack/saphnexa-other-app/abc12345";
   mismatchedInventory.inventory.stack_name = "saphnexa-other-app";

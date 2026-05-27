@@ -96,6 +96,7 @@ function validateManifest(path, checks, errors, options = {}) {
   const currentRepository = resolveGitRepository();
   check(Boolean(currentRepository), "manifest.github_release_url_current_repo_available", checks, errors, "current GitHub repository must be resolvable from remote.origin.url");
   check(releaseRef?.repository === currentRepository, "manifest.github_release_url_repository", checks, errors, "must point to the current GitHub repository release");
+  check(isFinalText(manifest.cdk_app_version), "manifest.cdk_app_version", checks, errors, "must include final CDK app version");
   check(Array.isArray(manifest.cloudformation_stacks) && manifest.cloudformation_stacks.length > 0, "manifest.cloudformation_stacks", checks, errors, "must include deployed stacks");
   for (const stack of manifest.cloudformation_stacks || []) {
     check(isFinalText(stack.stack_name), `manifest.cloudformation_stacks.${stack.stack_name || "unknown"}.stack_name`, checks, errors, "must include stack name");
@@ -110,8 +111,11 @@ function validateManifest(path, checks, errors, options = {}) {
   }
   check(isFinalText(manifest.rag_evaluation?.evaluation_run_id), "manifest.rag_evaluation.evaluation_run_id", checks, errors, "must include final evaluation run id");
   check(isArtifactUrl(manifest.rag_evaluation?.report_url), "manifest.rag_evaluation.report_url", checks, errors, "must be a final report URL");
+  check(manifest.db_migration?.tool === "Flyway", "manifest.db_migration.tool", checks, errors, "must be Flyway");
+  check(isFinalText(manifest.db_migration?.latest_version), "manifest.db_migration.latest_version", checks, errors, "must include final DB migration version");
   check(manifest.db_migration?.checksum_status === "matched", "manifest.db_migration.checksum_status", checks, errors, "must be matched");
   check(Number(manifest.cost_estimate?.monthly_usd) <= 550, "manifest.cost_estimate.monthly_usd", checks, errors, "must be <= 550");
+  check(isFinalText(manifest.cost_estimate?.assumption), "manifest.cost_estimate.assumption", checks, errors, "must include final cost assumption");
   return manifest;
 }
 

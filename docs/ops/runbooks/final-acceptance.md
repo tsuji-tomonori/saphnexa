@@ -24,6 +24,7 @@ AC-001、AC-002、AC-004、AC-150、AC-151、AC-152 の最終検収で、draft �
 ## 検証
 
 - final evidence manifest に placeholder、draft、example、pending が含まれないこと。
+- final evidence manifest の `cdk_app_version`、`db_migration.tool`、`db_migration.latest_version`、`cost_estimate.assumption` が空ではなく、draft/pending 値ではないこと。
 - AWS account id は実 12 桁であること。
 - final evidence manifest の `git_commit_sha` は検証実行時の Git ref と一致していること。
 - final evidence manifest の `git_tag` は repository に存在し、検証実行時の Git ref と同じ commit を指していること。
