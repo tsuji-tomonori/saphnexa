@@ -140,6 +140,7 @@ function validateChecklist(path, checks, errors, options = {}, manifest) {
   const currentDate = options.currentDate || todayIsoDate();
   checkSourceColumns(rows.headers, checks, errors);
   check(rows.length === acceptanceIds.length, "checklist.row_count", checks, errors, `must contain ${acceptanceIds.length} rows`);
+  validateChecklistRowIdentity(rows, checks, errors);
   for (const id of acceptanceIds) {
     const row = rows.find((item) => item.ID === id);
     check(Boolean(row), `checklist.${id}`, checks, errors, "must exist");
@@ -161,6 +162,12 @@ function validateChecklist(path, checks, errors, options = {}, manifest) {
     check(isIsoDateOnOrBefore(sourceChecklistValue(row, finalCheckedDateColumn), currentDate), `checklist.${id}.${finalCheckedDateColumn}_not_future`, checks, errors, "must not be a future date");
     check(!/PENDING|PASS_LOCAL|requires_aws/i.test(Object.values(row).join(" ")), `checklist.${id}.no_draft_status`, checks, errors, "must not contain draft status markers");
   }
+}
+
+function validateChecklistRowIdentity(rows, checks, errors) {
+  const rowIds = rows.map((row) => row.ID);
+  check(new Set(rowIds).size === rowIds.length, "checklist.unique_ids", checks, errors, "must not contain duplicate IDs");
+  check(JSON.stringify(rowIds) === JSON.stringify(acceptanceIds), "checklist.source_order", checks, errors, "must preserve source catalog ID order");
 }
 
 function checkSourceColumns(headers, checks, errors) {

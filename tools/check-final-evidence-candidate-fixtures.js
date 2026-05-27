@@ -35,6 +35,28 @@ try {
   assert(invalidStatus.errors.some((error) => error.includes(`checklist.${acceptanceIds[0]}.結果`)), "invalid fixture must reject non-PASS checklist result");
   assert(invalidStatus.errors.some((error) => error.includes("cloudformation.source")), "invalid fixture must reject non-AWS CloudFormation source");
 
+  const reorderedChecklist = buildReadyCandidate();
+  [reorderedChecklist.checklistRows[0], reorderedChecklist.checklistRows[1]] = [reorderedChecklist.checklistRows[1], reorderedChecklist.checklistRows[0]];
+  const reorderedChecklistPaths = writeCandidateFiles(join(root, "reordered-checklist"), reorderedChecklist);
+  const reorderedChecklistStatus = buildFinalEvidenceCandidateStatus(join(root, "reordered-checklist-status.json"), {
+    candidatePaths: reorderedChecklistPaths,
+    resolveGitTagCommit,
+    resolveGitRepository
+  });
+  assert(reorderedChecklistStatus.ready === false, "reordered checklist fixture must not be ready");
+  assert(reorderedChecklistStatus.errors.some((error) => error.includes("checklist.source_order")), "reordered checklist fixture must reject source order mismatch");
+
+  const duplicateChecklistId = buildReadyCandidate();
+  duplicateChecklistId.checklistRows[1].ID = duplicateChecklistId.checklistRows[0].ID;
+  const duplicateChecklistIdPaths = writeCandidateFiles(join(root, "duplicate-checklist-id"), duplicateChecklistId);
+  const duplicateChecklistIdStatus = buildFinalEvidenceCandidateStatus(join(root, "duplicate-checklist-id-status.json"), {
+    candidatePaths: duplicateChecklistIdPaths,
+    resolveGitTagCommit,
+    resolveGitRepository
+  });
+  assert(duplicateChecklistIdStatus.ready === false, "duplicate checklist ID fixture must not be ready");
+  assert(duplicateChecklistIdStatus.errors.some((error) => error.includes("checklist.unique_ids")), "duplicate checklist ID fixture must reject duplicate IDs");
+
   const mismatchedRelease = buildReadyCandidate();
   mismatchedRelease.manifest.github_release_url = "https://github.com/tsuji-tomonori/saphnexa/releases/tag/v0.16.0-acceptance.2";
   const mismatchedReleasePaths = writeCandidateFiles(join(root, "mismatched-release"), mismatchedRelease);
