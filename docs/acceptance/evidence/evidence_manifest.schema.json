@@ -140,10 +140,14 @@
       ],
       "properties": {
         "latest_url": {
-          "type": "string"
+          "type": "string",
+          "description": "Final admin docs latest URL. Use the CloudFront viewer path /admin/docs/latest/ or the S3 origin prefix docs-site/latest/.",
+          "pattern": "^(https://.*/admin/docs/latest/|s3://.*/docs-site/latest/).*$"
         },
         "version_url": {
-          "type": "string"
+          "type": "string",
+          "description": "Final admin docs v0.16 URL. Use the CloudFront viewer path /admin/docs/versions/v0.16/ or the S3 origin prefix docs-site/releases/v0.16/.",
+          "pattern": "^(https://.*/admin/docs/versions/v0\\.16/|s3://.*/docs-site/releases/v0\\.16/).*$"
         }
       }
     },

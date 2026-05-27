@@ -26,8 +26,8 @@
     "e2e_report_url": "s3://example-admin-artifacts/test-reports/e2e/latest/"
   },
   "docs_site": {
-    "latest_url": "s3://example-admin-artifacts/docs/latest/",
-    "version_url": "s3://example-admin-artifacts/docs/versions/v0.16/"
+    "latest_url": "s3://example-admin-artifacts/docs-site/latest/",
+    "version_url": "s3://example-admin-artifacts/docs-site/releases/v0.16/"
   },
   "rag_evaluation": {
     "evaluation_run_id": "example-evaluation-run-id",

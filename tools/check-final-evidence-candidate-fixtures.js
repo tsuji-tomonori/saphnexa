@@ -123,8 +123,21 @@ try {
     resolveGitRepository
   });
   assert(invalidDocsSiteUrlsStatus.ready === false, "invalid docs site URLs fixture must not be ready");
-  assert(invalidDocsSiteUrlsStatus.errors.some((error) => error.includes("manifest.docs_site.latest_url_latest_path")), "invalid docs site URLs fixture must reject non-latest docs path");
-  assert(invalidDocsSiteUrlsStatus.errors.some((error) => error.includes("manifest.docs_site.version_url_design_version")), "invalid docs site URLs fixture must reject non-v0.16 docs version path");
+  assert(invalidDocsSiteUrlsStatus.errors.some((error) => error.includes("manifest.docs_site.latest_url_admin_docs_path")), "invalid docs site URLs fixture must reject non-latest docs path");
+  assert(invalidDocsSiteUrlsStatus.errors.some((error) => error.includes("manifest.docs_site.version_url_admin_docs_path")), "invalid docs site URLs fixture must reject non-v0.16 docs version path");
+
+  const invalidDocsSitePrefixes = buildReadyCandidate();
+  invalidDocsSitePrefixes.manifest.docs_site.latest_url = "s3://saphnexa-acceptance-artifacts/docs/latest/";
+  invalidDocsSitePrefixes.manifest.docs_site.version_url = "s3://saphnexa-acceptance-artifacts/docs/versions/v0.16/";
+  const invalidDocsSitePrefixesPaths = writeCandidateFiles(join(root, "invalid-docs-site-prefixes"), invalidDocsSitePrefixes);
+  const invalidDocsSitePrefixesStatus = buildFinalEvidenceCandidateStatus(join(root, "invalid-docs-site-prefixes-status.json"), {
+    candidatePaths: invalidDocsSitePrefixesPaths,
+    resolveGitTagCommit,
+    resolveGitRepository
+  });
+  assert(invalidDocsSitePrefixesStatus.ready === false, "invalid docs site prefixes fixture must not be ready");
+  assert(invalidDocsSitePrefixesStatus.errors.some((error) => error.includes("manifest.docs_site.latest_url_admin_docs_path")), "invalid docs site prefixes fixture must reject non-design latest docs prefix");
+  assert(invalidDocsSitePrefixesStatus.errors.some((error) => error.includes("manifest.docs_site.version_url_admin_docs_path")), "invalid docs site prefixes fixture must reject non-design version docs prefix");
 
   const invalidAllureReportUrl = buildReadyCandidate();
   invalidAllureReportUrl.manifest.test_reports.allure_latest_url = "s3://saphnexa-acceptance-artifacts/test-reports/unit/latest/";
@@ -300,8 +313,8 @@ function buildReadyCandidate() {
         e2e_report_url: "https://github.com/tsuji-tomonori/saphnexa/actions/runs/26494798563"
       },
       docs_site: {
-        latest_url: "s3://saphnexa-acceptance-artifacts/docs/latest/",
-        version_url: "s3://saphnexa-acceptance-artifacts/docs/versions/v0.16/"
+        latest_url: "s3://saphnexa-acceptance-artifacts/docs-site/latest/",
+        version_url: "s3://saphnexa-acceptance-artifacts/docs-site/releases/v0.16/"
       },
       rag_evaluation: {
         evaluation_run_id: "eval-20260527-uat-final",

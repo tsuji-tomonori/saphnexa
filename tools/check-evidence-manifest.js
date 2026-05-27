@@ -35,6 +35,8 @@ assert(schema.properties.aws_account_id.pattern === "^[0-9]{12}$", "schema aws a
 assert(schema.properties.git_commit_sha.pattern === "^[a-f0-9]{40}$", "schema git commit pattern mismatch");
 assert(schema.properties.github_release_url.pattern === "^https://github\\.com/.+/releases/tag/.+$", "schema GitHub release URL pattern mismatch");
 assert(schema.properties.cdk_app_version.type === "string", "schema CDK app version type mismatch");
+assert(schema.properties.docs_site.properties.latest_url.pattern === "^(https://.*/admin/docs/latest/|s3://.*/docs-site/latest/).*$", "schema docs latest URL pattern mismatch");
+assert(schema.properties.docs_site.properties.version_url.pattern === "^(https://.*/admin/docs/versions/v0\\.16/|s3://.*/docs-site/releases/v0\\.16/).*$", "schema docs version URL pattern mismatch");
 assert(schema.properties.cloudformation_stacks.minItems === 1, "schema CloudFormation stack minItems mismatch");
 assert(JSON.stringify(schema.properties.cloudformation_stacks.items.required) === JSON.stringify(["stack_name", "stack_id"]), "schema CloudFormation stack required mismatch");
 assert(schema.properties.db_migration.properties.checksum_status.enum.includes("matched"), "schema db checksum enum mismatch");
@@ -84,6 +86,8 @@ for (const key of ["latest_url", "version_url"]) {
   assert(typeof manifest.docs_site[key] === "string" && manifest.docs_site[key].length > 0, `docs_site.${key} is required`);
   assert(/example/.test(manifest.docs_site[key]), `example docs_site.${key} must be visibly non-final`);
 }
+assert(manifest.docs_site.latest_url.includes("/docs-site/latest/"), "example docs_site.latest_url must use design docs-site/latest prefix");
+assert(manifest.docs_site.version_url.includes("/docs-site/releases/v0.16/"), "example docs_site.version_url must use design docs-site/releases/v0.16 prefix");
 assert(/example/.test(manifest.rag_evaluation.evaluation_run_id), "example rag evaluation id must be visibly non-final");
 assert(/example/.test(manifest.rag_evaluation.report_url), "example rag evaluation report must be visibly non-final");
 

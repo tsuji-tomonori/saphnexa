@@ -118,8 +118,8 @@ function validateManifest(path, checks, errors, options = {}) {
   for (const key of ["latest_url", "version_url"]) {
     check(isArtifactUrl(manifest.docs_site?.[key]), `manifest.docs_site.${key}`, checks, errors, "must be a final http(s) or s3 URL");
   }
-  check(hasPathSuffix(manifest.docs_site?.latest_url, "/latest/"), "manifest.docs_site.latest_url_latest_path", checks, errors, "must point to the latest docs path");
-  check(hasPathSuffix(manifest.docs_site?.version_url, "/versions/v0.16/"), "manifest.docs_site.version_url_design_version", checks, errors, "must point to the v0.16 versioned docs path");
+  check(isDocsLatestUrl(manifest.docs_site?.latest_url), "manifest.docs_site.latest_url_admin_docs_path", checks, errors, "must point to /admin/docs/latest/ or docs-site/latest/");
+  check(isDocsVersionUrl(manifest.docs_site?.version_url), "manifest.docs_site.version_url_admin_docs_path", checks, errors, "must point to /admin/docs/versions/v0.16/ or docs-site/releases/v0.16/");
   check(isFinalText(manifest.rag_evaluation?.evaluation_run_id), "manifest.rag_evaluation.evaluation_run_id", checks, errors, "must include final evaluation run id");
   check(isArtifactUrl(manifest.rag_evaluation?.report_url), "manifest.rag_evaluation.report_url", checks, errors, "must be a final report URL");
   check(manifest.db_migration?.tool === "Flyway", "manifest.db_migration.tool", checks, errors, "must be Flyway");
@@ -237,6 +237,14 @@ function isArtifactUrl(value) {
 
 function hasPathSuffix(value, suffix) {
   return typeof value === "string" && normalizePathSuffix(value).endsWith(suffix);
+}
+
+function isDocsLatestUrl(value) {
+  return hasPathSuffix(value, "/admin/docs/latest/") || hasPathSuffix(value, "/docs-site/latest/");
+}
+
+function isDocsVersionUrl(value) {
+  return hasPathSuffix(value, "/admin/docs/versions/v0.16/") || hasPathSuffix(value, "/docs-site/releases/v0.16/");
 }
 
 function normalizePathSuffix(value) {

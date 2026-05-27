@@ -29,6 +29,10 @@ for (const action of plan.actions) {
   assert(action.required_before_run.length > 0, `${action.id} must list prerequisites`);
   assert(action.evidence_outputs.length > 0, `${action.id} must list evidence outputs`);
 }
+const awsDeployPublish = plan.actions.find((action) => action.id === "aws-deploy-publish");
+assert(awsDeployPublish.candidate_commands.includes("aws s3 sync dist/admin/docs/latest/ s3://<admin-artifacts-bucket>/docs-site/latest/"), "docs latest publish command must use design docs-site/latest prefix");
+assert(awsDeployPublish.candidate_commands.includes("aws s3 sync dist/admin/docs/versions/v0.16/ s3://<admin-artifacts-bucket>/docs-site/releases/v0.16/"), "docs version publish command must use design docs-site/releases/v0.16 prefix");
+assert(!awsDeployPublish.candidate_commands.includes("aws s3 sync dist/admin/docs/ s3://<admin-artifacts-bucket>/docs/"), "docs publish command must not use legacy docs/ prefix");
 assert(plan.pending_action_ids.length === plan.actions.length, "all actions must be pending before external execution");
 assert(plan.note.includes("require explicit confirmation"), "external action confirmation note missing");
 
