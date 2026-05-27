@@ -59,7 +59,8 @@ export function buildExternalAcceptanceActionPlan(outputPath = externalActionPla
       acceptance_ids: ["AC-002", "AC-081", "AC-150", "AC-151", "AC-152"],
       candidate_commands: [
         "aws cloudformation describe-stacks --stack-name saphnexa-uat-app --region ap-northeast-1 --output json",
-        "aws cloudformation list-stack-resources --stack-name saphnexa-uat-app --region ap-northeast-1 --output json"
+        "aws cloudformation list-stack-resources --stack-name saphnexa-uat-app --region ap-northeast-1 --output json",
+        "CFN_CAPTURED_AT=<capture-iso-timestamp> npm run cfn:inventory:normalize"
       ],
       required_before_run: ["AWS deploy 完了", "CloudFormation stack name 確定"],
       evidence_outputs: ["docs/acceptance/cloudformation/cloudformation_inventory.uat.json"]
@@ -69,6 +70,8 @@ export function buildExternalAcceptanceActionPlan(outputPath = externalActionPla
       title: "final evidence manifest と final checklist 候補を作成する",
       acceptance_ids: ["AC-001", "AC-002", "AC-004", "AC-081", "AC-150", "AC-151", "AC-152"],
       candidate_commands: [
+        "npm run acceptance:final-manifest:build",
+        "npm run acceptance:final-checklist:build",
         "npm run acceptance:final-candidate:check",
         "npm run acceptance:final:build",
         "npm run acceptance:final:check"

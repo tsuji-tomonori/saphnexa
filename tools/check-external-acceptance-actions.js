@@ -33,6 +33,21 @@ const awsDeployPublish = plan.actions.find((action) => action.id === "aws-deploy
 assert(awsDeployPublish.candidate_commands.includes("aws s3 sync dist/admin/docs/latest/ s3://<admin-artifacts-bucket>/docs-site/latest/"), "docs latest publish command must use design docs-site/latest prefix");
 assert(awsDeployPublish.candidate_commands.includes("aws s3 sync dist/admin/docs/versions/v0.16/ s3://<admin-artifacts-bucket>/docs-site/releases/v0.16/"), "docs version publish command must use design docs-site/releases/v0.16 prefix");
 assert(!awsDeployPublish.candidate_commands.includes("aws s3 sync dist/admin/docs/ s3://<admin-artifacts-bucket>/docs/"), "docs publish command must not use legacy docs/ prefix");
+const cloudFormationCapture = plan.actions.find((action) => action.id === "cloudformation-capture");
+assert(cloudFormationCapture.candidate_commands.includes("CFN_CAPTURED_AT=<capture-iso-timestamp> npm run cfn:inventory:normalize"), "CloudFormation capture action must include final inventory normalizer command");
+const finalEvidenceCandidate = plan.actions.find((action) => action.id === "final-evidence-candidate");
+assert(finalEvidenceCandidate.candidate_commands.includes("npm run acceptance:final-manifest:build"), "final evidence candidate action must include manifest builder command");
+assert(finalEvidenceCandidate.candidate_commands.includes("npm run acceptance:final-checklist:build"), "final evidence candidate action must include checklist builder command");
+assert(
+  finalEvidenceCandidate.candidate_commands.indexOf("npm run acceptance:final-manifest:build") <
+    finalEvidenceCandidate.candidate_commands.indexOf("npm run acceptance:final-candidate:check"),
+  "final evidence candidate action must build manifest before checking candidate"
+);
+assert(
+  finalEvidenceCandidate.candidate_commands.indexOf("npm run acceptance:final-checklist:build") <
+    finalEvidenceCandidate.candidate_commands.indexOf("npm run acceptance:final-candidate:check"),
+  "final evidence candidate action must build checklist before checking candidate"
+);
 assert(plan.pending_action_ids.length === plan.actions.length, "all actions must be pending before external execution");
 assert(plan.note.includes("require explicit confirmation"), "external action confirmation note missing");
 
