@@ -37,6 +37,8 @@ const suites = [
   suite("evidence", "npm run evidence:check"),
   suite("acceptance-external-actions-build", "npm run acceptance:external-actions:build"),
   suite("acceptance-external-actions-check", "npm run acceptance:external-actions:check"),
+  suite("acceptance-final-candidate-fixture", "npm run acceptance:final-candidate:fixture:check"),
+  suite("acceptance-final-fixture", "npm run acceptance:final:fixture:check"),
   suite("acceptance-final-candidate", "npm run acceptance:final-candidate:check"),
   suite("acceptance-final-build", "npm run acceptance:final:build"),
   suite("acceptance-final-check", "npm run acceptance:final:check"),
