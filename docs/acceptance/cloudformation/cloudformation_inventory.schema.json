@@ -10,10 +10,7 @@
     "stack_name",
     "source",
     "final_acceptance_eligible",
-    "aws_capture_required",
-    "local_cdk_inventory",
-    "expected_major_resource_types",
-    "final_capture_instructions"
+    "aws_capture_required"
   ],
   "properties": {
     "schema_version": { "const": "saphnexa-cloudformation-inventory.v1" },
@@ -21,14 +18,28 @@
     "environment": { "type": "string", "enum": ["dev", "uat", "stg", "prod"] },
     "aws_region": { "type": "string", "const": "ap-northeast-1" },
     "stack_name": { "type": "string", "minLength": 1 },
-    "stack_id": { "type": "string" },
-    "stack_status": { "type": "string" },
+    "stack_id": {
+      "type": "string",
+      "pattern": "^arn:aws:cloudformation:ap-northeast-1:[0-9]{12}:stack/.+/.+$"
+    },
+    "stack_status": {
+      "type": "string",
+      "enum": [
+        "CREATE_COMPLETE",
+        "UPDATE_COMPLETE",
+        "UPDATE_ROLLBACK_COMPLETE",
+        "IMPORT_COMPLETE",
+        "IMPORT_ROLLBACK_COMPLETE"
+      ]
+    },
     "stack_outputs": {
       "type": "array",
+      "minItems": 1,
       "items": { "type": "object" }
     },
     "stack_resources": {
       "type": "array",
+      "minItems": 1,
       "items": { "type": "object" }
     },
     "source": { "type": "string", "enum": ["local-cdk-intent", "aws-cloudformation-inventory"] },
@@ -54,5 +65,46 @@
         "required_for_acceptance"
       ]
     }
-  }
+  },
+  "allOf": [
+    {
+      "if": {
+        "properties": {
+          "source": { "const": "local-cdk-intent" }
+        },
+        "required": ["source"]
+      },
+      "then": {
+        "required": [
+          "local_cdk_inventory",
+          "expected_major_resource_types",
+          "final_capture_instructions"
+        ],
+        "properties": {
+          "final_acceptance_eligible": { "const": false },
+          "aws_capture_required": { "const": true }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "source": { "const": "aws-cloudformation-inventory" }
+        },
+        "required": ["source"]
+      },
+      "then": {
+        "required": [
+          "stack_id",
+          "stack_status",
+          "stack_outputs",
+          "stack_resources"
+        ],
+        "properties": {
+          "final_acceptance_eligible": { "const": true },
+          "aws_capture_required": { "const": false }
+        }
+      }
+    }
+  ]
 }
