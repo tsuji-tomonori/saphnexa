@@ -205,6 +205,7 @@ function validateCloudFormationInventory(path, checks, errors) {
   check(inventory.aws_capture_required === false, "cloudformation.aws_capture_required", checks, errors, "must not require more AWS capture");
   check(/^arn:aws:cloudformation:ap-northeast-1:[0-9]{12}:stack\//.test(inventory.stack_id || ""), "cloudformation.stack_id", checks, errors, "must include stack ARN");
   check(isCompleteCloudFormationStackStatus(inventory.stack_status), "cloudformation.stack_status", checks, errors, "must be a complete CloudFormation stack status");
+  validateCloudFormationCaptureEvidence(inventory, checks, errors);
   check(Array.isArray(inventory.stack_outputs) && inventory.stack_outputs.length > 0, "cloudformation.stack_outputs", checks, errors, "must include stack outputs");
   check(Array.isArray(inventory.stack_resources) && inventory.stack_resources.length > 0, "cloudformation.stack_resources", checks, errors, "must include resources");
   for (const output of inventory.stack_outputs || []) {
@@ -229,6 +230,28 @@ function validateCloudFormationInventory(path, checks, errors) {
     check((resourceTypeCounts.get(resourceType) || 0) >= expectedMajorResourceTypeMinimumCounts[resourceType], `cloudformation.major_resource_type_count.${resourceType}`, checks, errors, `must include at least ${expectedMajorResourceTypeMinimumCounts[resourceType]} resources of this type`);
   }
   return inventory;
+}
+
+function validateCloudFormationCaptureEvidence(inventory, checks, errors) {
+  const evidence = inventory.capture_evidence;
+  const hasEvidence = Boolean(evidence) && typeof evidence === "object" && !Array.isArray(evidence);
+  check(hasEvidence, "cloudformation.capture_evidence", checks, errors, "must include CloudFormation capture evidence metadata");
+  if (!hasEvidence) return;
+  check(isIsoDateTime(evidence.captured_at), "cloudformation.capture_evidence.captured_at", checks, errors, "must be an ISO timestamp");
+  check(
+    isCloudFormationCaptureCommand(evidence.describe_stacks_command, "describe-stacks", inventory.stack_name),
+    "cloudformation.capture_evidence.describe_stacks_command",
+    checks,
+    errors,
+    "must record describe-stacks command for this stack and region"
+  );
+  check(
+    isCloudFormationCaptureCommand(evidence.list_stack_resources_command, "list-stack-resources", inventory.stack_name),
+    "cloudformation.capture_evidence.list_stack_resources_command",
+    checks,
+    errors,
+    "must record list-stack-resources command for this stack and region"
+  );
 }
 
 function validateManifestCloudFormationConsistency(manifest, inventory, checks, errors) {
@@ -445,8 +468,27 @@ function isIsoDate(value) {
   return !Number.isNaN(date.getTime()) && date.toISOString().slice(0, 10) === value;
 }
 
+function isIsoDateTime(value) {
+  const match = /^(\d{4}-\d{2}-\d{2})T(\d{2}):(\d{2}):(\d{2})(?:\.\d{3})?(?:Z|[+-]\d{2}:\d{2})$/.exec(value || "");
+  if (typeof value !== "string" || !match || !isIsoDate(match[1])) return false;
+  const [, , hour, minute, second] = match;
+  if (Number(hour) > 23 || Number(minute) > 59 || Number(second) > 59) return false;
+  return !Number.isNaN(new Date(value).getTime());
+}
+
 function isIsoDateOnOrBefore(value, currentDate) {
   return isIsoDate(value) && isIsoDate(currentDate) && value <= currentDate;
+}
+
+function isCloudFormationCaptureCommand(value, action, stackName) {
+  return (
+    isFinalText(value) &&
+    value.includes(`aws cloudformation ${action}`) &&
+    value.includes("--stack-name") &&
+    value.includes(stackName) &&
+    value.includes("--region") &&
+    value.includes("ap-northeast-1")
+  );
 }
 
 function isCompleteCloudFormationStackStatus(value) {

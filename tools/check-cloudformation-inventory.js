@@ -30,7 +30,7 @@ const awsSourceCondition = sourceCondition(schema, "aws-cloudformation-inventory
 for (const key of ["local_cdk_inventory", "expected_major_resource_types", "expected_major_resource_type_minimum_counts", "expected_major_output_keys", "final_capture_instructions"]) {
   assert(localSourceCondition.then.required.includes(key), `local-cdk-intent schema condition missing required ${key}`);
 }
-for (const key of ["stack_id", "stack_status", "stack_outputs", "stack_resources"]) {
+for (const key of ["stack_id", "stack_status", "stack_outputs", "stack_resources", "capture_evidence"]) {
   assert(awsSourceCondition.then.required.includes(key), `aws-cloudformation-inventory schema condition missing required ${key}`);
 }
 assert(schema.properties.stack_outputs.minItems === 1, "CloudFormation inventory schema must require non-empty stack_outputs");
@@ -39,6 +39,9 @@ assert(schema.properties.stack_resources.minItems === 1, "CloudFormation invento
 assert(JSON.stringify(schema.properties.stack_resources.items.required) === JSON.stringify(["LogicalResourceId", "PhysicalResourceId", "ResourceType", "ResourceStatus"]), "CloudFormation inventory schema must require resource detail fields");
 assert(schema.properties.stack_resources.items.properties.ResourceStatus.enum.includes("UPDATE_COMPLETE"), "CloudFormation inventory schema must include complete resource statuses");
 assert(schema.properties.stack_status.enum.includes("UPDATE_COMPLETE"), "CloudFormation inventory schema must include complete stack statuses");
+assert(JSON.stringify(schema.properties.capture_evidence.required) === JSON.stringify(["captured_at", "describe_stacks_command", "list_stack_resources_command"]), "CloudFormation inventory schema must require capture evidence fields");
+assert(schema.properties.capture_evidence.properties.describe_stacks_command.pattern.includes("describe-stacks"), "CloudFormation inventory schema must require describe-stacks capture command");
+assert(schema.properties.capture_evidence.properties.list_stack_resources_command.pattern.includes("list-stack-resources"), "CloudFormation inventory schema must require list-stack-resources capture command");
 assert(localSourceCondition.then.properties.final_acceptance_eligible.const === false, "local source schema must not be final acceptance eligible");
 assert(localSourceCondition.then.properties.aws_capture_required.const === true, "local source schema must require AWS capture");
 assert(awsSourceCondition.then.properties.final_acceptance_eligible.const === true, "AWS source schema must be final acceptance eligible");

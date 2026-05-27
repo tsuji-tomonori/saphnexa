@@ -361,6 +361,32 @@ try {
   assert(invalidStackStatusOutputsStatus.errors.some((error) => error.includes("cloudformation.stack_status")), "invalid stack status outputs fixture must reject rollback stack status");
   assert(invalidStackStatusOutputsStatus.errors.some((error) => error.includes("cloudformation.stack_outputs")), "invalid stack status outputs fixture must reject empty stack outputs");
 
+  const missingCaptureEvidence = buildReadyCandidate();
+  delete missingCaptureEvidence.inventory.capture_evidence;
+  const missingCaptureEvidencePaths = writeCandidateFiles(join(root, "missing-capture-evidence"), missingCaptureEvidence);
+  const missingCaptureEvidenceStatus = buildFinalEvidenceCandidateStatus(join(root, "missing-capture-evidence-status.json"), {
+    candidatePaths: missingCaptureEvidencePaths,
+    resolveGitTagCommit,
+    resolveGitRepository
+  });
+  assert(missingCaptureEvidenceStatus.ready === false, "missing capture evidence fixture must not be ready");
+  assert(missingCaptureEvidenceStatus.errors.some((error) => error.includes("cloudformation.capture_evidence")), "missing capture evidence fixture must reject missing capture metadata");
+
+  const invalidCaptureEvidence = buildReadyCandidate();
+  invalidCaptureEvidence.inventory.capture_evidence.captured_at = "2026-02-30T00:00:00+09:00";
+  invalidCaptureEvidence.inventory.capture_evidence.describe_stacks_command = "aws cloudformation describe-stack-events --stack-name saphnexa-uat-app --region ap-northeast-1 --output json";
+  invalidCaptureEvidence.inventory.capture_evidence.list_stack_resources_command = "aws cloudformation list-stack-resources --stack-name saphnexa-other-app --region ap-northeast-1 --output json";
+  const invalidCaptureEvidencePaths = writeCandidateFiles(join(root, "invalid-capture-evidence"), invalidCaptureEvidence);
+  const invalidCaptureEvidenceStatus = buildFinalEvidenceCandidateStatus(join(root, "invalid-capture-evidence-status.json"), {
+    candidatePaths: invalidCaptureEvidencePaths,
+    resolveGitTagCommit,
+    resolveGitRepository
+  });
+  assert(invalidCaptureEvidenceStatus.ready === false, "invalid capture evidence fixture must not be ready");
+  assert(invalidCaptureEvidenceStatus.errors.some((error) => error.includes("cloudformation.capture_evidence.captured_at")), "invalid capture evidence fixture must reject invalid timestamp");
+  assert(invalidCaptureEvidenceStatus.errors.some((error) => error.includes("cloudformation.capture_evidence.describe_stacks_command")), "invalid capture evidence fixture must reject wrong describe command");
+  assert(invalidCaptureEvidenceStatus.errors.some((error) => error.includes("cloudformation.capture_evidence.list_stack_resources_command")), "invalid capture evidence fixture must reject wrong stack resource command");
+
   const missingMajorOutput = buildReadyCandidate();
   missingMajorOutput.inventory.stack_outputs = missingMajorOutput.inventory.stack_outputs.filter((output) => output.OutputKey !== expectedMajorOutputKeys[0]);
   const missingMajorOutputPaths = writeCandidateFiles(join(root, "missing-major-output"), missingMajorOutput);
@@ -521,6 +547,11 @@ function buildReadyCandidate() {
       source: "aws-cloudformation-inventory",
       final_acceptance_eligible: true,
       aws_capture_required: false,
+      capture_evidence: {
+        captured_at: "2026-05-27T12:00:00+09:00",
+        describe_stacks_command: "aws cloudformation describe-stacks --stack-name saphnexa-uat-app --region ap-northeast-1 --output json",
+        list_stack_resources_command: "aws cloudformation list-stack-resources --stack-name saphnexa-uat-app --region ap-northeast-1 --output json"
+      },
       stack_outputs: [
         ...expectedMajorOutputKeys.map((outputKey, index) => ({
           OutputKey: outputKey,

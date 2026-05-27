@@ -67,6 +67,28 @@
         }
       }
     },
+    "capture_evidence": {
+      "type": "object",
+      "required": [
+        "captured_at",
+        "describe_stacks_command",
+        "list_stack_resources_command"
+      ],
+      "properties": {
+        "captured_at": {
+          "type": "string",
+          "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(?:\\.\\d{3})?(?:Z|[+-]\\d{2}:\\d{2})$"
+        },
+        "describe_stacks_command": {
+          "type": "string",
+          "pattern": "aws cloudformation describe-stacks"
+        },
+        "list_stack_resources_command": {
+          "type": "string",
+          "pattern": "aws cloudformation list-stack-resources"
+        }
+      }
+    },
     "source": { "type": "string", "enum": ["local-cdk-intent", "aws-cloudformation-inventory"] },
     "generated_by": { "type": "string" },
     "generated_at": { "type": "string" },
@@ -138,7 +160,8 @@
           "stack_id",
           "stack_status",
           "stack_outputs",
-          "stack_resources"
+          "stack_resources",
+          "capture_evidence"
         ],
         "properties": {
           "final_acceptance_eligible": { "const": true },

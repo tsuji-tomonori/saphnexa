@@ -34,6 +34,7 @@ AC-001、AC-002、AC-004、AC-150、AC-151、AC-152 の最終検収で、draft �
 - GitHub release URL が検収対象 repository の `https://github.com/<owner>/<repo>/releases/tag/<git_tag>` として、final evidence manifest の `git_tag` と同じ tag を指すこと。
 - final evidence manifest の全 `cloudformation_stacks` は、stack ARN 内の account、region、stack name が manifest の `aws_account_id`、`aws_region`、`stack_name` と一致すること。
 - final evidence manifest と CloudFormation inventory が同じ AWS account、region、environment、stack name、stack ARN を指していること。
+- final CloudFormation inventory の `capture_evidence` に `captured_at`、`describe-stacks` command、`list-stack-resources` command が記録されていること。
 - final CloudFormation inventory の `stack_status` が complete 系 status で、`stack_outputs` が 1 件以上あり、各 output に `OutputKey` と `OutputValue` があること。
 - final CloudFormation inventory の `stack_resources` が 1 件以上あり、各 resource に `LogicalResourceId`、`PhysicalResourceId`、`ResourceType`、complete 系 `ResourceStatus` があること。
 - final CloudFormation inventory の `stack_resources[].ResourceType` が、local CDK intent で定義した主要 resource type を全件含むこと。
