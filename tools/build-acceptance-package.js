@@ -9,6 +9,7 @@ import { currentGitCommit } from "./git-context.js";
 import { readJson, readText } from "./lib.js";
 
 const outputRoot = "dist/acceptance";
+const artifactSummaryPath = join(outputRoot, "artifact_summary.draft.json");
 const trace = readText("docs/acceptance/traceability.md");
 const packageJson = readJson("package.json");
 const defectSnapshot = readJson("docs/acceptance/defects/open_issues_snapshot.json");
@@ -18,6 +19,7 @@ const counts = countStates(rows);
 const cloudFormationInventory = buildCloudFormationInventoryDraft(cloudFormationInventoryPath);
 const externalActionPlan = buildExternalAcceptanceActionPlan(externalActionPlanPath);
 const finalReadiness = buildFinalAcceptanceReadiness(finalReadinessPath);
+const artifactSummary = buildArtifactSummary(gitCommit, finalReadiness, externalActionPlan);
 
 const manifest = {
   system: "Saphnexa",
@@ -26,6 +28,7 @@ const manifest = {
   aws_account_id: "pending-aws-account-id",
   git_commit_sha: gitCommit,
   git_tag: "pending-release-tag",
+  github_release_url: "pending-github-release-url",
   cdk_app_version: packageJson.version,
   cloudformation_stacks: [
     {
@@ -39,6 +42,12 @@ const manifest = {
     source: cloudFormationInventory.source,
     final_acceptance_eligible: cloudFormationInventory.final_acceptance_eligible,
     aws_capture_required: cloudFormationInventory.aws_capture_required
+  },
+  artifact_summary: {
+    draft_path: artifactSummaryPath,
+    item_count: artifactSummary.artifacts.length,
+    local_ready_count: artifactSummary.artifacts.filter((item) => item.status === "local_ready").length,
+    pending_external_count: artifactSummary.artifacts.filter((item) => item.status === "pending_external").length
   },
   db_migration: {
     tool: "Flyway",
@@ -103,6 +112,9 @@ const summary = {
   checklist_rows: checklist.length,
   blocker_critical_open_count: defectSnapshot.blocker_critical_open_count,
   cloudformation_inventory_draft_path: cloudFormationInventoryPath,
+  artifact_summary_draft_path: artifactSummaryPath,
+  artifact_summary_items: artifactSummary.artifacts.length,
+  artifact_summary_pending_external: artifactSummary.artifacts.filter((item) => item.status === "pending_external").length,
   final_readiness_path: finalReadinessPath,
   final_readiness_ready: finalReadiness.final_acceptance_ready,
   final_candidate_status_path: finalReadiness.final_candidate_gate.status_path,
@@ -114,6 +126,7 @@ const summary = {
 };
 
 write(join(outputRoot, "evidence_manifest.draft.json"), `${JSON.stringify(manifest, null, 2)}\n`);
+write(artifactSummaryPath, `${JSON.stringify(artifactSummary, null, 2)}\n`);
 write(join(outputRoot, "acceptance_checklist.draft.csv"), renderCsv(checklist));
 write(join(outputRoot, "defect_list.json"), `${JSON.stringify(defectSnapshot, null, 2)}\n`);
 write(join(outputRoot, "summary.json"), `${JSON.stringify(summary, null, 2)}\n`);
@@ -154,6 +167,109 @@ function buildChecklist(items) {
       state: row.state
     };
   });
+}
+
+function buildArtifactSummary(gitCommit, finalReadiness, externalActionPlan) {
+  const artifacts = [
+    artifact({
+      id: "source",
+      title: "Source repository snapshot",
+      acceptance_ids: ["AC-002"],
+      status: "local_ready",
+      evidence: [`git_commit_sha:${gitCommit}`, "GitHub PR #1"],
+      final_required: true
+    }),
+    artifact({
+      id: "cdk-synth",
+      title: "CDK synth result",
+      acceptance_ids: ["AC-002", "AC-080", "AC-120"],
+      status: "local_ready",
+      evidence: ["npm run cdk:synth:local", ".github/workflows/ci.yml#cdk-synth"],
+      final_required: true
+    }),
+    artifact({
+      id: "cloudformation-outputs",
+      title: "CloudFormation stack outputs and inventory",
+      acceptance_ids: ["AC-002", "AC-081", "AC-150", "AC-151", "AC-152"],
+      status: "pending_external",
+      evidence: [cloudFormationInventoryPath, "docs/acceptance/cloudformation/cloudformation_inventory.uat.json"],
+      pending_action_ids: ["aws-deploy-publish", "cloudformation-capture"],
+      final_required: true
+    }),
+    artifact({
+      id: "db-migration",
+      title: "DB migration result",
+      acceptance_ids: ["AC-002", "AC-070", "AC-071"],
+      status: "local_ready",
+      evidence: ["npm run db:migration:check", "packages/db-migrations/migrations/V001__initial_saphnexa_schema.sql"],
+      final_required: true
+    }),
+    artifact({
+      id: "allure-report",
+      title: "Allure test report",
+      acceptance_ids: ["AC-002", "AC-021", "AC-088", "AC-121", "AC-126"],
+      status: "local_ready",
+      evidence: ["dist/admin/test-reports/allure/latest/", "npm run artifacts:check"],
+      pending_action_ids: ["aws-deploy-publish"],
+      final_required: true
+    }),
+    artifact({
+      id: "docusaurus-docs",
+      title: "Docusaurus design documentation site",
+      acceptance_ids: ["AC-002", "AC-020", "AC-087", "AC-143"],
+      status: "local_ready",
+      evidence: ["dist/admin/docs/latest/", "dist/admin/docs/versions/v0.16/", "npm run admin-artifacts:build"],
+      pending_action_ids: ["aws-deploy-publish"],
+      final_required: true
+    }),
+    artifact({
+      id: "ops-runbooks",
+      title: "Operations runbooks",
+      acceptance_ids: ["AC-002", "AC-143", "AC-144"],
+      status: "local_ready",
+      evidence: ["docs/ops/runbooks/", "npm run docs:check"],
+      final_required: true
+    }),
+    artifact({
+      id: "release",
+      title: "Git tag and GitHub release",
+      acceptance_ids: ["AC-001", "AC-002", "AC-150", "AC-151", "AC-152"],
+      status: "pending_external",
+      evidence: ["Git tag", "GitHub release URL"],
+      pending_action_ids: ["release-tag", "github-release"],
+      final_required: true
+    }),
+    artifact({
+      id: "final-checklist",
+      title: "Signed final acceptance checklist",
+      acceptance_ids: ["AC-004", "AC-150", "AC-151", "AC-152"],
+      status: "pending_external",
+      evidence: ["docs/acceptance/final/acceptance_checklist.csv"],
+      pending_action_ids: ["final-evidence-candidate", "final-checklist-signoff"],
+      final_required: true
+    })
+  ];
+
+  return {
+    schema_version: "saphnexa-acceptance-artifact-summary.v1",
+    generated_at: "2026-05-27T16:37:00+09:00",
+    generated_by: "tools/build-acceptance-package.js",
+    draft_status: "draft_not_for_final_acceptance",
+    final_acceptance_ready: false,
+    final_readiness_path: finalReadinessPath,
+    final_readiness_ready: finalReadiness.final_acceptance_ready,
+    external_action_plan_path: externalActionPlanPath,
+    external_actions_pending: externalActionPlan.pending_action_ids,
+    artifacts,
+    note: "Local draft summary for AC-002 deliverable tracking. Pending external artifacts require explicit confirmation and UAT evidence before final acceptance."
+  };
+}
+
+function artifact(item) {
+  return {
+    pending_action_ids: [],
+    ...item
+  };
 }
 
 function renderCsv(items) {

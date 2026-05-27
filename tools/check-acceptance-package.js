@@ -12,6 +12,7 @@ import { currentGitCommit } from "./git-context.js";
 import { assert, readJson, readText } from "./lib.js";
 
 const manifest = readJson("dist/acceptance/evidence_manifest.draft.json");
+const artifactSummary = readJson("dist/acceptance/artifact_summary.draft.json");
 const summary = readJson("dist/acceptance/summary.json");
 const defects = readJson("dist/acceptance/defect_list.json");
 const checklist = readText("dist/acceptance/acceptance_checklist.draft.csv");
@@ -19,6 +20,7 @@ const currentCommit = currentGitCommit();
 
 for (const path of [
   "dist/acceptance/evidence_manifest.draft.json",
+  "dist/acceptance/artifact_summary.draft.json",
   "dist/acceptance/acceptance_checklist.draft.csv",
   "dist/acceptance/cloudformation_inventory.draft.json",
   "dist/acceptance/final_readiness.json",
@@ -41,9 +43,13 @@ assert(manifest.draft_status === "draft_not_for_final_acceptance", "manifest mus
 assert(manifest.pending_final_evidence.length >= 5, "manifest pending final evidence must be explicit");
 assert(manifest.aws_account_id === "pending-aws-account-id", "draft manifest must not pretend to know AWS account id");
 assert(manifest.git_tag === "pending-release-tag", "draft manifest must not pretend release tag is created");
+assert(manifest.github_release_url === "pending-github-release-url", "draft manifest must not pretend GitHub release is created");
 assert(manifest.cloudformation_inventory.draft_path === "dist/acceptance/cloudformation_inventory.draft.json", "manifest CloudFormation inventory path mismatch");
 assert(manifest.cloudformation_inventory.final_acceptance_eligible === false, "manifest CloudFormation inventory must be draft-only");
 assert(manifest.cloudformation_inventory.aws_capture_required === true, "manifest CloudFormation inventory must require AWS capture");
+assert(manifest.artifact_summary.draft_path === "dist/acceptance/artifact_summary.draft.json", "manifest artifact summary path mismatch");
+assert(manifest.artifact_summary.item_count >= 8, "manifest artifact summary item count too small");
+assert(manifest.artifact_summary.pending_external_count > 0, "manifest artifact summary must preserve pending external items");
 assert(manifest.source_catalog.path === acceptanceCatalogPath, "manifest source catalog path mismatch");
 assert(manifest.source_catalog.item_count === acceptanceCatalog.item_count, "manifest source catalog item count mismatch");
 assert(JSON.stringify(manifest.source_catalog.priority_counts) === JSON.stringify(acceptanceCatalog.priority_counts), "manifest source priority counts mismatch");
@@ -90,6 +96,9 @@ assert(summary.source_catalog_path === acceptanceCatalogPath, "summary source ca
 assert(summary.source_catalog_items === acceptanceCatalog.item_count, "summary source catalog item count mismatch");
 assert(JSON.stringify(summary.source_priority_counts) === JSON.stringify(acceptanceCatalog.priority_counts), "summary source priority counts mismatch");
 assert(summary.cloudformation_inventory_draft_path === "dist/acceptance/cloudformation_inventory.draft.json", "summary CloudFormation inventory path mismatch");
+assert(summary.artifact_summary_draft_path === "dist/acceptance/artifact_summary.draft.json", "summary artifact path mismatch");
+assert(summary.artifact_summary_items === artifactSummary.artifacts.length, "summary artifact count mismatch");
+assert(summary.artifact_summary_pending_external > 0, "summary must preserve pending external artifacts");
 assert(summary.final_readiness_path === "dist/acceptance/final_readiness.json", "summary final readiness path mismatch");
 assert(summary.final_readiness_ready === false, "summary final readiness must remain false");
 assert(summary.final_candidate_status_path === "dist/acceptance/final_candidate_status.json", "summary final candidate path mismatch");
@@ -98,6 +107,32 @@ assert(summary.external_action_plan_path === "dist/acceptance/external_action_pl
 assert(summary.external_actions_pending > 0, "summary external action pending count must be positive");
 assert(summary.trace_state_counts.requires_aws > 0, "draft package must preserve remaining AWS blockers");
 assert(summary.final_acceptance_ready === false, "draft package must not claim final acceptance readiness");
+
+assert(artifactSummary.schema_version === "saphnexa-acceptance-artifact-summary.v1", "artifact summary schema mismatch");
+assert(artifactSummary.draft_status === "draft_not_for_final_acceptance", "artifact summary must be draft-only");
+assert(artifactSummary.final_acceptance_ready === false, "artifact summary must not claim final acceptance readiness");
+assert(artifactSummary.final_readiness_path === "dist/acceptance/final_readiness.json", "artifact summary final readiness path mismatch");
+assert(artifactSummary.final_readiness_ready === false, "artifact summary final readiness must remain false");
+assert(artifactSummary.external_action_plan_path === "dist/acceptance/external_action_plan.json", "artifact summary external action path mismatch");
+assert(JSON.stringify(artifactSummary.external_actions_pending) === JSON.stringify(manifest.final_readiness.external_actions_pending), "artifact summary external pending actions mismatch");
+
+for (const id of ["source", "cdk-synth", "cloudformation-outputs", "db-migration", "allure-report", "docusaurus-docs", "ops-runbooks", "release", "final-checklist"]) {
+  assert(artifactSummary.artifacts.some((item) => item.id === id), `artifact summary missing ${id}`);
+}
+for (const item of artifactSummary.artifacts) {
+  assert(item.final_required === true, `${item.id} must be marked final required`);
+  assert(["local_ready", "pending_external"].includes(item.status), `${item.id} status mismatch`);
+  assert(Array.isArray(item.acceptance_ids) && item.acceptance_ids.length > 0, `${item.id} acceptance ids missing`);
+  assert(Array.isArray(item.evidence) && item.evidence.length > 0, `${item.id} evidence missing`);
+  assert(Array.isArray(item.pending_action_ids), `${item.id} pending action ids missing`);
+  if (item.status === "pending_external") {
+    assert(item.pending_action_ids.length > 0, `${item.id} pending external item must list actions`);
+  }
+}
+assert(artifactSummary.artifacts.some((item) => item.id === "cloudformation-outputs" && item.status === "pending_external"), "CloudFormation outputs must remain pending external");
+assert(artifactSummary.artifacts.some((item) => item.id === "release" && item.status === "pending_external"), "release artifacts must remain pending external");
+assert(artifactSummary.artifacts.some((item) => item.id === "final-checklist" && item.status === "pending_external"), "final checklist must remain pending external");
+assert(artifactSummary.artifacts.every((item) => item.status !== "complete"), "artifact summary must not mark final artifacts complete");
 
 console.log("acceptance package check passed");
 
