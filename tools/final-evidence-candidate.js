@@ -114,6 +114,7 @@ function validateManifest(path, checks, errors, options = {}) {
   for (const key of ["allure_latest_url", "unit_report_url", "integration_report_url", "e2e_report_url"]) {
     check(isArtifactUrl(manifest.test_reports?.[key]), `manifest.test_reports.${key}`, checks, errors, "must be a final http(s) or s3 URL");
   }
+  check(hasPathSuffix(manifest.test_reports?.allure_latest_url, "/test-reports/allure/latest/"), "manifest.test_reports.allure_latest_url_latest_path", checks, errors, "must point to the Allure latest report path");
   for (const key of ["latest_url", "version_url"]) {
     check(isArtifactUrl(manifest.docs_site?.[key]), `manifest.docs_site.${key}`, checks, errors, "must be a final http(s) or s3 URL");
   }

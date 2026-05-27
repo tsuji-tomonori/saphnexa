@@ -126,6 +126,17 @@ try {
   assert(invalidDocsSiteUrlsStatus.errors.some((error) => error.includes("manifest.docs_site.latest_url_latest_path")), "invalid docs site URLs fixture must reject non-latest docs path");
   assert(invalidDocsSiteUrlsStatus.errors.some((error) => error.includes("manifest.docs_site.version_url_design_version")), "invalid docs site URLs fixture must reject non-v0.16 docs version path");
 
+  const invalidAllureReportUrl = buildReadyCandidate();
+  invalidAllureReportUrl.manifest.test_reports.allure_latest_url = "s3://saphnexa-acceptance-artifacts/test-reports/unit/latest/";
+  const invalidAllureReportUrlPaths = writeCandidateFiles(join(root, "invalid-allure-report-url"), invalidAllureReportUrl);
+  const invalidAllureReportUrlStatus = buildFinalEvidenceCandidateStatus(join(root, "invalid-allure-report-url-status.json"), {
+    candidatePaths: invalidAllureReportUrlPaths,
+    resolveGitTagCommit,
+    resolveGitRepository
+  });
+  assert(invalidAllureReportUrlStatus.ready === false, "invalid Allure report URL fixture must not be ready");
+  assert(invalidAllureReportUrlStatus.errors.some((error) => error.includes("manifest.test_reports.allure_latest_url_latest_path")), "invalid Allure report URL fixture must reject non-Allure latest path");
+
   for (const [fixtureName, monthlyUsd, message] of [
     ["null-cost", null, "null cost estimate"],
     ["negative-cost", -1, "negative cost estimate"],
@@ -272,7 +283,7 @@ function buildReadyCandidate() {
         checksum_status: "matched"
       },
       test_reports: {
-        allure_latest_url: "https://github.com/tsuji-tomonori/saphnexa/actions/runs/26494798563",
+        allure_latest_url: "s3://saphnexa-acceptance-artifacts/test-reports/allure/latest/",
         unit_report_url: "https://github.com/tsuji-tomonori/saphnexa/actions/runs/26494798563",
         integration_report_url: "https://github.com/tsuji-tomonori/saphnexa/actions/runs/26494798563",
         e2e_report_url: "https://github.com/tsuji-tomonori/saphnexa/actions/runs/26494798563"
