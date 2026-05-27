@@ -36,12 +36,17 @@ assert(schema.properties.git_commit_sha.pattern === "^[a-f0-9]{40}$", "schema gi
 assert(schema.properties.github_release_url.pattern === "^https://github\\.com/.+/releases/tag/.+$", "schema GitHub release URL pattern mismatch");
 assert(schema.properties.cdk_app_version.type === "string", "schema CDK app version type mismatch");
 assert(schema.properties.test_reports.properties.allure_latest_url.pattern === "^(https://.*/admin/test-reports/allure/latest/|s3://.*/test-reports/allure/latest/).*$", "schema Allure latest URL pattern mismatch");
+assert(schema.properties.test_reports.properties.allure_latest_url.description.includes("localhost, private IP"), "schema Allure latest URL description must reject private hosts");
 for (const key of ["unit_report_url", "integration_report_url", "e2e_report_url"]) {
   assert(schema.properties.test_reports.properties[key].pattern === "^(https://.*/admin/test-reports/allure/(latest|runs/[^/]+)/|s3://.*/test-reports/allure/(latest|runs/[^/]+)/).*$", `schema ${key} Allure URL pattern mismatch`);
+  assert(schema.properties.test_reports.properties[key].description.includes("localhost, private IP"), `schema ${key} description must reject private hosts`);
 }
 assert(schema.properties.docs_site.properties.latest_url.pattern === "^(https://.*/admin/docs/latest/|s3://.*/docs-site/latest/).*$", "schema docs latest URL pattern mismatch");
+assert(schema.properties.docs_site.properties.latest_url.description.includes("localhost, private IP"), "schema docs latest URL description must reject private hosts");
 assert(schema.properties.docs_site.properties.version_url.pattern === "^(https://.*/admin/docs/versions/v0\\.16/|s3://.*/docs-site/releases/v0\\.16/).*$", "schema docs version URL pattern mismatch");
+assert(schema.properties.docs_site.properties.version_url.description.includes("localhost, private IP"), "schema docs version URL description must reject private hosts");
 assert(schema.properties.rag_evaluation.properties.report_url.pattern === "^(https://.*/admin/evaluation-reports/[^/]+/|s3://.*/reports/evaluations/[^/]+/).*$", "schema RAG evaluation report URL pattern mismatch");
+assert(schema.properties.rag_evaluation.properties.report_url.description.includes("localhost, private IP"), "schema RAG evaluation report URL description must reject private hosts");
 assert(schema.properties.cloudformation_stacks.minItems === 1, "schema CloudFormation stack minItems mismatch");
 assert(JSON.stringify(schema.properties.cloudformation_stacks.items.required) === JSON.stringify(["stack_name", "stack_id"]), "schema CloudFormation stack required mismatch");
 assert(schema.properties.db_migration.properties.checksum_status.enum.includes("matched"), "schema db checksum enum mismatch");

@@ -120,22 +120,22 @@
       "properties": {
         "allure_latest_url": {
           "type": "string",
-          "description": "Final Allure latest report URL. Use the CloudFront viewer path /admin/test-reports/allure/latest/ or the S3 origin prefix test-reports/allure/latest/.",
+          "description": "Final Allure latest report URL. Use the CloudFront viewer path /admin/test-reports/allure/latest/ or the S3 origin prefix test-reports/allure/latest/. localhost, private IP, .internal, .local, and .test hosts are not final evidence.",
           "pattern": "^(https://.*/admin/test-reports/allure/latest/|s3://.*/test-reports/allure/latest/).*$"
         },
         "unit_report_url": {
           "type": "string",
-          "description": "Final unit test Allure report URL. Use an Allure latest or run report path.",
+          "description": "Final unit test Allure report URL. Use an Allure latest or run report path. localhost, private IP, .internal, .local, and .test hosts are not final evidence.",
           "pattern": "^(https://.*/admin/test-reports/allure/(latest|runs/[^/]+)/|s3://.*/test-reports/allure/(latest|runs/[^/]+)/).*$"
         },
         "integration_report_url": {
           "type": "string",
-          "description": "Final integration test Allure report URL. Use an Allure latest or run report path.",
+          "description": "Final integration test Allure report URL. Use an Allure latest or run report path. localhost, private IP, .internal, .local, and .test hosts are not final evidence.",
           "pattern": "^(https://.*/admin/test-reports/allure/(latest|runs/[^/]+)/|s3://.*/test-reports/allure/(latest|runs/[^/]+)/).*$"
         },
         "e2e_report_url": {
           "type": "string",
-          "description": "Final E2E test Allure report URL. Use an Allure latest or run report path.",
+          "description": "Final E2E test Allure report URL. Use an Allure latest or run report path. localhost, private IP, .internal, .local, and .test hosts are not final evidence.",
           "pattern": "^(https://.*/admin/test-reports/allure/(latest|runs/[^/]+)/|s3://.*/test-reports/allure/(latest|runs/[^/]+)/).*$"
         }
       }
@@ -149,12 +149,12 @@
       "properties": {
         "latest_url": {
           "type": "string",
-          "description": "Final admin docs latest URL. Use the CloudFront viewer path /admin/docs/latest/ or the S3 origin prefix docs-site/latest/.",
+          "description": "Final admin docs latest URL. Use the CloudFront viewer path /admin/docs/latest/ or the S3 origin prefix docs-site/latest/. localhost, private IP, .internal, .local, and .test hosts are not final evidence.",
           "pattern": "^(https://.*/admin/docs/latest/|s3://.*/docs-site/latest/).*$"
         },
         "version_url": {
           "type": "string",
-          "description": "Final admin docs v0.16 URL. Use the CloudFront viewer path /admin/docs/versions/v0.16/ or the S3 origin prefix docs-site/releases/v0.16/.",
+          "description": "Final admin docs v0.16 URL. Use the CloudFront viewer path /admin/docs/versions/v0.16/ or the S3 origin prefix docs-site/releases/v0.16/. localhost, private IP, .internal, .local, and .test hosts are not final evidence.",
           "pattern": "^(https://.*/admin/docs/versions/v0\\.16/|s3://.*/docs-site/releases/v0\\.16/).*$"
         }
       }
@@ -171,7 +171,7 @@
         },
         "report_url": {
           "type": "string",
-          "description": "Final RAG evaluation HTML report URL. Use the CloudFront viewer path /admin/evaluation-reports/{evaluation_run_id}/ or the S3 origin prefix reports/evaluations/{evaluation_run_id}/.",
+          "description": "Final RAG evaluation HTML report URL. Use the CloudFront viewer path /admin/evaluation-reports/{evaluation_run_id}/ or the S3 origin prefix reports/evaluations/{evaluation_run_id}/. localhost, private IP, .internal, .local, and .test hosts are not final evidence.",
           "pattern": "^(https://.*/admin/evaluation-reports/[^/]+/|s3://.*/reports/evaluations/[^/]+/).*$"
         }
       }

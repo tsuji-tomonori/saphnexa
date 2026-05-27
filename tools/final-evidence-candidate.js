@@ -249,7 +249,10 @@ function isReleaseUrlForTag(value, gitTag) {
 }
 
 function isArtifactUrl(value) {
-  return typeof value === "string" && /^(https:\/\/|s3:\/\/)/.test(value) && !/example|pending|placeholder|dist\//i.test(value);
+  if (typeof value !== "string" || /example|pending|placeholder|dist\//i.test(value)) return false;
+  if (value.startsWith("s3://")) return true;
+  if (!value.startsWith("https://")) return false;
+  return isPublicHttpsUrl(value);
 }
 
 function hasPathSuffix(value, suffix) {
@@ -365,6 +368,34 @@ function parseCloudFormationStackArn(value) {
   const match = /^arn:aws:cloudformation:([^:]+):([0-9]{12}):stack\/([^/]+)\/.+$/.exec(value || "");
   if (!match) return null;
   return { region: match[1], accountId: match[2], stackName: match[3] };
+}
+
+function isPublicHttpsUrl(value) {
+  try {
+    const { hostname } = new URL(value);
+    const normalized = hostname.toLowerCase();
+    if (
+      normalized === "localhost" ||
+      normalized.endsWith(".localhost") ||
+      normalized.endsWith(".local") ||
+      normalized.endsWith(".internal") ||
+      normalized.endsWith(".test")
+    ) {
+      return false;
+    }
+    if (isPrivateIpv4(normalized) || normalized === "::1" || normalized === "[::1]") return false;
+    return normalized.includes(".");
+  } catch {
+    return false;
+  }
+}
+
+function isPrivateIpv4(hostname) {
+  const parts = hostname.split(".");
+  if (parts.length !== 4 || parts.some((part) => !/^\d+$/.test(part))) return false;
+  const [a, b, c, d] = parts.map(Number);
+  if ([a, b, c, d].some((part) => part < 0 || part > 255)) return false;
+  return a === 10 || a === 127 || (a === 172 && b >= 16 && b <= 31) || (a === 192 && b === 168) || (a === 169 && b === 254);
 }
 
 function normalizeOutputKey(value) {

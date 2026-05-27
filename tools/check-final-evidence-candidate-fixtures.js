@@ -176,6 +176,27 @@ try {
   assert(missingCostUsageBasisStatus.ready === false, "missing cost usage basis fixture must not be ready");
   assert(missingCostUsageBasisStatus.errors.some((error) => error.includes("manifest.cost_estimate.assumption_usage_basis")), "missing cost usage basis fixture must reject missing usage basis");
 
+  const privateArtifactUrls = buildReadyCandidate();
+  privateArtifactUrls.manifest.docs_site.latest_url = "https://docs.saphnexa-uat.internal/admin/docs/latest/";
+  privateArtifactUrls.manifest.test_reports.allure_latest_url = "https://localhost/admin/test-reports/allure/latest/";
+  privateArtifactUrls.manifest.test_reports.unit_report_url = "https://reports.saphnexa.local/admin/test-reports/allure/runs/unit-20260527/";
+  privateArtifactUrls.manifest.test_reports.integration_report_url = "https://reports.saphnexa.test/admin/test-reports/allure/runs/integration-20260527/";
+  privateArtifactUrls.manifest.rag_evaluation.report_url = "https://192.168.10.10/admin/evaluation-reports/eval-20260527-uat-final/";
+  privateArtifactUrls.checklistRows[0].証跡リンク = "https://127.0.0.1/actions/runs/26494798563";
+  const privateArtifactUrlsPaths = writeCandidateFiles(join(root, "private-artifact-urls"), privateArtifactUrls);
+  const privateArtifactUrlsStatus = buildFinalEvidenceCandidateStatus(join(root, "private-artifact-urls-status.json"), {
+    candidatePaths: privateArtifactUrlsPaths,
+    resolveGitTagCommit,
+    resolveGitRepository
+  });
+  assert(privateArtifactUrlsStatus.ready === false, "private artifact URL fixture must not be ready");
+  assert(privateArtifactUrlsStatus.errors.some((error) => error.includes("manifest.docs_site.latest_url")), "private artifact URL fixture must reject internal docs URL");
+  assert(privateArtifactUrlsStatus.errors.some((error) => error.includes("manifest.test_reports.allure_latest_url")), "private artifact URL fixture must reject localhost Allure URL");
+  assert(privateArtifactUrlsStatus.errors.some((error) => error.includes("manifest.test_reports.unit_report_url")), "private artifact URL fixture must reject .local Allure URL");
+  assert(privateArtifactUrlsStatus.errors.some((error) => error.includes("manifest.test_reports.integration_report_url")), "private artifact URL fixture must reject .test Allure URL");
+  assert(privateArtifactUrlsStatus.errors.some((error) => error.includes("manifest.rag_evaluation.report_url")), "private artifact URL fixture must reject private IP evaluation report URL");
+  assert(privateArtifactUrlsStatus.errors.some((error) => error.includes(`checklist.${acceptanceIds[0]}.証跡リンク_url`)), "private artifact URL fixture must reject private checklist evidence URL");
+
   const mismatchedRagEvaluationReport = buildReadyCandidate();
   mismatchedRagEvaluationReport.manifest.rag_evaluation.report_url = "s3://saphnexa-acceptance-artifacts/reports/evaluations/eval-other-run/";
   const mismatchedRagEvaluationReportPaths = writeCandidateFiles(join(root, "mismatched-rag-evaluation-report"), mismatchedRagEvaluationReport);
