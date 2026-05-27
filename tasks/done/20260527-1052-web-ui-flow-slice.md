@@ -1,6 +1,6 @@
 # web UI flow ローカル検収スライス
 
-- 状態: doing
+- 状態: done
 - タスク種別: 機能追加
 - 作成日時: 2026-05-27 10:52 JST
 - 対象 PR: #1
@@ -28,7 +28,7 @@
 - [x] bundle/perf report を生成・検査する。
 - [x] docs/trace/CI/admin report のコマンド一覧を同期する。
 - [x] 関連検証と `npm run verify` を通す。
-- [ ] PR へ受け入れ条件コメントとセルフレビューコメントを追加する。
+- [x] PR へ受け入れ条件コメントとセルフレビューコメントを追加する。
 
 ## Done 条件
 
@@ -97,3 +97,8 @@
 - `npm run verify`: pass
 - `git diff --check`: pass
 - `pre-commit run --files ...`: pass
+
+## PR コメント
+
+- 受け入れ条件確認: https://github.com/tsuji-tomonori/saphnexa/pull/1#issuecomment-4550589037
+- セルフレビュー: https://github.com/tsuji-tomonori/saphnexa/pull/1#issuecomment-4550591216
