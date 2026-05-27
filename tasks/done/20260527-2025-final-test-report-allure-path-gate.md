@@ -1,6 +1,6 @@
 # final test report allure path gate
 
-状態: doing
+状態: done
 
 ## 背景
 
@@ -81,19 +81,19 @@
 
 ## 受け入れ条件
 
-- [ ] final candidate verifier が `allure_latest_url` を Allure latest path として検査する。
-- [ ] final candidate verifier が `unit_report_url`、`integration_report_url`、`e2e_report_url` を Allure latest または run path として検査する。
-- [ ] 非 Allure test report path fixture が final candidate gate で reject される。
-- [ ] evidence manifest example/schema/checker が設計書準拠 Allure path と同期している。
-- [ ] 関連 acceptance / evidence / package / verify checks が pass する。
-- [ ] 外部 state を変更せず、未実施外部 action を pending として維持する。
+- [x] final candidate verifier が `allure_latest_url` を Allure latest path として検査する。
+- [x] final candidate verifier が `unit_report_url`、`integration_report_url`、`e2e_report_url` を Allure latest または run path として検査する。
+- [x] 非 Allure test report path fixture が final candidate gate で reject される。
+- [x] evidence manifest example/schema/checker が設計書準拠 Allure path と同期している。
+- [x] 関連 acceptance / evidence / package / verify checks が pass する。
+- [x] 外部 state を変更せず、未実施外部 action を pending として維持する。
 
 ## Done 条件
 
-- [ ] 実装差分が PR branch に commit / push されている。
-- [ ] 受け入れ条件確認コメントとセルフレビューコメントを PR に投稿している。
-- [ ] task md に PR コメント URL と検証結果を記録し、`tasks/done/` へ移動している。
-- [ ] 作業レポートを `reports/working/` に保存している。
+- [x] 実装差分が PR branch に commit / push されている。
+- [x] 受け入れ条件確認コメントとセルフレビューコメントを PR に投稿している。
+- [x] task md に PR コメント URL と検証結果を記録し、`tasks/done/` へ移動している。
+- [x] 作業レポートを `reports/working/` に保存している。
 
 ## 検証計画
 
@@ -107,7 +107,22 @@
 
 ## PR コメント
 
-- 未投稿。PR push 後に受け入れ条件確認とセルフレビューを記録する。
+- 受け入れ条件確認: https://github.com/tsuji-tomonori/saphnexa/pull/1#issuecomment-4554119412
+- セルフレビュー: https://github.com/tsuji-tomonori/saphnexa/pull/1#issuecomment-4554121374
+
+## 実装 commit
+
+- `0886e78` `✅ test: final test report allure path検査を追加`
+
+## 検証結果
+
+- `npm run acceptance:final-candidate:fixture:check`: pass
+- `npm run evidence:check`: pass
+- `npm run acceptance:final-candidate:check`: pass。final files 未配置のため `not ready` 表示は継続するが、errors なしで exit 0。
+- `npm run acceptance:package:check`: pass
+- `npm run verify`: pass
+- `git diff --check`: pass
+- `pre-commit run --files docs/acceptance/evidence/evidence_manifest.example.json docs/acceptance/evidence/evidence_manifest.schema.json tools/check-evidence-manifest.js tools/check-final-evidence-candidate-fixtures.js tools/final-evidence-candidate.js tasks/do/20260527-2025-final-test-report-allure-path-gate.md reports/working/20260527-2028-final-test-report-allure-path-gate.md`: pass
 
 ## PR レビュー観点
 
