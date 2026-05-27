@@ -113,4 +113,11 @@
 
 ## 状態
 
-in_progress
+done
+
+## PR
+
+- Pull Request: https://github.com/tsuji-tomonori/saphnexa/pull/1
+- 受け入れ条件確認コメント: https://github.com/tsuji-tomonori/saphnexa/pull/1#issuecomment-4550242592
+- セルフレビューコメント: https://github.com/tsuji-tomonori/saphnexa/pull/1#issuecomment-4550244225
+- GitHub Apps は既知の `Resource not accessible by integration` のため、`gh` で PR コメントを投稿した。
