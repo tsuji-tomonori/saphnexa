@@ -1,4 +1,4 @@
-import { canManageAdmin, canReadChat, canWriteChat, chatEventNames, participantRoles, roles, statuses } from "./index.js";
+import { adminEventNames, canManageAdmin, canReadChat, canWriteChat, chatEventNames, participantRoles, roles, statuses } from "./index.js";
 import { llmModels } from "../../model-catalog/src/models.js";
 
 const baseTime = "2026-05-27T00:00:00.000Z";
@@ -26,6 +26,7 @@ export function createLocalStore() {
     document_acl_entries: [],
     ingestion_jobs: [],
     admin_events: [],
+    audit_events: [],
     ws_tickets: [],
     user_import_jobs: [],
     user_import_rows: [],
@@ -64,6 +65,7 @@ export function createLocalStore() {
     createDocumentVersion,
     activateDocumentVersion,
     retryIngestionJob,
+    issueArtifactAccessCookie,
     issueWsTicket,
     consumeWsTicket,
     startEvaluationRun,
@@ -125,6 +127,10 @@ export function createLocalStore() {
       removed_at: null
     };
     state.chat_participants.push(row);
+    recordAuditEvent(actor, "chat.participant.added", "chat_share", chat_id, {
+      target_user_id: target.user_id,
+      participant_role: row.participant_role
+    });
     return row;
   }
 
@@ -227,9 +233,16 @@ export function createLocalStore() {
     run.started_at = now();
     message.status = statuses.RUNNING;
     try {
+      const toolCountBefore = state.tool_invocations.length;
       appendEvent(actor.tenant_id, run.chat_id, run.message_id, "chat.retrieval.started", "progress", { run_id: run.run_id });
       if (run.failure_injection === "retrieval") throw asyncFailure("RAG_RETRIEVAL_FAILED", "retrieval failure injection");
       const result = ragAdapter.answer({ question, actor, run, store: state });
+      for (const invocation of state.tool_invocations.slice(toolCountBefore)) {
+        recordAuditEvent(actor, "tool.invocation.recorded", "tools_execution", invocation.invocation_id, {
+          tool_name: invocation.tool_name,
+          run_id: invocation.run_id
+        });
+      }
       appendEvent(actor.tenant_id, run.chat_id, run.message_id, "chat.retrieval.completed", "progress", {
         run_id: run.run_id,
         retrieved_count: result.retrieved_count,
@@ -318,9 +331,31 @@ export function createLocalStore() {
   function startUserImport(actor, rows) {
     requireAdmin(actor);
     const import_id = nextId("import");
-    const job = { tenant_id: actor.tenant_id, import_id, status: statuses.SUCCEEDED, result_s3_prefix: `s3://saphnexa-local/user-import/${import_id}/`, created_by_user_id: actor.user_id };
+    const result_s3_prefix = `s3://saphnexa-local/user-import/${import_id}/`;
+    const job = {
+      tenant_id: actor.tenant_id,
+      import_id,
+      status: statuses.SUCCEEDED,
+      result_s3_prefix,
+      result_report_json: { created: 0, updated: 0, deleted: 0, failed: 0, error_rows_s3_uri: `${result_s3_prefix}error-rows.jsonl` },
+      created_by_user_id: actor.user_id
+    };
     state.user_import_jobs.push(job);
-    rows.forEach((row, index) => state.user_import_rows.push({ tenant_id: actor.tenant_id, import_id, row_number: index + 1, status: row.email ? statuses.SUCCEEDED : statuses.FAILED, error_message: row.email ? null : "email is required" }));
+    rows.forEach((row, index) => {
+      const result = applyUserImportRow(row);
+      job.result_report_json[result.counter] += 1;
+      state.user_import_rows.push({
+        tenant_id: actor.tenant_id,
+        import_id,
+        row_number: index + 1,
+        action: row.action || "create",
+        status: result.status,
+        target_user_id: result.target_user_id || null,
+        error_message: result.error_message || null
+      });
+    });
+    recordAdminEvent(actor, "admin.user_import.updated", { import_id, status: job.status, failed_rows: job.result_report_json.failed });
+    recordAuditEvent(actor, "admin.user_import.completed", "admin_operation", import_id, job.result_report_json);
     return job;
   }
 
@@ -359,9 +394,14 @@ export function createLocalStore() {
       error_code: metadataError?.error_code || null,
       retryable: Boolean(metadataError)
     });
-    if (metadataError) {
-      state.admin_events.push({ tenant_id: actor.tenant_id, event_name: "admin.ingestion.updated", job_id, status: statuses.FAILED, error_code: metadataError.error_code, created_at: now() });
-    }
+    recordAdminEvent(actor, "admin.ingestion.updated", { job_id, document_id, version_id, status: metadataError ? statuses.FAILED : statuses.QUEUED, error_code: metadataError?.error_code || null });
+    recordAuditEvent(actor, "document.registration.requested", "document_publish", document_id, {
+      version_id,
+      job_id,
+      raw_s3_uri,
+      parsed_s3_prefix: `s3://saphnexa-local/parsed/${document_id}/${version_id}/`,
+      status: metadataError ? statuses.FAILED : statuses.QUEUED
+    });
     return { document_id, version_id, job_id, raw_s3_uri };
   }
 
@@ -376,7 +416,9 @@ export function createLocalStore() {
     for (const version of state.document_versions.filter((item) => item.document_id === document_id)) {
       version.status = version.version_id === version_id ? statuses.ACTIVE : statuses.ARCHIVED;
     }
-    return state.document_versions.find((item) => item.document_id === document_id && item.version_id === version_id);
+    const activeVersion = state.document_versions.find((item) => item.document_id === document_id && item.version_id === version_id);
+    recordAuditEvent(actor, "document.version.activated", "document_publish", document_id, { version_id });
+    return activeVersion;
   }
 
   function retryIngestionJob(actor, job_id) {
@@ -387,7 +429,8 @@ export function createLocalStore() {
     job.status = statuses.QUEUED;
     job.retryable = false;
     job.error_code = null;
-    state.admin_events.push({ tenant_id: actor.tenant_id, event_name: "admin.ingestion.updated", job_id, status: statuses.QUEUED, created_at: now() });
+    recordAdminEvent(actor, "admin.ingestion.updated", { job_id, status: statuses.QUEUED });
+    recordAuditEvent(actor, "document.ingestion.retried", "admin_operation", job_id, { document_id: job.document_id, version_id: job.version_id });
     return job;
   }
 
@@ -437,12 +480,26 @@ export function createLocalStore() {
       created_by_user_id: actor.user_id
     };
     state.evaluation_runs.push(run);
+    recordAdminEvent(actor, "admin.evaluation.updated", { evaluation_run_id, status: run.status, dataset_id: run.dataset_id });
+    recordAuditEvent(actor, "admin.evaluation.completed", "evaluation", evaluation_run_id, {
+      dataset_id: run.dataset_id,
+      artifact_s3_prefix: run.artifact_s3_prefix,
+      metrics: Object.keys(run.metrics_json)
+    });
     return run;
   }
 
   function listAdminArtifacts(actor) {
     requireAdmin(actor);
+    recordAuditEvent(actor, "admin.artifact.listed", "artifact_access", "published_artifacts", { artifact_count: state.published_artifacts.length });
     return state.published_artifacts;
+  }
+
+  function issueArtifactAccessCookie(actor) {
+    requireAdmin(actor);
+    recordAdminEvent(actor, "admin.artifact.published", { status: "published-local", artifact_count: state.published_artifacts.length });
+    recordAuditEvent(actor, "admin.artifact.cookie_issued", "artifact_access", "artifact-cookie", { expires_in_seconds: 300 });
+    return { cookie_issued: true, expires_in_seconds: 300 };
   }
 
   function appendEvent(tenant_id, chat_id, message_id, event_name, event_type, payload_json) {
@@ -497,6 +554,59 @@ export function createLocalStore() {
     const missing = required.filter((key) => !metadata[key]);
     if (missing.length > 0) return { error_code: "DOCUMENT_METADATA_INVALID", missing };
     return null;
+  }
+
+  function applyUserImportRow(row) {
+    if (!row.email) return { status: statuses.FAILED, counter: "failed", error_message: "email is required" };
+    const action = row.action || "create";
+    if (!["create", "update", "delete"].includes(action)) {
+      return { status: statuses.FAILED, counter: "failed", error_message: `unsupported action: ${action}` };
+    }
+    const existing = state.users.find((item) => item.email === row.email || item.user_id === row.user_id);
+    if (action === "create") {
+      if (existing) return { status: statuses.FAILED, counter: "failed", error_message: "user already exists", target_user_id: existing.user_id };
+      const user_id = row.user_id || nextId("usr");
+      state.users.push(user(user_id, row.role || roles.GENERAL_USER, row.email, row.display_name || row.email));
+      return { status: statuses.SUCCEEDED, counter: "created", target_user_id: user_id };
+    }
+    if (!existing) return { status: statuses.FAILED, counter: "failed", error_message: "user not found" };
+    if (action === "update") {
+      existing.display_name = row.display_name || existing.display_name;
+      existing.department = row.department || existing.department;
+      existing.updated_at = now();
+      return { status: statuses.SUCCEEDED, counter: "updated", target_user_id: existing.user_id };
+    }
+    existing.status = statuses.REMOVED;
+    existing.updated_at = now();
+    return { status: statuses.SUCCEEDED, counter: "deleted", target_user_id: existing.user_id };
+  }
+
+  function recordAdminEvent(actor, event_name, payload = {}) {
+    if (!adminEventNames.includes(event_name)) throw new Error(`unknown admin event ${event_name}`);
+    const event = {
+      tenant_id: actor.tenant_id,
+      event_id: nextId("admevt"),
+      event_name,
+      ...payload,
+      created_at: now()
+    };
+    state.admin_events.push(event);
+    return event;
+  }
+
+  function recordAuditEvent(actor, event_name, category, resource_id, payload_json = {}) {
+    const event = {
+      tenant_id: actor.tenant_id,
+      audit_event_id: nextId("audit"),
+      actor_user_id: actor.user_id,
+      event_name,
+      category,
+      resource_id,
+      payload_json,
+      created_at: now()
+    };
+    state.audit_events.push(event);
+    return event;
   }
 }
 

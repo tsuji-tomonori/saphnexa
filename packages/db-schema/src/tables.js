@@ -31,6 +31,7 @@ export const requiredTables = [
   "bm25_term_stats",
   "bm25_field_stats",
   "event_delivery_logs",
+  "audit_events",
   "agent_tools",
   "tool_invocations",
   "published_artifacts",

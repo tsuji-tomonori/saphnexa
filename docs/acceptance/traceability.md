@@ -22,10 +22,10 @@
 | AC-013 | local_verified | chat creation creates `chat_sessions` and owner `chat_participants` in local integration. |
 | AC-014 | local_verified | owner share and viewer write denial in local integration. |
 | AC-015 | local_verified | `favorites` store/API source と `tests/e2e-local.test.js` で登録/一覧を検証。 |
-| AC-016 | implemented_unverified | user import job/rows source あり。AWS/S3 report は未検証。 |
-| AC-017 | implemented_unverified | document registration creates ingestion job and raw URI source. AWS/S3 inventory は未検証。 |
-| AC-018 | implemented_unverified | document version activation source あり。 |
-| AC-019 | implemented_unverified | evaluation run source あり。 |
+| AC-016 | local_verified | `npm run admin:workflow:check` で user import の create/update/delete/invalid row、結果 prefix、error rows report を検査。実 S3 report は未実施。 |
+| AC-017 | local_verified | `npm run admin:workflow:check` で document registration 5件、raw URI、parsed prefix、metadata JSON、ingestion job を検査。AWS/S3 inventory は未検証。 |
+| AC-018 | local_verified | `npm run admin:workflow:check` で document version activation の新 active/旧 archived を検査。 |
+| AC-019 | local_verified | `npm run admin:workflow:check` で evaluation run 3件、retrieval/generation/end-to-end metrics、artifact prefix を検査。AWS 評価 report は未実施。 |
 | AC-020 | implemented_unverified | `npm run artifacts:check` で local API の admin artifact 一覧/アクセス cookie が admin のみ許可、一般/未認証は拒否されることを検査。CloudFront Cookie 実公開は未実施。 |
 | AC-021 | implemented_unverified | `dist/admin/test-reports/allure/latest/` と local API admin artifact policy を `npm run artifacts:check` で検査。Allure/CloudFront 実公開は未実施。 |
 | AC-030 | local_verified | `packages/api-contract/src/routes.js` 38 routes and `tools/check-contracts.js`. |
@@ -53,7 +53,7 @@
 | AC-060 | local_verified | local integration checks event ordering and names subset. |
 | AC-061 | local_verified | `assertNotificationIsLightweight` rejects answer/chunk fields. |
 | AC-062 | local_verified | event notification points to REST detail and auth is rechecked. |
-| AC-063 | scaffolded | admin event names defined; publisher integration 未実装。 |
+| AC-063 | local_verified | `npm run admin:workflow:check` で user_import/ingestion/evaluation/artifact の admin event を検査。実 publisher integration は未実装。 |
 | AC-064 | local_verified | `after_seq` local event API と viewer REST detail 取得を `tests/e2e-local.test.js` で検証。実 WebSocket disconnect は未実施。 |
 | AC-070 | implemented_unverified | `npm run db:migration:check` で Flyway versioned SQL、schema_migrations、checksum算出、required tables を静的検査。Aurora DSQL/Flyway 実適用は未実施。 |
 | AC-071 | local_verified | `npm run db:migration:check` で migration が手書き SQL で、ORM auto migration command/marker がないことを検査。 |
@@ -82,17 +82,17 @@
 | AC-097 | local_verified | evaluation metrics categories in local source and `tests/e2e-local.test.js` local path. AWS 評価 report は未実施。 |
 | AC-098 | local_verified | `npm run rag:quality:check` で `dist/reports/rag-quality-local.json` を生成し、recall@10/citation precision/groundedness/refusal accuracy/unsupported claim rate の local thresholds を検査。Bedrock Evaluations/実KB report は未実施。 |
 | AC-099 | local_verified | `npm run rag:security:check` で prompt injection attack 20件中 policy violation 0件、tool invocation 0件を検査。実 AgentCore trace は未実施。 |
-| AC-100 | scaffolded | ingestion job/raw URI source あり、PDF/KB/S3 Vectors 実行未実施。 |
+| AC-100 | local_verified | `npm run offline-artifacts:check` で raw/parsed/chunk/reference/BM25F/parser artifact inventory を生成・検査。PDF/KB/S3 Vectors 実行は未実施。 |
 | AC-101 | local_verified | document metadata 必須 field と raw prefix を `tests/integration-local.test.js` / `npm run storage:check` で検査。Retrieve metadata 実体は未実施。 |
-| AC-102 | implemented_unverified | parsed prefix を `npm run storage:check` で検査。chunk/reference/BM25F/parser artifact inventory は未実施。 |
+| AC-102 | local_verified | `npm run storage:check` で parsed prefix、`npm run offline-artifacts:check` で chunk/reference/BM25F/parser artifact inventory を検査。実 S3 inventory は未実施。 |
 | AC-103 | local_verified | 同一 document_id/version_id の再登録で document_version が重複しないことを `tests/integration-local.test.js` で検証。 |
 | AC-104 | local_verified | metadata 不備で failed job、admin event、retry 可能状態になることを `tests/integration-local.test.js` で検証。KB失敗注入は未実施。 |
 | AC-110 | local_verified | `packages/domain/src/observability.js` と `tests/e2e-local.test.js` で共通 JSON log schema を検査。CloudWatch sampling は未実施。 |
 | AC-111 | local_verified | `assertTracePropagation` で local API/worker/tools/agent chain の trace_id/correlation_id 伝播を検査。実 AWS trace は未実施。 |
 | AC-112 | local_verified | `npm run observability:check` で API latency、5xx、RAG latency、retrieval count、DLQ count、ingestion failed、evaluation failed の required metrics 7/7 を catalog と local sample で検査。CloudWatch metrics は未実施。 |
 | AC-113 | local_verified | `npm run observability:check` で 5xx、DLQ、RAG失敗率、ingestion失敗、評価失敗、WAF block急増の required alarms 6/6 を catalog 検査。CloudWatch alarms は未実施。 |
-| AC-114 | implemented_unverified | tool invocation audit source あり、admin audit 未実装。 |
-| AC-120 | local_verified | `.github/workflows/ci.yml` に 13 jobs を追加し `npm run ci:check` で検査。PR #1 の GitHub Actions `Saphnexa CI` で lint/typecheck/unit/integration/e2e/cdk synth/cdk diff/security scan/license scan/admin artifacts/quality gates/db observability/contract generation diff が pass。 |
+| AC-114 | local_verified | `audit_events` table/store と `npm run admin:workflow:check` で admin 操作、文書公開/成果物、チャット共有、Tools execution、評価の audit category を検査。 |
+| AC-120 | local_verified | `.github/workflows/ci.yml` に 14 jobs を追加し `npm run ci:check` で lint/typecheck/unit/integration/e2e/cdk synth/cdk diff/security scan/license scan/admin artifacts/quality gates/db observability/admin offline restore/contract generation diff の workflow shape を検査。PR #1 の最新 GitHub Actions 結果は push 後に確認する。 |
 | AC-121 | local_verified | `npm run coverage:check` で Node test coverage line >=80% / branch >=70% と test pass 100% を検査。Allure unit artifact への publish は未実施。 |
 | AC-122 | implemented_unverified | local integration job/test は追加済み。AWS/DSQL/S3/AppSync/Tools 実結合は未実施。 |
 | AC-123 | implemented_unverified | `tests/e2e-local.test.js` と e2e CI job を追加。ブラウザ/CloudFront E2E は未実施。 |
@@ -109,7 +109,7 @@
 | AC-141 | local_verified | `npm run storage:check` で code/infra/package に OpenSearch dependency がないことを検査。AWS inventory は未実施。 |
 | AC-142 | local_verified | `npm run observability:check` で CloudWatch/S3/DSQL 相当 retention catalog の retention_days 未設定0件を検査。実リソース確認は未実施。 |
 | AC-143 | local_verified | runbooks を `docs/ops/runbooks/` に追加し `npm run docs:check` で構造検査、`npm run admin-artifacts:build` で docs artifact に含める。Docusaurus 公開は未実施。 |
-| AC-144 | implemented_unverified | `docs/ops/runbooks/backup-restore.md` を追加。復旧試験は未実施。 |
+| AC-144 | local_verified | `docs/ops/runbooks/backup-restore.md` と `npm run restore:drill:check` で local snapshot restore drill、RTO/RPO、checksum を検査。AWS backup/restore 実試験は未実施。 |
 | AC-150 | requires_aws | P0 全 PASS ではない。 |
 | AC-151 | requires_aws | P1 全 PASS ではない。 |
 | AC-152 | requires_aws | P2 全 PASS ではない。 |

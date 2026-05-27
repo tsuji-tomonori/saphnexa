@@ -29,6 +29,7 @@ test("schema catalog and construct inventory match the design counts", () => {
   assert.equal(requiredTables.includes("chat_sessions"), true);
   assert.equal(requiredTables.includes("chat_participants"), true);
   assert.equal(requiredTables.includes("tool_invocations"), true);
-  assert.equal(requiredTables.length, 37);
+  assert.equal(requiredTables.includes("audit_events"), true);
+  assert.equal(requiredTables.length, 38);
   assert.equal(saphnexaConstructs.length, 7);
 });

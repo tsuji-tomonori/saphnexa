@@ -141,6 +141,18 @@ jobs:
       - run: npm run search:local:check
       - run: npm run observability:check
 
+  admin-offline-restore:
+    name: admin offline restore
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+      - run: npm run admin:workflow:check
+      - run: npm run offline-artifacts:check
+      - run: npm run restore:drill:check
+
   contract-generation-diff:
     name: contract generation diff
     runs-on: ubuntu-latest

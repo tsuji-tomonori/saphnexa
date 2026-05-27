@@ -79,8 +79,7 @@ export function createLocalApi() {
           case "listPublishedArtifacts":
             return ok({ artifacts: store.listAdminArtifacts(actor) });
           case "issueArtifactAccessCookie":
-            requireAdmin(actor);
-            return created({ cookie_issued: true, expires_in_seconds: 300 });
+            return created(store.issueArtifactAccessCookie(actor));
           case "issueWsTicket":
             return created(store.issueWsTicket(actor, input));
           case "consumeWsTicket":

@@ -30,6 +30,9 @@
     "db:integrity:check": "node tools/check-db-integrity.js",
     "search:local:check": "node tools/check-local-search.js",
     "observability:check": "node tools/check-observability-catalog.js",
+    "admin:workflow:check": "node tools/check-admin-workflows.js",
+    "offline-artifacts:check": "node tools/check-offline-artifacts.js",
+    "restore:drill:check": "node tools/check-restore-drill.js",
     "docs:check": "node tools/check-docs.js",
     "evidence:check": "node tools/check-evidence-manifest.js",
     "acceptance:check": "node tools/check-acceptance-trace.js",
@@ -43,7 +46,7 @@
     "admin-artifacts:build": "npm run docs-site:build && npm run allure:generate:local",
     "artifacts:check": "node tools/check-admin-artifacts.js",
     "scan:bundle-domains": "node tools/scan-bundle-domains.js",
-    "verify": "npm run lint && npm run typecheck && npm run test:contract && npm run test:integration:local && npm run test:e2e:local && npm run cdk:synth:local && npm run cdk:diff:local && npm run security:scan && npm run license:scan && npm run coverage:check && npm run ui:check && npm run web:perf:local && npm run perf:api:local && npm run failure:check && npm run rag:quality:check && npm run rag:security:check && npm run rag:perf:local && npm run db:migration:check && npm run db:integrity:check && npm run search:local:check && npm run observability:check && npm run docs:check && npm run evidence:check && npm run acceptance:check && npm run pairwise:check && npm run perf:local && npm run cost:check && npm run storage:check && npm run admin-artifacts:build && npm run artifacts:check && npm run scan:bundle-domains"
+    "verify": "npm run lint && npm run typecheck && npm run test:contract && npm run test:integration:local && npm run test:e2e:local && npm run cdk:synth:local && npm run cdk:diff:local && npm run security:scan && npm run license:scan && npm run coverage:check && npm run ui:check && npm run web:perf:local && npm run perf:api:local && npm run failure:check && npm run rag:quality:check && npm run rag:security:check && npm run rag:perf:local && npm run db:migration:check && npm run db:integrity:check && npm run search:local:check && npm run observability:check && npm run admin:workflow:check && npm run offline-artifacts:check && npm run restore:drill:check && npm run docs:check && npm run evidence:check && npm run acceptance:check && npm run pairwise:check && npm run perf:local && npm run cost:check && npm run storage:check && npm run admin-artifacts:build && npm run artifacts:check && npm run scan:bundle-domains"
   },
   "engines": {
     "node": ">=20"

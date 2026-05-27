@@ -86,6 +86,18 @@ tasks:
     desc: Verify local metrics, alarms, and retention catalog
     cmds:
       - npm run observability:check
+  admin:workflow:check:
+    desc: Verify local admin workflows, audit events, and admin event coverage
+    cmds:
+      - npm run admin:workflow:check
+  offline-artifacts:check:
+    desc: Verify local offline artifact inventory for parser, chunks, references, and BM25F
+    cmds:
+      - npm run offline-artifacts:check
+  restore:drill:check:
+    desc: Verify local restore drill report and checksum
+    cmds:
+      - npm run restore:drill:check
   pairwise:check:
     desc: Verify pairwise acceptance test catalog
     cmds:

@@ -32,7 +32,10 @@ for (const command of [
   "npm run db:migration:check",
   "npm run db:integrity:check",
   "npm run search:local:check",
-  "npm run observability:check"
+  "npm run observability:check",
+  "npm run admin:workflow:check",
+  "npm run offline-artifacts:check",
+  "npm run restore:drill:check"
 ]) {
   assert(localVerification.includes(command), `local verification docs missing ${command}`);
 }

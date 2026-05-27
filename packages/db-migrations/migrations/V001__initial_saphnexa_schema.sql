@@ -377,6 +377,18 @@ CREATE TABLE event_delivery_logs (
   PRIMARY KEY (tenant_id, delivery_id)
 );
 
+CREATE TABLE audit_events (
+  tenant_id varchar(64) NOT NULL,
+  audit_event_id uuid NOT NULL,
+  actor_user_id varchar(128) NOT NULL,
+  event_name varchar(128) NOT NULL,
+  category varchar(64) NOT NULL,
+  resource_id varchar(256) NOT NULL,
+  payload_json json,
+  created_at timestamptz NOT NULL,
+  PRIMARY KEY (tenant_id, audit_event_id)
+);
+
 CREATE TABLE agent_tools (
   tenant_id varchar(64) NOT NULL,
   tool_name varchar(128) NOT NULL,

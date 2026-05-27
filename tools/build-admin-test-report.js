@@ -23,6 +23,9 @@ const suites = [
   suite("db-integrity", "npm run db:integrity:check"),
   suite("local-search", "npm run search:local:check"),
   suite("observability", "npm run observability:check"),
+  suite("admin-workflow", "npm run admin:workflow:check"),
+  suite("offline-artifacts", "npm run offline-artifacts:check"),
+  suite("restore-drill", "npm run restore:drill:check"),
   suite("acceptance", "npm run acceptance:check"),
   suite("evidence", "npm run evidence:check"),
   suite("admin-artifacts", "npm run artifacts:check")
