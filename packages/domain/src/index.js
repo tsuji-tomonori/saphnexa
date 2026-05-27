@@ -1,0 +1,57 @@
+export const roles = Object.freeze({
+  GENERAL_USER: "general_user",
+  ADMIN: "admin"
+});
+
+export const participantRoles = Object.freeze({
+  OWNER: "owner",
+  VIEWER: "viewer"
+});
+
+export const statuses = Object.freeze({
+  ACTIVE: "active",
+  ARCHIVED: "archived",
+  DELETED: "deleted",
+  REMOVED: "removed",
+  QUEUED: "queued",
+  RUNNING: "running",
+  STREAMING: "streaming",
+  SUCCEEDED: "succeeded",
+  FAILED: "failed",
+  CANCELED: "canceled"
+});
+
+export const chatEventNames = Object.freeze([
+  "chat.run.started",
+  "chat.run.progress",
+  "chat.retrieval.started",
+  "chat.retrieval.completed",
+  "chat.generation.started",
+  "chat.message.partial_ready",
+  "chat.message.final_ready",
+  "chat.run.failed",
+  "chat.run.canceled"
+]);
+
+export const adminEventNames = Object.freeze([
+  "admin.ingestion.updated",
+  "admin.evaluation.updated",
+  "admin.user_import.updated",
+  "admin.artifact.published"
+]);
+
+export function canReadChat(participant) {
+  return participant?.status === statuses.ACTIVE && [participantRoles.OWNER, participantRoles.VIEWER].includes(participant.participant_role);
+}
+
+export function canWriteChat(participant) {
+  return participant?.status === statuses.ACTIVE && participant.participant_role === participantRoles.OWNER;
+}
+
+export function canManageAdmin(user) {
+  return user?.role === roles.ADMIN && user?.status === statuses.ACTIVE;
+}
+
+export function createErrorResponse(error_code, message, details = {}, trace_id = "trace-local") {
+  return { trace_id, error_code, message, details };
+}

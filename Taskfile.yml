@@ -5,3 +5,20 @@ tasks:
     desc: Install pre-commit hook
     cmds:
       - pre-commit install
+  verify:
+    desc: Run local Saphnexa verification checks
+    cmds:
+      - npm run verify
+      - git diff --check
+  contract:
+    desc: Verify API and Tools API contract metadata
+    cmds:
+      - npm run test:contract
+  integration:local:
+    desc: Run local integration checks for the first vertical slice
+    cmds:
+      - npm run test:integration:local
+  scan:bundle-domains:
+    desc: Ensure web source does not embed AWS service domains
+    cmds:
+      - npm run scan:bundle-domains

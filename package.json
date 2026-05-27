@@ -1,0 +1,20 @@
+{
+  "name": "saphnexa",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "workspaces": [
+    "apps/*",
+    "packages/*"
+  ],
+  "scripts": {
+    "test": "node --test tests/*.test.js",
+    "test:contract": "node tools/check-contracts.js",
+    "test:integration:local": "node --test tests/integration-local.test.js",
+    "scan:bundle-domains": "node tools/scan-bundle-domains.js",
+    "verify": "npm run test:contract && npm run test:integration:local && npm run scan:bundle-domains"
+  },
+  "engines": {
+    "node": ">=20"
+  }
+}

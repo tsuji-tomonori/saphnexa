@@ -1,0 +1,42 @@
+export const toolErrorStatuses = [400, 401, 403, 500];
+
+export const toolContracts = [
+  tool("kb-retrieve", "kbRetrieve", "/v1/tools/kb-retrieve", "KbRetrieveToolRequest", "KbRetrieveToolResponse", "bedrock-kb-retrieve", 10000),
+  tool("bm25-search", "bm25Search", "/v1/tools/bm25-search", "Bm25SearchToolRequest", "Bm25SearchToolResponse", "bm25f-read", 5000),
+  tool("acl-check", "aclCheck", "/v1/tools/acl-check", "AclCheckToolRequest", "AclCheckToolResponse", "document-acl-read", 3000),
+  tool("reference-expand", "referenceExpand", "/v1/tools/reference-expand", "ReferenceExpandToolRequest", "ReferenceExpandToolResponse", "reference-graph-read", 3000),
+  tool("evidence-pack", "evidencePack", "/v1/tools/evidence-pack", "EvidencePackToolRequest", "EvidencePackToolResponse", "evidence-pack", 5000),
+  tool("citation-format", "citationFormat", "/v1/tools/citation-format", "CitationFormatToolRequest", "CitationFormatToolResponse", "citation-write", 5000)
+];
+
+function tool(toolName, operationId, path, requestSchema, responseSchema, scope, timeoutMs) {
+  return {
+    toolName,
+    operationId,
+    method: "POST",
+    path,
+    requestSchema,
+    responseSchema,
+    auth: "agentcore-gateway-outbound",
+    csrfRequired: false,
+    scope,
+    timeoutMs,
+    auditTable: "tool_invocations",
+    successStatuses: [200],
+    errorStatuses: toolErrorStatuses
+  };
+}
+
+export function assertToolContract() {
+  const names = new Set(toolContracts.map((item) => item.toolName));
+  const operationIds = new Set(toolContracts.map((item) => item.operationId));
+  if (toolContracts.length !== 6) throw new Error(`expected 6 tools, got ${toolContracts.length}`);
+  if (names.size !== 6) throw new Error("tool names must be unique");
+  if (operationIds.size !== 6) throw new Error("tool operationIds must be unique");
+  for (const item of toolContracts) {
+    if (!item.path.startsWith("/v1/tools/")) throw new Error(`${item.toolName} must live under /v1/tools/*`);
+    if (item.csrfRequired) throw new Error(`${item.toolName} must not require CSRF`);
+    if (!item.auditTable) throw new Error(`${item.toolName} must define audit table`);
+  }
+  return true;
+}
