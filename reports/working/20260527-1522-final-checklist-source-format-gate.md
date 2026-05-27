@@ -30,7 +30,7 @@
 - `tools/acceptance-checklist-format.js`
 - source CSV 互換の `dist/acceptance/acceptance_checklist.draft.csv`
 - 更新後の final candidate checklist validator
-- `tasks/do/20260527-1519-final-checklist-source-format-gate.md`
+- `tasks/done/20260527-1519-final-checklist-source-format-gate.md`
 
 ## 検証
 
