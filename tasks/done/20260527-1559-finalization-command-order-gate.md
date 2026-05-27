@@ -1,6 +1,6 @@
 # finalization command order gate
 
-- 状態: doing
+- 状態: done
 - タスク種別: 検証強化
 - 作成日時: 2026-05-27 15:59 JST
 - 対象 PR: #1
@@ -26,7 +26,7 @@ final readiness が提示する最終化コマンド列を、runbook と CI で�
 - [x] final readiness checker でコマンド列を検査する。
 - [x] docs のコマンド列と矛盾がないことを確認する。
 - [x] 対象検証と `npm run verify` を通す。
-- [ ] PR へ受け入れ条件コメントとセルフレビューコメントを追加する。
+- [x] PR へ受け入れ条件コメントとセルフレビューコメントを追加する。
 
 ## Done 条件
 

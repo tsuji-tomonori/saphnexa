@@ -28,7 +28,7 @@
 
 - runbook / CI / verify と同期した finalization command list
 - final readiness command order checker
-- `tasks/do/20260527-1559-finalization-command-order-gate.md`
+- `tasks/done/20260527-1559-finalization-command-order-gate.md`
 
 ## 検証
 
@@ -37,6 +37,11 @@
 - `npm run docs:check`: pass
 - `npm run ci:check`: pass
 - `npm run verify`: pass
+
+## PR コメント
+
+- 受け入れ条件確認: https://github.com/tsuji-tomonori/saphnexa/pull/1#issuecomment-4552230701
+- セルフレビュー: https://github.com/tsuji-tomonori/saphnexa/pull/1#issuecomment-4552232305
 
 ## Fit 評価
 
