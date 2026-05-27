@@ -44,6 +44,13 @@
 
 - 受け入れ条件確認: https://github.com/tsuji-tomonori/saphnexa/pull/1#issuecomment-4552623492
 - セルフレビュー: https://github.com/tsuji-tomonori/saphnexa/pull/1#issuecomment-4552625401
+- task 完了更新セルフレビュー: https://github.com/tsuji-tomonori/saphnexa/pull/1#issuecomment-4552636442
+
+## GitHub Actions
+
+- 最新 push `8896345` 後の PR checks: pass
+- Run: `26498827236`, `26498828491`
+- 対象 job: lint / typecheck / unit / integration / e2e / security scan / license scan / cdk synth / cdk diff / contract generation diff / db observability / admin offline restore / admin artifacts / quality gates
 
 ## Fit 評価
 
