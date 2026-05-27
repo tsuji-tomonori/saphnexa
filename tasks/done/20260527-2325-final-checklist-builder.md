@@ -1,6 +1,6 @@
 # final acceptance checklist builder
 
-- 状態: do
+- 状態: done
 - タスク種別: 機能追加
 - 対象ブランチ: `codex/saphnexa-acceptance-impl`
 - 対象PR: `#1`
@@ -34,15 +34,15 @@ source catalog と signoff input JSON から final acceptance checklist CSV を�
 - [x] fixture check が positive path と invalid input を検査する。
 - [x] runbook / local verification docs が builder command と signoff input path を示す。
 - [x] AC-004 の検収者署名を完了扱いしない。
-- [ ] 変更範囲に見合う検証を実行し、結果を task / report / PR コメントに残す。
+- [x] 変更範囲に見合う検証を実行し、結果を task / report / PR コメントに残す。
 
 ## Done 条件
 
 - [x] builder module / CLI / fixture check / npm script / docs を追加する。
 - [x] 選定した検証コマンドが pass する。
 - [x] 作業レポートを `reports/working/` に作成する。
-- [ ] commit / push し、PR に受け入れ条件確認コメントとセルフレビューコメントを投稿する。
-- [ ] PR コメント後に task を `tasks/done/` へ移動し、その更新も commit / push する。
+- [x] commit / push し、PR に受け入れ条件確認コメントとセルフレビューコメントを投稿する。
+- [x] PR コメント後に task を `tasks/done/` へ移動し、その更新も commit / push する。
 
 ## 実装計画
 
@@ -79,7 +79,10 @@ source catalog と signoff input JSON から final acceptance checklist CSV を�
 
 ## 実施結果
 
+- 実装 commit: `e5f1295`
 - 作業レポート: `reports/working/20260527-2330-final-checklist-builder.md`
+- PR 受け入れ条件確認コメント: https://github.com/tsuji-tomonori/saphnexa/pull/1#issuecomment-4555523229
+- PR セルフレビューコメント: https://github.com/tsuji-tomonori/saphnexa/pull/1#issuecomment-4555527078
 
 ## 検証結果
 
@@ -94,5 +97,4 @@ source catalog と signoff input JSON から final acceptance checklist CSV を�
 
 ## 残件
 
-- PR 受け入れ条件確認コメントとセルフレビューコメントは commit / push 後に投稿する。
 - Git tag/release、AWS deploy/publish、CloudFormation capture、final evidence manifest / checklist の最終作成・署名は未実施。
