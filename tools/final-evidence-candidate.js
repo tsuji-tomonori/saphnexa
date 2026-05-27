@@ -169,6 +169,8 @@ function validateCloudFormationInventory(path, checks, errors) {
   check(inventory.final_acceptance_eligible === true, "cloudformation.final_acceptance_eligible", checks, errors, "must be final acceptance eligible");
   check(inventory.aws_capture_required === false, "cloudformation.aws_capture_required", checks, errors, "must not require more AWS capture");
   check(/^arn:aws:cloudformation:ap-northeast-1:[0-9]{12}:stack\//.test(inventory.stack_id || ""), "cloudformation.stack_id", checks, errors, "must include stack ARN");
+  check(isCompleteCloudFormationStackStatus(inventory.stack_status), "cloudformation.stack_status", checks, errors, "must be a complete CloudFormation stack status");
+  check(Array.isArray(inventory.stack_outputs) && inventory.stack_outputs.length > 0, "cloudformation.stack_outputs", checks, errors, "must include stack outputs");
   check(Array.isArray(inventory.stack_resources) && inventory.stack_resources.length > 0, "cloudformation.stack_resources", checks, errors, "must include resources");
   const resourceTypes = new Set((inventory.stack_resources || []).map((resource) => resource.ResourceType).filter(Boolean));
   for (const resourceType of expectedMajorResourceTypes) {
@@ -241,6 +243,16 @@ function isIsoDate(value) {
 
 function isIsoDateOnOrBefore(value, currentDate) {
   return isIsoDate(value) && isIsoDate(currentDate) && value <= currentDate;
+}
+
+function isCompleteCloudFormationStackStatus(value) {
+  return [
+    "CREATE_COMPLETE",
+    "UPDATE_COMPLETE",
+    "UPDATE_ROLLBACK_COMPLETE",
+    "IMPORT_COMPLETE",
+    "IMPORT_ROLLBACK_COMPLETE"
+  ].includes(value);
 }
 
 function todayIsoDate() {

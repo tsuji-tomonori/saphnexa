@@ -122,6 +122,19 @@ try {
   assert(missingMajorResourceStatus.ready === false, "missing major resource fixture must not be ready");
   assert(missingMajorResourceStatus.errors.some((error) => error.includes(`cloudformation.major_resource_type.${expectedMajorResourceTypes[0]}`)), "missing major resource fixture must reject missing expected resource type");
 
+  const invalidStackStatusOutputs = buildReadyCandidate();
+  invalidStackStatusOutputs.inventory.stack_status = "ROLLBACK_COMPLETE";
+  invalidStackStatusOutputs.inventory.stack_outputs = [];
+  const invalidStackStatusOutputsPaths = writeCandidateFiles(join(root, "invalid-stack-status-outputs"), invalidStackStatusOutputs);
+  const invalidStackStatusOutputsStatus = buildFinalEvidenceCandidateStatus(join(root, "invalid-stack-status-outputs-status.json"), {
+    candidatePaths: invalidStackStatusOutputsPaths,
+    resolveGitTagCommit,
+    resolveGitRepository
+  });
+  assert(invalidStackStatusOutputsStatus.ready === false, "invalid stack status outputs fixture must not be ready");
+  assert(invalidStackStatusOutputsStatus.errors.some((error) => error.includes("cloudformation.stack_status")), "invalid stack status outputs fixture must reject rollback stack status");
+  assert(invalidStackStatusOutputsStatus.errors.some((error) => error.includes("cloudformation.stack_outputs")), "invalid stack status outputs fixture must reject empty stack outputs");
+
   const invalidManifestStacks = buildReadyCandidate();
   invalidManifestStacks.manifest.cloudformation_stacks.push(
     {
@@ -256,9 +269,16 @@ function buildReadyCandidate() {
       aws_region: "ap-northeast-1",
       stack_name: "saphnexa-uat-app",
       stack_id: stackId,
+      stack_status: "UPDATE_COMPLETE",
       source: "aws-cloudformation-inventory",
       final_acceptance_eligible: true,
       aws_capture_required: false,
+      stack_outputs: [
+        {
+          OutputKey: "DistributionDomainName",
+          OutputValue: "d111111abcdef8.cloudfront.net"
+        }
+      ],
       stack_resources: [
         ...expectedMajorResourceTypes.map((resourceType, index) => ({
           LogicalResourceId: `ExpectedMajorResource${index}`,
