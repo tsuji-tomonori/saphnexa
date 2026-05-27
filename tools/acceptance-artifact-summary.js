@@ -16,6 +16,11 @@ export const requiredArtifactIds = [
 ];
 
 export function buildAcceptanceArtifactSummary({ gitCommit, finalReadinessReady, externalActionPlan }) {
+  const externalPendingActionIds = finalReadinessReady ? [] : externalActionPlan.pending_action_ids;
+  const externalArtifact = (status, pendingActionIds = []) => ({
+    status: finalReadinessReady ? "final_ready" : status,
+    pending_action_ids: finalReadinessReady ? [] : pendingActionIds
+  });
   const artifacts = [
     artifact({
       id: "source",
@@ -37,9 +42,8 @@ export function buildAcceptanceArtifactSummary({ gitCommit, finalReadinessReady,
       id: "cloudformation-outputs",
       title: "CloudFormation stack outputs and inventory",
       acceptance_ids: ["AC-002", "AC-081", "AC-150", "AC-151", "AC-152"],
-      status: "pending_external",
+      ...externalArtifact("pending_external", ["aws-deploy-publish", "cloudformation-capture"]),
       evidence: [cloudFormationInventoryPath, "docs/acceptance/cloudformation/cloudformation_inventory.uat.json"],
-      pending_action_ids: ["aws-deploy-publish", "cloudformation-capture"],
       final_required: true
     }),
     artifact({
@@ -54,18 +58,16 @@ export function buildAcceptanceArtifactSummary({ gitCommit, finalReadinessReady,
       id: "allure-report",
       title: "Allure test report",
       acceptance_ids: ["AC-002", "AC-021", "AC-088", "AC-121", "AC-126"],
-      status: "local_ready",
+      ...externalArtifact("local_ready", ["aws-deploy-publish"]),
       evidence: ["dist/admin/test-reports/allure/latest/", "npm run artifacts:check"],
-      pending_action_ids: ["aws-deploy-publish"],
       final_required: true
     }),
     artifact({
       id: "docusaurus-docs",
       title: "Docusaurus design documentation site",
       acceptance_ids: ["AC-002", "AC-020", "AC-087", "AC-143"],
-      status: "local_ready",
+      ...externalArtifact("local_ready", ["aws-deploy-publish"]),
       evidence: ["dist/admin/docs/latest/", "dist/admin/docs/versions/v0.16/", "npm run admin-artifacts:build"],
-      pending_action_ids: ["aws-deploy-publish"],
       final_required: true
     }),
     artifact({
@@ -80,18 +82,16 @@ export function buildAcceptanceArtifactSummary({ gitCommit, finalReadinessReady,
       id: "release",
       title: "Git tag and GitHub release",
       acceptance_ids: ["AC-001", "AC-002", "AC-150", "AC-151", "AC-152"],
-      status: "pending_external",
+      ...externalArtifact("pending_external", ["release-tag", "github-release"]),
       evidence: ["Git tag", "GitHub release URL"],
-      pending_action_ids: ["release-tag", "github-release"],
       final_required: true
     }),
     artifact({
       id: "final-checklist",
       title: "Signed final acceptance checklist",
       acceptance_ids: ["AC-004", "AC-150", "AC-151", "AC-152"],
-      status: "pending_external",
+      ...externalArtifact("pending_external", ["final-evidence-candidate", "final-checklist-signoff"]),
       evidence: ["docs/acceptance/final/acceptance_checklist.csv"],
-      pending_action_ids: ["final-evidence-candidate", "final-checklist-signoff"],
       final_required: true
     })
   ];
@@ -101,11 +101,11 @@ export function buildAcceptanceArtifactSummary({ gitCommit, finalReadinessReady,
     generated_at: "2026-05-27T16:37:00+09:00",
     generated_by: "tools/build-acceptance-package.js",
     draft_status: "draft_not_for_final_acceptance",
-    final_acceptance_ready: false,
+    final_acceptance_ready: finalReadinessReady,
     final_readiness_path: finalReadinessPath,
     final_readiness_ready: finalReadinessReady,
     external_action_plan_path: externalActionPlanPath,
-    external_actions_pending: externalActionPlan.pending_action_ids,
+    external_actions_pending: externalPendingActionIds,
     artifacts,
     note: "Local draft summary for AC-002 deliverable tracking. Pending external artifacts require explicit confirmation and UAT evidence before final acceptance."
   };
@@ -116,6 +116,7 @@ export function summarizeAcceptanceArtifacts(artifactSummary) {
     path: artifactSummaryPath,
     item_count: artifactSummary.artifacts.length,
     local_ready_count: artifactSummary.artifacts.filter((item) => item.status === "local_ready").length,
+    final_ready_count: artifactSummary.artifacts.filter((item) => item.status === "final_ready").length,
     pending_external_count: artifactSummary.artifacts.filter((item) => item.status === "pending_external").length,
     pending_action_ids: [...new Set(artifactSummary.artifacts.flatMap((item) => item.pending_action_ids))]
   };

@@ -9,19 +9,22 @@ import { readJson, readText } from "./lib.js";
 
 export const finalReadinessPath = "dist/acceptance/final_readiness.json";
 
-export function buildFinalAcceptanceReadiness(outputPath = finalReadinessPath) {
-  const traceRows = parseTraceRows(readText("docs/acceptance/traceability.md"));
-  const defectSnapshot = readJson("docs/acceptance/defects/open_issues_snapshot.json");
-  const externalActionPlan = buildExternalAcceptanceActionPlan(externalActionPlanPath);
-  const finalCandidateStatus = buildFinalEvidenceCandidateStatus(finalCandidateStatusPath);
+export function buildFinalAcceptanceReadiness(outputPath = finalReadinessPath, options = {}) {
+  const traceRows = options.traceRows || parseTraceRows(readText("docs/acceptance/traceability.md"));
+  const defectSnapshot = options.defectSnapshot || readJson("docs/acceptance/defects/open_issues_snapshot.json");
+  const externalActionPlan = options.externalActionPlan || buildExternalAcceptanceActionPlan(externalActionPlanPath);
+  const finalCandidateStatus = options.finalCandidateStatus || buildFinalEvidenceCandidateStatus(finalCandidateStatusPath);
+  const finalCandidateReady = finalCandidateStatus.ready === true;
+  const defectGateReady = defectSnapshot.blocker_critical_open_count === 0;
+  const externalActionGateReady = finalCandidateReady || externalActionPlan.ready === true;
   const artifactSummary = buildAcceptanceArtifactSummary({
     gitCommit: currentGitCommit(),
-    finalReadinessReady: false,
+    finalReadinessReady: finalCandidateReady && defectGateReady && externalActionGateReady,
     externalActionPlan
   });
   const artifactSummaryStats = summarizeAcceptanceArtifacts(artifactSummary);
-  const blockers = traceRows
-    .filter((row) => row.state !== "local_verified")
+  const traceBlockers = traceRows.filter((row) => row.state !== "local_verified");
+  const blockers = (finalCandidateReady ? [] : traceBlockers)
     .map((row) => ({
       id: row.id,
       priority: priorityByAcceptanceId[row.id] || "unknown",
@@ -33,13 +36,18 @@ export function buildFinalAcceptanceReadiness(outputPath = finalReadinessPath) {
     P1: blockers.filter((row) => row.priority === "P1").map((row) => row.id),
     P2: blockers.filter((row) => row.priority === "P2").map((row) => row.id)
   };
+  const priorityGatesReady = unresolvedByPriority.P0.length === 0 && unresolvedByPriority.P1.length === 0 && unresolvedByPriority.P2.length === 0;
+  const artifactSummaryReady = artifactSummaryStats.pending_external_count === 0 && artifactSummaryStats.pending_action_ids.length === 0;
+  const finalAcceptanceReady = finalCandidateReady && defectGateReady && externalActionGateReady && artifactSummaryReady && priorityGatesReady;
 
   const readiness = {
     schema_version: "saphnexa-final-acceptance-readiness.v1",
     generated_at: "2026-05-27T11:52:00+09:00",
     generated_by: "tools/build-final-acceptance-readiness.js",
-    final_acceptance_ready: false,
-    readiness_reason: "Final acceptance still requires release, AWS/UAT, published artifact, CloudFormation, and signed checklist evidence.",
+    final_acceptance_ready: finalAcceptanceReady,
+    readiness_reason: finalAcceptanceReady
+      ? "Final acceptance evidence candidate is ready and aggregate release, AWS, checklist, defect, and artifact gates are satisfied."
+      : "Final acceptance still requires release, AWS/UAT, published artifact, CloudFormation, and signed checklist evidence.",
     source_catalog: {
       path: acceptanceCatalogPath,
       item_count: acceptanceCatalog.item_count,
@@ -54,12 +62,12 @@ export function buildFinalAcceptanceReadiness(outputPath = finalReadinessPath) {
       unresolved_by_priority: unresolvedByPriority
     },
     release_gate: {
-      ready: false,
+      ready: finalCandidateReady,
       required_evidence: ["Git tag", "GitHub release", "final evidence_manifest.json"],
-      pending: ["Git tag", "GitHub release", "final evidence_manifest.json"]
+      pending: finalCandidateReady ? [] : ["Git tag", "GitHub release", "final evidence_manifest.json"]
     },
     aws_gate: {
-      ready: false,
+      ready: finalCandidateReady,
       required_evidence: [
         "AWS account id",
         "deployed CloudFormation stack id",
@@ -67,7 +75,7 @@ export function buildFinalAcceptanceReadiness(outputPath = finalReadinessPath) {
         "CloudFormation list-stack-resources",
         "CloudFront/S3/Docusaurus/Allure published URLs"
       ],
-      pending: [
+      pending: finalCandidateReady ? [] : [
         "AWS account id",
         "deployed CloudFormation stack id",
         "CloudFormation describe-stacks",
@@ -76,13 +84,13 @@ export function buildFinalAcceptanceReadiness(outputPath = finalReadinessPath) {
       ]
     },
     checklist_gate: {
-      ready: false,
+      ready: finalCandidateReady,
       required_evidence: ["final signed acceptance checklist"],
-      pending_acceptance_ids: blockers.map((row) => row.id),
-      pending_result: "PENDING_AWS"
+      pending_acceptance_ids: finalCandidateReady ? [] : blockers.map((row) => row.id),
+      pending_result: finalCandidateReady ? "PASS" : "PENDING_AWS"
     },
     defect_gate: {
-      ready: defectSnapshot.blocker_critical_open_count === 0,
+      ready: defectGateReady,
       blocker_critical_open_count: defectSnapshot.blocker_critical_open_count,
       source: defectSnapshot.source
     },
@@ -94,17 +102,18 @@ export function buildFinalAcceptanceReadiness(outputPath = finalReadinessPath) {
       errors: finalCandidateStatus.errors
     },
     external_action_gate: {
-      ready: externalActionPlan.ready,
+      ready: externalActionGateReady,
       status_path: externalActionPlanPath,
-      status: externalActionPlan.status,
-      pending_action_ids: externalActionPlan.pending_action_ids,
-      requires_confirmation: externalActionPlan.actions.every((action) => action.requires_confirmation)
+      status: externalActionGateReady ? "completed_by_final_evidence" : externalActionPlan.status,
+      pending_action_ids: externalActionGateReady ? [] : externalActionPlan.pending_action_ids,
+      requires_confirmation: externalActionGateReady ? false : externalActionPlan.actions.every((action) => action.requires_confirmation)
     },
     artifact_summary_gate: {
-      ready: false,
+      ready: artifactSummaryReady,
       status_path: artifactSummaryStats.path,
       item_count: artifactSummaryStats.item_count,
       local_ready_count: artifactSummaryStats.local_ready_count,
+      final_ready_count: artifactSummaryStats.final_ready_count,
       pending_external_count: artifactSummaryStats.pending_external_count,
       pending_action_ids: artifactSummaryStats.pending_action_ids,
       required_artifact_ids: artifactSummary.artifacts.map((item) => item.id)
@@ -113,6 +122,7 @@ export function buildFinalAcceptanceReadiness(outputPath = finalReadinessPath) {
       "npm run acceptance:external-actions:build",
       "npm run acceptance:external-actions:check",
       "npm run acceptance:final-candidate:fixture:check",
+      "npm run acceptance:final:fixture:check",
       "npm run acceptance:final-candidate:check",
       "npm run acceptance:final:build",
       "npm run acceptance:final:check",
