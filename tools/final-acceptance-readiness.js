@@ -95,11 +95,12 @@ export function buildFinalAcceptanceReadiness(outputPath = finalReadinessPath) {
     finalization_commands: [
       "npm run acceptance:external-actions:build",
       "npm run acceptance:external-actions:check",
+      "npm run acceptance:final-candidate:fixture:check",
       "npm run acceptance:final-candidate:check",
-      "npm run acceptance:package:build",
-      "npm run acceptance:package:check",
       "npm run acceptance:final:build",
-      "npm run acceptance:final:check"
+      "npm run acceptance:final:check",
+      "npm run acceptance:package:build",
+      "npm run acceptance:package:check"
     ],
     note: "This readiness file is a preflight guard. It must not be used as proof that final acceptance is complete."
   };

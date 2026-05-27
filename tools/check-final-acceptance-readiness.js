@@ -27,6 +27,16 @@ assert(readiness.external_action_gate.ready === false, "external action gate mus
 assert(readiness.external_action_gate.status === "pending_external_actions", "external action status mismatch");
 assert(readiness.external_action_gate.pending_action_ids.length > 0, "external action pending ids must be explicit");
 assert(readiness.external_action_gate.requires_confirmation === true, "external actions must require confirmation");
+assert(JSON.stringify(readiness.finalization_commands) === JSON.stringify([
+  "npm run acceptance:external-actions:build",
+  "npm run acceptance:external-actions:check",
+  "npm run acceptance:final-candidate:fixture:check",
+  "npm run acceptance:final-candidate:check",
+  "npm run acceptance:final:build",
+  "npm run acceptance:final:check",
+  "npm run acceptance:package:build",
+  "npm run acceptance:package:check"
+]), "finalization command order mismatch");
 
 for (const id of unresolvedTraceIds) {
   assert(acceptanceIds.includes(id), `unknown acceptance id in trace: ${id}`);

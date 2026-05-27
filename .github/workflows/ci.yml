@@ -173,8 +173,8 @@ jobs:
       - run: npm run evidence:check
       - run: npm run acceptance:external-actions:build
       - run: npm run acceptance:external-actions:check
-      - run: npm run acceptance:final-candidate:check
       - run: npm run acceptance:final-candidate:fixture:check
+      - run: npm run acceptance:final-candidate:check
       - run: npm run acceptance:final:build
       - run: npm run acceptance:final:check
       - run: npm run acceptance:package:build

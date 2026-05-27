@@ -36,6 +36,7 @@ npm run restore:drill:check
 npm run acceptance:source:check
 npm run acceptance:external-actions:build
 npm run acceptance:external-actions:check
+npm run acceptance:final-candidate:fixture:check
 npm run acceptance:final-candidate:check
 npm run acceptance:final:build
 npm run acceptance:final:check
