@@ -1,8 +1,10 @@
 import { mkdirSync, writeFileSync } from "node:fs";
 import { dirname } from "node:path";
+import { buildAcceptanceArtifactSummary, summarizeAcceptanceArtifacts } from "./acceptance-artifact-summary.js";
 import { acceptanceCatalog, acceptanceCatalogPath, priorityByAcceptanceId } from "./acceptance-ids.js";
 import { buildExternalAcceptanceActionPlan, externalActionPlanPath } from "./external-acceptance-actions.js";
 import { buildFinalEvidenceCandidateStatus, finalCandidateStatusPath } from "./final-evidence-candidate.js";
+import { currentGitCommit } from "./git-context.js";
 import { readJson, readText } from "./lib.js";
 
 export const finalReadinessPath = "dist/acceptance/final_readiness.json";
@@ -12,6 +14,12 @@ export function buildFinalAcceptanceReadiness(outputPath = finalReadinessPath) {
   const defectSnapshot = readJson("docs/acceptance/defects/open_issues_snapshot.json");
   const externalActionPlan = buildExternalAcceptanceActionPlan(externalActionPlanPath);
   const finalCandidateStatus = buildFinalEvidenceCandidateStatus(finalCandidateStatusPath);
+  const artifactSummary = buildAcceptanceArtifactSummary({
+    gitCommit: currentGitCommit(),
+    finalReadinessReady: false,
+    externalActionPlan
+  });
+  const artifactSummaryStats = summarizeAcceptanceArtifacts(artifactSummary);
   const blockers = traceRows
     .filter((row) => row.state !== "local_verified")
     .map((row) => ({
@@ -91,6 +99,15 @@ export function buildFinalAcceptanceReadiness(outputPath = finalReadinessPath) {
       status: externalActionPlan.status,
       pending_action_ids: externalActionPlan.pending_action_ids,
       requires_confirmation: externalActionPlan.actions.every((action) => action.requires_confirmation)
+    },
+    artifact_summary_gate: {
+      ready: false,
+      status_path: artifactSummaryStats.path,
+      item_count: artifactSummaryStats.item_count,
+      local_ready_count: artifactSummaryStats.local_ready_count,
+      pending_external_count: artifactSummaryStats.pending_external_count,
+      pending_action_ids: artifactSummaryStats.pending_action_ids,
+      required_artifact_ids: artifactSummary.artifacts.map((item) => item.id)
     },
     finalization_commands: [
       "npm run acceptance:external-actions:build",

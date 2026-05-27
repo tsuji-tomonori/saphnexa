@@ -1,4 +1,5 @@
 import { existsSync } from "node:fs";
+import { artifactSummaryPath, requiredArtifactIds } from "./acceptance-artifact-summary.js";
 import { finalReadinessPath } from "./final-acceptance-readiness.js";
 import { acceptanceCatalog, acceptanceCatalogPath, acceptanceIds } from "./acceptance-ids.js";
 import { assert, readJson, readText } from "./lib.js";
@@ -27,6 +28,16 @@ assert(readiness.external_action_gate.ready === false, "external action gate mus
 assert(readiness.external_action_gate.status === "pending_external_actions", "external action status mismatch");
 assert(readiness.external_action_gate.pending_action_ids.length > 0, "external action pending ids must be explicit");
 assert(readiness.external_action_gate.requires_confirmation === true, "external actions must require confirmation");
+assert(readiness.artifact_summary_gate.ready === false, "artifact summary gate must remain pending");
+assert(readiness.artifact_summary_gate.status_path === artifactSummaryPath, "artifact summary gate path mismatch");
+assert(readiness.artifact_summary_gate.item_count === requiredArtifactIds.length, "artifact summary gate item count mismatch");
+assert(readiness.artifact_summary_gate.local_ready_count > 0, "artifact summary gate local ready count missing");
+assert(readiness.artifact_summary_gate.pending_external_count > 0, "artifact summary gate pending external count missing");
+assert(readiness.artifact_summary_gate.pending_action_ids.length > 0, "artifact summary gate pending actions missing");
+assert(JSON.stringify(readiness.artifact_summary_gate.required_artifact_ids) === JSON.stringify(requiredArtifactIds), "artifact summary gate required ids mismatch");
+for (const actionId of readiness.artifact_summary_gate.pending_action_ids) {
+  assert(readiness.external_action_gate.pending_action_ids.includes(actionId), `artifact summary pending action missing from external gate: ${actionId}`);
+}
 assert(JSON.stringify(readiness.finalization_commands) === JSON.stringify([
   "npm run acceptance:external-actions:build",
   "npm run acceptance:external-actions:check",
