@@ -55,13 +55,13 @@
 | AC-062 | local_verified | event notification points to REST detail and auth is rechecked. |
 | AC-063 | scaffolded | admin event names defined; publisher integration 未実装。 |
 | AC-064 | local_verified | `after_seq` local event API と viewer REST detail 取得を `tests/e2e-local.test.js` で検証。実 WebSocket disconnect は未実施。 |
-| AC-070 | scaffolded | `V001__initial_saphnexa_schema.sql` あり、Flyway 実行未実施。 |
-| AC-071 | scaffolded | SQL migration を追加、自動 migration は未導入。 |
-| AC-072 | scaffolded | major tables exist; integrity SQL 未実装。 |
+| AC-070 | implemented_unverified | `npm run db:migration:check` で Flyway versioned SQL、schema_migrations、checksum算出、required tables を静的検査。Aurora DSQL/Flyway 実適用は未実施。 |
+| AC-071 | local_verified | `npm run db:migration:check` で migration が手書き SQL で、ORM auto migration command/marker がないことを検査。 |
+| AC-072 | local_verified | `npm run db:integrity:check` で local DB-like store の tenant/user/chat/participant/message/run/document/version/ingestion/evaluation/artifact invariant violation 0件を検査。DSQL query report は未実施。 |
 | AC-073 | local_verified | owner/viewer DB-like store relation and denial tested. |
-| AC-074 | implemented_unverified | event append only in store; DB trigger 未実装。 |
-| AC-075 | scaffolded | reference tables and tool source あり。 |
-| AC-076 | scaffolded | BM25F tables and tool source あり。 |
+| AC-074 | local_verified | `npm run db:integrity:check` で local event_seq 重複0件、payload/status 更新なしを検査。DB trigger/audit query は未実施。 |
+| AC-075 | local_verified | `npm run search:local:check` で reference graph sample 10件中10件展開成功を検査。実 DSQL reference_nodes/reference_edges query は未実施。 |
+| AC-076 | local_verified | `npm run search:local:check` で BM25F golden recall@10 = 1.00 を検査。実 DSQL BM25F posting/stats 生成は未実施。 |
 | AC-077 | local_verified | model catalog shared by API/store. |
 | AC-080 | local_verified | 7 construct inventory exists and is tested. |
 | AC-081 | requires_aws | CloudFormation inventory 未実施。 |
@@ -89,8 +89,8 @@
 | AC-104 | local_verified | metadata 不備で failed job、admin event、retry 可能状態になることを `tests/integration-local.test.js` で検証。KB失敗注入は未実施。 |
 | AC-110 | local_verified | `packages/domain/src/observability.js` と `tests/e2e-local.test.js` で共通 JSON log schema を検査。CloudWatch sampling は未実施。 |
 | AC-111 | local_verified | `assertTracePropagation` で local API/worker/tools/agent chain の trace_id/correlation_id 伝播を検査。実 AWS trace は未実施。 |
-| AC-112 | scaffolded | observability construct intent only。 |
-| AC-113 | scaffolded | observability construct intent only。 |
+| AC-112 | local_verified | `npm run observability:check` で API latency、5xx、RAG latency、retrieval count、DLQ count、ingestion failed、evaluation failed の required metrics 7/7 を catalog と local sample で検査。CloudWatch metrics は未実施。 |
+| AC-113 | local_verified | `npm run observability:check` で 5xx、DLQ、RAG失敗率、ingestion失敗、評価失敗、WAF block急増の required alarms 6/6 を catalog 検査。CloudWatch alarms は未実施。 |
 | AC-114 | implemented_unverified | tool invocation audit source あり、admin audit 未実装。 |
 | AC-120 | local_verified | `.github/workflows/ci.yml` に 12 jobs を追加し `npm run ci:check` で検査。PR #1 の GitHub Actions `Saphnexa CI` で lint/typecheck/unit/integration/e2e/cdk synth/cdk diff/security scan/license scan/admin artifacts/quality gates/contract generation diff が pass。 |
 | AC-121 | local_verified | `npm run coverage:check` で Node test coverage line >=80% / branch >=70% と test pass 100% を検査。Allure unit artifact への publish は未実施。 |
@@ -107,7 +107,7 @@
 | AC-135 | local_verified | `npm run failure:check` で retrieval / generation / worker notify の 3 failure injection が failed 状態、`chat.run.failed` event、retryable=true を残すことを検査。実 AgentCore/Lambda failure injection は未実施。 |
 | AC-140 | local_verified | `packages/model-catalog/src/cost-estimate.js` と `npm run cost:check` で 50 DAU/10質問日の local estimate <= 550 USD を検査。AWS Cost Explorer は未実施。 |
 | AC-141 | local_verified | `npm run storage:check` で code/infra/package に OpenSearch dependency がないことを検査。AWS inventory は未実施。 |
-| AC-142 | scaffolded | retention baseline intent only。 |
+| AC-142 | local_verified | `npm run observability:check` で CloudWatch/S3/DSQL 相当 retention catalog の retention_days 未設定0件を検査。実リソース確認は未実施。 |
 | AC-143 | local_verified | runbooks を `docs/ops/runbooks/` に追加し `npm run docs:check` で構造検査、`npm run admin-artifacts:build` で docs artifact に含める。Docusaurus 公開は未実施。 |
 | AC-144 | implemented_unverified | `docs/ops/runbooks/backup-restore.md` を追加。復旧試験は未実施。 |
 | AC-150 | requires_aws | P0 全 PASS ではない。 |

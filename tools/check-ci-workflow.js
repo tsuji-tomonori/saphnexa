@@ -13,6 +13,7 @@ const requiredJobs = [
   "license-scan",
   "admin-artifacts",
   "quality-gates",
+  "db-observability",
   "contract-generation-diff"
 ];
 
@@ -40,6 +41,10 @@ for (const command of [
   "npm run rag:quality:check",
   "npm run rag:security:check",
   "npm run rag:perf:local",
+  "npm run db:migration:check",
+  "npm run db:integrity:check",
+  "npm run search:local:check",
+  "npm run observability:check",
   "npm run test:contract"
 ]) {
   assert(workflow.includes(command), `workflow missing command: ${command}`);

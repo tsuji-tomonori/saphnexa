@@ -19,6 +19,10 @@ const suites = [
   suite("rag-quality", "npm run rag:quality:check"),
   suite("rag-security", "npm run rag:security:check"),
   suite("rag-performance", "npm run rag:perf:local"),
+  suite("db-migration", "npm run db:migration:check"),
+  suite("db-integrity", "npm run db:integrity:check"),
+  suite("local-search", "npm run search:local:check"),
+  suite("observability", "npm run observability:check"),
   suite("acceptance", "npm run acceptance:check"),
   suite("evidence", "npm run evidence:check"),
   suite("admin-artifacts", "npm run artifacts:check")

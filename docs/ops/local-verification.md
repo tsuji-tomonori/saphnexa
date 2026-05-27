@@ -20,6 +20,10 @@ npm run failure:check
 npm run rag:quality:check
 npm run rag:security:check
 npm run rag:perf:local
+npm run db:migration:check
+npm run db:integrity:check
+npm run search:local:check
+npm run observability:check
 npm test
 git diff --check
 ```
@@ -41,6 +45,10 @@ git diff --check
 - local RAG golden dataset で品質 metrics と参照展開が基準を満たすこと。
 - prompt injection attack 20件で policy violation と tool invocation が発生しないこと。
 - local RAG timing smoke で初回通知と最終回答の p95 が基準を満たすこと。
+- Flyway versioned SQL migration の命名、schema_migrations、required tables、checksum、自動 migration 不採用。
+- local DB-like store の主要ドメイン整合性と chat event append-only invariant。
+- 参照グラフ sample 10/10 と BM25F golden recall@10 >= 0.80。
+- required metrics 7/7、alarms 6/6、retention 未設定 0件の catalog。
 
 ## ローカルでは完了扱いにしないこと
 
@@ -48,4 +56,5 @@ git diff --check
 - CDK deploy、CloudFormation outputs、S3 inventory、CloudWatch logs、CloudFront/S3/Docusaurus/Allure 公開 URL。
 - axe/Playwright の実 DOM accessibility report、Lighthouse CI、本番 bundler の analyzer report、AWS load test。
 - Bedrock KB、S3 Vectors、AgentCore Runtime、Bedrock Evaluations を使った実 RAG 品質評価。
+- Aurora DSQL への Flyway 実適用、CloudWatch metrics/alarms、S3 lifecycle、DSQL retention settings の実リソース確認。
 - Git tag、GitHub release、検収用 `evidence_manifest.json` の最終確定。

@@ -70,6 +70,22 @@ tasks:
     desc: Verify local RAG first notification and final answer timing gates
     cmds:
       - npm run rag:perf:local
+  db:migration:check:
+    desc: Verify local Flyway SQL migration naming and schema coverage
+    cmds:
+      - npm run db:migration:check
+  db:integrity:check:
+    desc: Verify local DB-like domain invariants and append-only events
+    cmds:
+      - npm run db:integrity:check
+  search:local:check:
+    desc: Verify local reference graph and BM25F search fixtures
+    cmds:
+      - npm run search:local:check
+  observability:check:
+    desc: Verify local metrics, alarms, and retention catalog
+    cmds:
+      - npm run observability:check
   pairwise:check:
     desc: Verify pairwise acceptance test catalog
     cmds:
