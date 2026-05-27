@@ -31,7 +31,7 @@
 - `tools/check-acceptance-source-catalog.js`
 - `npm run acceptance:source:check`
 - 更新後の readiness/package source catalog gate
-- `tasks/do/20260527-1316-acceptance-source-catalog-gate.md`
+- `tasks/done/20260527-1316-acceptance-source-catalog-gate.md`
 
 ## 検証
 
