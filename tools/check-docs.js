@@ -19,6 +19,18 @@ for (const file of requiredRunbooks) {
   }
 }
 
+const finalAcceptanceRunbook = readText("docs/ops/runbooks/final-acceptance.md");
+assert(
+  finalAcceptanceRunbook.indexOf("CFN_CAPTURED_AT=<capture-iso-timestamp> npm run cfn:inventory:normalize") <
+    finalAcceptanceRunbook.indexOf("npm run acceptance:final-manifest:build"),
+  "final acceptance runbook must normalize CloudFormation inventory before final manifest build"
+);
+assert(
+  finalAcceptanceRunbook.indexOf("npm run acceptance:final-manifest:build") <
+    finalAcceptanceRunbook.indexOf("npm run acceptance:final-candidate:check"),
+  "final acceptance runbook must build final manifest before final candidate check"
+);
+
 const localVerification = readText("docs/ops/local-verification.md");
 for (const command of [
   "npm run admin-artifacts:build",

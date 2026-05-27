@@ -13,12 +13,12 @@ AC-001、AC-002、AC-004、AC-150、AC-151、AC-152 の最終検収で、draft �
 
 ## 手順
 
-1. `docs/acceptance/final/evidence-manifest-input.uat.json` を作成し、Git tag、GitHub release URL、AWS account、DB migration、docs/Allure、RAG 評価、cost estimate を記録してから `npm run acceptance:final-manifest:build` で `docs/acceptance/final/evidence_manifest.json` を生成する。
-2. `docs/acceptance/final/checklist-signoff.uat.json` を作成し、検収者、確認日、証跡 URL を記録してから `npm run acceptance:final-checklist:build` で `docs/acceptance/final/acceptance_checklist.csv` を生成する。
-3. CloudFormation 実取得結果を raw JSON として保存し、normalizer で `docs/acceptance/cloudformation/cloudformation_inventory.uat.json` を作成する。
+1. CloudFormation 実取得結果を raw JSON として保存し、normalizer で `docs/acceptance/cloudformation/cloudformation_inventory.uat.json` を作成する。
    - `aws cloudformation describe-stacks --stack-name saphnexa-uat-app --region ap-northeast-1 --output json > docs/acceptance/cloudformation/raw/describe-stacks.uat.json`
    - `aws cloudformation list-stack-resources --stack-name saphnexa-uat-app --region ap-northeast-1 --output json > docs/acceptance/cloudformation/raw/list-stack-resources.uat.json`
    - `CFN_CAPTURED_AT=<capture-iso-timestamp> npm run cfn:inventory:normalize`
+2. `docs/acceptance/final/evidence-manifest-input.uat.json` を作成し、Git tag、GitHub release URL、AWS account、DB migration、docs/Allure、RAG 評価、cost estimate を記録してから `npm run acceptance:final-manifest:build` で `docs/acceptance/final/evidence_manifest.json` を生成する。
+3. `docs/acceptance/final/checklist-signoff.uat.json` を作成し、検収者、確認日、証跡 URL を記録してから `npm run acceptance:final-checklist:build` で `docs/acceptance/final/acceptance_checklist.csv` を生成する。
 4. `npm run acceptance:final-candidate:fixture:check` を実行し、validator が ready/invalid の両分岐を検査できる状態であることを確認する。
 5. `npm run acceptance:final:fixture:check` を実行し、final candidate ready 後に readiness gate が complete へ遷移できることを確認する。
 6. `npm run acceptance:final-candidate:check` を実行し、final candidate が ready になることを確認する。

@@ -121,6 +121,9 @@ export function buildFinalAcceptanceReadiness(outputPath = finalReadinessPath, o
     finalization_commands: [
       "npm run acceptance:external-actions:build",
       "npm run acceptance:external-actions:check",
+      "CFN_CAPTURED_AT=<capture-iso-timestamp> npm run cfn:inventory:normalize",
+      "npm run acceptance:final-manifest:build",
+      "npm run acceptance:final-checklist:build",
       "npm run acceptance:final-candidate:fixture:check",
       "npm run acceptance:final:fixture:check",
       "npm run acceptance:final-candidate:check",
