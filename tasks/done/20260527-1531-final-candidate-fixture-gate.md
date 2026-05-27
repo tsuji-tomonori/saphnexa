@@ -1,6 +1,6 @@
 # final candidate fixture gate
 
-- 状態: doing
+- 状態: done
 - タスク種別: 検証強化
 - 作成日時: 2026-05-27 15:31 JST
 - 対象 PR: #1
@@ -27,7 +27,7 @@
 - [x] invalid fixture が `invalid` になり draft/pending/placeholder を検出することを検査する。
 - [x] npm scripts、Taskfile、CI、docs を同期する。
 - [x] 対象検証と `npm run verify` を通す。
-- [ ] PR へ受け入れ条件コメントとセルフレビューコメントを追加する。
+- [x] PR へ受け入れ条件コメントとセルフレビューコメントを追加する。
 
 ## Done 条件
 

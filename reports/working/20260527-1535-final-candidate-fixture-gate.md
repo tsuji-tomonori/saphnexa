@@ -32,7 +32,7 @@
 - `tools/check-final-evidence-candidate-fixtures.js`
 - path override 対応の final candidate validator
 - CI / verify に組み込まれた `npm run acceptance:final-candidate:fixture:check`
-- `tasks/do/20260527-1531-final-candidate-fixture-gate.md`
+- `tasks/done/20260527-1531-final-candidate-fixture-gate.md`
 
 ## 検証
 
@@ -44,6 +44,11 @@
 - `npm run verify`: pass
 - `git diff --check`: pass
 - `pre-commit run --files ...`: pass
+
+## PR コメント
+
+- 受け入れ条件確認: https://github.com/tsuji-tomonori/saphnexa/pull/1#issuecomment-4552024966
+- セルフレビュー: https://github.com/tsuji-tomonori/saphnexa/pull/1#issuecomment-4552026609
 
 ## Fit 評価
 
