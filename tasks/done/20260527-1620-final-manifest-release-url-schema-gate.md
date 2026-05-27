@@ -1,6 +1,6 @@
 # final manifest release url schema gate
 
-- 状態: doing
+- 状態: done
 - タスク種別: 検証強化
 - 作成日時: 2026-05-27 16:20 JST
 - 対象 PR: #1
@@ -27,7 +27,12 @@ final evidence manifest schema に、GitHub release URL が final acceptance 追
 - [x] example manifest に non-final GitHub release URL を追加する。
 - [x] checker で source required と final extension required を検査する。
 - [x] 対象検証と `npm run verify` を通す。
-- [ ] PR へ受け入れ条件コメントとセルフレビューコメントを追加する。
+- [x] PR へ受け入れ条件コメントとセルフレビューコメントを追加する。
+
+## PR コメント
+
+- 受け入れ条件確認: https://github.com/tsuji-tomonori/saphnexa/pull/1#issuecomment-4552378753
+- セルフレビュー: https://github.com/tsuji-tomonori/saphnexa/pull/1#issuecomment-4552381204
 
 ## Done 条件
 

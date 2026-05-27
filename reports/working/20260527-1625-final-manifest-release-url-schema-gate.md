@@ -22,7 +22,8 @@
 - `docs/acceptance/evidence/evidence_manifest.schema.json` に `github_release_url` property と `x_final_acceptance_extension` を追加。
 - `docs/acceptance/evidence/evidence_manifest.example.json` に non-final GitHub release URL を追加。
 - `tools/check-evidence-manifest.js` で source required と final extension required を分けて検査。
-- `tasks/do/20260527-1620-final-manifest-release-url-schema-gate.md` を作成。
+- `tasks/done/20260527-1620-final-manifest-release-url-schema-gate.md` を作成し、完了状態へ更新。
+- PR へ受け入れ条件確認コメントとセルフレビューコメントを追加。
 
 ## 成果物
 
@@ -36,6 +37,14 @@
 - `npm run acceptance:final-candidate:fixture:check`: pass
 - `npm run acceptance:final-candidate:check`: pass (`not_ready` expected)
 - `npm run verify`: pass
+- `git diff --check`: pass
+- `pre-commit run --files docs/acceptance/evidence/evidence_manifest.schema.json docs/acceptance/evidence/evidence_manifest.example.json reports/working/20260527-1625-final-manifest-release-url-schema-gate.md tasks/do/20260527-1620-final-manifest-release-url-schema-gate.md tools/check-evidence-manifest.js`: pass
+- `pre-commit run --files reports/working/20260527-1625-final-manifest-release-url-schema-gate.md tasks/done/20260527-1620-final-manifest-release-url-schema-gate.md`: pass
+
+## PR コメント
+
+- 受け入れ条件確認: https://github.com/tsuji-tomonori/saphnexa/pull/1#issuecomment-4552378753
+- セルフレビュー: https://github.com/tsuji-tomonori/saphnexa/pull/1#issuecomment-4552381204
 
 ## Fit 評価
 
