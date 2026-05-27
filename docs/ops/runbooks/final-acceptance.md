@@ -13,7 +13,7 @@ AC-001、AC-002、AC-004、AC-150、AC-151、AC-152 の最終検収で、draft �
 
 ## 手順
 
-1. `docs/acceptance/final/evidence_manifest.json` を作成し、Git tag、GitHub release URL、AWS account、CloudFormation stack、DB migration、docs/Allure、RAG 評価、cost estimate を実値で記録する。
+1. `docs/acceptance/final/evidence-manifest-input.uat.json` を作成し、Git tag、GitHub release URL、AWS account、DB migration、docs/Allure、RAG 評価、cost estimate を記録してから `npm run acceptance:final-manifest:build` で `docs/acceptance/final/evidence_manifest.json` を生成する。
 2. `docs/acceptance/final/checklist-signoff.uat.json` を作成し、検収者、確認日、証跡 URL を記録してから `npm run acceptance:final-checklist:build` で `docs/acceptance/final/acceptance_checklist.csv` を生成する。
 3. CloudFormation 実取得結果を raw JSON として保存し、normalizer で `docs/acceptance/cloudformation/cloudformation_inventory.uat.json` を作成する。
    - `aws cloudformation describe-stacks --stack-name saphnexa-uat-app --region ap-northeast-1 --output json > docs/acceptance/cloudformation/raw/describe-stacks.uat.json`
