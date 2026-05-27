@@ -174,6 +174,14 @@ tasks:
     desc: Verify local storage prefix and metadata invariants
     cmds:
       - npm run storage:check
+  aws:dev-uat:preflight:
+    desc: Verify AWS dev/UAT evidence contract before E2E, performance, and RAG quality runs
+    cmds:
+      - npm run aws:dev-uat:preflight
+  aws:dev-uat:preflight:final:
+    desc: Verify final AWS-captured dev/UAT evidence contract before real validation runs
+    cmds:
+      - npm run aws:dev-uat:preflight:final
   admin-artifacts:build:
     desc: Build local admin docs and test report artifacts
     cmds:

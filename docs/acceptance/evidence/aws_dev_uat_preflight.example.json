@@ -1,0 +1,86 @@
+{
+  "schema_version": "saphnexa-aws-dev-uat-preflight.v1",
+  "evidence_class": "fixture",
+  "environment": "dev",
+  "captured_at": "2026-05-28T08:50:00+09:00",
+  "aws": {
+    "account_id": "fixture-aws-account-id",
+    "region": "ap-northeast-1"
+  },
+  "source": {
+    "git_commit_sha": "0123456789abcdef0123456789abcdef01234567",
+    "git_tag": "v0.1.0-dev-preflight",
+    "github_release_url": "https://github.com/tsuji-tomonori/saphnexa/releases/tag/v0.1.0-dev-preflight"
+  },
+  "dsql_flyway": {
+    "status": "passed",
+    "cluster_identifier": "saphnexa-dev-dsql",
+    "endpoint": "saphnexa-dev-dsql.cluster-abcdef123456.ap-northeast-1.dsql.amazonaws.com",
+    "flyway_schema_history_table": "schema_migrations",
+    "latest_version": "V001",
+    "checksum_status": "matched",
+    "applied_by": "flyway"
+  },
+  "hono_openapi": {
+    "status": "passed",
+    "api_endpoint": "https://api.dev.saphnexa.awsapps.com",
+    "openapi_url": "https://api.dev.saphnexa.awsapps.com/openapi.json",
+    "route_count": 38,
+    "zod_validation_enabled": true
+  },
+  "cloudformation": {
+    "status": "deployed",
+    "stack_name": "saphnexa-dev",
+    "stack_id": "arn:aws:cloudformation:ap-northeast-1:fixture-aws-account-id:stack/saphnexa-dev/aaaaaaaa-bbbb-cccc-dddd-eeeeeeeeeeee",
+    "stack_status": "UPDATE_COMPLETE",
+    "outputs": {
+      "ApiEndpoint": "https://api.dev.saphnexa.awsapps.com",
+      "ToolsApiEndpoint": "https://tools.dev.saphnexa.awsapps.com",
+      "CloudFrontDistributionDomain": "d111111abcdef8.cloudfront.net",
+      "UserPoolId": "ap-northeast-1_AbCdEf123",
+      "UserPoolClientId": "1exampleclientid234567890",
+      "AppSyncEventApiHttpEndpoint": "https://events.dev.saphnexa.awsapps.com/event",
+      "AppSyncEventApiRealtimeEndpoint": "wss://events.dev.saphnexa.awsapps.com/event/realtime",
+      "DsqlEndpoint": "saphnexa-dev-dsql.cluster-abcdef123456.ap-northeast-1.dsql.amazonaws.com",
+      "RawDocumentsBucketName": "saphnexa-dev-raw-documents",
+      "PublishedArtifactsBucketName": "saphnexa-dev-published-artifacts",
+      "S3VectorBucketName": "saphnexa-dev-vectors",
+      "S3VectorIndexName": "saphnexa-dev-documents",
+      "BedrockKnowledgeBaseId": "KB12345678",
+      "AgentCoreRuntimeArn": "arn:aws:bedrock-agentcore:ap-northeast-1:fixture-aws-account-id:runtime/SaphnexaDevAgent-abcdef123456",
+      "DocusaurusLatestUrl": "https://d111111abcdef8.cloudfront.net/admin/docs/latest/",
+      "AllureLatestUrl": "https://d111111abcdef8.cloudfront.net/admin/test-reports/allure/latest/"
+    }
+  },
+  "edge_identity_realtime": {
+    "status": "passed",
+    "cloudfront_url": "https://d111111abcdef8.cloudfront.net/",
+    "cognito_user_pool_id": "ap-northeast-1_AbCdEf123",
+    "cognito_user_pool_client_id": "1exampleclientid234567890",
+    "appsync_event_api_http_endpoint": "https://events.dev.saphnexa.awsapps.com/event",
+    "appsync_event_api_realtime_endpoint": "wss://events.dev.saphnexa.awsapps.com/event/realtime",
+    "ws_ticket_authorizer_enabled": true
+  },
+  "rag_runtime": {
+    "status": "passed",
+    "bedrock_knowledge_base_id": "KB12345678",
+    "s3_vector_bucket_name": "saphnexa-dev-vectors",
+    "s3_vector_index_name": "saphnexa-dev-documents",
+    "agentcore_runtime_arn": "arn:aws:bedrock-agentcore:ap-northeast-1:fixture-aws-account-id:runtime/SaphnexaDevAgent-abcdef123456",
+    "tools_gateway_authorized": true,
+    "acl_precheck_enabled": true
+  },
+  "published_artifacts": {
+    "status": "published",
+    "docusaurus_latest_url": "https://d111111abcdef8.cloudfront.net/admin/docs/latest/",
+    "docusaurus_version_url": "https://d111111abcdef8.cloudfront.net/admin/docs/versions/v0.17/",
+    "allure_latest_url": "https://d111111abcdef8.cloudfront.net/admin/test-reports/allure/latest/"
+  },
+  "dev_uat_validation": {
+    "status": "ready",
+    "e2e_command": "npm run test:e2e:aws",
+    "performance_command": "npm run perf:aws",
+    "rag_quality_command": "npm run rag:quality:aws",
+    "requires_real_aws_execution": true
+  }
+}

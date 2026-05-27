@@ -46,6 +46,7 @@ npm run acceptance:final:build
 npm run acceptance:final:check
 npm run acceptance:package:build
 npm run acceptance:package:check
+npm run aws:dev-uat:preflight
 npm test
 git diff --check
 ```
@@ -88,6 +89,7 @@ git diff --check
 - `npm run acceptance:final:fixture:check` が final candidate ready 後の positive path を検査し、readiness aggregate gate が complete に遷移できること。
 - `npm run acceptance:final:check` が `dist/acceptance/final_readiness.json` を再生成してから検査し、release/AWS/publish/checklist 未達がある限り ready にならないこと。
 - `dist/acceptance/` に検収 package draft を生成し、未実施 AWS/release 項目を `PENDING_AWS` として残すこと。
+- `npm run aws:dev-uat:preflight` が AWS dev/UAT 証跡の fixture 構造を検査し、実証跡では `npm run aws:dev-uat:preflight:final` が必要であること。
 - GitHub issue tracker snapshot に基づく Blocker/Critical open defect 0 件の defect list draft。最終検収では `gh issue list --state open --json number,title,labels,state` による defect-snapshot-refresh が必要であり、ローカル snapshot だけでは完了扱いにしないこと。
 
 ## ローカルでは完了扱いにしないこと
@@ -102,6 +104,7 @@ git diff --check
 - Aurora DSQL への Flyway 実適用、CloudWatch metrics/alarms、S3 lifecycle、DSQL retention settings の実リソース確認。
 - CloudFront Function、WAF、IAM policy、KMS key policy、SQS/DLQ、AppSync Events、cdk-nag の実リソース/実行結果確認。
 - 実 S3 の offline artifact inventory、実 parser/KB/S3 Vectors ingestion、実バックアップからの restore drill。
+- `npm run aws:dev-uat:preflight` は fixture の構造確認だけを行う。実 AWS dev/UAT 証跡は `dist/acceptance/aws_dev_uat_preflight.json` を `evidence_class: aws-captured` で作成し、`npm run aws:dev-uat:preflight:final` を通す必要がある。
 - Git tag、GitHub release、検収用 `evidence_manifest.json` の最終確定。
 - 外部 action plan に記載された release、deploy、publish、CloudFormation capture、defect snapshot refresh、final evidence 作成、signoff の実行。
 - 検収 checklist の最終署名、AWS account id、CloudFormation stack id、公開済み docs/Allure URL の確定。

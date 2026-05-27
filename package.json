@@ -63,6 +63,8 @@
     "perf:local": "node tools/check-local-performance.js",
     "cost:check": "node tools/check-cost-estimate.js",
     "storage:check": "node tools/check-storage-metadata.js",
+    "aws:dev-uat:preflight": "node tools/check-aws-dev-uat-preflight.js",
+    "aws:dev-uat:preflight:final": "node tools/check-aws-dev-uat-preflight.js dist/acceptance/aws_dev_uat_preflight.json --require-final",
     "docs-site:build": "node tools/build-admin-docs.js",
     "allure:generate:local": "node tools/build-admin-test-report.js",
     "admin-artifacts:build": "npm run docs-site:build && npm run allure:generate:local",

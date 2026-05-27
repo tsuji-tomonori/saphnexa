@@ -9,7 +9,8 @@ const requiredRunbooks = [
   "docs/ops/runbooks/access-change.md",
   "docs/ops/runbooks/backup-restore.md",
   "docs/ops/runbooks/cloudformation-inventory.md",
-  "docs/ops/runbooks/final-acceptance.md"
+  "docs/ops/runbooks/final-acceptance.md",
+  "docs/ops/runbooks/aws-dev-uat-validation.md"
 ];
 
 for (const file of requiredRunbooks) {
@@ -66,6 +67,7 @@ for (const command of [
   "npm run acceptance:final:check",
   "npm run acceptance:package:build",
   "npm run acceptance:package:check",
+  "npm run aws:dev-uat:preflight",
   "npm run cfn:inventory:build",
   "npm run cfn:inventory:check",
   "npm run cfn:inventory:normalize:fixture:check"
