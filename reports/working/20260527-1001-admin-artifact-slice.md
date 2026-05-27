@@ -45,9 +45,9 @@
 - `npm run verify`: pass
 - `npm run ci:check`: pass
 - `git diff --check`: pass
+- PR #1 GitHub Actions `Saphnexa CI`: pass（admin artifacts job を含む 11 jobs）
 
 ## 未対応・制約・リスク
 
 - Docusaurus build/publish、Allure CLI generate/publish、CloudFront/S3 公開 URL、Cognito/CloudFront Cookie 実挙動は未実施。
-- 追加した `admin-artifacts` GitHub Actions job は push 後の CI で確認が必要。
 - ブラウザ E2E、axe、Lighthouse はこのスライスでは未対応。
