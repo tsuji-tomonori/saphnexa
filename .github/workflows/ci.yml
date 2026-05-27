@@ -69,6 +69,8 @@ jobs:
         with:
           node-version: "22"
       - run: npm run cdk:synth:local
+      - run: npm run cfn:inventory:build
+      - run: npm run cfn:inventory:check
 
   cdk-diff:
     name: cdk diff

@@ -10,6 +10,8 @@
 npm run test:contract
 npm run test:integration:local
 npm run scan:bundle-domains
+npm run cfn:inventory:build
+npm run cfn:inventory:check
 npm run admin-artifacts:build
 npm run artifacts:check
 npm run coverage:check
@@ -44,6 +46,7 @@ git diff --check
 - 質問送信が `message_id` / `run_id` を即時生成し、event detail を REST で取得できること。
 - RAG が Tools API 境界を通り、ACL check 後の Evidence だけで citation を作ること。
 - React source が `/api/*` と `/auth/*` の相対 path だけを使うこと。
+- `dist/acceptance/cloudformation_inventory.draft.json` に CloudFormation inventory draft を生成し、実 AWS capture が必要なことを検査すること。
 - `dist/admin/docs/latest/` と `dist/admin/docs/versions/v0.16/` に docs artifact を生成できること。
 - `dist/admin/test-reports/allure/latest/` に Allure 互換のローカル検証 report artifact を生成できること。
 - admin artifact manifest の checksum、viewer path、source と、local API の admin 限定アクセス policy。
@@ -72,6 +75,7 @@ git diff --check
 
 - AWS dev/UAT での Cognito、DSQL、S3、CloudFront、AppSync Events、Bedrock KB、S3 Vectors、AgentCore の実接続。
 - CDK deploy、CloudFormation outputs、S3 inventory、CloudWatch logs、CloudFront/S3/Docusaurus/Allure 公開 URL。
+- CloudFormation `describe-stacks` / `list-stack-resources` の実取得と、AC-081 の最終 PASS 判定。
 - axe/Playwright の実 DOM accessibility report、Lighthouse CI、本番 bundler の analyzer report、AWS load test。
 - 実ブラウザ操作による chat/admin E2E、CloudFront 経由のロール別導線確認。
 - Bedrock KB、S3 Vectors、AgentCore Runtime、Bedrock Evaluations を使った実 RAG 品質評価。

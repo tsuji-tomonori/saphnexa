@@ -26,6 +26,14 @@ tasks:
     desc: Verify GitHub Actions workflow shape locally
     cmds:
       - npm run ci:check
+  cfn:inventory:build:
+    desc: Build draft CloudFormation inventory evidence locally
+    cmds:
+      - npm run cfn:inventory:build
+  cfn:inventory:check:
+    desc: Verify draft CloudFormation inventory evidence locally
+    cmds:
+      - npm run cfn:inventory:check
   edge:security:check:
     desc: Verify local edge, realtime, IAM, KMS, and queue security intent
     cmds:

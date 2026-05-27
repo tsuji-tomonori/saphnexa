@@ -13,7 +13,7 @@
 | ID | 状態 | 根拠または制約 |
 | :--- | :--- | :--- |
 | AC-001 | requires_aws | `npm run acceptance:package:build` で `dist/acceptance/evidence_manifest.draft.json` を生成するが、Git tag/release と最終 evidence manifest は未作成。 |
-| AC-002 | requires_aws | `npm run acceptance:package:build` で artifact summary draft を生成するが、CDK/CloudFormation/Allure/Docusaurus publish は未実施。 |
+| AC-002 | requires_aws | `npm run acceptance:package:build` で artifact summary draft と CloudFormation inventory draft を生成するが、CDK/CloudFormation/Allure/Docusaurus publish は未実施。 |
 | AC-003 | local_verified | `docs/adr/ADR-0001-local-first-acceptance-slice.md` に設計差分を記録し、`npm run docs:check` で docs 構造を検査。 |
 | AC-004 | requires_aws | `dist/acceptance/acceptance_checklist.draft.csv` は全行を `PASS_LOCAL` / `PENDING_AWS` で記入するが、最終検収 checklist の署名・AWS 証跡確認は未実施。 |
 | AC-010 | local_verified | `apps/api/src/local-api.js` と `tests/integration-local.test.js` で質問受付、`message_id`、`run_id` を検証。 |
@@ -64,7 +64,7 @@
 | AC-076 | local_verified | `npm run search:local:check` で BM25F golden recall@10 = 1.00 を検査。実 DSQL BM25F posting/stats 生成は未実施。 |
 | AC-077 | local_verified | model catalog shared by API/store. |
 | AC-080 | local_verified | 7 construct inventory exists and is tested. |
-| AC-081 | requires_aws | CloudFormation inventory 未実施。 |
+| AC-081 | requires_aws | `npm run cfn:inventory:build` / `npm run cfn:inventory:check` で local CDK intent 由来の inventory draft と最終 capture 手順を検査するが、検収環境の CloudFormation `describe-stacks` / `list-stack-resources` は未実施。 |
 | AC-082 | local_verified | DataConstruct の KMS rotation / SSE-KMS / service principal / public access deny intent を `npm run edge:security:check` で検査。実 KMS policy は未確認。 |
 | AC-083 | local_verified | `infra/aspects/security-baseline.js` の S3/WAF/IAM/cdk-nag/SQS/log retention baseline を `npm run edge:security:check` と `npm run security:scan` で検査。実 AWS Security Hub 等は未実施。 |
 | AC-084 | local_verified | local raw/parsed prefix と OpenSearch 非依存を `npm run storage:check` で検査。S3 inventory は未実施。 |

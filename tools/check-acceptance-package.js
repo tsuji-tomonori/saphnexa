@@ -10,6 +10,7 @@ const checklist = readText("dist/acceptance/acceptance_checklist.draft.csv");
 for (const path of [
   "dist/acceptance/evidence_manifest.draft.json",
   "dist/acceptance/acceptance_checklist.draft.csv",
+  "dist/acceptance/cloudformation_inventory.draft.json",
   "dist/acceptance/defect_list.json",
   "dist/acceptance/summary.json"
 ]) {
@@ -26,6 +27,9 @@ assert(manifest.draft_status === "draft_not_for_final_acceptance", "manifest mus
 assert(manifest.pending_final_evidence.length >= 5, "manifest pending final evidence must be explicit");
 assert(manifest.aws_account_id === "pending-aws-account-id", "draft manifest must not pretend to know AWS account id");
 assert(manifest.git_tag === "pending-release-tag", "draft manifest must not pretend release tag is created");
+assert(manifest.cloudformation_inventory.draft_path === "dist/acceptance/cloudformation_inventory.draft.json", "manifest CloudFormation inventory path mismatch");
+assert(manifest.cloudformation_inventory.final_acceptance_eligible === false, "manifest CloudFormation inventory must be draft-only");
+assert(manifest.cloudformation_inventory.aws_capture_required === true, "manifest CloudFormation inventory must require AWS capture");
 
 const rows = parseCsv(checklist);
 assert(rows.length === acceptanceIds.length, `checklist row count mismatch: ${rows.length}`);
@@ -47,6 +51,7 @@ for (const row of rows) {
 assert(defects.blocker_critical_open_count === 0, "blocker/critical defects must be 0 in snapshot");
 assert(Array.isArray(defects.open_issues), "defect snapshot open_issues must be an array");
 assert(summary.checklist_rows === acceptanceIds.length, "summary checklist row count mismatch");
+assert(summary.cloudformation_inventory_draft_path === "dist/acceptance/cloudformation_inventory.draft.json", "summary CloudFormation inventory path mismatch");
 assert(summary.trace_state_counts.requires_aws > 0, "draft package must preserve remaining AWS blockers");
 assert(summary.final_acceptance_ready === false, "draft package must not claim final acceptance readiness");
 

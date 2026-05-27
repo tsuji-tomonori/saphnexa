@@ -1,6 +1,7 @@
 import { existsSync, mkdirSync, readFileSync, statSync, writeFileSync } from "node:fs";
 import { dirname, join, resolve } from "node:path";
 import { acceptanceIds } from "./acceptance-ids.js";
+import { buildCloudFormationInventoryDraft, cloudFormationInventoryPath } from "./cloudformation-inventory.js";
 import { readJson, readText } from "./lib.js";
 
 const outputRoot = "dist/acceptance";
@@ -10,6 +11,7 @@ const defectSnapshot = readJson("docs/acceptance/defects/open_issues_snapshot.js
 const gitCommit = currentGitCommit();
 const rows = parseTraceRows(trace);
 const counts = countStates(rows);
+const cloudFormationInventory = buildCloudFormationInventoryDraft(cloudFormationInventoryPath);
 
 const manifest = {
   system: "Saphnexa",
@@ -25,6 +27,13 @@ const manifest = {
       stack_id: "pending-aws-cloudformation-deploy"
     }
   ],
+  cloudformation_inventory: {
+    draft_path: cloudFormationInventoryPath,
+    schema_path: "docs/acceptance/cloudformation/cloudformation_inventory.schema.json",
+    source: cloudFormationInventory.source,
+    final_acceptance_eligible: cloudFormationInventory.final_acceptance_eligible,
+    aws_capture_required: cloudFormationInventory.aws_capture_required
+  },
   db_migration: {
     tool: "Flyway",
     latest_version: "V001",
@@ -67,6 +76,7 @@ const summary = {
   trace_state_counts: counts,
   checklist_rows: checklist.length,
   blocker_critical_open_count: defectSnapshot.blocker_critical_open_count,
+  cloudformation_inventory_draft_path: cloudFormationInventoryPath,
   final_acceptance_ready: counts.requires_aws === 0,
   note: "Draft package for local evidence consolidation. Final acceptance still requires AWS/UAT evidence for requires_aws rows."
 };

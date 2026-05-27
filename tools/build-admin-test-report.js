@@ -11,6 +11,8 @@ const suites = [
   suite("integration", "npm run test:integration:local"),
   suite("e2e", "npm run test:e2e:local"),
   suite("contract", "npm run test:contract"),
+  suite("cloudformation-inventory-build", "npm run cfn:inventory:build"),
+  suite("cloudformation-inventory-check", "npm run cfn:inventory:check"),
   suite("edge-security", "npm run edge:security:check"),
   suite("coverage", "npm run coverage:check"),
   suite("ui-quality", "npm run ui:check"),

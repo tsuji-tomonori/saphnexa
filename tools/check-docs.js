@@ -7,7 +7,8 @@ const requiredRunbooks = [
   "docs/ops/runbooks/rollback.md",
   "docs/ops/runbooks/user-import-failure.md",
   "docs/ops/runbooks/access-change.md",
-  "docs/ops/runbooks/backup-restore.md"
+  "docs/ops/runbooks/backup-restore.md",
+  "docs/ops/runbooks/cloudformation-inventory.md"
 ];
 
 for (const file of requiredRunbooks) {
@@ -41,7 +42,9 @@ for (const command of [
   "npm run restore:drill:check",
   "npm run edge:security:check",
   "npm run acceptance:package:build",
-  "npm run acceptance:package:check"
+  "npm run acceptance:package:check",
+  "npm run cfn:inventory:build",
+  "npm run cfn:inventory:check"
 ]) {
   assert(localVerification.includes(command), `local verification docs missing ${command}`);
 }
