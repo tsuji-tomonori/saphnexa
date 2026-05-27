@@ -24,6 +24,25 @@ export const expectedMajorResourceTypes = [
   "AWS::Events::EventBus"
 ];
 
+export const expectedMajorResourceTypeMinimumCounts = {
+  "AWS::CloudFront::Distribution": 1,
+  "AWS::CloudFront::Function": 2,
+  "AWS::CloudFront::OriginAccessControl": 2,
+  "AWS::WAFv2::WebACL": 1,
+  "AWS::S3::Bucket": 6,
+  "AWS::S3::BucketPolicy": 2,
+  "AWS::KMS::Key": 1,
+  "AWS::Cognito::UserPool": 1,
+  "AWS::Cognito::UserPoolClient": 1,
+  "AWS::ApiGatewayV2::Api": 2,
+  "AWS::Lambda::Function": 11,
+  "AWS::AppSync::Api": 1,
+  "AWS::SQS::Queue": 8,
+  "AWS::Logs::LogGroup": 1,
+  "AWS::CloudWatch::Alarm": 14,
+  "AWS::Events::EventBus": 1
+};
+
 export const expectedMajorOutputKeys = [
   "DistributionDomainName",
   "AdminArtifactsBucketArn",
@@ -64,6 +83,7 @@ export function buildCloudFormationInventoryDraft(outputPath = cloudFormationInv
       checksum: `sha256:${sha256(JSON.stringify(localInventory))}`
     },
     expected_major_resource_types: expectedMajorResourceTypes,
+    expected_major_resource_type_minimum_counts: expectedMajorResourceTypeMinimumCounts,
     expected_major_output_keys: expectedMajorOutputKeys,
     final_capture_instructions: {
       describe_stacks_command: "aws cloudformation describe-stacks --stack-name saphnexa-uat-app --region ap-northeast-1 --output json",

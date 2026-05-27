@@ -3,7 +3,7 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { acceptanceIds, acceptanceItemById } from "./acceptance-ids.js";
 import { sourceChecklistColumns } from "./acceptance-checklist-format.js";
-import { expectedMajorOutputKeys, expectedMajorResourceTypes } from "./cloudformation-inventory.js";
+import { expectedMajorOutputKeys, expectedMajorResourceTypeMinimumCounts, expectedMajorResourceTypes } from "./cloudformation-inventory.js";
 import { buildFinalEvidenceCandidateStatus } from "./final-evidence-candidate.js";
 import { currentGitCommit } from "./git-context.js";
 import { assert } from "./lib.js";
@@ -308,6 +308,18 @@ try {
   assert(missingMajorResourceStatus.ready === false, "missing major resource fixture must not be ready");
   assert(missingMajorResourceStatus.errors.some((error) => error.includes(`cloudformation.major_resource_type.${expectedMajorResourceTypes[0]}`)), "missing major resource fixture must reject missing expected resource type");
 
+  const insufficientMajorResourceCount = buildReadyCandidate();
+  const resourceTypeWithMinimumCount = "AWS::Lambda::Function";
+  insufficientMajorResourceCount.inventory.stack_resources = insufficientMajorResourceCount.inventory.stack_resources.filter((resource, index) => resource.ResourceType !== resourceTypeWithMinimumCount || index === insufficientMajorResourceCount.inventory.stack_resources.findIndex((item) => item.ResourceType === resourceTypeWithMinimumCount));
+  const insufficientMajorResourceCountPaths = writeCandidateFiles(join(root, "insufficient-major-resource-count"), insufficientMajorResourceCount);
+  const insufficientMajorResourceCountStatus = buildFinalEvidenceCandidateStatus(join(root, "insufficient-major-resource-count-status.json"), {
+    candidatePaths: insufficientMajorResourceCountPaths,
+    resolveGitTagCommit,
+    resolveGitRepository
+  });
+  assert(insufficientMajorResourceCountStatus.ready === false, "insufficient major resource count fixture must not be ready");
+  assert(insufficientMajorResourceCountStatus.errors.some((error) => error.includes(`cloudformation.major_resource_type_count.${resourceTypeWithMinimumCount}`)), "insufficient major resource count fixture must reject expected minimum count mismatch");
+
   const invalidResourceDetails = buildReadyCandidate();
   delete invalidResourceDetails.inventory.stack_resources[0].LogicalResourceId;
   invalidResourceDetails.inventory.stack_resources[1].PhysicalResourceId = "";
@@ -491,16 +503,21 @@ function buildReadyCandidate() {
           OutputValue: outputValueFor(outputKey, index)
         }))
       ],
-      stack_resources: [
-        ...expectedMajorResourceTypes.map((resourceType, index) => ({
-          LogicalResourceId: `ExpectedMajorResource${index}`,
-          PhysicalResourceId: `saphnexa-uat-resource-${index}`,
-          ResourceType: resourceType,
-          ResourceStatus: "UPDATE_COMPLETE"
-        }))
-      ]
+      stack_resources: expectedMajorResources()
     }
   };
+}
+
+function expectedMajorResources() {
+  return expectedMajorResourceTypes.flatMap((resourceType) => {
+    const count = expectedMajorResourceTypeMinimumCounts[resourceType];
+    return Array.from({ length: count }, (_, index) => ({
+      LogicalResourceId: `${resourceType.replaceAll(/[^A-Za-z0-9]/g, "")}${index}`,
+      PhysicalResourceId: `saphnexa-uat-${resourceType.toLowerCase().replaceAll(/[^a-z0-9]+/g, "-")}-${index}`,
+      ResourceType: resourceType,
+      ResourceStatus: "UPDATE_COMPLETE"
+    }));
+  });
 }
 
 function outputValueFor(outputKey, index) {

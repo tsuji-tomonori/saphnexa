@@ -1,5 +1,5 @@
 import { existsSync } from "node:fs";
-import { cloudFormationInventoryPath, expectedMajorOutputKeys, expectedMajorResourceTypes } from "./cloudformation-inventory.js";
+import { cloudFormationInventoryPath, expectedMajorOutputKeys, expectedMajorResourceTypeMinimumCounts, expectedMajorResourceTypes } from "./cloudformation-inventory.js";
 import { assert, readJson } from "./lib.js";
 
 assert(existsSync("docs/acceptance/cloudformation/cloudformation_inventory.schema.json"), "CloudFormation inventory schema missing");
@@ -27,7 +27,7 @@ for (const draftOnlyKey of ["local_cdk_inventory", "expected_major_resource_type
 }
 const localSourceCondition = sourceCondition(schema, "local-cdk-intent");
 const awsSourceCondition = sourceCondition(schema, "aws-cloudformation-inventory");
-for (const key of ["local_cdk_inventory", "expected_major_resource_types", "expected_major_output_keys", "final_capture_instructions"]) {
+for (const key of ["local_cdk_inventory", "expected_major_resource_types", "expected_major_resource_type_minimum_counts", "expected_major_output_keys", "final_capture_instructions"]) {
   assert(localSourceCondition.then.required.includes(key), `local-cdk-intent schema condition missing required ${key}`);
 }
 for (const key of ["stack_id", "stack_status", "stack_outputs", "stack_resources"]) {
@@ -43,7 +43,9 @@ assert(localSourceCondition.then.properties.final_acceptance_eligible.const === 
 assert(localSourceCondition.then.properties.aws_capture_required.const === true, "local source schema must require AWS capture");
 assert(awsSourceCondition.then.properties.final_acceptance_eligible.const === true, "AWS source schema must be final acceptance eligible");
 assert(awsSourceCondition.then.properties.aws_capture_required.const === false, "AWS source schema must not require more AWS capture");
-for (const key of ["schema_version", "system", "environment", "aws_region", "stack_name", "source", "final_acceptance_eligible", "aws_capture_required", "local_cdk_inventory", "expected_major_resource_types", "expected_major_output_keys", "final_capture_instructions"]) {
+assert(schema.properties.expected_major_resource_type_minimum_counts.minProperties === 1, "CloudFormation inventory schema must require expected count map entries");
+assert(schema.properties.expected_major_resource_type_minimum_counts.additionalProperties.minimum === 1, "CloudFormation inventory schema must require positive expected counts");
+for (const key of ["schema_version", "system", "environment", "aws_region", "stack_name", "source", "final_acceptance_eligible", "aws_capture_required", "local_cdk_inventory", "expected_major_resource_types", "expected_major_resource_type_minimum_counts", "expected_major_output_keys", "final_capture_instructions"]) {
   assert(Object.prototype.hasOwnProperty.call(inventory, key), `CloudFormation inventory missing ${key}`);
 }
 
@@ -67,7 +69,10 @@ for (const construct of inventory.local_cdk_inventory.constructs) {
 
 for (const type of expectedMajorResourceTypes) {
   assert(inventory.expected_major_resource_types.includes(type), `missing expected resource type: ${type}`);
+  assert(inventory.expected_major_resource_type_minimum_counts[type] === expectedMajorResourceTypeMinimumCounts[type], `minimum resource count mismatch: ${type}`);
 }
+
+assert(JSON.stringify(Object.keys(inventory.expected_major_resource_type_minimum_counts).sort()) === JSON.stringify([...expectedMajorResourceTypes].sort()), "minimum resource count keys must match expected major resource types");
 
 for (const outputKey of expectedMajorOutputKeys) {
   assert(inventory.expected_major_output_keys.includes(outputKey), `missing expected output key: ${outputKey}`);

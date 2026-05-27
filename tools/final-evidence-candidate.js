@@ -10,7 +10,7 @@ import {
   sourceChecklistValue
 } from "./acceptance-checklist-format.js";
 import { currentGitCommit, currentGitRepository, gitTagCommit } from "./git-context.js";
-import { expectedMajorOutputKeys, expectedMajorResourceTypes } from "./cloudformation-inventory.js";
+import { expectedMajorOutputKeys, expectedMajorResourceTypeMinimumCounts, expectedMajorResourceTypes } from "./cloudformation-inventory.js";
 import { listFiles, readJson, readText } from "./lib.js";
 
 export const finalCandidateStatusPath = "dist/acceptance/final_candidate_status.json";
@@ -221,9 +221,11 @@ function validateCloudFormationInventory(path, checks, errors) {
     check(/^AWS::/.test(resource.ResourceType || ""), `cloudformation.resource.${label}.ResourceType`, checks, errors, "must include AWS resource type");
     check(isCompleteCloudFormationResourceStatus(resource.ResourceStatus), `cloudformation.resource.${label}.ResourceStatus`, checks, errors, "must include a complete resource status");
   }
-  const resourceTypes = new Set((inventory.stack_resources || []).map((resource) => resource.ResourceType).filter(Boolean));
+  const resourceTypeCounts = countBy((inventory.stack_resources || []).map((resource) => resource.ResourceType).filter(Boolean));
+  const resourceTypes = new Set(resourceTypeCounts.keys());
   for (const resourceType of expectedMajorResourceTypes) {
     check(resourceTypes.has(resourceType), `cloudformation.major_resource_type.${resourceType}`, checks, errors, "must include expected major resource type");
+    check((resourceTypeCounts.get(resourceType) || 0) >= expectedMajorResourceTypeMinimumCounts[resourceType], `cloudformation.major_resource_type_count.${resourceType}`, checks, errors, `must include at least ${expectedMajorResourceTypeMinimumCounts[resourceType]} resources of this type`);
   }
   return inventory;
 }
@@ -272,6 +274,12 @@ function exists(path) {
   } catch {
     return false;
   }
+}
+
+function countBy(values) {
+  const counts = new Map();
+  for (const value of values) counts.set(value, (counts.get(value) || 0) + 1);
+  return counts;
 }
 
 function isFinalText(value) {
