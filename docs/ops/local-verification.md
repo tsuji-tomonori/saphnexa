@@ -33,6 +33,8 @@ npm run edge:security:check
 npm run admin:workflow:check
 npm run offline-artifacts:check
 npm run restore:drill:check
+npm run acceptance:final:build
+npm run acceptance:final:check
 npm run acceptance:package:build
 npm run acceptance:package:check
 npm test
@@ -68,6 +70,7 @@ git diff --check
 - user import の create/update/delete/invalid row、文書登録 5 件、版 activation、評価 run 3 件、admin event、audit event のローカル workflow。
 - chunk/reference/BM25F/parser を含む offline artifact inventory のローカル manifest。
 - in-memory domain state の restore drill report、RTO/RPO threshold、snapshot/restored checksum。
+- `dist/acceptance/final_readiness.json` に最終検収 readiness を生成し、release/AWS/publish/checklist 未達がある限り ready にならないこと。
 - `dist/acceptance/` に検収 package draft を生成し、未実施 AWS/release 項目を `PENDING_AWS` として残すこと。
 - GitHub issue tracker snapshot に基づく Blocker/Critical open defect 0 件の defect list draft。
 
@@ -84,3 +87,4 @@ git diff --check
 - 実 S3 の offline artifact inventory、実 parser/KB/S3 Vectors ingestion、実バックアップからの restore drill。
 - Git tag、GitHub release、検収用 `evidence_manifest.json` の最終確定。
 - 検収 checklist の最終署名、AWS account id、CloudFormation stack id、公開済み docs/Allure URL の確定。
+- P0/P1/P2 全行の最終 PASS 判定。

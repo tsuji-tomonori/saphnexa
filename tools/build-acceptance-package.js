@@ -2,6 +2,7 @@ import { existsSync, mkdirSync, readFileSync, statSync, writeFileSync } from "no
 import { dirname, join, resolve } from "node:path";
 import { acceptanceIds } from "./acceptance-ids.js";
 import { buildCloudFormationInventoryDraft, cloudFormationInventoryPath } from "./cloudformation-inventory.js";
+import { buildFinalAcceptanceReadiness, finalReadinessPath } from "./final-acceptance-readiness.js";
 import { readJson, readText } from "./lib.js";
 
 const outputRoot = "dist/acceptance";
@@ -12,6 +13,7 @@ const gitCommit = currentGitCommit();
 const rows = parseTraceRows(trace);
 const counts = countStates(rows);
 const cloudFormationInventory = buildCloudFormationInventoryDraft(cloudFormationInventoryPath);
+const finalReadiness = buildFinalAcceptanceReadiness(finalReadinessPath);
 
 const manifest = {
   system: "Saphnexa",
@@ -57,6 +59,14 @@ const manifest = {
     monthly_usd: 550,
     assumption: "Local acceptance draft uses the configured 50 DAU / 10 questions per user per day guardrail. Final UAT requires AWS account-specific cost evidence."
   },
+  final_readiness: {
+    path: finalReadinessPath,
+    final_acceptance_ready: finalReadiness.final_acceptance_ready,
+    blocking_acceptance_ids: finalReadiness.blocking_acceptance_ids.map((row) => row.id),
+    release_gate_ready: finalReadiness.release_gate.ready,
+    aws_gate_ready: finalReadiness.aws_gate.ready,
+    checklist_gate_ready: finalReadiness.checklist_gate.ready
+  },
   draft_status: "draft_not_for_final_acceptance",
   pending_final_evidence: [
     "GitHub release and immutable Git tag",
@@ -77,6 +87,8 @@ const summary = {
   checklist_rows: checklist.length,
   blocker_critical_open_count: defectSnapshot.blocker_critical_open_count,
   cloudformation_inventory_draft_path: cloudFormationInventoryPath,
+  final_readiness_path: finalReadinessPath,
+  final_readiness_ready: finalReadiness.final_acceptance_ready,
   final_acceptance_ready: counts.requires_aws === 0,
   note: "Draft package for local evidence consolidation. Final acceptance still requires AWS/UAT evidence for requires_aws rows."
 };

@@ -1,0 +1,104 @@
+import { mkdirSync, writeFileSync } from "node:fs";
+import { dirname } from "node:path";
+import { readJson, readText } from "./lib.js";
+
+export const finalReadinessPath = "dist/acceptance/final_readiness.json";
+
+const priorityById = {
+  "AC-001": "P0",
+  "AC-002": "P0",
+  "AC-004": "P0",
+  "AC-081": "P1",
+  "AC-150": "P0",
+  "AC-151": "P0",
+  "AC-152": "P1"
+};
+
+export function buildFinalAcceptanceReadiness(outputPath = finalReadinessPath) {
+  const traceRows = parseTraceRows(readText("docs/acceptance/traceability.md"));
+  const defectSnapshot = readJson("docs/acceptance/defects/open_issues_snapshot.json");
+  const blockers = traceRows
+    .filter((row) => row.state !== "local_verified")
+    .map((row) => ({
+      id: row.id,
+      priority: priorityById[row.id] || "unknown",
+      state: row.state,
+      evidence: row.evidence
+    }));
+  const unresolvedByPriority = {
+    P0: blockers.filter((row) => row.priority === "P0").map((row) => row.id),
+    P1: blockers.filter((row) => row.priority === "P1").map((row) => row.id),
+    P2: blockers.filter((row) => row.priority === "P2").map((row) => row.id)
+  };
+
+  const readiness = {
+    schema_version: "saphnexa-final-acceptance-readiness.v1",
+    generated_at: "2026-05-27T11:52:00+09:00",
+    generated_by: "tools/build-final-acceptance-readiness.js",
+    final_acceptance_ready: false,
+    readiness_reason: "Final acceptance still requires release, AWS/UAT, published artifact, CloudFormation, and signed checklist evidence.",
+    trace_state_counts: countStates(traceRows),
+    blocking_acceptance_ids: blockers,
+    priority_gates: {
+      P0_all_pass: unresolvedByPriority.P0.length === 0,
+      P1_all_pass: unresolvedByPriority.P1.length === 0,
+      P2_all_pass: unresolvedByPriority.P2.length === 0,
+      unresolved_by_priority: unresolvedByPriority
+    },
+    release_gate: {
+      ready: false,
+      required_evidence: ["Git tag", "GitHub release", "final evidence_manifest.json"],
+      pending: ["Git tag", "GitHub release", "final evidence_manifest.json"]
+    },
+    aws_gate: {
+      ready: false,
+      required_evidence: [
+        "AWS account id",
+        "deployed CloudFormation stack id",
+        "CloudFormation describe-stacks",
+        "CloudFormation list-stack-resources",
+        "CloudFront/S3/Docusaurus/Allure published URLs"
+      ],
+      pending: [
+        "AWS account id",
+        "deployed CloudFormation stack id",
+        "CloudFormation describe-stacks",
+        "CloudFormation list-stack-resources",
+        "CloudFront/S3/Docusaurus/Allure published URLs"
+      ]
+    },
+    checklist_gate: {
+      ready: false,
+      required_evidence: ["final signed acceptance checklist"],
+      pending_acceptance_ids: blockers.map((row) => row.id),
+      pending_result: "PENDING_AWS"
+    },
+    defect_gate: {
+      ready: defectSnapshot.blocker_critical_open_count === 0,
+      blocker_critical_open_count: defectSnapshot.blocker_critical_open_count,
+      source: defectSnapshot.source
+    },
+    finalization_commands: [
+      "npm run acceptance:package:build",
+      "npm run acceptance:package:check",
+      "npm run acceptance:final:build",
+      "npm run acceptance:final:check"
+    ],
+    note: "This readiness file is a preflight guard. It must not be used as proof that final acceptance is complete."
+  };
+
+  mkdirSync(dirname(outputPath), { recursive: true });
+  writeFileSync(outputPath, `${JSON.stringify(readiness, null, 2)}\n`);
+  return readiness;
+}
+
+function parseTraceRows(body) {
+  return [...body.matchAll(/^\| (AC-\d{3}) \| ([a-z_]+) \| (.+) \|$/gm)]
+    .map((match) => ({ id: match[1], state: match[2], evidence: match[3].replaceAll("`", "'") }));
+}
+
+function countStates(items) {
+  const counts = { local_verified: 0, requires_aws: 0, implemented_unverified: 0, scaffolded: 0, not_started: 0 };
+  for (const row of items) counts[row.state] = (counts[row.state] || 0) + 1;
+  return counts;
+}

@@ -54,6 +54,14 @@ tasks:
     desc: Verify draft acceptance package artifacts locally
     cmds:
       - npm run acceptance:package:check
+  acceptance:final:build:
+    desc: Build final acceptance readiness preflight locally
+    cmds:
+      - npm run acceptance:final:build
+  acceptance:final:check:
+    desc: Verify final acceptance readiness preflight locally
+    cmds:
+      - npm run acceptance:final:check
   security:scan:
     desc: Run local secret and security baseline checks
     cmds:

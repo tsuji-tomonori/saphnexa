@@ -43,6 +43,8 @@ for (const command of [
   "npm run edge:security:check",
   "npm run acceptance:package:build",
   "npm run acceptance:package:check",
+  "npm run acceptance:final:build",
+  "npm run acceptance:final:check",
   "npm run cfn:inventory:build",
   "npm run cfn:inventory:check"
 ]) {

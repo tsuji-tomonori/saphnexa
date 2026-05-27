@@ -11,6 +11,7 @@ for (const path of [
   "dist/acceptance/evidence_manifest.draft.json",
   "dist/acceptance/acceptance_checklist.draft.csv",
   "dist/acceptance/cloudformation_inventory.draft.json",
+  "dist/acceptance/final_readiness.json",
   "dist/acceptance/defect_list.json",
   "dist/acceptance/summary.json"
 ]) {
@@ -30,6 +31,12 @@ assert(manifest.git_tag === "pending-release-tag", "draft manifest must not pret
 assert(manifest.cloudformation_inventory.draft_path === "dist/acceptance/cloudformation_inventory.draft.json", "manifest CloudFormation inventory path mismatch");
 assert(manifest.cloudformation_inventory.final_acceptance_eligible === false, "manifest CloudFormation inventory must be draft-only");
 assert(manifest.cloudformation_inventory.aws_capture_required === true, "manifest CloudFormation inventory must require AWS capture");
+assert(manifest.final_readiness.path === "dist/acceptance/final_readiness.json", "manifest final readiness path mismatch");
+assert(manifest.final_readiness.final_acceptance_ready === false, "manifest final readiness must remain false");
+assert(manifest.final_readiness.blocking_acceptance_ids.length > 0, "manifest final readiness blockers must be explicit");
+assert(manifest.final_readiness.release_gate_ready === false, "manifest release gate must remain pending");
+assert(manifest.final_readiness.aws_gate_ready === false, "manifest AWS gate must remain pending");
+assert(manifest.final_readiness.checklist_gate_ready === false, "manifest checklist gate must remain pending");
 
 const rows = parseCsv(checklist);
 assert(rows.length === acceptanceIds.length, `checklist row count mismatch: ${rows.length}`);
@@ -52,6 +59,8 @@ assert(defects.blocker_critical_open_count === 0, "blocker/critical defects must
 assert(Array.isArray(defects.open_issues), "defect snapshot open_issues must be an array");
 assert(summary.checklist_rows === acceptanceIds.length, "summary checklist row count mismatch");
 assert(summary.cloudformation_inventory_draft_path === "dist/acceptance/cloudformation_inventory.draft.json", "summary CloudFormation inventory path mismatch");
+assert(summary.final_readiness_path === "dist/acceptance/final_readiness.json", "summary final readiness path mismatch");
+assert(summary.final_readiness_ready === false, "summary final readiness must remain false");
 assert(summary.trace_state_counts.requires_aws > 0, "draft package must preserve remaining AWS blockers");
 assert(summary.final_acceptance_ready === false, "draft package must not claim final acceptance readiness");
 
