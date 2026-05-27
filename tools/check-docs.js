@@ -76,7 +76,8 @@ for (const phrase of [
   "defect-snapshot-refresh",
   "gh issue list --state open --json number,title,labels,state",
   "ローカル snapshot だけでは完了扱いにしない",
-  "AC-153 の最終 PASS 判定"
+  "AC-153 の最終 PASS 判定",
+  "CloudFormation capture、defect snapshot refresh、final evidence 作成"
 ]) {
   assert(localVerification.includes(phrase), `local verification docs missing ${phrase}`);
 }

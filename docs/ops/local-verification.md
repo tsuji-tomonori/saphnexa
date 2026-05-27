@@ -103,6 +103,6 @@ git diff --check
 - CloudFront Function、WAF、IAM policy、KMS key policy、SQS/DLQ、AppSync Events、cdk-nag の実リソース/実行結果確認。
 - 実 S3 の offline artifact inventory、実 parser/KB/S3 Vectors ingestion、実バックアップからの restore drill。
 - Git tag、GitHub release、検収用 `evidence_manifest.json` の最終確定。
-- 外部 action plan に記載された release、deploy、publish、CloudFormation capture、final evidence 作成、signoff の実行。
+- 外部 action plan に記載された release、deploy、publish、CloudFormation capture、defect snapshot refresh、final evidence 作成、signoff の実行。
 - 検収 checklist の最終署名、AWS account id、CloudFormation stack id、公開済み docs/Allure URL の確定。
 - P0/P1/P2 全行の最終 PASS 判定。
