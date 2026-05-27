@@ -15,6 +15,7 @@ const manifest = readJson("dist/acceptance/evidence_manifest.draft.json");
 const artifactSummary = readJson("dist/acceptance/artifact_summary.draft.json");
 const summary = readJson("dist/acceptance/summary.json");
 const defects = readJson("dist/acceptance/defect_list.json");
+const packageJson = readJson("package.json");
 const checklist = readText("dist/acceptance/acceptance_checklist.draft.csv");
 const currentCommit = currentGitCommit();
 
@@ -32,7 +33,7 @@ for (const path of [
   assert(existsSync(path), `acceptance package file missing: ${path}`);
 }
 
-for (const key of ["system", "environment", "aws_region", "aws_account_id", "git_commit_sha", "git_tag", "cloudformation_stacks", "db_migration", "test_reports", "docs_site", "rag_evaluation", "cost_estimate"]) {
+for (const key of ["system", "environment", "aws_region", "aws_account_id", "git_commit_sha", "git_tag", "github_release_url", "cdk_app_version", "cloudformation_stacks", "db_migration", "test_reports", "docs_site", "rag_evaluation", "cost_estimate"]) {
   assert(Object.prototype.hasOwnProperty.call(manifest, key), `manifest missing ${key}`);
 }
 assert(manifest.system === "Saphnexa", "manifest system mismatch");
@@ -44,6 +45,7 @@ assert(manifest.pending_final_evidence.length >= 5, "manifest pending final evid
 assert(manifest.aws_account_id === "pending-aws-account-id", "draft manifest must not pretend to know AWS account id");
 assert(manifest.git_tag === "pending-release-tag", "draft manifest must not pretend release tag is created");
 assert(manifest.github_release_url === "pending-github-release-url", "draft manifest must not pretend GitHub release is created");
+assert(manifest.cdk_app_version === packageJson.version, "draft manifest CDK app version must match package version");
 assert(manifest.cloudformation_inventory.draft_path === "dist/acceptance/cloudformation_inventory.draft.json", "manifest CloudFormation inventory path mismatch");
 assert(manifest.cloudformation_inventory.final_acceptance_eligible === false, "manifest CloudFormation inventory must be draft-only");
 assert(manifest.cloudformation_inventory.aws_capture_required === true, "manifest CloudFormation inventory must require AWS capture");
