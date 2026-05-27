@@ -92,7 +92,7 @@
 | AC-112 | local_verified | `npm run observability:check` で API latency、5xx、RAG latency、retrieval count、DLQ count、ingestion failed、evaluation failed の required metrics 7/7 を catalog と local sample で検査。CloudWatch metrics は未実施。 |
 | AC-113 | local_verified | `npm run observability:check` で 5xx、DLQ、RAG失敗率、ingestion失敗、評価失敗、WAF block急増の required alarms 6/6 を catalog 検査。CloudWatch alarms は未実施。 |
 | AC-114 | local_verified | `audit_events` table/store と `npm run admin:workflow:check` で admin 操作、文書公開/成果物、チャット共有、Tools execution、評価の audit category を検査。 |
-| AC-120 | local_verified | `.github/workflows/ci.yml` に 14 jobs を追加し `npm run ci:check` で lint/typecheck/unit/integration/e2e/cdk synth/cdk diff/security scan/license scan/admin artifacts/quality gates/db observability/admin offline restore/contract generation diff の workflow shape を検査。PR #1 の最新 GitHub Actions 結果は push 後に確認する。 |
+| AC-120 | local_verified | `.github/workflows/ci.yml` に 14 jobs を追加し `npm run ci:check` で workflow shape を検査。PR #1 の GitHub Actions `Saphnexa CI` で lint/typecheck/unit/integration/e2e/cdk synth/cdk diff/security scan/license scan/admin artifacts/quality gates/db observability/admin offline restore/contract generation diff が pass。 |
 | AC-121 | local_verified | `npm run coverage:check` で Node test coverage line >=80% / branch >=70% と test pass 100% を検査。Allure unit artifact への publish は未実施。 |
 | AC-122 | implemented_unverified | local integration job/test は追加済み。AWS/DSQL/S3/AppSync/Tools 実結合は未実施。 |
 | AC-123 | implemented_unverified | `tests/e2e-local.test.js` と e2e CI job を追加。ブラウザ/CloudFront E2E は未実施。 |

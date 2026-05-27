@@ -61,6 +61,7 @@
 - `npm run verify`: pass
 - `git diff --check`: pass
 - `pre-commit run --files ...`: pass
+- PR #1 GitHub Actions `Saphnexa CI`: pass（14 jobs）
 
 ## Fit 評価
 
@@ -72,4 +73,4 @@
 
 - 実 S3 report、S3 inventory、CloudFront 公開、AWS 評価 report、DSQL/Flyway 実適用、実 backup/restore は未検証。
 - restore drill は local in-memory state の snapshot 再構成であり、本番 DR の代替ではない。
-- PR #1 の最新 GitHub Actions 結果は push 後に確認する。
+- PR #1 の最新 GitHub Actions は確認済みで、14 jobs が pass。
