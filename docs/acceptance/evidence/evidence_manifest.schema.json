@@ -10,9 +10,10 @@
   },
   "x_final_acceptance_extension": {
     "required": [
-      "github_release_url"
+      "github_release_url",
+      "cdk_app_version"
     ],
-    "reason": "AC-001 requires GitHub release evidence in addition to the source evidence manifest schema."
+    "reason": "AC-001 and the final completion rule require GitHub release evidence and the deployed CDK app version in addition to the source evidence manifest schema."
   },
   "required": [
     "system",
@@ -22,6 +23,7 @@
     "git_commit_sha",
     "git_tag",
     "github_release_url",
+    "cdk_app_version",
     "cloudformation_stacks",
     "db_migration",
     "test_reports",

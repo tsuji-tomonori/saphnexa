@@ -10,6 +10,7 @@ const expectedRequired = [
   "git_commit_sha",
   "git_tag",
   "github_release_url",
+  "cdk_app_version",
   "cloudformation_stacks",
   "db_migration",
   "test_reports",
@@ -17,7 +18,7 @@ const expectedRequired = [
   "rag_evaluation",
   "cost_estimate"
 ];
-const finalAcceptanceExtensionRequired = ["github_release_url"];
+const finalAcceptanceExtensionRequired = ["github_release_url", "cdk_app_version"];
 
 assert(schema.$schema === "https://json-schema.org/draft/2020-12/schema", "schema draft mismatch");
 assert(schema.title === "Saphnexa Acceptance Evidence Manifest", "schema title mismatch");
@@ -33,6 +34,7 @@ assert(schema.properties.aws_region.const === "ap-northeast-1", "schema region c
 assert(schema.properties.aws_account_id.pattern === "^[0-9]{12}$", "schema aws account pattern mismatch");
 assert(schema.properties.git_commit_sha.pattern === "^[a-f0-9]{40}$", "schema git commit pattern mismatch");
 assert(schema.properties.github_release_url.pattern === "^https://github\\.com/.+/releases/tag/.+$", "schema GitHub release URL pattern mismatch");
+assert(schema.properties.cdk_app_version.type === "string", "schema CDK app version type mismatch");
 assert(schema.properties.cloudformation_stacks.minItems === 1, "schema CloudFormation stack minItems mismatch");
 assert(JSON.stringify(schema.properties.cloudformation_stacks.items.required) === JSON.stringify(["stack_name", "stack_id"]), "schema CloudFormation stack required mismatch");
 assert(schema.properties.db_migration.properties.checksum_status.enum.includes("matched"), "schema db checksum enum mismatch");
@@ -64,6 +66,7 @@ assert(/^[0-9]{12}$/.test(manifest.aws_account_id), "aws_account_id must be 12 d
 assert(/^[a-f0-9]{40}$/.test(manifest.git_commit_sha), "git_commit_sha must be 40 hex chars");
 assert(typeof manifest.git_tag === "string" && manifest.git_tag.length > 0, "git_tag is required");
 assert(/^https:\/\/github\.com\/.+\/releases\/tag\/.+/.test(manifest.github_release_url), "github_release_url must be a GitHub release URL");
+assert(typeof manifest.cdk_app_version === "string" && manifest.cdk_app_version.length > 0, "cdk_app_version is required");
 assert(manifest.aws_account_id === "000000000000", "example manifest must use placeholder AWS account id");
 assert(/^0{40}$/.test(manifest.git_commit_sha), "example manifest must use placeholder commit SHA");
 assert(/example|not-for-acceptance/.test(manifest.git_tag), "example manifest must use non-final tag marker");
