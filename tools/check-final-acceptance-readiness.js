@@ -20,6 +20,10 @@ assert(readiness.defect_gate.ready === true, "defect gate should be ready when b
 assert(readiness.final_candidate_gate.ready === false, "final candidate gate must remain pending until final files exist");
 assert(readiness.final_candidate_gate.status === "not_ready", "final candidate status must be not_ready during local preflight");
 assert(readiness.final_candidate_gate.missing_files.length > 0, "final candidate missing files must be explicit");
+assert(readiness.external_action_gate.ready === false, "external action gate must remain pending");
+assert(readiness.external_action_gate.status === "pending_external_actions", "external action status mismatch");
+assert(readiness.external_action_gate.pending_action_ids.length > 0, "external action pending ids must be explicit");
+assert(readiness.external_action_gate.requires_confirmation === true, "external actions must require confirmation");
 
 for (const id of unresolvedTraceIds) {
   assert(acceptanceIds.includes(id), `unknown acceptance id in trace: ${id}`);

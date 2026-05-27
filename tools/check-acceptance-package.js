@@ -13,6 +13,7 @@ for (const path of [
   "dist/acceptance/cloudformation_inventory.draft.json",
   "dist/acceptance/final_readiness.json",
   "dist/acceptance/final_candidate_status.json",
+  "dist/acceptance/external_action_plan.json",
   "dist/acceptance/defect_list.json",
   "dist/acceptance/summary.json"
 ]) {
@@ -40,6 +41,8 @@ assert(manifest.final_readiness.aws_gate_ready === false, "manifest AWS gate mus
 assert(manifest.final_readiness.checklist_gate_ready === false, "manifest checklist gate must remain pending");
 assert(manifest.final_readiness.final_candidate_status_path === "dist/acceptance/final_candidate_status.json", "manifest final candidate status path mismatch");
 assert(manifest.final_readiness.final_candidate_ready === false, "manifest final candidate must remain pending");
+assert(manifest.final_readiness.external_action_plan_path === "dist/acceptance/external_action_plan.json", "manifest external action plan path mismatch");
+assert(manifest.final_readiness.external_actions_pending.length > 0, "manifest external pending actions must be explicit");
 
 const rows = parseCsv(checklist);
 assert(rows.length === acceptanceIds.length, `checklist row count mismatch: ${rows.length}`);
@@ -66,6 +69,8 @@ assert(summary.final_readiness_path === "dist/acceptance/final_readiness.json", 
 assert(summary.final_readiness_ready === false, "summary final readiness must remain false");
 assert(summary.final_candidate_status_path === "dist/acceptance/final_candidate_status.json", "summary final candidate path mismatch");
 assert(summary.final_candidate_ready === false, "summary final candidate must remain false");
+assert(summary.external_action_plan_path === "dist/acceptance/external_action_plan.json", "summary external action plan path mismatch");
+assert(summary.external_actions_pending > 0, "summary external action pending count must be positive");
 assert(summary.trace_state_counts.requires_aws > 0, "draft package must preserve remaining AWS blockers");
 assert(summary.final_acceptance_ready === false, "draft package must not claim final acceptance readiness");
 

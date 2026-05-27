@@ -1,5 +1,6 @@
 import { mkdirSync, writeFileSync } from "node:fs";
 import { dirname } from "node:path";
+import { buildExternalAcceptanceActionPlan, externalActionPlanPath } from "./external-acceptance-actions.js";
 import { buildFinalEvidenceCandidateStatus, finalCandidateStatusPath } from "./final-evidence-candidate.js";
 import { readJson, readText } from "./lib.js";
 
@@ -18,6 +19,7 @@ const priorityById = {
 export function buildFinalAcceptanceReadiness(outputPath = finalReadinessPath) {
   const traceRows = parseTraceRows(readText("docs/acceptance/traceability.md"));
   const defectSnapshot = readJson("docs/acceptance/defects/open_issues_snapshot.json");
+  const externalActionPlan = buildExternalAcceptanceActionPlan(externalActionPlanPath);
   const finalCandidateStatus = buildFinalEvidenceCandidateStatus(finalCandidateStatusPath);
   const blockers = traceRows
     .filter((row) => row.state !== "local_verified")
@@ -87,7 +89,16 @@ export function buildFinalAcceptanceReadiness(outputPath = finalReadinessPath) {
       missing_files: finalCandidateStatus.missing_files,
       errors: finalCandidateStatus.errors
     },
+    external_action_gate: {
+      ready: externalActionPlan.ready,
+      status_path: externalActionPlanPath,
+      status: externalActionPlan.status,
+      pending_action_ids: externalActionPlan.pending_action_ids,
+      requires_confirmation: externalActionPlan.actions.every((action) => action.requires_confirmation)
+    },
     finalization_commands: [
+      "npm run acceptance:external-actions:build",
+      "npm run acceptance:external-actions:check",
       "npm run acceptance:final-candidate:check",
       "npm run acceptance:package:build",
       "npm run acceptance:package:check",

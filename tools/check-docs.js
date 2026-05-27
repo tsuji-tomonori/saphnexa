@@ -47,6 +47,8 @@ for (const command of [
   "npm run acceptance:final:build",
   "npm run acceptance:final:check",
   "npm run acceptance:final-candidate:check",
+  "npm run acceptance:external-actions:build",
+  "npm run acceptance:external-actions:check",
   "npm run cfn:inventory:build",
   "npm run cfn:inventory:check"
 ]) {

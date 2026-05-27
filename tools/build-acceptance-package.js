@@ -2,6 +2,7 @@ import { existsSync, mkdirSync, readFileSync, statSync, writeFileSync } from "no
 import { dirname, join, resolve } from "node:path";
 import { acceptanceIds } from "./acceptance-ids.js";
 import { buildCloudFormationInventoryDraft, cloudFormationInventoryPath } from "./cloudformation-inventory.js";
+import { buildExternalAcceptanceActionPlan, externalActionPlanPath } from "./external-acceptance-actions.js";
 import { buildFinalAcceptanceReadiness, finalReadinessPath } from "./final-acceptance-readiness.js";
 import { readJson, readText } from "./lib.js";
 
@@ -13,6 +14,7 @@ const gitCommit = currentGitCommit();
 const rows = parseTraceRows(trace);
 const counts = countStates(rows);
 const cloudFormationInventory = buildCloudFormationInventoryDraft(cloudFormationInventoryPath);
+const externalActionPlan = buildExternalAcceptanceActionPlan(externalActionPlanPath);
 const finalReadiness = buildFinalAcceptanceReadiness(finalReadinessPath);
 
 const manifest = {
@@ -67,7 +69,9 @@ const manifest = {
     aws_gate_ready: finalReadiness.aws_gate.ready,
     checklist_gate_ready: finalReadiness.checklist_gate.ready,
     final_candidate_status_path: finalReadiness.final_candidate_gate.status_path,
-    final_candidate_ready: finalReadiness.final_candidate_gate.ready
+    final_candidate_ready: finalReadiness.final_candidate_gate.ready,
+    external_action_plan_path: externalActionPlanPath,
+    external_actions_pending: externalActionPlan.pending_action_ids
   },
   draft_status: "draft_not_for_final_acceptance",
   pending_final_evidence: [
@@ -93,6 +97,8 @@ const summary = {
   final_readiness_ready: finalReadiness.final_acceptance_ready,
   final_candidate_status_path: finalReadiness.final_candidate_gate.status_path,
   final_candidate_ready: finalReadiness.final_candidate_gate.ready,
+  external_action_plan_path: externalActionPlanPath,
+  external_actions_pending: externalActionPlan.pending_action_ids.length,
   final_acceptance_ready: counts.requires_aws === 0,
   note: "Draft package for local evidence consolidation. Final acceptance still requires AWS/UAT evidence for requires_aws rows."
 };

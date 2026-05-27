@@ -66,6 +66,14 @@ tasks:
     desc: Verify final evidence candidate status locally
     cmds:
       - npm run acceptance:final-candidate:check
+  acceptance:external-actions:build:
+    desc: Build pending external acceptance action plan locally
+    cmds:
+      - npm run acceptance:external-actions:build
+  acceptance:external-actions:check:
+    desc: Verify pending external acceptance action plan locally
+    cmds:
+      - npm run acceptance:external-actions:check
   security:scan:
     desc: Run local secret and security baseline checks
     cmds:
