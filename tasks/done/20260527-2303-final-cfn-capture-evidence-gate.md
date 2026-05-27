@@ -1,6 +1,6 @@
 # final CloudFormation capture evidence gate
 
-- 状態: do
+- 状態: done
 - タスク種別: 機能追加
 - 対象ブランチ: `codex/saphnexa-acceptance-impl`
 - 対象PR: `#1`
@@ -33,15 +33,15 @@ final CloudFormation inventory に capture evidence metadata を要求し、capt
 - [x] capture evidence 欠落 fixture は final candidate ready にならない。
 - [x] 既存の ready fixture は capture evidence を含めて引き続き ready になる。
 - [x] AC-081 の外部 CloudFormation capture を完了扱いしない。
-- [ ] 変更範囲に見合う検証を実行し、結果を task / report / PR コメントに残す。
+- [x] 変更範囲に見合う検証を実行し、結果を task / report / PR コメントに残す。
 
 ## Done 条件
 
 - [x] schema / validator / fixture / runbook を更新する。
 - [x] 選定した検証コマンドが pass する。
 - [x] 作業レポートを `reports/working/` に作成する。
-- [ ] commit / push し、PR に受け入れ条件確認コメントとセルフレビューコメントを投稿する。
-- [ ] PR コメント後に task を `tasks/done/` へ移動し、その更新も commit / push する。
+- [x] commit / push し、PR に受け入れ条件確認コメントとセルフレビューコメントを投稿する。
+- [x] PR コメント後に task を `tasks/done/` へ移動し、その更新も commit / push する。
 
 ## 実装計画
 
@@ -78,7 +78,10 @@ final acceptance runbook は最終 CloudFormation inventory の確認観点を�
 
 ## 実施結果
 
+- 実装 commit: `5988515`
 - 作業レポート: `reports/working/20260527-2307-final-cfn-capture-evidence-gate.md`
+- PR 受け入れ条件確認コメント: https://github.com/tsuji-tomonori/saphnexa/pull/1#issuecomment-4555289568
+- PR セルフレビューコメント: https://github.com/tsuji-tomonori/saphnexa/pull/1#issuecomment-4555293830
 
 ## 検証結果
 
@@ -93,5 +96,4 @@ final acceptance runbook は最終 CloudFormation inventory の確認観点を�
 
 ## 残件
 
-- PR 受け入れ条件確認コメントとセルフレビューコメントは commit / push 後に投稿する。
 - Git tag/release、AWS deploy/publish、CloudFormation capture、final evidence manifest / checklist の最終作成・署名は未実施。
