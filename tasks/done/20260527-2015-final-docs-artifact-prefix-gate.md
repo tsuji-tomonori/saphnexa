@@ -1,6 +1,6 @@
 # final docs artifact prefix gate
 
-状態: doing
+状態: done
 
 ## 背景
 
@@ -90,20 +90,20 @@
 
 ## 受け入れ条件
 
-- [ ] final candidate verifier が `docs_site.latest_url` を `/admin/docs/latest/` または `docs-site/latest/` として検査する。
-- [ ] final candidate verifier が `docs_site.version_url` を `/admin/docs/versions/v0.16/` または `docs-site/releases/v0.16/` として検査する。
-- [ ] 不正 docs prefix fixture が final candidate gate で reject される。
-- [ ] external action plan の docs publish command が `docs-site/latest/` と `docs-site/releases/v0.16/` を提示する。
-- [ ] evidence manifest example/schema/checker が設計書準拠 docs-site prefix と同期している。
-- [ ] 関連 acceptance / evidence / artifact / verify checks が pass する。
-- [ ] 外部 state を変更せず、未実施外部 action を pending として維持する。
+- [x] final candidate verifier が `docs_site.latest_url` を `/admin/docs/latest/` または `docs-site/latest/` として検査する。
+- [x] final candidate verifier が `docs_site.version_url` を `/admin/docs/versions/v0.16/` または `docs-site/releases/v0.16/` として検査する。
+- [x] 不正 docs prefix fixture が final candidate gate で reject される。
+- [x] external action plan の docs publish command が `docs-site/latest/` と `docs-site/releases/v0.16/` を提示する。
+- [x] evidence manifest example/schema/checker が設計書準拠 docs-site prefix と同期している。
+- [x] 関連 acceptance / evidence / artifact / verify checks が pass する。
+- [x] 外部 state を変更せず、未実施外部 action を pending として維持する。
 
 ## Done 条件
 
-- [ ] 実装差分が PR branch に commit / push されている。
-- [ ] 受け入れ条件確認コメントとセルフレビューコメントを PR に投稿している。
-- [ ] task md に PR コメント URL と検証結果を記録し、`tasks/done/` へ移動している。
-- [ ] 作業レポートを `reports/working/` に保存している。
+- [x] 実装差分が PR branch に commit / push されている。
+- [x] 受け入れ条件確認コメントとセルフレビューコメントを PR に投稿している。
+- [x] task md に PR コメント URL と検証結果を記録し、`tasks/done/` へ移動している。
+- [x] 作業レポートを `reports/working/` に保存している。
 
 ## 検証計画
 
@@ -119,7 +119,24 @@
 
 ## PR コメント
 
-- 未投稿。PR push 後に受け入れ条件確認とセルフレビューを記録する。
+- 受け入れ条件確認: https://github.com/tsuji-tomonori/saphnexa/pull/1#issuecomment-4554048917
+- セルフレビュー: https://github.com/tsuji-tomonori/saphnexa/pull/1#issuecomment-4554050806
+
+## 実装 commit
+
+- `2c76c74` `✅ test: final docs artifact prefix検査を追加`
+
+## 検証結果
+
+- `npm run acceptance:final-candidate:fixture:check`: pass
+- `npm run evidence:check`: pass
+- `npm run acceptance:external-actions:check`: pass
+- `npm run acceptance:final-candidate:check`: pass。final files 未配置のため `not ready` 表示は継続するが、errors なしで exit 0。
+- `npm run artifacts:check`: pass
+- `npm run acceptance:package:check`: pass
+- `npm run verify`: pass
+- `git diff --check`: pass
+- `pre-commit run --files docs/acceptance/evidence/evidence_manifest.example.json docs/acceptance/evidence/evidence_manifest.schema.json tools/check-evidence-manifest.js tools/check-external-acceptance-actions.js tools/check-final-evidence-candidate-fixtures.js tools/external-acceptance-actions.js tools/final-evidence-candidate.js tasks/do/20260527-2015-final-docs-artifact-prefix-gate.md reports/working/20260527-2018-final-docs-artifact-prefix-gate.md`: pass
 
 ## PR レビュー観点
 
