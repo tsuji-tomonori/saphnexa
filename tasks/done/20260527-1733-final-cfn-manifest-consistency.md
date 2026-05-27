@@ -1,6 +1,6 @@
 # final CloudFormation manifest consistency gate
 
-状態: do
+状態: done
 
 ## 背景
 
@@ -101,7 +101,13 @@ final evidence candidate の検査で、manifest と CloudFormation inventory �
 - `npm run docs:check`: pass
 - `npm run verify`: pass
 - `git diff --check`: pass
-- `pre-commit run --files docs/ops/runbooks/final-acceptance.md tools/final-evidence-candidate.js tools/check-final-evidence-candidate-fixtures.js tasks/do/20260527-1733-final-cfn-manifest-consistency.md`: pass
+- `pre-commit run --files docs/ops/runbooks/final-acceptance.md tools/final-evidence-candidate.js tools/check-final-evidence-candidate-fixtures.js tasks/done/20260527-1733-final-cfn-manifest-consistency.md`: pass
+
+## PR コメント
+
+- 受け入れ条件確認: https://github.com/tsuji-tomonori/saphnexa/pull/1#issuecomment-4552878900
+- セルフレビュー: https://github.com/tsuji-tomonori/saphnexa/pull/1#issuecomment-4552881895
+- GitHub Apps comment は既に 403 `Resource not accessible by integration` を確認済みのため、`gh pr comment` で代替した。
 
 ## PR レビュー観点
 
