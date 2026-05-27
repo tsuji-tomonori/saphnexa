@@ -15,12 +15,18 @@ for (const file of files) {
   if (file.includes("ChatApp")) {
     assert(body.includes("<nav") && body.includes("aria-label=\"チャット一覧\""), "ChatApp must expose labelled chat navigation");
     assert(body.includes("aria-label=\"質問\""), "ChatApp textarea must have an accessible label");
+    assert(body.includes("<p role=\"status\">チャットはありません</p>"), "ChatApp must render an honest empty chat state");
+    assert(body.includes("<p role=\"status\">イベントはありません</p>"), "ChatApp must render an honest empty event state");
   }
   if (file.includes("AdminApp")) {
     assert(body.includes("aria-label=\"管理操作\""), "AdminApp must label admin actions");
     assert(body.includes("aria-label=\"成果物\""), "AdminApp must label artifact panel");
+    assert(body.includes("<p role=\"status\">成果物はありません</p>"), "AdminApp must render an honest empty artifact state");
   }
 }
+
+const componentsSource = readText("packages/ui/src/components.tsx");
+assert(componentsSource.includes("aria-label={`状態: ${props.status}`}"), "StatusBadge must expose an accessible status label");
 
 const usageRate = componentCandidates === 0 ? 0 : commonUiUsers / componentCandidates;
 assert(usageRate >= 0.9, `common UI package usage below 90%: ${(usageRate * 100).toFixed(1)}%`);

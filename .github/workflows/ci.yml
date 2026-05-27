@@ -121,7 +121,10 @@ jobs:
           node-version: "22"
       - run: npm run coverage:check
       - run: npm run ui:check
+      - run: npm run web:flow:check
+      - run: npm run web:a11y:check
       - run: npm run web:perf:local
+      - run: npm run web:bundle:check
       - run: npm run perf:api:local
       - run: npm run failure:check
       - run: npm run rag:quality:check

@@ -26,9 +26,13 @@ export function AdminApp() {
         <StatusBadge status={jobStatus} />
       </Panel>
       <Panel aria-label="成果物">
-        {artifacts.map((artifact) => (
-          <a key={artifact.artifact_id} href={artifact.viewer_path}>{artifact.title}<StatusBadge status={artifact.status} /></a>
-        ))}
+        {artifacts.length === 0 ? (
+          <p role="status">成果物はありません</p>
+        ) : (
+          artifacts.map((artifact) => (
+            <a key={artifact.artifact_id} href={artifact.viewer_path}>{artifact.title}<StatusBadge status={artifact.status} /></a>
+          ))
+        )}
       </Panel>
     </main>
   );

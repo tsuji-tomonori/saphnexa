@@ -46,10 +46,22 @@ tasks:
     desc: Verify local UI architecture and static accessibility gates
     cmds:
       - npm run ui:check
+  web:flow:check:
+    desc: Verify local web chat and admin flow contracts
+    cmds:
+      - npm run web:flow:check
+  web:a11y:check:
+    desc: Verify local static web accessibility report
+    cmds:
+      - npm run web:a11y:check
   web:perf:local:
     desc: Verify local web bundle and route transition smoke gates
     cmds:
       - npm run web:perf:local
+  web:bundle:check:
+    desc: Verify local web bundle report
+    cmds:
+      - npm run web:bundle:check
   perf:api:local:
     desc: Verify local non-AI API latency and error-rate gates
     cmds:

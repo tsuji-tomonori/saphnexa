@@ -25,16 +25,24 @@ export function ChatApp() {
   return (
     <main className="sx-chat-shell">
       <nav aria-label="チャット一覧">
-        {chats.map((chat) => (
-          <button key={chat.chat_id} type="button">{chat.title}<StatusBadge status={chat.status} /></button>
-        ))}
+        {chats.length === 0 ? (
+          <p role="status">チャットはありません</p>
+        ) : (
+          chats.map((chat) => (
+            <button key={chat.chat_id} type="button">{chat.title}<StatusBadge status={chat.status} /></button>
+          ))
+        )}
       </nav>
       <Panel aria-label="質問入力">
         <textarea value={question} onChange={(event) => setQuestion(event.target.value)} aria-label="質問" />
         <Button onClick={() => chats[0] && submit(chats[0].chat_id)} disabled={!csrfToken || !question}>送信</Button>
       </Panel>
       <Panel aria-label="イベント">
-        {events.map((event) => <div key={event.event_seq}>{event.event_name}</div>)}
+        {events.length === 0 ? (
+          <p role="status">イベントはありません</p>
+        ) : (
+          events.map((event) => <div key={event.event_seq}>{event.event_name}</div>)
+        )}
       </Panel>
     </main>
   );

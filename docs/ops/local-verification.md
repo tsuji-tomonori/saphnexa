@@ -14,7 +14,10 @@ npm run admin-artifacts:build
 npm run artifacts:check
 npm run coverage:check
 npm run ui:check
+npm run web:flow:check
+npm run web:a11y:check
 npm run web:perf:local
+npm run web:bundle:check
 npm run perf:api:local
 npm run failure:check
 npm run rag:quality:check
@@ -43,6 +46,9 @@ git diff --check
 - admin artifact manifest の checksum、viewer path、source と、local API の admin 限定アクセス policy。
 - Node test coverage が line 80% / branch 70% の threshold を満たすこと。
 - UI source が共通 UI package を経由し、直書き style と基本 a11y 欠落を増やしていないこと。
+- chat/admin の local web flow、route role、admin artifact access policy が API/source gate として整合すること。
+- static a11y report が main/nav/section labels、form label、button type、link text、status label を violations 0 で検査すること。
+- local web bundle report が gzip size と route transition p95 を検査し、`dist/reports/web-bundle-local.json` を生成すること。
 - local non-AI API smoke が p95 800ms / error rate 1% 未満を満たすこと。
 - retrieval、generation、worker notify の failure injection で failed 状態、error event、retryable が残ること。
 - local RAG golden dataset で品質 metrics と参照展開が基準を満たすこと。
@@ -61,6 +67,7 @@ git diff --check
 - AWS dev/UAT での Cognito、DSQL、S3、CloudFront、AppSync Events、Bedrock KB、S3 Vectors、AgentCore の実接続。
 - CDK deploy、CloudFormation outputs、S3 inventory、CloudWatch logs、CloudFront/S3/Docusaurus/Allure 公開 URL。
 - axe/Playwright の実 DOM accessibility report、Lighthouse CI、本番 bundler の analyzer report、AWS load test。
+- 実ブラウザ操作による chat/admin E2E、CloudFront 経由のロール別導線確認。
 - Bedrock KB、S3 Vectors、AgentCore Runtime、Bedrock Evaluations を使った実 RAG 品質評価。
 - Aurora DSQL への Flyway 実適用、CloudWatch metrics/alarms、S3 lifecycle、DSQL retention settings の実リソース確認。
 - 実 S3 の offline artifact inventory、実 parser/KB/S3 Vectors ingestion、実バックアップからの restore drill。

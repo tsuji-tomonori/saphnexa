@@ -44,12 +44,12 @@
 | AC-046 | local_verified | `npm run security:scan` と `npm run scan:bundle-domains` で source の secret/domain token を検査。CloudWatch/S3 sampling は未実施。 |
 | AC-047 | scaffolded | `infra/aspects/security-baseline.js` に WAF baseline。 |
 | AC-048 | scaffolded | `infra/aspects/security-baseline.js` と `npm run security:scan` で baseline を検査。IAM policy 実体と cdk-nag は未実装。 |
-| AC-050 | implemented_unverified | `apps/web/src/routes.ts` と `npm run web:perf:local` で `/chat`、`/admin`、admin docs/report paths を検査。実ブラウザ/CloudFront ロール別 E2E は未実施。 |
+| AC-050 | local_verified | `npm run web:flow:check` で `/chat`、`/admin`、admin docs/report paths の role route と local access flow を検査。実ブラウザ/CloudFront ロール別 E2E は未実施。 |
 | AC-051 | local_verified | `apps/web/src/*` が `packages/ui` を経由し、直書き `style` が 0 件であることを `npm run ui:check` で検査。 |
-| AC-052 | scaffolded | chat UI source あり、E2E 未実施。 |
-| AC-053 | scaffolded | admin UI source あり、E2E 未実施。 |
-| AC-054 | implemented_unverified | `npm run ui:check` で主要 landmark/label/button type の静的 a11y gate を検査。axe/Playwright report は未実施。 |
-| AC-055 | implemented_unverified | `npm run web:perf:local` で web source gzip <= 500KB と route transition fixture p95 <= 500ms を検査。Lighthouse CI/bundle analyzer は未実施。 |
+| AC-052 | local_verified | `npm run web:flow:check` で chat UI の質問入力、送信、event 表示、empty/disabled state と local API flow を検査。実ブラウザ E2E は未実施。 |
+| AC-053 | local_verified | `npm run web:flow:check` で admin UI の評価実行、成果物一覧、admin 限定 artifact access と local API flow を検査。実ブラウザ E2E は未実施。 |
+| AC-054 | local_verified | `npm run ui:check` と `npm run web:a11y:check` で main/nav/section labels、form label、button type、link text、status label の静的 a11y report violations 0 を検査。axe/Playwright report は未実施。 |
+| AC-055 | local_verified | `npm run web:perf:local` と `npm run web:bundle:check` で web source gzip <= 500KB、route transition fixture p95 <= 500ms、bundle report を検査。Lighthouse CI/production bundle analyzer は未実施。 |
 | AC-060 | local_verified | local integration checks event ordering and names subset. |
 | AC-061 | local_verified | `assertNotificationIsLightweight` rejects answer/chunk fields. |
 | AC-062 | local_verified | event notification points to REST detail and auth is rechecked. |
@@ -95,7 +95,7 @@
 | AC-120 | local_verified | `.github/workflows/ci.yml` に 14 jobs を追加し `npm run ci:check` で workflow shape を検査。PR #1 の GitHub Actions `Saphnexa CI` で lint/typecheck/unit/integration/e2e/cdk synth/cdk diff/security scan/license scan/admin artifacts/quality gates/db observability/admin offline restore/contract generation diff が pass。 |
 | AC-121 | local_verified | `npm run coverage:check` で Node test coverage line >=80% / branch >=70% と test pass 100% を検査。Allure unit artifact への publish は未実施。 |
 | AC-122 | implemented_unverified | local integration job/test は追加済み。AWS/DSQL/S3/AppSync/Tools 実結合は未実施。 |
-| AC-123 | implemented_unverified | `tests/e2e-local.test.js` と e2e CI job を追加。ブラウザ/CloudFront E2E は未実施。 |
+| AC-123 | local_verified | `tests/e2e-local.test.js` と `npm run web:flow:check` を CI 対象化し、local API/source gate の E2E smoke を検査。ブラウザ/CloudFront E2E は未実施。 |
 | AC-124 | local_verified | 基本設計 5.6.3 の 15 pairwise ケースを `packages/testing/src/pairwise.js` に catalog 化し、`npm run pairwise:check` で実行率/要因 coverage を検査。 |
 | AC-125 | local_verified | `npm run test:contract`, `npm run acceptance:check`, `npm run evidence:check` を contract-generation-diff job に追加。生成物 diff の本格化は後続。 |
 | AC-126 | implemented_unverified | CI workflow に `admin-artifacts` job を追加し、`npm run admin-artifacts:build` / `npm run artifacts:check` を検査対象化。Allure publish URL は未実施。 |
