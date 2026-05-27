@@ -25,6 +25,8 @@ export function createLocalStore() {
     document_versions: [],
     document_acl_entries: [],
     ingestion_jobs: [],
+    admin_events: [],
+    ws_tickets: [],
     user_import_jobs: [],
     user_import_rows: [],
     evaluation_datasets: [{
@@ -60,6 +62,9 @@ export function createLocalStore() {
     createDocument,
     createDocumentVersion,
     activateDocumentVersion,
+    retryIngestionJob,
+    issueWsTicket,
+    consumeWsTicket,
     startEvaluationRun,
     listAdminArtifacts,
     listLlmModels: () => llmModels.filter((item) => item.status === statuses.ACTIVE)
@@ -297,21 +302,49 @@ export function createLocalStore() {
 
   function createDocument(actor, input) {
     requireAdmin(actor);
-    const document_id = nextId("doc");
-    const version_id = nextId("ver");
+    const metadataError = validateDocumentMetadata(input.metadata || {});
+    const document_id = input.document_id || nextId("doc");
+    const version_id = input.version_id || nextId("ver");
+    const existingVersion = state.document_versions.find((item) => item.document_id === document_id && item.version_id === version_id);
+    if (existingVersion) {
+      return {
+        document_id,
+        version_id,
+        job_id: state.ingestion_jobs.find((item) => item.document_id === document_id && item.version_id === version_id)?.job_id,
+        raw_s3_uri: existingVersion.raw_s3_uri,
+        idempotent: true
+      };
+    }
     const job_id = nextId("ing");
     const raw_s3_uri = `s3://saphnexa-local/raw/${document_id}/${version_id}/${input.file_name || "document.pdf"}`;
-    state.documents.push({ tenant_id: actor.tenant_id, document_id, title: input.title, status: statuses.ACTIVE, created_by_user_id: actor.user_id, created_at: now(), updated_at: now() });
-    state.document_versions.push({ tenant_id: actor.tenant_id, document_id, version_id, version_label: input.version_label || "v1", status: "uploaded", raw_s3_uri, metadata_json: input.metadata || {}, created_at: now() });
-    state.document_acl_entries.push({ tenant_id: actor.tenant_id, document_id, version_id, acl_scope_id: input.acl_scope_id || `user:${actor.user_id}`, effect: "allow" });
-    state.ingestion_jobs.push({ tenant_id: actor.tenant_id, job_id, document_id, version_id, status: statuses.QUEUED, raw_s3_uri, parsed_s3_prefix: `s3://saphnexa-local/parsed/${document_id}/${version_id}/` });
+    if (!state.documents.find((item) => item.document_id === document_id)) {
+      state.documents.push({ tenant_id: actor.tenant_id, document_id, title: input.title, status: statuses.ACTIVE, created_by_user_id: actor.user_id, created_at: now(), updated_at: now() });
+    }
+    state.document_versions.push({ tenant_id: actor.tenant_id, document_id, version_id, version_label: input.version_label || "v1", status: metadataError ? statuses.FAILED : "uploaded", raw_s3_uri, metadata_json: input.metadata || {}, created_at: now() });
+    if (!metadataError) {
+      state.document_acl_entries.push({ tenant_id: actor.tenant_id, document_id, version_id, acl_scope_id: input.acl_scope_id || `user:${actor.user_id}`, effect: "allow" });
+    }
+    state.ingestion_jobs.push({
+      tenant_id: actor.tenant_id,
+      job_id,
+      document_id,
+      version_id,
+      status: metadataError ? statuses.FAILED : statuses.QUEUED,
+      raw_s3_uri,
+      parsed_s3_prefix: `s3://saphnexa-local/parsed/${document_id}/${version_id}/`,
+      error_code: metadataError?.error_code || null,
+      retryable: Boolean(metadataError)
+    });
+    if (metadataError) {
+      state.admin_events.push({ tenant_id: actor.tenant_id, event_name: "admin.ingestion.updated", job_id, status: statuses.FAILED, error_code: metadataError.error_code, created_at: now() });
+    }
     return { document_id, version_id, job_id, raw_s3_uri };
   }
 
   function createDocumentVersion(actor, document_id, input) {
     requireAdmin(actor);
     if (!state.documents.find((item) => item.document_id === document_id)) throw forbidden("DOCUMENT_NOT_FOUND", "文書が存在しない。");
-    return createDocument(actor, { ...input, title: state.documents.find((item) => item.document_id === document_id).title });
+    return createDocument(actor, { ...input, document_id, title: state.documents.find((item) => item.document_id === document_id).title });
   }
 
   function activateDocumentVersion(actor, document_id, version_id) {
@@ -320,6 +353,48 @@ export function createLocalStore() {
       version.status = version.version_id === version_id ? statuses.ACTIVE : statuses.ARCHIVED;
     }
     return state.document_versions.find((item) => item.document_id === document_id && item.version_id === version_id);
+  }
+
+  function retryIngestionJob(actor, job_id) {
+    requireAdmin(actor);
+    const job = state.ingestion_jobs.find((item) => item.job_id === job_id);
+    if (!job) throw forbidden("INGESTION_JOB_NOT_FOUND", "取り込みジョブが存在しない。", 404);
+    if (!job.retryable && job.status !== statuses.FAILED) throw forbidden("INGESTION_RETRY_NOT_ALLOWED", "再実行できる状態ではない。");
+    job.status = statuses.QUEUED;
+    job.retryable = false;
+    job.error_code = null;
+    state.admin_events.push({ tenant_id: actor.tenant_id, event_name: "admin.ingestion.updated", job_id, status: statuses.QUEUED, created_at: now() });
+    return job;
+  }
+
+  function issueWsTicket(actor, input = {}) {
+    requireActiveUser(actor);
+    const ticket_id = nextId("wst");
+    const now_ms = input.now_ms || 0;
+    const ticket = {
+      tenant_id: actor.tenant_id,
+      ticket_id,
+      user_id: actor.user_id,
+      channel_scope_json: { channels: [`/users/${actor.user_id}/chat/*`] },
+      status: statuses.ACTIVE,
+      issued_at_ms: now_ms,
+      expires_at_ms: now_ms + 60000,
+      used_at_ms: null
+    };
+    state.ws_tickets.push(ticket);
+    return { ticket: ticket_id, expires_in_seconds: 60, channels: ticket.channel_scope_json.channels };
+  }
+
+  function consumeWsTicket(actor, ticket_id, now_ms = 0) {
+    requireActiveUser(actor);
+    const ticket = state.ws_tickets.find((item) => item.ticket_id === ticket_id);
+    if (!ticket) throw forbidden("WS_TICKET_NOT_FOUND", "WebSocket ticket が存在しない。", 404);
+    if (ticket.user_id !== actor.user_id) throw forbidden("WS_TICKET_USER_MISMATCH", "別ユーザーの ticket は利用できない。");
+    if (ticket.status !== statuses.ACTIVE || ticket.used_at_ms !== null) throw forbidden("WS_TICKET_REUSED", "WebSocket ticket は再利用できない。");
+    if (now_ms > ticket.expires_at_ms) throw forbidden("WS_TICKET_EXPIRED", "WebSocket ticket の期限が切れている。");
+    ticket.used_at_ms = now_ms;
+    ticket.status = "used";
+    return { ticket_id, channels: ticket.channel_scope_json.channels, status: ticket.status };
   }
 
   function startEvaluationRun(actor, input = {}) {
@@ -391,6 +466,13 @@ export function createLocalStore() {
     const current = (state.counters.get(prefix) || 0) + 1;
     state.counters.set(prefix, current);
     return `${prefix}-${String(current).padStart(4, "0")}`;
+  }
+
+  function validateDocumentMetadata(metadata) {
+    const required = ["document_id", "version", "acl_scope", "status"];
+    const missing = required.filter((key) => !metadata[key]);
+    if (missing.length > 0) return { error_code: "DOCUMENT_METADATA_INVALID", missing };
+    return null;
   }
 }
 

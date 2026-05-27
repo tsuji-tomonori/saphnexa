@@ -38,3 +38,19 @@ tasks:
     desc: Run local secret and security baseline checks
     cmds:
       - npm run security:scan
+  pairwise:check:
+    desc: Verify pairwise acceptance test catalog
+    cmds:
+      - npm run pairwise:check
+  perf:local:
+    desc: Run local performance smoke checks
+    cmds:
+      - npm run perf:local
+  cost:check:
+    desc: Verify local cost estimate guardrail
+    cmds:
+      - npm run cost:check
+  storage:check:
+    desc: Verify local storage prefix and metadata invariants
+    cmds:
+      - npm run storage:check

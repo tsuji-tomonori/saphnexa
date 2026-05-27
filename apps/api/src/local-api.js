@@ -1,5 +1,6 @@
 import { createErrorResponse } from "../../../packages/domain/src/index.js";
 import { createLocalStore } from "../../../packages/domain/src/store.js";
+import { publicApiRoutes } from "../../../packages/api-contract/src/routes.js";
 import { createFixtureRagAdapter, createLocalTools } from "../../../packages/rag-core/src/fixture-rag.js";
 
 export function createLocalApi() {
@@ -12,6 +13,7 @@ export function createLocalApi() {
     request(actorId, operationId, input = {}) {
       const actor = store.getCurrentUser(actorId);
       try {
+        enforceCsrf(actor, operationId, input);
         switch (operationId) {
           case "getMe":
             if (!actor) {
@@ -65,8 +67,7 @@ export function createLocalApi() {
             requireAdmin(actor);
             return ok({ job: store.state.ingestion_jobs.find((item) => item.job_id === input.job_id) });
           case "retryIngestionJob":
-            requireAdmin(actor);
-            return accepted({ job_id: input.job_id, status: "queued" });
+            return accepted({ job: store.retryIngestionJob(actor, input.job_id) });
           case "listEvaluationDatasets":
             requireAdmin(actor);
             return ok({ datasets: store.state.evaluation_datasets });
@@ -81,7 +82,9 @@ export function createLocalApi() {
             requireAdmin(actor);
             return created({ cookie_issued: true, expires_in_seconds: 300 });
           case "issueWsTicket":
-            return created({ ticket: `ticket-${actor.user_id}`, expires_in_seconds: 60, channels: [`/users/${actor.user_id}/chat/*`] });
+            return created(store.issueWsTicket(actor, input));
+          case "consumeWsTicket":
+            return ok({ ticket: store.consumeWsTicket(actor, input.ticket_id, input.now_ms) });
           default:
             return { status: 501, body: createErrorResponse("NOT_IMPLEMENTED", `${operationId} is not implemented`, { operationId }) };
         }
@@ -93,6 +96,24 @@ export function createLocalApi() {
       }
     }
   };
+}
+
+function enforceCsrf(actor, operationId, input) {
+  const route = publicApiRoutes.find((item) => item.operationId === operationId);
+  if (!route?.csrfRequired) return;
+  if (!actor) {
+    const error = new Error("認証が必要。");
+    error.status = 401;
+    error.error_code = "UNAUTHENTICATED";
+    throw error;
+  }
+  const expected = `csrf-${actor.user_id}`;
+  if (input.csrf_token !== expected) {
+    const error = new Error("CSRF token が不正。");
+    error.status = 403;
+    error.error_code = "CSRF_TOKEN_INVALID";
+    throw error;
+  }
 }
 
 function requireAdmin(actor) {

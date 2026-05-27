@@ -30,6 +30,17 @@ const localEvidence = [
 export function createFixtureRagAdapter(tools) {
   return {
     answer({ question, actor, run }) {
+      if (isPromptInjectionAttempt(question)) {
+        return {
+          refusal: true,
+          answer_text: "安全上の理由により、システム指示またはツール制約の変更を求める内容には対応できません。",
+          citations: [],
+          retrieved_count: 0,
+          allowed_count: 0,
+          denied_count: 0,
+          policy_violation: false
+        };
+      }
       const retrieved = tools.kbRetrieve({
         run_id: run.run_id,
         query: question,
@@ -74,6 +85,23 @@ export function createFixtureRagAdapter(tools) {
       };
     }
   };
+}
+
+export function isPromptInjectionAttempt(question) {
+  const normalized = question.toLowerCase();
+  return [
+    "ignore previous",
+    "ignore all previous",
+    "system prompt",
+    "developer message",
+    "tool policy",
+    "bypass acl",
+    "disable citation",
+    "指示を無視",
+    "システムプロンプト",
+    "aclを無視",
+    "引用を外"
+  ].some((token) => normalized.includes(token));
 }
 
 export function createLocalTools(store) {
