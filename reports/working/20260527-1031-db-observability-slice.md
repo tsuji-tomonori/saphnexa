@@ -55,9 +55,9 @@
 - `npm test`: pass
 - `npm run verify`: pass
 - `git diff --check`: pass
+- PR #1 GitHub Actions `Saphnexa CI`: pass（db observability job を含む 13 jobs）
 
 ## 未対応・制約・リスク
 
 - Aurora DSQL への Flyway 実適用、schema_migrations 実履歴、DSQL integrity query report は未実施。
 - CloudWatch metrics/dashboard/alarms、S3 lifecycle、DSQL retention settings の実リソース確認は未実施。
-- 追加した `db-observability` GitHub Actions job は push 後の CI で確認が必要。
