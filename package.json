@@ -18,6 +18,11 @@
     "cdk:diff:local": "node tools/check-cdk-diff-baseline.js",
     "security:scan": "node tools/check-security-scan.js",
     "license:scan": "node tools/check-license-scan.js",
+    "coverage:check": "node tools/check-coverage.js",
+    "ui:check": "node tools/check-ui-quality.js",
+    "web:perf:local": "node tools/check-web-performance.js",
+    "perf:api:local": "node tools/check-api-performance.js",
+    "failure:check": "node tools/check-failure-injection.js",
     "docs:check": "node tools/check-docs.js",
     "evidence:check": "node tools/check-evidence-manifest.js",
     "acceptance:check": "node tools/check-acceptance-trace.js",
@@ -31,7 +36,7 @@
     "admin-artifacts:build": "npm run docs-site:build && npm run allure:generate:local",
     "artifacts:check": "node tools/check-admin-artifacts.js",
     "scan:bundle-domains": "node tools/scan-bundle-domains.js",
-    "verify": "npm run lint && npm run typecheck && npm run test:contract && npm run test:integration:local && npm run test:e2e:local && npm run cdk:synth:local && npm run cdk:diff:local && npm run security:scan && npm run license:scan && npm run docs:check && npm run evidence:check && npm run acceptance:check && npm run pairwise:check && npm run perf:local && npm run cost:check && npm run storage:check && npm run admin-artifacts:build && npm run artifacts:check && npm run scan:bundle-domains"
+    "verify": "npm run lint && npm run typecheck && npm run test:contract && npm run test:integration:local && npm run test:e2e:local && npm run cdk:synth:local && npm run cdk:diff:local && npm run security:scan && npm run license:scan && npm run coverage:check && npm run ui:check && npm run web:perf:local && npm run perf:api:local && npm run failure:check && npm run docs:check && npm run evidence:check && npm run acceptance:check && npm run pairwise:check && npm run perf:local && npm run cost:check && npm run storage:check && npm run admin-artifacts:build && npm run artifacts:check && npm run scan:bundle-domains"
   },
   "engines": {
     "node": ">=20"

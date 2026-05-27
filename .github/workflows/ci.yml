@@ -111,6 +111,20 @@ jobs:
       - run: npm run admin-artifacts:build
       - run: npm run artifacts:check
 
+  quality-gates:
+    name: quality gates
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+      - run: npm run coverage:check
+      - run: npm run ui:check
+      - run: npm run web:perf:local
+      - run: npm run perf:api:local
+      - run: npm run failure:check
+
   contract-generation-diff:
     name: contract generation diff
     runs-on: ubuntu-latest

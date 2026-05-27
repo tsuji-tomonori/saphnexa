@@ -44,12 +44,12 @@
 | AC-046 | local_verified | `npm run security:scan` と `npm run scan:bundle-domains` で source の secret/domain token を検査。CloudWatch/S3 sampling は未実施。 |
 | AC-047 | scaffolded | `infra/aspects/security-baseline.js` に WAF baseline。 |
 | AC-048 | scaffolded | `infra/aspects/security-baseline.js` と `npm run security:scan` で baseline を検査。IAM policy 実体と cdk-nag は未実装。 |
-| AC-050 | scaffolded | web route source あり、E2E 未実施。 |
-| AC-051 | scaffolded | `packages/ui` と `theme.css.ts` あり、architecture lint 未実装。 |
+| AC-050 | implemented_unverified | `apps/web/src/routes.ts` と `npm run web:perf:local` で `/chat`、`/admin`、admin docs/report paths を検査。実ブラウザ/CloudFront ロール別 E2E は未実施。 |
+| AC-051 | local_verified | `apps/web/src/*` が `packages/ui` を経由し、直書き `style` が 0 件であることを `npm run ui:check` で検査。 |
 | AC-052 | scaffolded | chat UI source あり、E2E 未実施。 |
 | AC-053 | scaffolded | admin UI source あり、E2E 未実施。 |
-| AC-054 | not_started | axe/Playwright 未導入。 |
-| AC-055 | not_started | Lighthouse/bundle analyzer 未導入。 |
+| AC-054 | implemented_unverified | `npm run ui:check` で主要 landmark/label/button type の静的 a11y gate を検査。axe/Playwright report は未実施。 |
+| AC-055 | implemented_unverified | `npm run web:perf:local` で web source gzip <= 500KB と route transition fixture p95 <= 500ms を検査。Lighthouse CI/bundle analyzer は未実施。 |
 | AC-060 | local_verified | local integration checks event ordering and names subset. |
 | AC-061 | local_verified | `assertNotificationIsLightweight` rejects answer/chunk fields. |
 | AC-062 | local_verified | event notification points to REST detail and auth is rechecked. |
@@ -92,19 +92,19 @@
 | AC-112 | scaffolded | observability construct intent only。 |
 | AC-113 | scaffolded | observability construct intent only。 |
 | AC-114 | implemented_unverified | tool invocation audit source あり、admin audit 未実装。 |
-| AC-120 | local_verified | `.github/workflows/ci.yml` に 11 jobs を追加し `npm run ci:check` で検査。PR #1 の GitHub Actions `Saphnexa CI` で lint/typecheck/unit/integration/e2e/cdk synth/cdk diff/security scan/license scan/admin artifacts/contract generation diff が pass。 |
-| AC-121 | requires_aws | coverage threshold 未導入。unit job は追加済み。 |
+| AC-120 | local_verified | `.github/workflows/ci.yml` に 12 jobs を追加し `npm run ci:check` で検査。PR #1 の GitHub Actions `Saphnexa CI` は品質ゲート追加前の 11 jobs が pass。quality gates 追加後の CI は push 後に確認する。 |
+| AC-121 | local_verified | `npm run coverage:check` で Node test coverage line >=80% / branch >=70% と test pass 100% を検査。Allure unit artifact への publish は未実施。 |
 | AC-122 | implemented_unverified | local integration job/test は追加済み。AWS/DSQL/S3/AppSync/Tools 実結合は未実施。 |
 | AC-123 | implemented_unverified | `tests/e2e-local.test.js` と e2e CI job を追加。ブラウザ/CloudFront E2E は未実施。 |
 | AC-124 | local_verified | 基本設計 5.6.3 の 15 pairwise ケースを `packages/testing/src/pairwise.js` に catalog 化し、`npm run pairwise:check` で実行率/要因 coverage を検査。 |
 | AC-125 | local_verified | `npm run test:contract`, `npm run acceptance:check`, `npm run evidence:check` を contract-generation-diff job に追加。生成物 diff の本格化は後続。 |
 | AC-126 | implemented_unverified | CI workflow に `admin-artifacts` job を追加し、`npm run admin-artifacts:build` / `npm run artifacts:check` を検査対象化。Allure publish URL は未実施。 |
-| AC-130 | not_started | load test 未実装。 |
+| AC-130 | local_verified | `npm run perf:api:local` で認証済み local non-AI API p95 <= 800ms、error rate < 1% を検査。AWS load test/CloudWatch metrics は未実施。 |
 | AC-131 | local_verified | `npm run perf:local` で local 質問受付 p95 <= 2s を検査。AWS load test は未実施。 |
 | AC-132 | implemented_unverified | local started/progress event; timing p95 未実施。 |
 | AC-133 | requires_aws | RAG load test 未実施。 |
 | AC-134 | local_verified | lightweight notification size guard. |
-| AC-135 | not_started | failure injection 未実装。 |
+| AC-135 | local_verified | `npm run failure:check` で retrieval / generation / worker notify の 3 failure injection が failed 状態、`chat.run.failed` event、retryable=true を残すことを検査。実 AgentCore/Lambda failure injection は未実施。 |
 | AC-140 | local_verified | `packages/model-catalog/src/cost-estimate.js` と `npm run cost:check` で 50 DAU/10質問日の local estimate <= 550 USD を検査。AWS Cost Explorer は未実施。 |
 | AC-141 | local_verified | `npm run storage:check` で code/infra/package に OpenSearch dependency がないことを検査。AWS inventory は未実施。 |
 | AC-142 | scaffolded | retention baseline intent only。 |

@@ -38,6 +38,26 @@ tasks:
     desc: Run local secret and security baseline checks
     cmds:
       - npm run security:scan
+  coverage:check:
+    desc: Verify Node test coverage thresholds
+    cmds:
+      - npm run coverage:check
+  ui:check:
+    desc: Verify local UI architecture and static accessibility gates
+    cmds:
+      - npm run ui:check
+  web:perf:local:
+    desc: Verify local web bundle and route transition smoke gates
+    cmds:
+      - npm run web:perf:local
+  perf:api:local:
+    desc: Verify local non-AI API latency and error-rate gates
+    cmds:
+      - npm run perf:api:local
+  failure:check:
+    desc: Verify local async failure injection recovery cases
+    cmds:
+      - npm run failure:check
   pairwise:check:
     desc: Verify pairwise acceptance test catalog
     cmds:

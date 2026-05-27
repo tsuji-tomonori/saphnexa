@@ -11,6 +11,11 @@ const suites = [
   suite("integration", "npm run test:integration:local"),
   suite("e2e", "npm run test:e2e:local"),
   suite("contract", "npm run test:contract"),
+  suite("coverage", "npm run coverage:check"),
+  suite("ui-quality", "npm run ui:check"),
+  suite("web-performance", "npm run web:perf:local"),
+  suite("api-performance", "npm run perf:api:local"),
+  suite("failure-injection", "npm run failure:check"),
   suite("acceptance", "npm run acceptance:check"),
   suite("evidence", "npm run evidence:check"),
   suite("admin-artifacts", "npm run artifacts:check")

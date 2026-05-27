@@ -18,7 +18,15 @@ for (const file of requiredRunbooks) {
 }
 
 const localVerification = readText("docs/ops/local-verification.md");
-for (const command of ["npm run admin-artifacts:build", "npm run artifacts:check"]) {
+for (const command of [
+  "npm run admin-artifacts:build",
+  "npm run artifacts:check",
+  "npm run coverage:check",
+  "npm run ui:check",
+  "npm run web:perf:local",
+  "npm run perf:api:local",
+  "npm run failure:check"
+]) {
   assert(localVerification.includes(command), `local verification docs missing ${command}`);
 }
 

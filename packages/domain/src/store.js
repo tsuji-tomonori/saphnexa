@@ -205,10 +205,12 @@ export function createLocalStore() {
       retrieval_policy_json: input.retrieval_policy || { top_k: 10, allowed_acl_scope_ids: [`user:${actor.user_id}`] },
       model_id: input.model_id || "logical-chat-default",
       prompt_version: "rag-chat-v1",
+      failure_injection: input.failure_injection || null,
       status: statuses.QUEUED,
       started_at: null,
       completed_at: null,
-      error_code: null
+      error_code: null,
+      retryable: false
     };
     state.chat_messages.push(userMessage, assistantMessage);
     state.chat_runs.push(run);
@@ -224,45 +226,66 @@ export function createLocalStore() {
     run.status = statuses.RUNNING;
     run.started_at = now();
     message.status = statuses.RUNNING;
-    appendEvent(actor.tenant_id, run.chat_id, run.message_id, "chat.retrieval.started", "progress", { run_id: run.run_id });
-    const result = ragAdapter.answer({ question, actor, run, store: state });
-    appendEvent(actor.tenant_id, run.chat_id, run.message_id, "chat.retrieval.completed", "progress", {
-      run_id: run.run_id,
-      retrieved_count: result.retrieved_count,
-      allowed_count: result.allowed_count,
-      denied_count: result.denied_count
-    });
-    appendEvent(actor.tenant_id, run.chat_id, run.message_id, "chat.generation.started", "progress", { run_id: run.run_id });
-    if (result.refusal) {
-      message.content_text = result.answer_text;
-      message.status = statuses.SUCCEEDED;
-      run.status = statuses.SUCCEEDED;
-      appendEvent(actor.tenant_id, run.chat_id, run.message_id, "chat.message.final_ready", "final", {
+    try {
+      appendEvent(actor.tenant_id, run.chat_id, run.message_id, "chat.retrieval.started", "progress", { run_id: run.run_id });
+      if (run.failure_injection === "retrieval") throw asyncFailure("RAG_RETRIEVAL_FAILED", "retrieval failure injection");
+      const result = ragAdapter.answer({ question, actor, run, store: state });
+      appendEvent(actor.tenant_id, run.chat_id, run.message_id, "chat.retrieval.completed", "progress", {
         run_id: run.run_id,
-        answer_available: true,
-        citation_count: 0,
-        refusal: true
+        retrieved_count: result.retrieved_count,
+        allowed_count: result.allowed_count,
+        denied_count: result.denied_count
       });
-    } else {
-      for (const citation of result.citations) {
-        state.citation_records.push({ ...citation, tenant_id: actor.tenant_id, chat_id: run.chat_id, message_id: run.message_id });
+      appendEvent(actor.tenant_id, run.chat_id, run.message_id, "chat.generation.started", "progress", { run_id: run.run_id });
+      if (run.failure_injection === "generation") throw asyncFailure("RAG_GENERATION_FAILED", "generation failure injection");
+      if (result.refusal) {
+        message.content_text = result.answer_text;
+        message.status = statuses.SUCCEEDED;
+        run.status = statuses.SUCCEEDED;
+        if (run.failure_injection === "worker_notify") throw asyncFailure("WORKER_NOTIFY_FAILED", "worker notification failure injection");
+        appendEvent(actor.tenant_id, run.chat_id, run.message_id, "chat.message.final_ready", "final", {
+          run_id: run.run_id,
+          answer_available: true,
+          citation_count: 0,
+          refusal: true
+        });
+      } else {
+        for (const citation of result.citations) {
+          state.citation_records.push({ ...citation, tenant_id: actor.tenant_id, chat_id: run.chat_id, message_id: run.message_id });
+        }
+        message.content_text = result.answer_text;
+        message.status = statuses.SUCCEEDED;
+        run.status = statuses.SUCCEEDED;
+        appendEvent(actor.tenant_id, run.chat_id, run.message_id, "chat.message.partial_ready", "partial", {
+          run_id: run.run_id,
+          delta_available: true
+        });
+        if (run.failure_injection === "worker_notify") throw asyncFailure("WORKER_NOTIFY_FAILED", "worker notification failure injection");
+        appendEvent(actor.tenant_id, run.chat_id, run.message_id, "chat.message.final_ready", "final", {
+          run_id: run.run_id,
+          answer_available: true,
+          citation_count: result.citations.length,
+          refusal: false
+        });
       }
-      message.content_text = result.answer_text;
-      message.status = statuses.SUCCEEDED;
-      run.status = statuses.SUCCEEDED;
-      appendEvent(actor.tenant_id, run.chat_id, run.message_id, "chat.message.partial_ready", "partial", {
-        run_id: run.run_id,
-        delta_available: true
-      });
-      appendEvent(actor.tenant_id, run.chat_id, run.message_id, "chat.message.final_ready", "final", {
-        run_id: run.run_id,
-        answer_available: true,
-        citation_count: result.citations.length,
-        refusal: false
-      });
+    } catch (error) {
+      markChatRunFailed(actor, message, run, error);
     }
     run.completed_at = now();
     message.completed_at = now();
+  }
+
+  function markChatRunFailed(actor, message, run, error) {
+    const error_code = error.error_code || "CHAT_RUN_FAILED";
+    message.status = statuses.FAILED;
+    run.status = statuses.FAILED;
+    run.error_code = error_code;
+    run.retryable = true;
+    appendEvent(actor.tenant_id, run.chat_id, run.message_id, "chat.run.failed", "error", {
+      run_id: run.run_id,
+      error_code,
+      retryable: true
+    });
   }
 
   function listEvents(actor, chat_id, message_id, after_seq = 0) {
@@ -509,6 +532,12 @@ function now() {
 function forbidden(error_code, message, status = 403) {
   const error = new Error(message);
   error.status = status;
+  error.error_code = error_code;
+  return error;
+}
+
+function asyncFailure(error_code, message) {
+  const error = new Error(message);
   error.error_code = error_code;
   return error;
 }
