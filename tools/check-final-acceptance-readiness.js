@@ -21,7 +21,10 @@ assert(readiness.trace_state_counts.requires_aws > 0, "final readiness must pres
 assert(readiness.release_gate.ready === false, "release gate must remain pending");
 assert(readiness.aws_gate.ready === false, "AWS gate must remain pending");
 assert(readiness.checklist_gate.ready === false, "checklist gate must remain pending");
-assert(readiness.defect_gate.ready === true, "defect gate should be ready when blocker/critical open count is 0");
+assert(readiness.defect_gate.ready === false, "defect gate must remain pending until final defect snapshot is refreshed");
+assert(readiness.defect_gate.blocker_critical_open_count === 0, "defect gate must preserve local blocker/critical open count");
+assert(readiness.defect_gate.snapshot_refresh_required === true, "defect gate must require final issue tracker refresh");
+assert(readiness.defect_gate.pending.includes("fresh GitHub issue tracker snapshot"), "defect gate must list fresh snapshot pending reason");
 assert(readiness.final_candidate_gate.ready === false, "final candidate gate must remain pending until final files exist");
 assert(readiness.final_candidate_gate.status === "not_ready", "final candidate status must be not_ready during local preflight");
 assert(readiness.final_candidate_gate.missing_files.length > 0, "final candidate missing files must be explicit");
@@ -76,7 +79,7 @@ for (const id of unresolvedTraceIds) {
 for (const id of blockingIds) {
   assert(unresolvedTraceIds.includes(id), `final readiness has stale blocker ${id}`);
 }
-for (const id of ["AC-001", "AC-002", "AC-004", "AC-081", "AC-150", "AC-151", "AC-152"]) {
+for (const id of ["AC-001", "AC-002", "AC-004", "AC-081", "AC-150", "AC-151", "AC-152", "AC-153"]) {
   assert(blockingIds.includes(id), `final readiness must keep ${id} pending`);
 }
 
@@ -85,6 +88,7 @@ assert(readiness.priority_gates.P1_all_pass === false, "P1 gate must not pass");
 assert(readiness.priority_gates.P2_all_pass === true, "P2 gate should pass when no P2 blockers remain");
 assert(readiness.priority_gates.unresolved_by_priority.P0.includes("AC-150"), "AC-150 must remain a P0 aggregate blocker");
 assert(readiness.priority_gates.unresolved_by_priority.P0.includes("AC-151"), "AC-151 must remain a P0 aggregate blocker");
+assert(readiness.priority_gates.unresolved_by_priority.P0.includes("AC-153"), "AC-153 must remain a P0 defect snapshot blocker");
 assert(readiness.priority_gates.unresolved_by_priority.P1.includes("AC-152"), "AC-152 must remain a P1 aggregate blocker");
 
 for (const gate of [readiness.release_gate, readiness.aws_gate, readiness.checklist_gate]) {

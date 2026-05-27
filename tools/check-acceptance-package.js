@@ -121,7 +121,7 @@ assert(artifactSummary.final_readiness_ready === false, "artifact summary final 
 assert(artifactSummary.external_action_plan_path === "dist/acceptance/external_action_plan.json", "artifact summary external action path mismatch");
 assert(JSON.stringify(artifactSummary.external_actions_pending) === JSON.stringify(manifest.final_readiness.external_actions_pending), "artifact summary external pending actions mismatch");
 
-for (const id of ["source", "cdk-synth", "cloudformation-outputs", "db-migration", "allure-report", "docusaurus-docs", "ops-runbooks", "release", "final-checklist"]) {
+for (const id of ["source", "cdk-synth", "cloudformation-outputs", "db-migration", "allure-report", "docusaurus-docs", "ops-runbooks", "defect-list", "release", "final-checklist"]) {
   assert(artifactSummary.artifacts.some((item) => item.id === id), `artifact summary missing ${id}`);
 }
 for (const item of artifactSummary.artifacts) {
@@ -135,6 +135,7 @@ for (const item of artifactSummary.artifacts) {
   }
 }
 assert(artifactSummary.artifacts.some((item) => item.id === "cloudformation-outputs" && item.status === "pending_external"), "CloudFormation outputs must remain pending external");
+assert(artifactSummary.artifacts.some((item) => item.id === "defect-list" && item.status === "pending_external"), "defect list must remain pending external until final issue tracker refresh");
 assert(artifactSummary.artifacts.some((item) => item.id === "release" && item.status === "pending_external"), "release artifacts must remain pending external");
 assert(artifactSummary.artifacts.some((item) => item.id === "final-checklist" && item.status === "pending_external"), "final checklist must remain pending external");
 assert(artifactSummary.artifacts.every((item) => item.status !== "complete"), "artifact summary must not mark final artifacts complete");

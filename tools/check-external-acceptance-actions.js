@@ -36,7 +36,13 @@ assert(awsDeployPublish.candidate_commands.includes("aws s3 sync dist/admin/docs
 assert(!awsDeployPublish.candidate_commands.includes("aws s3 sync dist/admin/docs/ s3://<admin-artifacts-bucket>/docs/"), "docs publish command must not use legacy docs/ prefix");
 const cloudFormationCapture = plan.actions.find((action) => action.id === "cloudformation-capture");
 assert(cloudFormationCapture.candidate_commands.includes("CFN_CAPTURED_AT=<capture-iso-timestamp> npm run cfn:inventory:normalize"), "CloudFormation capture action must include final inventory normalizer command");
+const defectSnapshotRefresh = plan.actions.find((action) => action.id === "defect-snapshot-refresh");
+assert(defectSnapshotRefresh.acceptance_ids.includes("AC-153"), "defect snapshot refresh action must cover AC-153");
+assert(defectSnapshotRefresh.candidate_commands.includes("gh issue list --state open --json number,title,labels,state"), "defect snapshot refresh action must include GitHub issue list command");
+assert(defectSnapshotRefresh.evidence_outputs.includes("docs/acceptance/defects/open_issues_snapshot.json"), "defect snapshot refresh action must output defect snapshot");
 const finalEvidenceCandidate = plan.actions.find((action) => action.id === "final-evidence-candidate");
+assert(finalEvidenceCandidate.acceptance_ids.includes("AC-153"), "final evidence candidate action must include AC-153");
+assert(finalEvidenceCandidate.required_before_run.includes("fresh defect snapshot"), "final evidence candidate action must require fresh defect snapshot");
 assert(finalEvidenceCandidate.candidate_commands.includes("npm run acceptance:final-manifest:build"), "final evidence candidate action must include manifest builder command");
 assert(finalEvidenceCandidate.candidate_commands.includes("npm run acceptance:final-checklist:build"), "final evidence candidate action must include checklist builder command");
 assert(

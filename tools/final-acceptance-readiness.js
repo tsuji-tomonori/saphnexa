@@ -15,7 +15,8 @@ export function buildFinalAcceptanceReadiness(outputPath = finalReadinessPath, o
   const externalActionPlan = options.externalActionPlan || buildExternalAcceptanceActionPlan(externalActionPlanPath);
   const finalCandidateStatus = options.finalCandidateStatus || buildFinalEvidenceCandidateStatus(finalCandidateStatusPath);
   const finalCandidateReady = isFinalCandidateReady(finalCandidateStatus);
-  const defectGateReady = defectSnapshot.blocker_critical_open_count === 0;
+  const defectSnapshotRequiresRefresh = traceRows.some((row) => row.id === "AC-153" && row.state !== "local_verified");
+  const defectGateReady = defectSnapshot.blocker_critical_open_count === 0 && !defectSnapshotRequiresRefresh;
   const externalActionGateReady = finalCandidateReady || externalActionPlan.ready === true;
   const artifactSummary = buildAcceptanceArtifactSummary({
     gitCommit: currentGitCommit(),
@@ -47,7 +48,7 @@ export function buildFinalAcceptanceReadiness(outputPath = finalReadinessPath, o
     final_acceptance_ready: finalAcceptanceReady,
     readiness_reason: finalAcceptanceReady
       ? "Final acceptance evidence candidate is ready and aggregate release, AWS, checklist, defect, and artifact gates are satisfied."
-      : "Final acceptance still requires release, AWS/UAT, published artifact, CloudFormation, and signed checklist evidence.",
+      : "Final acceptance still requires release, AWS/UAT, published artifact, CloudFormation, fresh defect snapshot, and signed checklist evidence.",
     source_catalog: {
       path: acceptanceCatalogPath,
       item_count: acceptanceCatalog.item_count,
@@ -92,7 +93,9 @@ export function buildFinalAcceptanceReadiness(outputPath = finalReadinessPath, o
     defect_gate: {
       ready: defectGateReady,
       blocker_critical_open_count: defectSnapshot.blocker_critical_open_count,
-      source: defectSnapshot.source
+      source: defectSnapshot.source,
+      snapshot_refresh_required: defectSnapshotRequiresRefresh,
+      pending: defectGateReady ? [] : defectPendingReasons(defectSnapshot, defectSnapshotRequiresRefresh)
     },
     final_candidate_gate: {
       ready: finalCandidateReady,
@@ -157,4 +160,11 @@ function countStates(items) {
   const counts = { local_verified: 0, requires_aws: 0, implemented_unverified: 0, scaffolded: 0, not_started: 0 };
   for (const row of items) counts[row.state] = (counts[row.state] || 0) + 1;
   return counts;
+}
+
+function defectPendingReasons(defectSnapshot, requiresRefresh) {
+  const pending = [];
+  if (requiresRefresh) pending.push("fresh GitHub issue tracker snapshot");
+  if (defectSnapshot.blocker_critical_open_count !== 0) pending.push("resolve Blocker/Critical defects");
+  return pending;
 }

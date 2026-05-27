@@ -12,6 +12,7 @@ export const requiredArtifactIds = [
   "allure-report",
   "docusaurus-docs",
   "ops-runbooks",
+  "defect-list",
   "release",
   "final-checklist"
 ];
@@ -77,6 +78,14 @@ export function buildAcceptanceArtifactSummary({ gitCommit, finalReadinessReady,
       acceptance_ids: ["AC-002", "AC-143", "AC-144"],
       status: "local_ready",
       evidence: ["docs/ops/runbooks/", "npm run docs:check"],
+      final_required: true
+    }),
+    artifact({
+      id: "defect-list",
+      title: "Fresh Blocker/Critical defect snapshot",
+      acceptance_ids: ["AC-153", "AC-150", "AC-151", "AC-152"],
+      ...externalArtifact("pending_external", ["defect-snapshot-refresh"]),
+      evidence: ["docs/acceptance/defects/open_issues_snapshot.json", "dist/acceptance/defect_list.json"],
       final_required: true
     }),
     artifact({

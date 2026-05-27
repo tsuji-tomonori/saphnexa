@@ -9,6 +9,7 @@ const requiredActionIds = [
   "github-release",
   "aws-deploy-publish",
   "cloudformation-capture",
+  "defect-snapshot-refresh",
   "final-evidence-candidate",
   "final-checklist-signoff"
 ];
@@ -66,9 +67,21 @@ export function buildExternalAcceptanceActionPlan(outputPath = externalActionPla
       evidence_outputs: ["docs/acceptance/cloudformation/cloudformation_inventory.uat.json"]
     }),
     action({
+      id: "defect-snapshot-refresh",
+      title: "GitHub issue tracker を再取得し Blocker/Critical defect 0 件を確認する",
+      acceptance_ids: ["AC-153", "AC-150", "AC-151", "AC-152"],
+      candidate_commands: [
+        "gh issue list --state open --json number,title,labels,state",
+        "npm run acceptance:package:check",
+        "npm run acceptance:final:check"
+      ],
+      required_before_run: ["検収対象 repository 確定", "GitHub issue tracker 確認権限", "最終検収時刻"],
+      evidence_outputs: ["docs/acceptance/defects/open_issues_snapshot.json", "dist/acceptance/defect_list.json"]
+    }),
+    action({
       id: "final-evidence-candidate",
       title: "final evidence manifest と final checklist 候補を作成する",
-      acceptance_ids: ["AC-001", "AC-002", "AC-004", "AC-081", "AC-150", "AC-151", "AC-152"],
+      acceptance_ids: ["AC-001", "AC-002", "AC-004", "AC-081", "AC-150", "AC-151", "AC-152", "AC-153"],
       candidate_commands: [
         "npm run acceptance:final-manifest:build",
         "npm run acceptance:final-checklist:build",
@@ -76,7 +89,7 @@ export function buildExternalAcceptanceActionPlan(outputPath = externalActionPla
         "npm run acceptance:final:build",
         "npm run acceptance:final:check"
       ],
-      required_before_run: ["GitHub release URL", "AWS deploy/publish URL", "CloudFormation inventory", "検収者 reviewer 名"],
+      required_before_run: ["GitHub release URL", "AWS deploy/publish URL", "CloudFormation inventory", "fresh defect snapshot", "検収者 reviewer 名"],
       evidence_outputs: [
         "docs/acceptance/final/evidence_manifest.json",
         "docs/acceptance/final/acceptance_checklist.csv",
@@ -86,13 +99,13 @@ export function buildExternalAcceptanceActionPlan(outputPath = externalActionPla
     action({
       id: "final-checklist-signoff",
       title: "最終 checklist を確認・署名し P0/P1/P2 全 PASS を確定する",
-      acceptance_ids: ["AC-004", "AC-150", "AC-151", "AC-152"],
+      acceptance_ids: ["AC-004", "AC-150", "AC-151", "AC-152", "AC-153"],
       candidate_commands: [
         "npm run acceptance:final-candidate:check",
         "npm run acceptance:package:build",
         "npm run acceptance:package:check"
       ],
-      required_before_run: ["final evidence candidate ready", "Blocker/Critical defect 0", "検収者確認"],
+      required_before_run: ["final evidence candidate ready", "fresh defect snapshot", "Blocker/Critical defect 0", "検収者確認"],
       evidence_outputs: ["signed acceptance checklist", "final acceptance package"]
     })
   ];
