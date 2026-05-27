@@ -44,7 +44,7 @@
     "acceptance:source:check": "node tools/check-acceptance-source-catalog.js",
     "acceptance:check": "node tools/check-acceptance-trace.js",
     "acceptance:package:build": "node tools/build-acceptance-package.js",
-    "acceptance:package:check": "node tools/check-acceptance-package.js",
+    "acceptance:package:check": "npm run acceptance:package:build && node tools/check-acceptance-package.js",
     "acceptance:final:build": "node tools/build-final-acceptance-readiness.js",
     "acceptance:final:check": "node tools/check-final-acceptance-readiness.js",
     "acceptance:final-candidate:check": "node tools/check-final-evidence-candidate.js",
