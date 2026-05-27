@@ -1,6 +1,7 @@
 import { existsSync, mkdirSync, readFileSync, statSync, writeFileSync } from "node:fs";
 import { dirname, join, resolve } from "node:path";
 import { acceptanceCatalog, acceptanceCatalogPath, acceptanceIds, acceptanceItemById } from "./acceptance-ids.js";
+import { sourceChecklistColumns } from "./acceptance-checklist-format.js";
 import { buildCloudFormationInventoryDraft, cloudFormationInventoryPath } from "./cloudformation-inventory.js";
 import { buildExternalAcceptanceActionPlan, externalActionPlanPath } from "./external-acceptance-actions.js";
 import { buildFinalAcceptanceReadiness, finalReadinessPath } from "./final-acceptance-readiness.js";
@@ -137,21 +138,25 @@ function buildChecklist(items) {
     const result = row.state === "local_verified" ? "PASS_LOCAL" : "PENDING_AWS";
     return {
       ID: id,
-      area: source.area,
-      priority: source.priority,
-      item: source.item,
-      state: row.state,
-      result,
-      evidence_link: row.evidence,
-      reviewer: result === "PASS_LOCAL" ? "local-automation" : "pending-final-acceptance",
-      checked_date: "2026-05-27",
-      note: result === "PASS_LOCAL" ? "ローカル検証済み。最終検収では監査証跡URLを確認する。" : "AWS/UATまたは最終検収操作が必要。"
+      領域: source.area,
+      検収項目: source.item,
+      "受け入れ条件 / 完了条件": source.acceptance_condition,
+      定量基準: source.quantitative_criteria,
+      監査証跡: source.evidence,
+      確認方法: source.verification_method,
+      重要度: source.priority,
+      結果: result,
+      証跡リンク: row.evidence,
+      確認者: result === "PASS_LOCAL" ? "local-automation" : "pending-final-acceptance",
+      確認日: "2026-05-27",
+      備考: result === "PASS_LOCAL" ? "ローカル検証済み。最終検収では監査証跡URLを確認する。" : "AWS/UATまたは最終検収操作が必要。",
+      state: row.state
     };
   });
 }
 
 function renderCsv(items) {
-  const headers = ["ID", "area", "priority", "item", "state", "result", "evidence_link", "reviewer", "checked_date", "note"];
+  const headers = [...sourceChecklistColumns, "state"];
   return `${headers.join(",")}\n${items.map((item) => headers.map((key) => csv(item[key])).join(",")).join("\n")}\n`;
 }
 

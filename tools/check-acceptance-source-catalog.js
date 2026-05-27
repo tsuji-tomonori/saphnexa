@@ -7,6 +7,7 @@ import {
   allowedTraceStates,
   priorityByAcceptanceId
 } from "./acceptance-ids.js";
+import { assertSourceChecklistColumns, sourceChecklistColumns } from "./acceptance-checklist-format.js";
 import { assert, readText } from "./lib.js";
 
 const expectedPriorityCounts = { P0: 56, P1: 43, P2: 3 };
@@ -18,6 +19,8 @@ assert(acceptanceCatalog.source_sha256 === "2756d8e28bfad7cefc4b09abaa6e4e0178ae
 assert(acceptanceCatalog.source_target_design === "Saphnexa_基本設計書_v0.16.md", "source target design mismatch");
 assert(acceptanceCatalog.item_count === expectedItemCount, `source catalog item count must be ${expectedItemCount}`);
 assert(acceptanceItems.length === acceptanceCatalog.item_count, "source catalog item_count does not match item rows");
+assert(JSON.stringify(acceptanceCatalog.source_columns) === JSON.stringify(sourceChecklistColumns), "source checklist columns mismatch");
+assertSourceChecklistColumns(acceptanceCatalog.source_columns, assert);
 
 const ids = new Set();
 for (const item of acceptanceItems) {
@@ -46,13 +49,15 @@ assert(traceRows.length === acceptanceCatalog.item_count, "traceability row coun
 
 if (existsSync("dist/acceptance/acceptance_checklist.draft.csv")) {
   const checklistRows = parseCsv(readText("dist/acceptance/acceptance_checklist.draft.csv"));
+  assertSourceChecklistColumns(checklistRows.headers, assert);
   assert(checklistRows.length === acceptanceCatalog.item_count, "draft checklist row count must match source catalog");
   for (const row of checklistRows) {
     const source = acceptanceItems.find((item) => item.id === row.ID);
     assert(source, `draft checklist has id not present in source catalog: ${row.ID}`);
-    assert(row.area === source.area, `${row.ID} draft checklist area mismatch`);
-    assert(row.priority === source.priority, `${row.ID} draft checklist priority mismatch`);
-    assert(row.item === source.item, `${row.ID} draft checklist item mismatch`);
+    assert(row["領域"] === source.area, `${row.ID} draft checklist area mismatch`);
+    assert(row["重要度"] === source.priority, `${row.ID} draft checklist priority mismatch`);
+    assert(row["検収項目"] === source.item, `${row.ID} draft checklist item mismatch`);
+    assert(row["受け入れ条件 / 完了条件"] === source.acceptance_condition, `${row.ID} draft checklist condition mismatch`);
   }
 }
 
@@ -73,7 +78,9 @@ function countBy(items, key) {
 function parseCsv(body) {
   const lines = body.trim().split(/\r?\n/);
   const headers = splitCsvLine(lines[0]);
-  return lines.slice(1).map((line) => Object.fromEntries(splitCsvLine(line).map((value, index) => [headers[index], value])));
+  const rows = lines.slice(1).map((line) => Object.fromEntries(splitCsvLine(line).map((value, index) => [headers[index], value])));
+  rows.headers = headers;
+  return rows;
 }
 
 function splitCsvLine(line) {

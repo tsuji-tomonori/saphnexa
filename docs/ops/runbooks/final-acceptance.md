@@ -14,7 +14,7 @@ AC-001、AC-002、AC-004、AC-150、AC-151、AC-152 の最終検収で、draft �
 ## 手順
 
 1. `docs/acceptance/final/evidence_manifest.json` を作成し、Git tag、GitHub release URL、AWS account、CloudFormation stack、DB migration、docs/Allure、RAG 評価、cost estimate を実値で記録する。
-2. `docs/acceptance/final/acceptance_checklist.csv` を作成し、全 AC 行の `result`、`evidence_link`、`reviewer`、`checked_date` を記入する。
+2. `docs/acceptance/final/acceptance_checklist.csv` を作成し、`docs/acceptance/source/acceptance_catalog.json` の `source_columns` と同じ列で全 AC 行の `結果`、`証跡リンク`、`確認者`、`確認日` を記入する。
 3. `docs/acceptance/cloudformation/cloudformation_inventory.uat.json` を CloudFormation 実取得結果から正規化して保存する。
 4. `npm run acceptance:final-candidate:check` を実行し、final candidate が ready になることを確認する。
 5. `npm run acceptance:final:build` と `npm run acceptance:final:check` を実行し、readiness gate が final candidate の状態を反映することを確認する。
@@ -25,7 +25,7 @@ AC-001、AC-002、AC-004、AC-150、AC-151、AC-152 の最終検収で、draft �
 - final evidence manifest に placeholder、draft、example、pending が含まれないこと。
 - AWS account id は実 12 桁であること。
 - Git tag と GitHub release URL が一致すること。
-- checklist は全 AC 行が `PASS` で、証跡・確認者・確認日が空でないこと。
+- checklist は source checklist 列を保ち、全 AC 行が `結果=PASS` で、`証跡リンク`、`確認者`、`確認日` が空でないこと。
 - CloudFormation inventory は `source=aws-cloudformation-inventory`、`final_acceptance_eligible=true` であること。
 
 ## 証跡

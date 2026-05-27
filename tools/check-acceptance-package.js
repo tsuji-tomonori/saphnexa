@@ -1,5 +1,13 @@
 import { existsSync } from "node:fs";
 import { acceptanceCatalog, acceptanceCatalogPath, acceptanceIds, acceptanceItemById } from "./acceptance-ids.js";
+import {
+  assertSourceChecklistColumns,
+  finalCheckedDateColumn,
+  finalEvidenceColumn,
+  finalResultColumn,
+  finalReviewerColumn,
+  sourceChecklistValue
+} from "./acceptance-checklist-format.js";
 import { assert, readJson, readText } from "./lib.js";
 
 const manifest = readJson("dist/acceptance/evidence_manifest.draft.json");
@@ -48,22 +56,24 @@ assert(manifest.final_readiness.external_action_plan_path === "dist/acceptance/e
 assert(manifest.final_readiness.external_actions_pending.length > 0, "manifest external pending actions must be explicit");
 
 const rows = parseCsv(checklist);
+assertSourceChecklistColumns(rows.headers, assert);
 assert(rows.length === acceptanceIds.length, `checklist row count mismatch: ${rows.length}`);
 for (const id of acceptanceIds) {
   assert(rows.some((row) => row.ID === id), `checklist missing ${id}`);
 }
 for (const row of rows) {
-  for (const key of ["ID", "state", "result", "evidence_link", "reviewer", "checked_date", "note"]) {
+  for (const key of ["ID", "state", finalResultColumn, finalEvidenceColumn, finalReviewerColumn, finalCheckedDateColumn, "備考"]) {
     assert(String(row[key] || "").length > 0, `checklist ${row.ID} has empty ${key}`);
   }
   const source = acceptanceItemById[row.ID];
-  assert(row.area === source.area, `${row.ID} checklist area must match source catalog`);
-  assert(row.priority === source.priority, `${row.ID} checklist priority must match source catalog`);
-  assert(row.item === source.item, `${row.ID} checklist item must match source catalog`);
+  assert(row["領域"] === source.area, `${row.ID} checklist area must match source catalog`);
+  assert(row["重要度"] === source.priority, `${row.ID} checklist priority must match source catalog`);
+  assert(row["検収項目"] === source.item, `${row.ID} checklist item must match source catalog`);
+  assert(row["受け入れ条件 / 完了条件"] === source.acceptance_condition, `${row.ID} checklist condition must match source catalog`);
   if (row.state === "requires_aws") {
-    assert(row.result === "PENDING_AWS", `${row.ID} requires_aws must remain PENDING_AWS`);
+    assert(sourceChecklistValue(row, finalResultColumn) === "PENDING_AWS", `${row.ID} requires_aws must remain PENDING_AWS`);
   }
-  if (row.result === "PASS_LOCAL") {
+  if (sourceChecklistValue(row, finalResultColumn) === "PASS_LOCAL") {
     assert(row.state === "local_verified", `${row.ID} PASS_LOCAL must map to local_verified`);
   }
 }
@@ -89,7 +99,9 @@ console.log("acceptance package check passed");
 function parseCsv(body) {
   const lines = body.trim().split(/\r?\n/);
   const headers = splitCsvLine(lines[0]);
-  return lines.slice(1).map((line) => Object.fromEntries(splitCsvLine(line).map((value, index) => [headers[index], value])));
+  const rows = lines.slice(1).map((line) => Object.fromEntries(splitCsvLine(line).map((value, index) => [headers[index], value])));
+  rows.headers = headers;
+  return rows;
 }
 
 function splitCsvLine(line) {

@@ -1,6 +1,14 @@
 import { mkdirSync, writeFileSync } from "node:fs";
 import { dirname } from "node:path";
-import { acceptanceIds } from "./acceptance-ids.js";
+import { acceptanceIds, acceptanceItemById } from "./acceptance-ids.js";
+import {
+  assertSourceChecklistColumns,
+  finalCheckedDateColumn,
+  finalEvidenceColumn,
+  finalResultColumn,
+  finalReviewerColumn,
+  sourceChecklistValue
+} from "./acceptance-checklist-format.js";
 import { readJson, readText } from "./lib.js";
 
 export const finalCandidateStatusPath = "dist/acceptance/final_candidate_status.json";
@@ -93,16 +101,34 @@ function validateManifest(checks, errors) {
 
 function validateChecklist(checks, errors) {
   const rows = parseCsv(readText(finalChecklistPath));
+  checkSourceColumns(rows.headers, checks, errors);
   check(rows.length === acceptanceIds.length, "checklist.row_count", checks, errors, `must contain ${acceptanceIds.length} rows`);
   for (const id of acceptanceIds) {
     const row = rows.find((item) => item.ID === id);
     check(Boolean(row), `checklist.${id}`, checks, errors, "must exist");
     if (!row) continue;
-    for (const key of ["result", "evidence_link", "reviewer", "checked_date"]) {
-      check(isFinalText(row[key]), `checklist.${id}.${key}`, checks, errors, "must be populated");
+    const source = acceptanceItemById[id];
+    check(row["領域"] === source.area, `checklist.${id}.領域`, checks, errors, "must match source checklist area");
+    check(row["重要度"] === source.priority, `checklist.${id}.重要度`, checks, errors, "must match source checklist priority");
+    check(row["検収項目"] === source.item, `checklist.${id}.検収項目`, checks, errors, "must match source checklist item");
+    check(row["受け入れ条件 / 完了条件"] === source.acceptance_condition, `checklist.${id}.受け入れ条件`, checks, errors, "must match source checklist condition");
+    for (const key of [finalResultColumn, finalEvidenceColumn, finalReviewerColumn, finalCheckedDateColumn]) {
+      check(isFinalText(sourceChecklistValue(row, key)), `checklist.${id}.${key}`, checks, errors, "must be populated");
     }
-    check(row.result === "PASS", `checklist.${id}.result`, checks, errors, "must be PASS for final acceptance");
+    check(sourceChecklistValue(row, finalResultColumn) === "PASS", `checklist.${id}.${finalResultColumn}`, checks, errors, "must be PASS for final acceptance");
     check(!/PENDING|PASS_LOCAL|requires_aws/i.test(Object.values(row).join(" ")), `checklist.${id}.no_draft_status`, checks, errors, "must not contain draft status markers");
+  }
+}
+
+function checkSourceColumns(headers, checks, errors) {
+  try {
+    assertSourceChecklistColumns(headers, (condition, message) => {
+      if (!condition) throw new Error(message);
+    });
+    checks.push({ label: "checklist.source_columns", result: "pass", message: "must include source checklist columns" });
+  } catch (error) {
+    checks.push({ label: "checklist.source_columns", result: "fail", message: "must include source checklist columns" });
+    errors.push(`checklist.source_columns: ${error.message}`);
   }
 }
 
@@ -149,7 +175,9 @@ function isArtifactUrl(value) {
 function parseCsv(body) {
   const lines = body.trim().split(/\r?\n/);
   const headers = splitCsvLine(lines[0]).map((header) => header.replace(/^\uFEFF/, ""));
-  return lines.slice(1).map((line) => Object.fromEntries(splitCsvLine(line).map((value, index) => [headers[index], value])));
+  const rows = lines.slice(1).map((line) => Object.fromEntries(splitCsvLine(line).map((value, index) => [headers[index], value])));
+  rows.headers = headers;
+  return rows;
 }
 
 function splitCsvLine(line) {
