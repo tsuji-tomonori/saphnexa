@@ -53,7 +53,8 @@ for (const command of [
   "npm run acceptance:package:build",
   "npm run acceptance:package:check",
   "npm run cfn:inventory:build",
-  "npm run cfn:inventory:check"
+  "npm run cfn:inventory:check",
+  "npm run cfn:inventory:normalize:fixture:check"
 ]) {
   assert(localVerification.includes(command), `local verification docs missing ${command}`);
 }

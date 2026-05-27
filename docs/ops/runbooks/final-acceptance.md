@@ -15,7 +15,10 @@ AC-001、AC-002、AC-004、AC-150、AC-151、AC-152 の最終検収で、draft �
 
 1. `docs/acceptance/final/evidence_manifest.json` を作成し、Git tag、GitHub release URL、AWS account、CloudFormation stack、DB migration、docs/Allure、RAG 評価、cost estimate を実値で記録する。
 2. `docs/acceptance/final/acceptance_checklist.csv` を作成し、`docs/acceptance/source/acceptance_catalog.json` の `source_columns` と同じ列で全 AC 行の `結果`、`証跡リンク`、`確認者`、`確認日` を記入する。
-3. `docs/acceptance/cloudformation/cloudformation_inventory.uat.json` を CloudFormation 実取得結果から正規化して保存する。
+3. CloudFormation 実取得結果を raw JSON として保存し、normalizer で `docs/acceptance/cloudformation/cloudformation_inventory.uat.json` を作成する。
+   - `aws cloudformation describe-stacks --stack-name saphnexa-uat-app --region ap-northeast-1 --output json > docs/acceptance/cloudformation/raw/describe-stacks.uat.json`
+   - `aws cloudformation list-stack-resources --stack-name saphnexa-uat-app --region ap-northeast-1 --output json > docs/acceptance/cloudformation/raw/list-stack-resources.uat.json`
+   - `CFN_CAPTURED_AT=<capture-iso-timestamp> npm run cfn:inventory:normalize`
 4. `npm run acceptance:final-candidate:fixture:check` を実行し、validator が ready/invalid の両分岐を検査できる状態であることを確認する。
 5. `npm run acceptance:final:fixture:check` を実行し、final candidate ready 後に readiness gate が complete へ遷移できることを確認する。
 6. `npm run acceptance:final-candidate:check` を実行し、final candidate が ready になることを確認する。

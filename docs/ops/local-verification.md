@@ -12,6 +12,7 @@ npm run test:integration:local
 npm run scan:bundle-domains
 npm run cfn:inventory:build
 npm run cfn:inventory:check
+npm run cfn:inventory:normalize:fixture:check
 npm run admin-artifacts:build
 npm run artifacts:check
 npm run coverage:check
@@ -55,6 +56,7 @@ git diff --check
 - RAG が Tools API 境界を通り、ACL check 後の Evidence だけで citation を作ること。
 - React source が `/api/*` と `/auth/*` の相対 path だけを使うこと。
 - `dist/acceptance/cloudformation_inventory.draft.json` に CloudFormation inventory draft を生成し、実 AWS capture が必要なことを検査すること。
+- AWS CLI の `describe-stacks` / `list-stack-resources` raw JSON から final CloudFormation inventory 形式へ正規化する normalizer の fixture。
 - `dist/admin/docs/latest/` と `dist/admin/docs/versions/v0.16/` に docs artifact を生成できること。
 - `dist/admin/test-reports/allure/latest/` に Allure 互換のローカル検証 report artifact を生成できること。
 - admin artifact manifest の checksum、viewer path、source と、local API の admin 限定アクセス policy。
