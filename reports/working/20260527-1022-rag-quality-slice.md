@@ -51,9 +51,9 @@
 - `npm test`: pass
 - `npm run verify`: pass
 - `git diff --check`: pass
+- PR #1 GitHub Actions `Saphnexa CI`: pass（RAG checks を含む quality gates job を含む 12 jobs）
 
 ## 未対応・制約・リスク
 
 - Bedrock KB、S3 Vectors、AgentCore Runtime、Bedrock Evaluations、CloudWatch logs/metrics を使った実 RAG 品質評価は未実施。
 - Allure への実 test artifact publish は未実施。
-- 追加した RAG checks を含む `quality-gates` GitHub Actions job は push 後の CI で確認が必要。
