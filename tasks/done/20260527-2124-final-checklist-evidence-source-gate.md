@@ -1,6 +1,6 @@
 # final checklist evidence source gate
 
-- 状態: do
+- 状態: done
 - タスク種別: 機能追加
 - 対象ブランチ: `codex/saphnexa-acceptance-impl`
 - 対象PR: `#1`
@@ -28,18 +28,39 @@ final checklist の各 `証跡リンク` が、最終 evidence manifest に列�
 
 ## 受け入れ条件
 
-- [ ] final checklist の `証跡リンク` が URL として有効でも、manifest artifact 配置先または当該 GitHub repository の証跡でない場合は `acceptance:final-candidate:fixture:check` が失敗として検出する。
-- [ ] 既存の ready fixture は引き続き ready になる。
-- [ ] final acceptance の外部残件を完了扱いしない。
-- [ ] 変更範囲に見合う検証を実行し、結果を task / report / PR コメントに残す。
+- [x] final checklist の `証跡リンク` が URL として有効でも、manifest artifact 配置先または当該 GitHub repository の証跡でない場合は `acceptance:final-candidate:fixture:check` が失敗として検出する。
+- [x] 既存の ready fixture は引き続き ready になる。
+- [x] final acceptance の外部残件を完了扱いしない。
+- [x] 変更範囲に見合う検証を実行し、結果を task / report / PR コメントに残す。
 
 ## Done 条件
 
-- [ ] 実装と fixture を追加する。
-- [ ] 選定した検証コマンドが pass する。
-- [ ] 作業レポートを `reports/working/` に作成する。
-- [ ] commit / push し、PR に受け入れ条件確認コメントとセルフレビューコメントを投稿する。
-- [ ] PR コメント後に task を `tasks/done/` へ移動し、その更新も commit / push する。
+- [x] 実装と fixture を追加する。
+- [x] 選定した検証コマンドが pass する。
+- [x] 作業レポートを `reports/working/` に作成する。
+- [x] commit / push し、PR に受け入れ条件確認コメントとセルフレビューコメントを投稿する。
+- [x] PR コメント後に task を `tasks/done/` へ移動し、その更新も commit / push する。
+
+## 実施結果
+
+- 実装 commit: `0b89f5d` `✅ test: final checklist evidence source検査を追加`
+- 作業レポート: `reports/working/20260527-2126-final-checklist-evidence-source-gate.md`
+- PR 受け入れ条件確認コメント: https://github.com/tsuji-tomonori/saphnexa/pull/1#issuecomment-4554489017
+- PR セルフレビューコメント: https://github.com/tsuji-tomonori/saphnexa/pull/1#issuecomment-4554492508
+
+## 検証結果
+
+- `npm run acceptance:final-candidate:fixture:check`: pass
+- `npm run acceptance:final-candidate:check`: pass。final files 未配置のため status は `not_ready` のまま。
+- `npm run acceptance:package:check`: pass
+- `npm run verify`: pass
+- `git diff --check`: pass
+- `pre-commit run --files tools/check-final-evidence-candidate-fixtures.js tools/final-evidence-candidate.js tasks/do/20260527-2124-final-checklist-evidence-source-gate.md`: pass
+- `pre-commit run --files reports/working/20260527-2126-final-checklist-evidence-source-gate.md`: pass
+
+## 残件
+
+- final acceptance は未完了。Git tag/release、AWS deploy/publish、CloudFormation capture、final evidence candidate、final checklist signoff は pending。
 
 ## 実装計画
 
