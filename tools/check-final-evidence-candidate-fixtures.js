@@ -400,6 +400,17 @@ try {
   assert(invalidChecklistValuesStatus.errors.some((error) => error.includes(`checklist.${acceptanceIds[1]}.確認者`)), "invalid checklist values fixture must reject pending reviewer");
   assert(invalidChecklistValuesStatus.errors.some((error) => error.includes(`checklist.${acceptanceIds[2]}.確認日_date`)), "invalid checklist values fixture must reject invalid checked date");
 
+  const checklistForbiddenMarker = buildReadyCandidate();
+  checklistForbiddenMarker.checklistRows[4].備考 = "draft final signoff note";
+  const checklistForbiddenMarkerPaths = writeCandidateFiles(join(root, "checklist-forbidden-marker"), checklistForbiddenMarker);
+  const checklistForbiddenMarkerStatus = buildFinalEvidenceCandidateStatus(join(root, "checklist-forbidden-marker-status.json"), {
+    candidatePaths: checklistForbiddenMarkerPaths,
+    resolveGitTagCommit,
+    resolveGitRepository
+  });
+  assert(checklistForbiddenMarkerStatus.ready === false, "checklist forbidden marker fixture must not be ready");
+  assert(checklistForbiddenMarkerStatus.errors.some((error) => error.includes(`checklist.${acceptanceIds[4]}.no_forbidden_markers`)), "checklist forbidden marker fixture must reject draft marker in note");
+
   const futureChecklistDate = buildReadyCandidate();
   futureChecklistDate.checklistRows[3].確認日 = "2999-01-01";
   const futureChecklistDatePaths = writeCandidateFiles(join(root, "future-checklist-date"), futureChecklistDate);

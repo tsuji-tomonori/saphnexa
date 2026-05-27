@@ -162,6 +162,7 @@ function validateChecklist(path, checks, errors, options = {}, manifest) {
     check(isIsoDate(sourceChecklistValue(row, finalCheckedDateColumn)), `checklist.${id}.${finalCheckedDateColumn}_date`, checks, errors, "must be a YYYY-MM-DD calendar date");
     check(isIsoDateOnOrBefore(sourceChecklistValue(row, finalCheckedDateColumn), currentDate), `checklist.${id}.${finalCheckedDateColumn}_not_future`, checks, errors, "must not be a future date");
     check(!/PENDING|PASS_LOCAL|requires_aws/i.test(Object.values(row).join(" ")), `checklist.${id}.no_draft_status`, checks, errors, "must not contain draft status markers");
+    check(!hasForbiddenFinalMarker(Object.values(row).join(" ")), `checklist.${id}.no_forbidden_markers`, checks, errors, "must not contain draft, placeholder, example, pending, or not-for-acceptance markers");
   }
 }
 
