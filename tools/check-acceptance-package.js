@@ -138,6 +138,7 @@ assert(artifactSummary.artifacts.some((item) => item.id === "cloudformation-outp
 assert(artifactSummary.artifacts.some((item) => item.id === "defect-list" && item.status === "pending_external"), "defect list must remain pending external until final issue tracker refresh");
 assert(artifactSummary.artifacts.some((item) => item.id === "release" && item.status === "pending_external"), "release artifacts must remain pending external");
 assert(artifactSummary.artifacts.some((item) => item.id === "final-checklist" && item.status === "pending_external"), "final checklist must remain pending external");
+assert(artifactSummary.artifacts.some((item) => item.id === "final-checklist" && item.acceptance_ids.includes("AC-153")), "final checklist artifact must cover AC-153 signoff");
 assert(artifactSummary.artifacts.every((item) => item.status !== "complete"), "artifact summary must not mark final artifacts complete");
 
 console.log("acceptance package check passed");

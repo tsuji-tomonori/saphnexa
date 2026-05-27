@@ -99,7 +99,7 @@ export function buildAcceptanceArtifactSummary({ gitCommit, finalReadinessReady,
     artifact({
       id: "final-checklist",
       title: "Signed final acceptance checklist",
-      acceptance_ids: ["AC-004", "AC-150", "AC-151", "AC-152"],
+      acceptance_ids: ["AC-004", "AC-150", "AC-151", "AC-152", "AC-153"],
       ...externalArtifact("pending_external", ["final-evidence-candidate", "final-checklist-signoff"]),
       evidence: ["docs/acceptance/final/acceptance_checklist.csv"],
       final_required: true
