@@ -14,7 +14,7 @@ export function buildFinalAcceptanceReadiness(outputPath = finalReadinessPath, o
   const defectSnapshot = options.defectSnapshot || readJson("docs/acceptance/defects/open_issues_snapshot.json");
   const externalActionPlan = options.externalActionPlan || buildExternalAcceptanceActionPlan(externalActionPlanPath);
   const finalCandidateStatus = options.finalCandidateStatus || buildFinalEvidenceCandidateStatus(finalCandidateStatusPath);
-  const finalCandidateReady = finalCandidateStatus.ready === true;
+  const finalCandidateReady = isFinalCandidateReady(finalCandidateStatus);
   const defectGateReady = defectSnapshot.blocker_critical_open_count === 0;
   const externalActionGateReady = finalCandidateReady || externalActionPlan.ready === true;
   const artifactSummary = buildAcceptanceArtifactSummary({
@@ -95,7 +95,7 @@ export function buildFinalAcceptanceReadiness(outputPath = finalReadinessPath, o
       source: defectSnapshot.source
     },
     final_candidate_gate: {
-      ready: finalCandidateStatus.ready,
+      ready: finalCandidateReady,
       status_path: finalCandidateStatusPath,
       status: finalCandidateStatus.status,
       missing_files: finalCandidateStatus.missing_files,
@@ -135,6 +135,14 @@ export function buildFinalAcceptanceReadiness(outputPath = finalReadinessPath, o
   mkdirSync(dirname(outputPath), { recursive: true });
   writeFileSync(outputPath, `${JSON.stringify(readiness, null, 2)}\n`);
   return readiness;
+}
+
+function isFinalCandidateReady(status) {
+  return status?.ready === true && status.status === "ready" && empty(status.missing_files) && empty(status.errors);
+}
+
+function empty(value) {
+  return Array.isArray(value) && value.length === 0;
 }
 
 function parseTraceRows(body) {

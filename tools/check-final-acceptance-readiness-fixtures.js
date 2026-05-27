@@ -48,6 +48,25 @@ try {
   assert(readiness.artifact_summary_gate.pending_action_ids.length === 0, "artifact summary must have no pending action ids");
   assert(readiness.artifact_summary_gate.final_ready_count > 0, "artifact summary must include final ready artifacts");
 
+  const inconsistentFinalCandidateStatus = buildFinalAcceptanceReadiness(join(root, "final-readiness-inconsistent-candidate-status.json"), {
+    traceRows: acceptanceIds.map((id) => ({ id, state: "local_verified", evidence: "fixture final evidence" })),
+    defectSnapshot: {
+      blocker_critical_open_count: 0,
+      source: "fixture"
+    },
+    externalActionPlan: buildCompletedExternalActionPlan(),
+    finalCandidateStatus: {
+      ready: true,
+      status: "invalid",
+      missing_files: [],
+      errors: ["fixture inconsistent final candidate error"]
+    }
+  });
+  assert(inconsistentFinalCandidateStatus.final_acceptance_ready === false, "inconsistent final candidate status fixture must not be ready");
+  assert(inconsistentFinalCandidateStatus.final_candidate_gate.ready === false, "inconsistent final candidate status gate must not be ready");
+  assert(inconsistentFinalCandidateStatus.final_candidate_gate.status === "invalid", "inconsistent final candidate status must preserve status");
+  assert(inconsistentFinalCandidateStatus.final_candidate_gate.errors.length > 0, "inconsistent final candidate errors must be explicit");
+
   console.log("final acceptance readiness fixture check passed");
 } finally {
   rmSync(root, { recursive: true, force: true });
