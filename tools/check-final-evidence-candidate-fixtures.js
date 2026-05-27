@@ -137,6 +137,17 @@ try {
   assert(invalidAllureReportUrlStatus.ready === false, "invalid Allure report URL fixture must not be ready");
   assert(invalidAllureReportUrlStatus.errors.some((error) => error.includes("manifest.test_reports.allure_latest_url_latest_path")), "invalid Allure report URL fixture must reject non-Allure latest path");
 
+  const missingCostUsageBasis = buildReadyCandidate();
+  missingCostUsageBasis.manifest.cost_estimate.assumption = "UAT estimate using approved acceptance usage basis.";
+  const missingCostUsageBasisPaths = writeCandidateFiles(join(root, "missing-cost-usage-basis"), missingCostUsageBasis);
+  const missingCostUsageBasisStatus = buildFinalEvidenceCandidateStatus(join(root, "missing-cost-usage-basis-status.json"), {
+    candidatePaths: missingCostUsageBasisPaths,
+    resolveGitTagCommit,
+    resolveGitRepository
+  });
+  assert(missingCostUsageBasisStatus.ready === false, "missing cost usage basis fixture must not be ready");
+  assert(missingCostUsageBasisStatus.errors.some((error) => error.includes("manifest.cost_estimate.assumption_usage_basis")), "missing cost usage basis fixture must reject missing usage basis");
+
   for (const [fixtureName, monthlyUsd, message] of [
     ["null-cost", null, "null cost estimate"],
     ["negative-cost", -1, "negative cost estimate"],

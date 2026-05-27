@@ -128,6 +128,7 @@ function validateManifest(path, checks, errors, options = {}) {
   check(manifest.db_migration?.checksum_status === "matched", "manifest.db_migration.checksum_status", checks, errors, "must be matched");
   check(isAcceptedMonthlyUsd(manifest.cost_estimate?.monthly_usd), "manifest.cost_estimate.monthly_usd", checks, errors, "must be a finite number between 0 and 550");
   check(isFinalText(manifest.cost_estimate?.assumption), "manifest.cost_estimate.assumption", checks, errors, "must include final cost assumption");
+  check(hasUsageBasis(manifest.cost_estimate?.assumption), "manifest.cost_estimate.assumption_usage_basis", checks, errors, "must mention 50 DAU and 10 questions/user/day");
   return manifest;
 }
 
@@ -244,6 +245,10 @@ function normalizePathSuffix(value) {
 
 function isAcceptedMonthlyUsd(value) {
   return typeof value === "number" && Number.isFinite(value) && value >= 0 && value <= 550;
+}
+
+function hasUsageBasis(value) {
+  return typeof value === "string" && value.includes("50 DAU") && value.includes("10 questions/user/day");
 }
 
 function isFinalReviewer(value) {
