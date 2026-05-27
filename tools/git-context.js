@@ -36,6 +36,24 @@ export function gitTagCommit(tagName) {
   }
 }
 
+export function currentGitRepository() {
+  try {
+    return parseGitHubRepository(execFileSync("git", ["config", "--get", "remote.origin.url"], { encoding: "utf8", stdio: ["ignore", "pipe", "ignore"] }).trim());
+  } catch {
+    return null;
+  }
+}
+
+export function parseGitHubRepository(remoteUrl) {
+  if (typeof remoteUrl !== "string" || remoteUrl.length === 0) return null;
+  const normalized = remoteUrl.replace(/\.git$/, "");
+  const httpsMatch = normalized.match(/^https:\/\/github\.com\/([^/]+)\/([^/]+)$/);
+  if (httpsMatch) return `${httpsMatch[1]}/${httpsMatch[2]}`;
+  const sshMatch = normalized.match(/^git@github\.com:([^/]+)\/([^/]+)$/);
+  if (sshMatch) return `${sshMatch[1]}/${sshMatch[2]}`;
+  return null;
+}
+
 function resolveGitDir() {
   if (statSync(".git").isDirectory()) return resolve(".git");
 

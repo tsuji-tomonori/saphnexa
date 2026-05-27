@@ -9,7 +9,7 @@ import {
   finalReviewerColumn,
   sourceChecklistValue
 } from "./acceptance-checklist-format.js";
-import { currentGitCommit, gitTagCommit } from "./git-context.js";
+import { currentGitCommit, currentGitRepository, gitTagCommit } from "./git-context.js";
 import { readJson, readText } from "./lib.js";
 
 export const finalCandidateStatusPath = "dist/acceptance/final_candidate_status.json";
@@ -62,6 +62,7 @@ export function buildFinalEvidenceCandidateStatus(outputPath = finalCandidateSta
 function validateManifest(path, checks, errors, options = {}) {
   const manifest = readJson(path);
   const resolveGitTagCommit = options.resolveGitTagCommit || gitTagCommit;
+  const resolveGitRepository = options.resolveGitRepository || currentGitRepository;
   const required = [
     "system",
     "environment",
@@ -91,6 +92,10 @@ function validateManifest(path, checks, errors, options = {}) {
   check(tagCommit === manifest.git_commit_sha, "manifest.git_tag_commit", checks, errors, "must point to manifest.git_commit_sha");
   check(isUrl(manifest.github_release_url), "manifest.github_release_url", checks, errors, "must be an https GitHub release URL");
   check(isReleaseUrlForTag(manifest.github_release_url, manifest.git_tag), "manifest.github_release_url_git_tag", checks, errors, "must point to the same release tag as manifest.git_tag");
+  const releaseRef = parseGitHubReleaseUrl(manifest.github_release_url);
+  const currentRepository = resolveGitRepository();
+  check(Boolean(currentRepository), "manifest.github_release_url_current_repo_available", checks, errors, "current GitHub repository must be resolvable from remote.origin.url");
+  check(releaseRef?.repository === currentRepository, "manifest.github_release_url_repository", checks, errors, "must point to the current GitHub repository release");
   check(Array.isArray(manifest.cloudformation_stacks) && manifest.cloudformation_stacks.length > 0, "manifest.cloudformation_stacks", checks, errors, "must include deployed stacks");
   for (const stack of manifest.cloudformation_stacks || []) {
     check(isFinalText(stack.stack_name), `manifest.cloudformation_stacks.${stack.stack_name || "unknown"}.stack_name`, checks, errors, "must include stack name");
@@ -198,17 +203,7 @@ function isUrl(value) {
 }
 
 function isReleaseUrlForTag(value, gitTag) {
-  if (!isUrl(value) || !isFinalText(gitTag)) return false;
-  try {
-    const url = new URL(value);
-    const marker = "/releases/tag/";
-    const markerIndex = url.pathname.indexOf(marker);
-    if (url.hostname !== "github.com" || markerIndex === -1) return false;
-    const tagFromUrl = url.pathname.slice(markerIndex + marker.length);
-    return decodeURIComponent(tagFromUrl) === gitTag;
-  } catch {
-    return false;
-  }
+  return parseGitHubReleaseUrl(value)?.tag === gitTag && isFinalText(gitTag);
 }
 
 function isArtifactUrl(value) {
@@ -223,6 +218,21 @@ function isIsoDate(value) {
   if (typeof value !== "string" || !/^\d{4}-\d{2}-\d{2}$/.test(value)) return false;
   const date = new Date(`${value}T00:00:00.000Z`);
   return !Number.isNaN(date.getTime()) && date.toISOString().slice(0, 10) === value;
+}
+
+function parseGitHubReleaseUrl(value) {
+  if (!isUrl(value)) return null;
+  try {
+    const url = new URL(value);
+    const match = url.pathname.match(/^\/([^/]+)\/([^/]+)\/releases\/tag\/(.+)$/);
+    if (url.hostname !== "github.com" || !match) return null;
+    return {
+      repository: `${match[1]}/${match[2]}`,
+      tag: decodeURIComponent(match[3])
+    };
+  } catch {
+    return null;
+  }
 }
 
 function parseCloudFormationStackArn(value) {
