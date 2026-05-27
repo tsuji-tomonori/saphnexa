@@ -78,7 +78,7 @@ git diff --check
 - `docs/acceptance/source/acceptance_catalog.json` が検収 checklist v1.0 の 102 行、P0/P1/P2 件数、traceability 全 ID と同期していること。
 - `dist/acceptance/external_action_plan.json` に Git tag/release、AWS deploy/publish、CloudFormation capture、final checklist signoff の外部実行 action plan を生成し、各 action が pending かつ確認必須のまま残ること。
 - final evidence candidate が未配置なら `not_ready` として記録し、配置済みの場合は実 Git tag/release/AWS/公開 URL/checklist を検査すること。
-- `dist/acceptance/final_readiness.json` に最終検収 readiness を生成し、release/AWS/publish/checklist 未達がある限り ready にならないこと。
+- `npm run acceptance:final:check` が `dist/acceptance/final_readiness.json` を再生成してから検査し、release/AWS/publish/checklist 未達がある限り ready にならないこと。
 - `dist/acceptance/` に検収 package draft を生成し、未実施 AWS/release 項目を `PENDING_AWS` として残すこと。
 - GitHub issue tracker snapshot に基づく Blocker/Critical open defect 0 件の defect list draft。
 

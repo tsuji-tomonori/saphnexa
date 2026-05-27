@@ -46,7 +46,7 @@
     "acceptance:package:build": "node tools/build-acceptance-package.js",
     "acceptance:package:check": "npm run acceptance:package:build && node tools/check-acceptance-package.js",
     "acceptance:final:build": "node tools/build-final-acceptance-readiness.js",
-    "acceptance:final:check": "node tools/check-final-acceptance-readiness.js",
+    "acceptance:final:check": "npm run acceptance:final:build && node tools/check-final-acceptance-readiness.js",
     "acceptance:final-candidate:check": "node tools/check-final-evidence-candidate.js",
     "acceptance:final-candidate:fixture:check": "node tools/check-final-evidence-candidate-fixtures.js",
     "acceptance:external-actions:build": "node tools/build-external-acceptance-actions.js",
