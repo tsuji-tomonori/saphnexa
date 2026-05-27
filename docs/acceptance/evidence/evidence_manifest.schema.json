@@ -2,6 +2,12 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "title": "Saphnexa Acceptance Evidence Manifest",
   "type": "object",
+  "x_source": {
+    "source_package": "Saphnexa_検収受入条件_package_v1.0",
+    "source_file": "Saphnexa_証跡マニフェスト_schema_v1.0.json",
+    "source_sha256": "29caa24a6eb0135563cc5a8f690a6837662f5bbdce53c6ee20c328b258e79153",
+    "source_target_design": "Saphnexa_基本設計書_v0.16.md"
+  },
   "required": [
     "system",
     "environment",
@@ -17,52 +23,145 @@
     "cost_estimate"
   ],
   "properties": {
-    "system": { "const": "Saphnexa" },
-    "environment": { "type": "string", "enum": ["dev", "uat", "stg", "prod"] },
-    "aws_region": { "type": "string", "const": "ap-northeast-1" },
-    "aws_account_id": { "type": "string", "pattern": "^[0-9]{12}$" },
-    "git_commit_sha": { "type": "string", "pattern": "^[a-f0-9]{40}$" },
-    "git_tag": { "type": "string", "minLength": 1 },
-    "cdk_app_version": { "type": "string" },
+    "system": {
+      "const": "Saphnexa"
+    },
+    "environment": {
+      "type": "string",
+      "enum": [
+        "dev",
+        "uat",
+        "stg",
+        "prod"
+      ]
+    },
+    "aws_region": {
+      "type": "string",
+      "const": "ap-northeast-1"
+    },
+    "aws_account_id": {
+      "type": "string",
+      "pattern": "^[0-9]{12}$"
+    },
+    "git_commit_sha": {
+      "type": "string",
+      "pattern": "^[a-f0-9]{40}$"
+    },
+    "git_tag": {
+      "type": "string",
+      "minLength": 1
+    },
+    "cdk_app_version": {
+      "type": "string"
+    },
     "cloudformation_stacks": {
       "type": "array",
       "minItems": 1,
       "items": {
         "type": "object",
-        "required": ["stack_name", "stack_id"],
+        "required": [
+          "stack_name",
+          "stack_id"
+        ],
         "properties": {
-          "stack_name": { "type": "string" },
-          "stack_id": { "type": "string" }
+          "stack_name": {
+            "type": "string"
+          },
+          "stack_id": {
+            "type": "string"
+          }
         }
       }
     },
     "db_migration": {
       "type": "object",
-      "required": ["tool", "latest_version", "checksum_status"],
+      "required": [
+        "tool",
+        "latest_version",
+        "checksum_status"
+      ],
       "properties": {
-        "tool": { "type": "string" },
-        "latest_version": { "type": "string" },
-        "checksum_status": { "type": "string", "enum": ["matched"] }
+        "tool": {
+          "type": "string"
+        },
+        "latest_version": {
+          "type": "string"
+        },
+        "checksum_status": {
+          "type": "string",
+          "enum": [
+            "matched"
+          ]
+        }
       }
     },
     "test_reports": {
       "type": "object",
-      "required": ["allure_latest_url", "unit_report_url", "integration_report_url", "e2e_report_url"]
+      "required": [
+        "allure_latest_url",
+        "unit_report_url",
+        "integration_report_url",
+        "e2e_report_url"
+      ],
+      "properties": {
+        "allure_latest_url": {
+          "type": "string"
+        },
+        "unit_report_url": {
+          "type": "string"
+        },
+        "integration_report_url": {
+          "type": "string"
+        },
+        "e2e_report_url": {
+          "type": "string"
+        }
+      }
     },
     "docs_site": {
       "type": "object",
-      "required": ["latest_url", "version_url"]
+      "required": [
+        "latest_url",
+        "version_url"
+      ],
+      "properties": {
+        "latest_url": {
+          "type": "string"
+        },
+        "version_url": {
+          "type": "string"
+        }
+      }
     },
     "rag_evaluation": {
       "type": "object",
-      "required": ["evaluation_run_id", "report_url"]
+      "required": [
+        "evaluation_run_id",
+        "report_url"
+      ],
+      "properties": {
+        "evaluation_run_id": {
+          "type": "string"
+        },
+        "report_url": {
+          "type": "string"
+        }
+      }
     },
     "cost_estimate": {
       "type": "object",
-      "required": ["monthly_usd", "assumption"],
+      "required": [
+        "monthly_usd",
+        "assumption"
+      ],
       "properties": {
-        "monthly_usd": { "type": "number", "maximum": 550 },
-        "assumption": { "type": "string" }
+        "monthly_usd": {
+          "type": "number",
+          "maximum": 550
+        },
+        "assumption": {
+          "type": "string"
+        }
       }
     }
   }

@@ -1,4 +1,5 @@
 {
+  "example_status": "example_not_for_acceptance",
   "system": "Saphnexa",
   "environment": "dev",
   "aws_region": "ap-northeast-1",
