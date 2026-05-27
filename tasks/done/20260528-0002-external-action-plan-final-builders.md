@@ -1,6 +1,6 @@
 # external action plan final builders
 
-- 状態: do
+- 状態: done
 - タスク種別: 修正
 - 対象ブランチ: `codex/saphnexa-acceptance-impl`
 - 対象PR: `#1`
@@ -56,11 +56,11 @@ external action plan を final acceptance runbook と同期し、外部 action �
 
 ## Done 条件
 
-- [ ] action plan builder と checker を更新する。
-- [ ] 選定した検証コマンドが pass する。
-- [ ] 作業レポートを `reports/working/` に作成する。
-- [ ] commit / push し、PR に受け入れ条件確認コメントとセルフレビューコメントを投稿する。
-- [ ] PR コメント後に task を `tasks/done/` へ移動し、その更新も commit / push する。
+- [x] action plan builder と checker を更新する。
+- [x] 選定した検証コマンドが pass する。
+- [x] 作業レポートを `reports/working/` に作成する。
+- [x] commit / push し、PR に受け入れ条件確認コメントとセルフレビューコメントを投稿する。
+- [x] PR コメント後に task を `tasks/done/` へ移動し、その更新も commit / push する。
 
 ## 実装計画
 
@@ -100,6 +100,11 @@ runbook には既に builder / normalizer 手順が記載済み。今回は exte
 - `tools/check-external-acceptance-actions.js` に上記 command と実行順の検査を追加した。
 - runbook は既に同じ builder / normalizer 手順を記載済みのため、追加 docs 更新は不要と判断した。
 - 外部 action は pending / requires_confirmation / external_state_change のまま維持した。
+
+## PR コメント
+
+- 受け入れ条件確認: https://github.com/tsuji-tomonori/saphnexa/pull/1#issuecomment-4555812511
+- セルフレビュー: https://github.com/tsuji-tomonori/saphnexa/pull/1#issuecomment-4555814640
 
 ## PR セルフレビュー観点
 
