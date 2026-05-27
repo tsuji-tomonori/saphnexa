@@ -25,12 +25,17 @@
 ## 成果物
 
 - 単独実行で最新 draft を検査できる `npm run acceptance:package:check`
-- `tasks/do/20260527-1551-acceptance-package-check-freshness.md`
+- `tasks/done/20260527-1551-acceptance-package-check-freshness.md`
 
 ## 検証
 
 - `npm run acceptance:package:check`: pass
 - `npm run verify`: pass
+
+## PR コメント
+
+- 受け入れ条件確認: https://github.com/tsuji-tomonori/saphnexa/pull/1#issuecomment-4552160022
+- セルフレビュー: https://github.com/tsuji-tomonori/saphnexa/pull/1#issuecomment-4552162163
 
 ## Fit 評価
 

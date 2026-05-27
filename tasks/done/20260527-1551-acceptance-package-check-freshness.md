@@ -1,6 +1,6 @@
 # acceptance package check freshness
 
-- 状態: doing
+- 状態: done
 - タスク種別: 検証修正
 - 作成日時: 2026-05-27 15:51 JST
 - 対象 PR: #1
@@ -24,7 +24,7 @@
 - [x] `acceptance:package:check` が最新 draft を生成してから検査するようにする。
 - [x] `npm run acceptance:package:check` 単独で pass することを確認する。
 - [x] `npm run verify` を通す。
-- [ ] PR へ受け入れ条件コメントとセルフレビューコメントを追加する。
+- [x] PR へ受け入れ条件コメントとセルフレビューコメントを追加する。
 
 ## Done 条件
 
