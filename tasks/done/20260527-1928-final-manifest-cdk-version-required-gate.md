@@ -1,6 +1,6 @@
 # final manifest cdk version required gate
 
-状態: doing
+状態: done
 
 ## 背景
 
@@ -72,17 +72,17 @@ final evidence candidate gate が、最終 `evidence_manifest.json` から `cdk_
 
 ## 受け入れ条件
 
-- [ ] final evidence candidate validator の required list に `cdk_app_version` が含まれる。
-- [ ] `cdk_app_version` 欠落 fixture が `manifest.cdk_app_version: required` を検出する。
-- [ ] 既存 final candidate fixture と acceptance package / evidence / verify checks が pass する。
-- [ ] 外部 state を変更せず、未実施外部 action を pending として維持する。
+- [x] final evidence candidate validator の required list に `cdk_app_version` が含まれる。
+- [x] `cdk_app_version` 欠落 fixture が `manifest.cdk_app_version: required` を検出する。
+- [x] 既存 final candidate fixture と acceptance package / evidence / verify checks が pass する。
+- [x] 外部 state を変更せず、未実施外部 action を pending として維持する。
 
 ## Done 条件
 
-- [ ] 実装差分が PR branch に commit / push されている。
-- [ ] 受け入れ条件確認コメントとセルフレビューコメントを PR に投稿している。
-- [ ] task md に PR コメント URL と検証結果を記録し、`tasks/done/` へ移動している。
-- [ ] 作業レポートを `reports/working/` に保存している。
+- [x] 実装差分が PR branch に commit / push されている。
+- [x] 受け入れ条件確認コメントとセルフレビューコメントを PR に投稿している。
+- [x] task md に PR コメント URL と検証結果を記録し、`tasks/done/` へ移動している。
+- [x] 作業レポートを `reports/working/` に保存している。
 
 ## 検証計画
 
@@ -96,7 +96,19 @@ final evidence candidate gate が、最終 `evidence_manifest.json` から `cdk_
 
 ## PR コメント
 
-- 未投稿。PR push 後に受け入れ条件確認とセルフレビューを記録する。
+- 受け入れ条件確認: https://github.com/tsuji-tomonori/saphnexa/pull/1#issuecomment-4553719191
+- セルフレビュー: https://github.com/tsuji-tomonori/saphnexa/pull/1#issuecomment-4553722360
+- GitHub Apps comment は既知の 403 `Resource not accessible by integration` のため、`gh pr comment` fallback で投稿した。
+
+## 検証結果
+
+- `npm run acceptance:final-candidate:fixture:check`: pass
+- `npm run acceptance:final-candidate:check`: pass。final files 未配置のため `not ready` 表示、errors なし。
+- `npm run acceptance:package:check`: pass
+- `npm run evidence:check`: pass
+- `npm run verify`: pass
+- `git diff --check`: pass
+- `pre-commit run --files tools/final-evidence-candidate.js tools/check-final-evidence-candidate-fixtures.js tasks/do/20260527-1928-final-manifest-cdk-version-required-gate.md reports/working/20260527-1930-final-manifest-cdk-version-required-gate.md`: pass
 
 ## PR レビュー観点
 
