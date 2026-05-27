@@ -26,6 +26,7 @@ AC-001、AC-002、AC-004、AC-150、AC-151、AC-152 の最終検収で、draft �
 - final evidence manifest に placeholder、draft、example、pending が含まれないこと。
 - AWS account id は実 12 桁であること。
 - final evidence manifest の `git_commit_sha` は検証実行時の Git ref と一致していること。
+- final evidence manifest の `git_tag` は repository に存在し、検証実行時の Git ref と同じ commit を指していること。
 - draft package の `git_commit_sha` は検証実行時の Git ref と一致していること。
 - GitHub release URL が `https://github.com/<owner>/<repo>/releases/tag/<git_tag>` として、final evidence manifest の `git_tag` と同じ tag を指すこと。
 - checklist は source checklist 列を保ち、全 AC 行が `結果=PASS` で、`証跡リンク`、`確認者`、`確認日` が空でないこと。

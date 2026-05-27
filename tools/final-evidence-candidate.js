@@ -9,7 +9,7 @@ import {
   finalReviewerColumn,
   sourceChecklistValue
 } from "./acceptance-checklist-format.js";
-import { currentGitCommit } from "./git-context.js";
+import { currentGitCommit, gitTagCommit } from "./git-context.js";
 import { readJson, readText } from "./lib.js";
 
 export const finalCandidateStatusPath = "dist/acceptance/final_candidate_status.json";
@@ -35,7 +35,7 @@ export function buildFinalEvidenceCandidateStatus(outputPath = finalCandidateSta
   const errors = [];
 
   if (missing_files.length === 0) {
-    validateManifest(paths.evidence_manifest, checks, errors);
+    validateManifest(paths.evidence_manifest, checks, errors, options);
     validateChecklist(paths.acceptance_checklist, checks, errors);
     validateCloudFormationInventory(paths.cloudformation_inventory, checks, errors);
   }
@@ -58,8 +58,9 @@ export function buildFinalEvidenceCandidateStatus(outputPath = finalCandidateSta
   return status;
 }
 
-function validateManifest(path, checks, errors) {
+function validateManifest(path, checks, errors, options = {}) {
   const manifest = readJson(path);
+  const resolveGitTagCommit = options.resolveGitTagCommit || gitTagCommit;
   const required = [
     "system",
     "environment",
@@ -84,6 +85,9 @@ function validateManifest(path, checks, errors) {
   check(/^[a-f0-9]{40}$/.test(manifest.git_commit_sha || "") && !/^0{40}$/.test(manifest.git_commit_sha || ""), "manifest.git_commit_sha", checks, errors, "must be a non-placeholder commit SHA");
   check(manifest.git_commit_sha === currentGitCommit(), "manifest.git_commit_sha_current_ref", checks, errors, "must match current Git ref");
   check(isFinalText(manifest.git_tag), "manifest.git_tag", checks, errors, "must be a final immutable Git tag");
+  const tagCommit = resolveGitTagCommit(manifest.git_tag);
+  check(Boolean(tagCommit), "manifest.git_tag_ref", checks, errors, "must exist as a Git tag ref");
+  check(tagCommit === manifest.git_commit_sha, "manifest.git_tag_commit", checks, errors, "must point to manifest.git_commit_sha");
   check(isUrl(manifest.github_release_url), "manifest.github_release_url", checks, errors, "must be an https GitHub release URL");
   check(isReleaseUrlForTag(manifest.github_release_url, manifest.git_tag), "manifest.github_release_url_git_tag", checks, errors, "must point to the same release tag as manifest.git_tag");
   check(Array.isArray(manifest.cloudformation_stacks) && manifest.cloudformation_stacks.length > 0, "manifest.cloudformation_stacks", checks, errors, "must include deployed stacks");

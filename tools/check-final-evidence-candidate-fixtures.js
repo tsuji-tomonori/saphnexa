@@ -10,8 +10,9 @@ import { assert } from "./lib.js";
 const root = mkdtempSync(join(tmpdir(), "saphnexa-final-candidate-"));
 
 try {
+  const resolveGitTagCommit = fixtureGitTagResolver();
   const readyPaths = writeCandidateFiles(join(root, "ready"), buildReadyCandidate());
-  const readyStatus = buildFinalEvidenceCandidateStatus(join(root, "ready-status.json"), { candidatePaths: readyPaths });
+  const readyStatus = buildFinalEvidenceCandidateStatus(join(root, "ready-status.json"), { candidatePaths: readyPaths, resolveGitTagCommit });
   assert(readyStatus.ready === true, "ready fixture must be ready");
   assert(readyStatus.status === "ready", "ready fixture status must be ready");
   assert(readyStatus.errors.length === 0, "ready fixture must not have errors");
@@ -23,24 +24,42 @@ try {
   invalid.checklistRows[0].結果 = "PENDING_AWS";
   invalid.inventory.source = "local-cdk-intent";
   const invalidPaths = writeCandidateFiles(join(root, "invalid"), invalid);
-  const invalidStatus = buildFinalEvidenceCandidateStatus(join(root, "invalid-status.json"), { candidatePaths: invalidPaths });
+  const invalidStatus = buildFinalEvidenceCandidateStatus(join(root, "invalid-status.json"), { candidatePaths: invalidPaths, resolveGitTagCommit });
   assert(invalidStatus.ready === false, "invalid fixture must not be ready");
   assert(invalidStatus.status === "invalid", "invalid fixture status must be invalid");
   assert(invalidStatus.errors.some((error) => error.includes("manifest.git_commit_sha_current_ref")), "invalid fixture must reject git commit mismatch");
   assert(invalidStatus.errors.some((error) => error.includes("manifest.git_tag")), "invalid fixture must reject pending git tag");
+  assert(invalidStatus.errors.some((error) => error.includes("manifest.git_tag_ref")), "invalid fixture must reject missing git tag ref");
   assert(invalidStatus.errors.some((error) => error.includes(`checklist.${acceptanceIds[0]}.結果`)), "invalid fixture must reject non-PASS checklist result");
   assert(invalidStatus.errors.some((error) => error.includes("cloudformation.source")), "invalid fixture must reject non-AWS CloudFormation source");
 
   const mismatchedRelease = buildReadyCandidate();
   mismatchedRelease.manifest.github_release_url = "https://github.com/tsuji-tomonori/saphnexa/releases/tag/v0.16.0-acceptance.2";
   const mismatchedReleasePaths = writeCandidateFiles(join(root, "mismatched-release"), mismatchedRelease);
-  const mismatchedReleaseStatus = buildFinalEvidenceCandidateStatus(join(root, "mismatched-release-status.json"), { candidatePaths: mismatchedReleasePaths });
+  const mismatchedReleaseStatus = buildFinalEvidenceCandidateStatus(join(root, "mismatched-release-status.json"), { candidatePaths: mismatchedReleasePaths, resolveGitTagCommit });
   assert(mismatchedReleaseStatus.ready === false, "mismatched release fixture must not be ready");
   assert(mismatchedReleaseStatus.errors.some((error) => error.includes("manifest.github_release_url_git_tag")), "mismatched release fixture must reject release URL tag mismatch");
+
+  const wrongTagCommit = buildReadyCandidate();
+  const wrongTagCommitPaths = writeCandidateFiles(join(root, "wrong-tag-commit"), wrongTagCommit);
+  const wrongTagCommitStatus = buildFinalEvidenceCandidateStatus(join(root, "wrong-tag-commit-status.json"), {
+    candidatePaths: wrongTagCommitPaths,
+    resolveGitTagCommit: () => "0123456789abcdef0123456789abcdef01234567"
+  });
+  assert(wrongTagCommitStatus.ready === false, "wrong tag commit fixture must not be ready");
+  assert(wrongTagCommitStatus.errors.some((error) => error.includes("manifest.git_tag_commit")), "wrong tag commit fixture must reject tag commit mismatch");
 
   console.log("final evidence candidate fixture check passed");
 } finally {
   rmSync(root, { recursive: true, force: true });
+}
+
+function fixtureGitTagResolver() {
+  const gitCommit = currentGitCommit();
+  return (tagName) => {
+    if (tagName === "v0.16.0-acceptance.1") return gitCommit;
+    return null;
+  };
 }
 
 function buildReadyCandidate() {

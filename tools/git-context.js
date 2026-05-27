@@ -1,4 +1,5 @@
 import { existsSync, readFileSync, statSync } from "node:fs";
+import { execFileSync } from "node:child_process";
 import { join, resolve } from "node:path";
 
 export function currentGitCommit() {
@@ -24,6 +25,15 @@ export function currentGitCommit() {
   }
 
   throw new Error(`Git ref not found: ${ref}`);
+}
+
+export function gitTagCommit(tagName) {
+  if (typeof tagName !== "string" || tagName.length === 0) return null;
+  try {
+    return execFileSync("git", ["rev-list", "-n", "1", tagName], { encoding: "utf8", stdio: ["ignore", "pipe", "ignore"] }).trim().toLowerCase() || null;
+  } catch {
+    return null;
+  }
 }
 
 function resolveGitDir() {
