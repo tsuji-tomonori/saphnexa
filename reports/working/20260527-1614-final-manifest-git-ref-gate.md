@@ -28,7 +28,7 @@
 
 - final evidence manifest の current Git ref 一致検査
 - current ref / mismatch を検査する final candidate fixture
-- `tasks/do/20260527-1610-final-manifest-git-ref-gate.md`
+- `tasks/done/20260527-1610-final-manifest-git-ref-gate.md`
 
 ## 検証
 
@@ -36,6 +36,11 @@
 - `npm run acceptance:final-candidate:check`: pass (`not_ready` expected)
 - `npm run docs:check`: pass
 - `npm run verify`: pass
+
+## PR コメント
+
+- 受け入れ条件確認: https://github.com/tsuji-tomonori/saphnexa/pull/1#issuecomment-4552297481
+- セルフレビュー: https://github.com/tsuji-tomonori/saphnexa/pull/1#issuecomment-4552301105
 
 ## Fit 評価
 
