@@ -29,7 +29,7 @@
 
 - `tools/git-context.js`
 - current Git ref と一致する draft package `git_commit_sha` 検査
-- `tasks/do/20260527-1542-acceptance-git-sha-consistency-gate.md`
+- `tasks/done/20260527-1542-acceptance-git-sha-consistency-gate.md`
 
 ## 検証
 
@@ -38,6 +38,11 @@
 - `npm run acceptance:final:check`: pass
 - `npm run docs:check`: pass
 - `npm run verify`: pass
+
+## PR コメント
+
+- 受け入れ条件確認: https://github.com/tsuji-tomonori/saphnexa/pull/1#issuecomment-4552102332
+- セルフレビュー: https://github.com/tsuji-tomonori/saphnexa/pull/1#issuecomment-4552105106
 
 ## Fit 評価
 
