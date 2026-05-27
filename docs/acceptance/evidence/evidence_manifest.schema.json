@@ -8,6 +8,12 @@
     "source_sha256": "29caa24a6eb0135563cc5a8f690a6837662f5bbdce53c6ee20c328b258e79153",
     "source_target_design": "Saphnexa_基本設計書_v0.16.md"
   },
+  "x_final_acceptance_extension": {
+    "required": [
+      "github_release_url"
+    ],
+    "reason": "AC-001 requires GitHub release evidence in addition to the source evidence manifest schema."
+  },
   "required": [
     "system",
     "environment",
@@ -50,6 +56,10 @@
     "git_tag": {
       "type": "string",
       "minLength": 1
+    },
+    "github_release_url": {
+      "type": "string",
+      "pattern": "^https://github\\.com/.+/releases/tag/.+$"
     },
     "cdk_app_version": {
       "type": "string"

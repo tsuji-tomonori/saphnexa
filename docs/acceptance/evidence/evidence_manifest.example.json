@@ -6,6 +6,7 @@
   "aws_account_id": "\u0030\u0030\u0030\u0030\u0030\u0030\u0030\u0030\u0030\u0030\u0030\u0030",
   "git_commit_sha": "0000000000000000000000000000000000000000",
   "git_tag": "example-not-for-acceptance",
+  "github_release_url": "https://github.com/example/saphnexa/releases/tag/example-not-for-acceptance",
   "cdk_app_version": "0.1.0",
   "cloudformation_stacks": [
     {

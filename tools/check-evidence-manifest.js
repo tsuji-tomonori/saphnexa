@@ -16,6 +16,7 @@ const expectedRequired = [
   "rag_evaluation",
   "cost_estimate"
 ];
+const finalAcceptanceExtensionRequired = ["github_release_url"];
 
 assert(schema.$schema === "https://json-schema.org/draft/2020-12/schema", "schema draft mismatch");
 assert(schema.title === "Saphnexa Acceptance Evidence Manifest", "schema title mismatch");
@@ -24,10 +25,13 @@ assert(schema.x_source?.source_file === "Saphnexa_証跡マニフェスト_schem
 assert(schema.x_source?.source_sha256 === "29caa24a6eb0135563cc5a8f690a6837662f5bbdce53c6ee20c328b258e79153", "schema source checksum mismatch");
 assert(schema.x_source?.source_target_design === "Saphnexa_基本設計書_v0.16.md", "schema target design mismatch");
 assert(JSON.stringify(schema.required) === JSON.stringify(expectedRequired), "schema required fields mismatch");
+assert(JSON.stringify(schema.x_final_acceptance_extension?.required) === JSON.stringify(finalAcceptanceExtensionRequired), "schema final acceptance extension required mismatch");
+assert(/AC-001/.test(schema.x_final_acceptance_extension?.reason || ""), "schema final acceptance extension reason must cite AC-001");
 assert(schema.properties.system.const === "Saphnexa", "schema system const mismatch");
 assert(schema.properties.aws_region.const === "ap-northeast-1", "schema region const mismatch");
 assert(schema.properties.aws_account_id.pattern === "^[0-9]{12}$", "schema aws account pattern mismatch");
 assert(schema.properties.git_commit_sha.pattern === "^[a-f0-9]{40}$", "schema git commit pattern mismatch");
+assert(schema.properties.github_release_url.pattern === "^https://github\\.com/.+/releases/tag/.+$", "schema GitHub release URL pattern mismatch");
 assert(schema.properties.cloudformation_stacks.minItems === 1, "schema CloudFormation stack minItems mismatch");
 assert(JSON.stringify(schema.properties.cloudformation_stacks.items.required) === JSON.stringify(["stack_name", "stack_id"]), "schema CloudFormation stack required mismatch");
 assert(schema.properties.db_migration.properties.checksum_status.enum.includes("matched"), "schema db checksum enum mismatch");
@@ -47,6 +51,9 @@ for (const [section, required] of Object.entries({
 for (const key of schema.required) {
   assert(Object.prototype.hasOwnProperty.call(manifest, key), `manifest missing required field ${key}`);
 }
+for (const key of schema.x_final_acceptance_extension.required) {
+  assert(Object.prototype.hasOwnProperty.call(manifest, key), `manifest missing final extension field ${key}`);
+}
 
 assert(manifest.example_status === "example_not_for_acceptance", "example manifest must be marked as not for acceptance");
 assert(manifest.system === "Saphnexa", "system must be Saphnexa");
@@ -55,9 +62,11 @@ assert(manifest.aws_region === "ap-northeast-1", "aws_region must be ap-northeas
 assert(/^[0-9]{12}$/.test(manifest.aws_account_id), "aws_account_id must be 12 digits");
 assert(/^[a-f0-9]{40}$/.test(manifest.git_commit_sha), "git_commit_sha must be 40 hex chars");
 assert(typeof manifest.git_tag === "string" && manifest.git_tag.length > 0, "git_tag is required");
+assert(/^https:\/\/github\.com\/.+\/releases\/tag\/.+/.test(manifest.github_release_url), "github_release_url must be a GitHub release URL");
 assert(manifest.aws_account_id === "000000000000", "example manifest must use placeholder AWS account id");
 assert(/^0{40}$/.test(manifest.git_commit_sha), "example manifest must use placeholder commit SHA");
 assert(/example|not-for-acceptance/.test(manifest.git_tag), "example manifest must use non-final tag marker");
+assert(/example|not-for-acceptance/.test(manifest.github_release_url), "example manifest must use non-final GitHub release URL marker");
 assert(Array.isArray(manifest.cloudformation_stacks) && manifest.cloudformation_stacks.length > 0, "cloudformation_stacks must not be empty");
 assert(manifest.db_migration?.checksum_status === "matched", "db migration checksum must be matched");
 assert(manifest.cost_estimate?.monthly_usd <= 550, "cost estimate exceeds acceptance limit");
