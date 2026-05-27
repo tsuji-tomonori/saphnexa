@@ -10,7 +10,7 @@ import {
   sourceChecklistValue
 } from "./acceptance-checklist-format.js";
 import { currentGitCommit, currentGitRepository, gitTagCommit } from "./git-context.js";
-import { expectedMajorResourceTypes } from "./cloudformation-inventory.js";
+import { expectedMajorOutputKeys, expectedMajorResourceTypes } from "./cloudformation-inventory.js";
 import { listFiles, readJson, readText } from "./lib.js";
 
 export const finalCandidateStatusPath = "dist/acceptance/final_candidate_status.json";
@@ -182,6 +182,14 @@ function validateCloudFormationInventory(path, checks, errors) {
   check(isCompleteCloudFormationStackStatus(inventory.stack_status), "cloudformation.stack_status", checks, errors, "must be a complete CloudFormation stack status");
   check(Array.isArray(inventory.stack_outputs) && inventory.stack_outputs.length > 0, "cloudformation.stack_outputs", checks, errors, "must include stack outputs");
   check(Array.isArray(inventory.stack_resources) && inventory.stack_resources.length > 0, "cloudformation.stack_resources", checks, errors, "must include resources");
+  for (const output of inventory.stack_outputs || []) {
+    check(isFinalText(output.OutputKey), `cloudformation.output.${output.OutputKey || "unknown"}.OutputKey`, checks, errors, "must include output key");
+    check(isFinalText(output.OutputValue), `cloudformation.output.${output.OutputKey || "unknown"}.OutputValue`, checks, errors, "must include output value");
+  }
+  const outputKeys = new Set((inventory.stack_outputs || []).map((output) => normalizeOutputKey(output.OutputKey)));
+  for (const outputKey of expectedMajorOutputKeys) {
+    check(outputKeys.has(normalizeOutputKey(outputKey)), `cloudformation.major_output_key.${outputKey}`, checks, errors, "must include expected major output key");
+  }
   const resourceTypes = new Set((inventory.stack_resources || []).map((resource) => resource.ResourceType).filter(Boolean));
   for (const resourceType of expectedMajorResourceTypes) {
     check(resourceTypes.has(resourceType), `cloudformation.major_resource_type.${resourceType}`, checks, errors, "must include expected major resource type");
@@ -340,6 +348,10 @@ function parseCloudFormationStackArn(value) {
   const match = /^arn:aws:cloudformation:([^:]+):([0-9]{12}):stack\/([^/]+)\/.+$/.exec(value || "");
   if (!match) return null;
   return { region: match[1], accountId: match[2], stackName: match[3] };
+}
+
+function normalizeOutputKey(value) {
+  return String(value || "").replaceAll(/[^a-z0-9]/gi, "").toLowerCase();
 }
 
 function parseCsv(body) {

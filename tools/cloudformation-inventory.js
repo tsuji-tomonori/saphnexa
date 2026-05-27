@@ -24,6 +24,17 @@ export const expectedMajorResourceTypes = [
   "AWS::Events::EventBus"
 ];
 
+export const expectedMajorOutputKeys = [
+  "DistributionDomainName",
+  "AdminArtifactsBucketArn",
+  "SignedCookieKeyGroupId",
+  "ApiEndpoint",
+  "RealtimeEndpoint",
+  "DsqlEndpoint",
+  "KnowledgeBaseId",
+  "DeployRoleArn"
+];
+
 export function buildCloudFormationInventoryDraft(outputPath = cloudFormationInventoryPath) {
   const localInventory = synthLocalInventory("uat");
   const constructs = Object.entries(localInventory.intent_catalog).map(([name, catalog]) => ({
@@ -53,6 +64,7 @@ export function buildCloudFormationInventoryDraft(outputPath = cloudFormationInv
       checksum: `sha256:${sha256(JSON.stringify(localInventory))}`
     },
     expected_major_resource_types: expectedMajorResourceTypes,
+    expected_major_output_keys: expectedMajorOutputKeys,
     final_capture_instructions: {
       describe_stacks_command: "aws cloudformation describe-stacks --stack-name saphnexa-uat-app --region ap-northeast-1 --output json",
       list_stack_resources_command: "aws cloudformation list-stack-resources --stack-name saphnexa-uat-app --region ap-northeast-1 --output json",
@@ -61,6 +73,7 @@ export function buildCloudFormationInventoryDraft(outputPath = cloudFormationInv
         "StackId",
         "StackStatus",
         "Outputs",
+        "major output keys",
         "StackResourceSummaries",
         "resource type counts",
         "major resource match rate 100%"

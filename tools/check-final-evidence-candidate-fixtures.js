@@ -3,7 +3,7 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { acceptanceIds, acceptanceItemById } from "./acceptance-ids.js";
 import { sourceChecklistColumns } from "./acceptance-checklist-format.js";
-import { expectedMajorResourceTypes } from "./cloudformation-inventory.js";
+import { expectedMajorOutputKeys, expectedMajorResourceTypes } from "./cloudformation-inventory.js";
 import { buildFinalEvidenceCandidateStatus } from "./final-evidence-candidate.js";
 import { currentGitCommit } from "./git-context.js";
 import { assert } from "./lib.js";
@@ -242,6 +242,17 @@ try {
   assert(invalidStackStatusOutputsStatus.errors.some((error) => error.includes("cloudformation.stack_status")), "invalid stack status outputs fixture must reject rollback stack status");
   assert(invalidStackStatusOutputsStatus.errors.some((error) => error.includes("cloudformation.stack_outputs")), "invalid stack status outputs fixture must reject empty stack outputs");
 
+  const missingMajorOutput = buildReadyCandidate();
+  missingMajorOutput.inventory.stack_outputs = missingMajorOutput.inventory.stack_outputs.filter((output) => output.OutputKey !== expectedMajorOutputKeys[0]);
+  const missingMajorOutputPaths = writeCandidateFiles(join(root, "missing-major-output"), missingMajorOutput);
+  const missingMajorOutputStatus = buildFinalEvidenceCandidateStatus(join(root, "missing-major-output-status.json"), {
+    candidatePaths: missingMajorOutputPaths,
+    resolveGitTagCommit,
+    resolveGitRepository
+  });
+  assert(missingMajorOutputStatus.ready === false, "missing major output fixture must not be ready");
+  assert(missingMajorOutputStatus.errors.some((error) => error.includes(`cloudformation.major_output_key.${expectedMajorOutputKeys[0]}`)), "missing major output fixture must reject missing expected output key");
+
   const invalidManifestStacks = buildReadyCandidate();
   invalidManifestStacks.manifest.cloudformation_stacks.push(
     {
@@ -381,10 +392,10 @@ function buildReadyCandidate() {
       final_acceptance_eligible: true,
       aws_capture_required: false,
       stack_outputs: [
-        {
-          OutputKey: "DistributionDomainName",
-          OutputValue: "d111111abcdef8.cloudfront.net"
-        }
+        ...expectedMajorOutputKeys.map((outputKey, index) => ({
+          OutputKey: outputKey,
+          OutputValue: outputValueFor(outputKey, index)
+        }))
       ],
       stack_resources: [
         ...expectedMajorResourceTypes.map((resourceType, index) => ({
@@ -395,6 +406,20 @@ function buildReadyCandidate() {
       ]
     }
   };
+}
+
+function outputValueFor(outputKey, index) {
+  const values = {
+    DistributionDomainName: "d111111abcdef8.cloudfront.net",
+    AdminArtifactsBucketArn: "arn:aws:s3:::saphnexa-uat-admin-artifacts",
+    SignedCookieKeyGroupId: "K1234567890ABC",
+    ApiEndpoint: "https://api.saphnexa-uat.internal",
+    RealtimeEndpoint: "wss://realtime.saphnexa-uat.internal/event/realtime",
+    DsqlEndpoint: "saphnexa-uat.dsql.ap-northeast-1.on.aws",
+    KnowledgeBaseId: "KB12345678",
+    DeployRoleArn: "arn:aws:iam::123456789012:role/saphnexa-uat-github-deploy"
+  };
+  return values[outputKey] || `saphnexa-uat-output-${index}`;
 }
 
 function writeCandidateFiles(dir, candidate) {

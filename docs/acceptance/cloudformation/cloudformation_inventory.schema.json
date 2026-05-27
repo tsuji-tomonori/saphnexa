@@ -35,7 +35,14 @@
     "stack_outputs": {
       "type": "array",
       "minItems": 1,
-      "items": { "type": "object" }
+      "items": {
+        "type": "object",
+        "required": ["OutputKey", "OutputValue"],
+        "properties": {
+          "OutputKey": { "type": "string", "minLength": 1 },
+          "OutputValue": { "type": "string", "minLength": 1 }
+        }
+      }
     },
     "stack_resources": {
       "type": "array",
@@ -55,6 +62,11 @@
       "type": "array",
       "minItems": 1,
       "items": { "type": "string", "pattern": "^AWS::" }
+    },
+    "expected_major_output_keys": {
+      "type": "array",
+      "minItems": 1,
+      "items": { "type": "string", "minLength": 1 }
     },
     "final_capture_instructions": {
       "type": "object",
@@ -78,6 +90,7 @@
         "required": [
           "local_cdk_inventory",
           "expected_major_resource_types",
+          "expected_major_output_keys",
           "final_capture_instructions"
         ],
         "properties": {
