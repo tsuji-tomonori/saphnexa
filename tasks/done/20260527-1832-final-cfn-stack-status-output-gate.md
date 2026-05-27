@@ -1,6 +1,6 @@
 # final CloudFormation stack status output gate
 
-状態: doing
+状態: done
 
 ## 背景
 
@@ -115,7 +115,9 @@ final evidence candidate の CloudFormation inventory 検査で、successful な
 
 ## PR コメント
 
-- 未投稿。PR push 後に受け入れ条件確認とセルフレビューを記録する。
+- 受け入れ条件確認: https://github.com/tsuji-tomonori/saphnexa/pull/1#issuecomment-4553331244
+- セルフレビュー: https://github.com/tsuji-tomonori/saphnexa/pull/1#issuecomment-4553334002
+- GitHub Apps comment は 403 `Resource not accessible by integration` のため、`gh pr comment` fallback で投稿した。
 
 ## PR レビュー観点
 
