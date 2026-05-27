@@ -5,3 +5,180 @@ tasks:
     desc: Install pre-commit hook
     cmds:
       - pre-commit install
+  verify:
+    desc: Run local Saphnexa verification checks
+    cmds:
+      - npm run verify
+      - git diff --check
+  contract:
+    desc: Verify API and Tools API contract metadata
+    cmds:
+      - npm run test:contract
+  integration:local:
+    desc: Run local integration checks for the first vertical slice
+    cmds:
+      - npm run test:integration:local
+  scan:bundle-domains:
+    desc: Ensure web source does not embed AWS service domains
+    cmds:
+      - npm run scan:bundle-domains
+  ci:check:
+    desc: Verify GitHub Actions workflow shape locally
+    cmds:
+      - npm run ci:check
+  cfn:inventory:build:
+    desc: Build draft CloudFormation inventory evidence locally
+    cmds:
+      - npm run cfn:inventory:build
+  cfn:inventory:check:
+    desc: Verify draft CloudFormation inventory evidence locally
+    cmds:
+      - npm run cfn:inventory:check
+  edge:security:check:
+    desc: Verify local edge, realtime, IAM, KMS, and queue security intent
+    cmds:
+      - npm run edge:security:check
+  docs:check:
+    desc: Verify acceptance and operations documents locally
+    cmds:
+      - npm run docs:check
+  evidence:check:
+    desc: Verify acceptance evidence manifest example locally
+    cmds:
+      - npm run evidence:check
+  acceptance:source:check:
+    desc: Verify acceptance source catalog against traceability locally
+    cmds:
+      - npm run acceptance:source:check
+  acceptance:package:build:
+    desc: Build draft acceptance package artifacts locally
+    cmds:
+      - npm run acceptance:package:build
+  acceptance:package:check:
+    desc: Verify draft acceptance package artifacts locally
+    cmds:
+      - npm run acceptance:package:check
+  acceptance:final:build:
+    desc: Build final acceptance readiness preflight locally
+    cmds:
+      - npm run acceptance:final:build
+  acceptance:final:check:
+    desc: Verify final acceptance readiness preflight locally
+    cmds:
+      - npm run acceptance:final:check
+  acceptance:final-candidate:check:
+    desc: Verify final evidence candidate status locally
+    cmds:
+      - npm run acceptance:final-candidate:check
+  acceptance:final-candidate:fixture:check:
+    desc: Verify final evidence candidate ready/invalid fixture branches locally
+    cmds:
+      - npm run acceptance:final-candidate:fixture:check
+  acceptance:external-actions:build:
+    desc: Build pending external acceptance action plan locally
+    cmds:
+      - npm run acceptance:external-actions:build
+  acceptance:external-actions:check:
+    desc: Verify pending external acceptance action plan locally
+    cmds:
+      - npm run acceptance:external-actions:check
+  security:scan:
+    desc: Run local secret and security baseline checks
+    cmds:
+      - npm run security:scan
+  coverage:check:
+    desc: Verify Node test coverage thresholds
+    cmds:
+      - npm run coverage:check
+  ui:check:
+    desc: Verify local UI architecture and static accessibility gates
+    cmds:
+      - npm run ui:check
+  web:flow:check:
+    desc: Verify local web chat and admin flow contracts
+    cmds:
+      - npm run web:flow:check
+  web:a11y:check:
+    desc: Verify local static web accessibility report
+    cmds:
+      - npm run web:a11y:check
+  web:perf:local:
+    desc: Verify local web bundle and route transition smoke gates
+    cmds:
+      - npm run web:perf:local
+  web:bundle:check:
+    desc: Verify local web bundle report
+    cmds:
+      - npm run web:bundle:check
+  perf:api:local:
+    desc: Verify local non-AI API latency and error-rate gates
+    cmds:
+      - npm run perf:api:local
+  failure:check:
+    desc: Verify local async failure injection recovery cases
+    cmds:
+      - npm run failure:check
+  rag:quality:check:
+    desc: Verify local RAG quality golden metrics and report generation
+    cmds:
+      - npm run rag:quality:check
+  rag:security:check:
+    desc: Verify local prompt injection attack catalog
+    cmds:
+      - npm run rag:security:check
+  rag:perf:local:
+    desc: Verify local RAG first notification and final answer timing gates
+    cmds:
+      - npm run rag:perf:local
+  db:migration:check:
+    desc: Verify local Flyway SQL migration naming and schema coverage
+    cmds:
+      - npm run db:migration:check
+  db:integrity:check:
+    desc: Verify local DB-like domain invariants and append-only events
+    cmds:
+      - npm run db:integrity:check
+  search:local:check:
+    desc: Verify local reference graph and BM25F search fixtures
+    cmds:
+      - npm run search:local:check
+  observability:check:
+    desc: Verify local metrics, alarms, and retention catalog
+    cmds:
+      - npm run observability:check
+  admin:workflow:check:
+    desc: Verify local admin workflows, audit events, and admin event coverage
+    cmds:
+      - npm run admin:workflow:check
+  offline-artifacts:check:
+    desc: Verify local offline artifact inventory for parser, chunks, references, and BM25F
+    cmds:
+      - npm run offline-artifacts:check
+  restore:drill:check:
+    desc: Verify local restore drill report and checksum
+    cmds:
+      - npm run restore:drill:check
+  pairwise:check:
+    desc: Verify pairwise acceptance test catalog
+    cmds:
+      - npm run pairwise:check
+  perf:local:
+    desc: Run local performance smoke checks
+    cmds:
+      - npm run perf:local
+  cost:check:
+    desc: Verify local cost estimate guardrail
+    cmds:
+      - npm run cost:check
+  storage:check:
+    desc: Verify local storage prefix and metadata invariants
+    cmds:
+      - npm run storage:check
+  admin-artifacts:build:
+    desc: Build local admin docs and test report artifacts
+    cmds:
+      - npm run admin-artifacts:build
+  artifacts:check:
+    desc: Verify local admin artifact manifests and access policy
+    cmds:
+      - npm run artifacts:check

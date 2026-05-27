@@ -1,0 +1,196 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Saphnexa Acceptance Evidence Manifest",
+  "type": "object",
+  "x_source": {
+    "source_package": "Saphnexa_検収受入条件_package_v1.0",
+    "source_file": "Saphnexa_証跡マニフェスト_schema_v1.0.json",
+    "source_sha256": "29caa24a6eb0135563cc5a8f690a6837662f5bbdce53c6ee20c328b258e79153",
+    "source_target_design": "Saphnexa_基本設計書_v0.16.md"
+  },
+  "x_final_acceptance_extension": {
+    "required": [
+      "github_release_url",
+      "cdk_app_version"
+    ],
+    "reason": "AC-001 and the final completion rule require GitHub release evidence and the deployed CDK app version in addition to the source evidence manifest schema."
+  },
+  "required": [
+    "system",
+    "environment",
+    "aws_region",
+    "aws_account_id",
+    "git_commit_sha",
+    "git_tag",
+    "github_release_url",
+    "cdk_app_version",
+    "cloudformation_stacks",
+    "db_migration",
+    "test_reports",
+    "docs_site",
+    "rag_evaluation",
+    "cost_estimate"
+  ],
+  "properties": {
+    "system": {
+      "const": "Saphnexa"
+    },
+    "environment": {
+      "type": "string",
+      "enum": [
+        "dev",
+        "uat",
+        "stg",
+        "prod"
+      ]
+    },
+    "aws_region": {
+      "type": "string",
+      "const": "ap-northeast-1"
+    },
+    "aws_account_id": {
+      "type": "string",
+      "pattern": "^[0-9]{12}$"
+    },
+    "git_commit_sha": {
+      "type": "string",
+      "pattern": "^[a-f0-9]{40}$"
+    },
+    "git_tag": {
+      "type": "string",
+      "minLength": 1
+    },
+    "github_release_url": {
+      "type": "string",
+      "description": "GitHub release URL for the same tag recorded in git_tag.",
+      "pattern": "^https://github\\.com/.+/releases/tag/.+$"
+    },
+    "cdk_app_version": {
+      "type": "string"
+    },
+    "cloudformation_stacks": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "required": [
+          "stack_name",
+          "stack_id"
+        ],
+        "properties": {
+          "stack_name": {
+            "type": "string"
+          },
+          "stack_id": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "db_migration": {
+      "type": "object",
+      "required": [
+        "tool",
+        "latest_version",
+        "checksum_status"
+      ],
+      "properties": {
+        "tool": {
+          "type": "string"
+        },
+        "latest_version": {
+          "type": "string"
+        },
+        "checksum_status": {
+          "type": "string",
+          "enum": [
+            "matched"
+          ]
+        }
+      }
+    },
+    "test_reports": {
+      "type": "object",
+      "required": [
+        "allure_latest_url",
+        "unit_report_url",
+        "integration_report_url",
+        "e2e_report_url"
+      ],
+      "properties": {
+        "allure_latest_url": {
+          "type": "string",
+          "description": "Final Allure latest report URL. Use the CloudFront viewer path /admin/test-reports/allure/latest/ or the S3 origin prefix test-reports/allure/latest/. localhost, private IP, .internal, .local, and .test hosts are not final evidence.",
+          "pattern": "^(https://.*/admin/test-reports/allure/latest/|s3://.*/test-reports/allure/latest/).*$"
+        },
+        "unit_report_url": {
+          "type": "string",
+          "description": "Final unit test Allure report URL. Use an Allure latest or run report path. localhost, private IP, .internal, .local, and .test hosts are not final evidence.",
+          "pattern": "^(https://.*/admin/test-reports/allure/(latest|runs/[^/]+)/|s3://.*/test-reports/allure/(latest|runs/[^/]+)/).*$"
+        },
+        "integration_report_url": {
+          "type": "string",
+          "description": "Final integration test Allure report URL. Use an Allure latest or run report path. localhost, private IP, .internal, .local, and .test hosts are not final evidence.",
+          "pattern": "^(https://.*/admin/test-reports/allure/(latest|runs/[^/]+)/|s3://.*/test-reports/allure/(latest|runs/[^/]+)/).*$"
+        },
+        "e2e_report_url": {
+          "type": "string",
+          "description": "Final E2E test Allure report URL. Use an Allure latest or run report path. localhost, private IP, .internal, .local, and .test hosts are not final evidence.",
+          "pattern": "^(https://.*/admin/test-reports/allure/(latest|runs/[^/]+)/|s3://.*/test-reports/allure/(latest|runs/[^/]+)/).*$"
+        }
+      }
+    },
+    "docs_site": {
+      "type": "object",
+      "required": [
+        "latest_url",
+        "version_url"
+      ],
+      "properties": {
+        "latest_url": {
+          "type": "string",
+          "description": "Final admin docs latest URL. Use the CloudFront viewer path /admin/docs/latest/ or the S3 origin prefix docs-site/latest/. localhost, private IP, .internal, .local, and .test hosts are not final evidence.",
+          "pattern": "^(https://.*/admin/docs/latest/|s3://.*/docs-site/latest/).*$"
+        },
+        "version_url": {
+          "type": "string",
+          "description": "Final admin docs v0.16 URL. Use the CloudFront viewer path /admin/docs/versions/v0.16/ or the S3 origin prefix docs-site/releases/v0.16/. localhost, private IP, .internal, .local, and .test hosts are not final evidence.",
+          "pattern": "^(https://.*/admin/docs/versions/v0\\.16/|s3://.*/docs-site/releases/v0\\.16/).*$"
+        }
+      }
+    },
+    "rag_evaluation": {
+      "type": "object",
+      "required": [
+        "evaluation_run_id",
+        "report_url"
+      ],
+      "properties": {
+        "evaluation_run_id": {
+          "type": "string"
+        },
+        "report_url": {
+          "type": "string",
+          "description": "Final RAG evaluation HTML report URL. Use the CloudFront viewer path /admin/evaluation-reports/{evaluation_run_id}/ or the S3 origin prefix reports/evaluations/{evaluation_run_id}/. localhost, private IP, .internal, .local, and .test hosts are not final evidence.",
+          "pattern": "^(https://.*/admin/evaluation-reports/[^/]+/|s3://.*/reports/evaluations/[^/]+/).*$"
+        }
+      }
+    },
+    "cost_estimate": {
+      "type": "object",
+      "required": [
+        "monthly_usd",
+        "assumption"
+      ],
+      "properties": {
+        "monthly_usd": {
+          "type": "number",
+          "maximum": 550
+        },
+        "assumption": {
+          "type": "string"
+        }
+      }
+    }
+  }
+}

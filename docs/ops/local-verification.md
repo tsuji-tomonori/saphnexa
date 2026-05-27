@@ -1,0 +1,108 @@
+# Local Verification
+
+## 目的
+
+`.workspace/local.md` の方針に合わせ、ローカルでは契約、認可、非同期 event、RAG Tools 境界、UI の相対 path 方針を検証する。
+
+## コマンド
+
+```bash
+npm run test:contract
+npm run test:integration:local
+npm run scan:bundle-domains
+npm run cfn:inventory:build
+npm run cfn:inventory:check
+npm run cfn:inventory:normalize:fixture:check
+npm run admin-artifacts:build
+npm run artifacts:check
+npm run coverage:check
+npm run ui:check
+npm run web:flow:check
+npm run web:a11y:check
+npm run web:perf:local
+npm run web:bundle:check
+npm run perf:api:local
+npm run failure:check
+npm run rag:quality:check
+npm run rag:security:check
+npm run rag:perf:local
+npm run db:migration:check
+npm run db:integrity:check
+npm run search:local:check
+npm run observability:check
+npm run edge:security:check
+npm run admin:workflow:check
+npm run offline-artifacts:check
+npm run restore:drill:check
+npm run acceptance:source:check
+npm run acceptance:external-actions:build
+npm run acceptance:external-actions:check
+npm run acceptance:final-checklist:fixture:check
+npm run acceptance:final-manifest:fixture:check
+npm run acceptance:final-candidate:fixture:check
+npm run acceptance:final:fixture:check
+npm run acceptance:final-candidate:check
+npm run acceptance:final:build
+npm run acceptance:final:check
+npm run acceptance:package:build
+npm run acceptance:package:check
+npm test
+git diff --check
+```
+
+## ローカルで確認できること
+
+- 公開 API 38 件と Tools API 6 件の contract metadata。
+- chat が独立リソースであり、owner/viewer によって操作権限が変わること。
+- 質問送信が `message_id` / `run_id` を即時生成し、event detail を REST で取得できること。
+- RAG が Tools API 境界を通り、ACL check 後の Evidence だけで citation を作ること。
+- React source が `/api/*` と `/auth/*` の相対 path だけを使うこと。
+- `dist/acceptance/cloudformation_inventory.draft.json` に CloudFormation inventory draft を生成し、実 AWS capture が必要なことを検査すること。
+- AWS CLI の `describe-stacks` / `list-stack-resources` raw JSON から final CloudFormation inventory 形式へ正規化する normalizer の fixture。
+- `dist/admin/docs/latest/` と `dist/admin/docs/versions/v0.16/` に docs artifact を生成できること。
+- `dist/admin/test-reports/allure/latest/` に Allure 互換のローカル検証 report artifact を生成できること。
+- admin artifact manifest の checksum、viewer path、source と、local API の admin 限定アクセス policy。
+- Node test coverage が line 80% / branch 70% の threshold を満たすこと。
+- UI source が共通 UI package を経由し、直書き style と基本 a11y 欠落を増やしていないこと。
+- chat/admin の local web flow、route role、admin artifact access policy が API/source gate として整合すること。
+- static a11y report が main/nav/section labels、form label、button type、link text、status label を violations 0 で検査すること。
+- local web bundle report が gzip size と route transition p95 を検査し、`dist/reports/web-bundle-local.json` を生成すること。
+- local non-AI API smoke が p95 800ms / error rate 1% 未満を満たすこと。
+- retrieval、generation、worker notify の failure injection で failed 状態、error event、retryable が残ること。
+- local RAG golden dataset で品質 metrics と参照展開が基準を満たすこと。
+- prompt injection attack 20件で policy violation と tool invocation が発生しないこと。
+- local RAG timing smoke で初回通知と最終回答の p95 が基準を満たすこと。
+- Flyway versioned SQL migration の命名、schema_migrations、required tables、checksum、自動 migration 不採用。
+- local DB-like store の主要ドメイン整合性と chat event append-only invariant。
+- 参照グラフ sample 10/10 と BM25F golden recall@10 >= 0.80。
+- required metrics 7/7、alarms 6/6、retention 未設定 0件の catalog。
+- CloudFront Function、single-entry route、ws-ticket、WAF/IAM/KMS/SQS/DLQ/cdk-nag の static intent catalog。
+- user import の create/update/delete/invalid row、文書登録 5 件、版 activation、評価 run 3 件、admin event、audit event のローカル workflow。
+- chunk/reference/BM25F/parser を含む offline artifact inventory のローカル manifest。
+- in-memory domain state の restore drill report、RTO/RPO threshold、snapshot/restored checksum。
+- `docs/acceptance/source/acceptance_catalog.json` が検収 checklist v1.0 の 102 行、P0/P1/P2 件数、traceability 全 ID と同期していること。
+- `npm run acceptance:external-actions:check` が `dist/acceptance/external_action_plan.json` を再生成してから検査し、Git tag/release、AWS deploy/publish、CloudFormation capture、defect-snapshot-refresh、final checklist signoff の各 action が pending かつ確認必須のまま残ること。
+- final acceptance checklist builder が source catalog の列、ID 順、全 AC 行を保って `結果=PASS` の CSV を生成する fixture。
+- final evidence manifest builder が current Git commit、package version、CloudFormation inventory、Git release/artifact input を組み合わせて final candidate ready path を検査する fixture。
+- final evidence candidate が未配置なら `not_ready` として記録し、配置済みの場合は実 Git tag/release/AWS/公開 URL/checklist を検査すること。
+- `npm run acceptance:final:fixture:check` が final candidate ready 後の positive path を検査し、readiness aggregate gate が complete に遷移できること。
+- `npm run acceptance:final:check` が `dist/acceptance/final_readiness.json` を再生成してから検査し、release/AWS/publish/checklist 未達がある限り ready にならないこと。
+- `dist/acceptance/` に検収 package draft を生成し、未実施 AWS/release 項目を `PENDING_AWS` として残すこと。
+- GitHub issue tracker snapshot に基づく Blocker/Critical open defect 0 件の defect list draft。最終検収では `gh issue list --state open --json number,title,labels,state` による defect-snapshot-refresh が必要であり、ローカル snapshot だけでは完了扱いにしないこと。
+
+## ローカルでは完了扱いにしないこと
+
+- AWS dev/UAT での Cognito、DSQL、S3、CloudFront、AppSync Events、Bedrock KB、S3 Vectors、AgentCore の実接続。
+- CDK deploy、CloudFormation outputs、S3 inventory、CloudWatch logs、CloudFront/S3/Docusaurus/Allure 公開 URL。
+- CloudFormation `describe-stacks` / `list-stack-resources` の実取得と、AC-081 の最終 PASS 判定。
+- GitHub issue tracker の最終再取得と、AC-153 の最終 PASS 判定。
+- axe/Playwright の実 DOM accessibility report、Lighthouse CI、本番 bundler の analyzer report、AWS load test。
+- 実ブラウザ操作による chat/admin E2E、CloudFront 経由のロール別導線確認。
+- Bedrock KB、S3 Vectors、AgentCore Runtime、Bedrock Evaluations を使った実 RAG 品質評価。
+- Aurora DSQL への Flyway 実適用、CloudWatch metrics/alarms、S3 lifecycle、DSQL retention settings の実リソース確認。
+- CloudFront Function、WAF、IAM policy、KMS key policy、SQS/DLQ、AppSync Events、cdk-nag の実リソース/実行結果確認。
+- 実 S3 の offline artifact inventory、実 parser/KB/S3 Vectors ingestion、実バックアップからの restore drill。
+- Git tag、GitHub release、検収用 `evidence_manifest.json` の最終確定。
+- 外部 action plan に記載された release、deploy、publish、CloudFormation capture、defect snapshot refresh、final evidence 作成、signoff の実行。
+- 検収 checklist の最終署名、AWS account id、CloudFormation stack id、公開済み docs/Allure URL の確定。
+- P0/P1/P2 全行の最終 PASS 判定。

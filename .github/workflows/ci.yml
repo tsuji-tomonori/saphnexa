@@ -1,0 +1,184 @@
+name: Saphnexa CI
+
+on:
+  pull_request:
+    branches:
+      - main
+  push:
+    branches:
+      - main
+      - codex/**
+
+jobs:
+  lint:
+    name: lint
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+      - run: npm run lint
+
+  typecheck:
+    name: typecheck
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+      - run: npm run typecheck
+
+  unit:
+    name: unit
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+      - run: npm test
+
+  integration:
+    name: integration
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+      - run: npm run test:integration:local
+
+  e2e:
+    name: e2e
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+      - run: npm run test:e2e:local
+
+  cdk-synth:
+    name: cdk synth
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+      - run: npm run cdk:synth:local
+      - run: npm run cfn:inventory:build
+      - run: npm run cfn:inventory:check
+
+  cdk-diff:
+    name: cdk diff
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+      - run: npm run cdk:diff:local
+
+  security-scan:
+    name: security scan
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+      - run: npm run edge:security:check
+      - run: npm run security:scan
+
+  license-scan:
+    name: license scan
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+      - run: npm run license:scan
+
+  admin-artifacts:
+    name: admin artifacts
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+      - run: npm run admin-artifacts:build
+      - run: npm run artifacts:check
+
+  quality-gates:
+    name: quality gates
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+      - run: npm run coverage:check
+      - run: npm run ui:check
+      - run: npm run web:flow:check
+      - run: npm run web:a11y:check
+      - run: npm run web:perf:local
+      - run: npm run web:bundle:check
+      - run: npm run perf:api:local
+      - run: npm run failure:check
+      - run: npm run rag:quality:check
+      - run: npm run rag:security:check
+      - run: npm run rag:perf:local
+
+  db-observability:
+    name: db observability
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+      - run: npm run db:migration:check
+      - run: npm run db:integrity:check
+      - run: npm run search:local:check
+      - run: npm run observability:check
+
+  admin-offline-restore:
+    name: admin offline restore
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+      - run: npm run admin:workflow:check
+      - run: npm run offline-artifacts:check
+      - run: npm run restore:drill:check
+
+  contract-generation-diff:
+    name: contract generation diff
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+      - run: npm run test:contract
+      - run: npm run acceptance:source:check
+      - run: npm run acceptance:check
+      - run: npm run evidence:check
+      - run: npm run acceptance:external-actions:build
+      - run: npm run acceptance:external-actions:check
+      - run: npm run acceptance:final-candidate:fixture:check
+      - run: npm run acceptance:final:fixture:check
+      - run: npm run acceptance:final-candidate:check
+      - run: npm run acceptance:final:build
+      - run: npm run acceptance:final:check
+      - run: npm run acceptance:package:build
+      - run: npm run acceptance:package:check
+      - run: npm run admin-artifacts:build
+      - run: npm run artifacts:check
