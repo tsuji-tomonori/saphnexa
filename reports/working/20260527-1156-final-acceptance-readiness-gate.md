@@ -30,6 +30,8 @@
 - `dist/acceptance/final_readiness.json`
 - `npm run acceptance:final:build`
 - `npm run acceptance:final:check`
+- PR 受け入れ条件コメント: https://github.com/tsuji-tomonori/saphnexa/pull/1#issuecomment-4550833331
+- PR セルフレビューコメント: https://github.com/tsuji-tomonori/saphnexa/pull/1#issuecomment-4550833332
 
 ## 検証
 
