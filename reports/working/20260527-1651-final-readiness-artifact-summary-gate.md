@@ -24,7 +24,8 @@
 - `tools/build-acceptance-package.js` を shared module 利用へ変更し、既存 artifact summary draft 生成を維持。
 - `tools/final-acceptance-readiness.js` に `artifact_summary_gate` を追加。
 - `tools/check-final-acceptance-readiness.js` に artifact summary gate の検査を追加。
-- `tasks/do/20260527-1647-final-readiness-artifact-summary-gate.md` を作成し、受け入れ条件と検証計画を記録。
+- `tasks/done/20260527-1647-final-readiness-artifact-summary-gate.md` を作成し、受け入れ条件と検証計画を記録。
+- PR へ受け入れ条件確認コメントとセルフレビューコメントを追加。
 
 ## 成果物
 
@@ -40,6 +41,12 @@
 - `npm run verify`: pass
 - `git diff --check`: pass
 - `pre-commit run --files reports/working/20260527-1651-final-readiness-artifact-summary-gate.md tasks/do/20260527-1647-final-readiness-artifact-summary-gate.md tools/acceptance-artifact-summary.js tools/build-acceptance-package.js tools/final-acceptance-readiness.js tools/check-final-acceptance-readiness.js`: pass
+- `pre-commit run --files reports/working/20260527-1651-final-readiness-artifact-summary-gate.md tasks/done/20260527-1647-final-readiness-artifact-summary-gate.md`: pass
+
+## PR コメント
+
+- 受け入れ条件確認: https://github.com/tsuji-tomonori/saphnexa/pull/1#issuecomment-4552566952
+- セルフレビュー: https://github.com/tsuji-tomonori/saphnexa/pull/1#issuecomment-4552569011
 
 ## Fit 評価
 

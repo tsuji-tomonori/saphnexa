@@ -1,6 +1,6 @@
 # final readiness artifact summary gate
 
-- 状態: doing
+- 状態: done
 - タスク種別: 機能追加
 - 作成日時: 2026-05-27 16:47 JST
 - 対象 PR: #1
@@ -27,7 +27,12 @@ final readiness に artifact summary gate を追加し、AC-002 の提出成果�
 - [x] final readiness checker で artifact summary gate を検査する。
 - [x] package checker と package build の既存挙動を維持する。
 - [x] 対象検証と `npm run verify` を通す。
-- [ ] PR へ受け入れ条件コメントとセルフレビューコメントを追加する。
+- [x] PR へ受け入れ条件コメントとセルフレビューコメントを追加する。
+
+## PR コメント
+
+- 受け入れ条件確認: https://github.com/tsuji-tomonori/saphnexa/pull/1#issuecomment-4552566952
+- セルフレビュー: https://github.com/tsuji-tomonori/saphnexa/pull/1#issuecomment-4552569011
 
 ## Done 条件
 
