@@ -21,6 +21,7 @@
     "aws_account_id",
     "git_commit_sha",
     "git_tag",
+    "github_release_url",
     "cloudformation_stacks",
     "db_migration",
     "test_reports",
@@ -59,6 +60,7 @@
     },
     "github_release_url": {
       "type": "string",
+      "description": "GitHub release URL for the same tag recorded in git_tag.",
       "pattern": "^https://github\\.com/.+/releases/tag/.+$"
     },
     "cdk_app_version": {

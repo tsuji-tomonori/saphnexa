@@ -31,6 +31,13 @@ try {
   assert(invalidStatus.errors.some((error) => error.includes(`checklist.${acceptanceIds[0]}.結果`)), "invalid fixture must reject non-PASS checklist result");
   assert(invalidStatus.errors.some((error) => error.includes("cloudformation.source")), "invalid fixture must reject non-AWS CloudFormation source");
 
+  const mismatchedRelease = buildReadyCandidate();
+  mismatchedRelease.manifest.github_release_url = "https://github.com/tsuji-tomonori/saphnexa/releases/tag/v0.16.0-acceptance.2";
+  const mismatchedReleasePaths = writeCandidateFiles(join(root, "mismatched-release"), mismatchedRelease);
+  const mismatchedReleaseStatus = buildFinalEvidenceCandidateStatus(join(root, "mismatched-release-status.json"), { candidatePaths: mismatchedReleasePaths });
+  assert(mismatchedReleaseStatus.ready === false, "mismatched release fixture must not be ready");
+  assert(mismatchedReleaseStatus.errors.some((error) => error.includes("manifest.github_release_url_git_tag")), "mismatched release fixture must reject release URL tag mismatch");
+
   console.log("final evidence candidate fixture check passed");
 } finally {
   rmSync(root, { recursive: true, force: true });

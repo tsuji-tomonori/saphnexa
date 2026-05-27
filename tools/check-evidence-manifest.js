@@ -9,6 +9,7 @@ const expectedRequired = [
   "aws_account_id",
   "git_commit_sha",
   "git_tag",
+  "github_release_url",
   "cloudformation_stacks",
   "db_migration",
   "test_reports",

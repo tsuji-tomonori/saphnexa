@@ -85,6 +85,7 @@ function validateManifest(path, checks, errors) {
   check(manifest.git_commit_sha === currentGitCommit(), "manifest.git_commit_sha_current_ref", checks, errors, "must match current Git ref");
   check(isFinalText(manifest.git_tag), "manifest.git_tag", checks, errors, "must be a final immutable Git tag");
   check(isUrl(manifest.github_release_url), "manifest.github_release_url", checks, errors, "must be an https GitHub release URL");
+  check(isReleaseUrlForTag(manifest.github_release_url, manifest.git_tag), "manifest.github_release_url_git_tag", checks, errors, "must point to the same release tag as manifest.git_tag");
   check(Array.isArray(manifest.cloudformation_stacks) && manifest.cloudformation_stacks.length > 0, "manifest.cloudformation_stacks", checks, errors, "must include deployed stacks");
   for (const stack of manifest.cloudformation_stacks || []) {
     check(isFinalText(stack.stack_name), `manifest.cloudformation_stacks.${stack.stack_name || "unknown"}.stack_name`, checks, errors, "must include stack name");
@@ -170,6 +171,20 @@ function isFinalText(value) {
 
 function isUrl(value) {
   return typeof value === "string" && /^https:\/\/github\.com\//.test(value) && !/example|pending|placeholder/i.test(value);
+}
+
+function isReleaseUrlForTag(value, gitTag) {
+  if (!isUrl(value) || !isFinalText(gitTag)) return false;
+  try {
+    const url = new URL(value);
+    const marker = "/releases/tag/";
+    const markerIndex = url.pathname.indexOf(marker);
+    if (url.hostname !== "github.com" || markerIndex === -1) return false;
+    const tagFromUrl = url.pathname.slice(markerIndex + marker.length);
+    return decodeURIComponent(tagFromUrl) === gitTag;
+  } catch {
+    return false;
+  }
 }
 
 function isArtifactUrl(value) {
