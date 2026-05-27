@@ -1,6 +1,6 @@
 # trace local status 正規化
 
-- 状態: doing
+- 状態: done
 - タスク種別: ドキュメント更新
 - 作成日時: 2026-05-27 11:13 JST
 - 対象 PR: #1
@@ -25,7 +25,7 @@
 - [x] trace の状態と文言を更新する。
 - [x] docs/acceptance 検証を実行する。
 - [x] 作業レポートを作成する。
-- [ ] PR へ受け入れ条件コメントとセルフレビューコメントを追加する。
+- [x] PR へ受け入れ条件コメントとセルフレビューコメントを追加する。
 
 ## Done 条件
 
@@ -57,3 +57,8 @@
 - `npm run acceptance:check`: pass
 - `git diff --check`: pass
 - `pre-commit run --files ...`: pass
+
+## PR コメント
+
+- 受け入れ条件確認: https://github.com/tsuji-tomonori/saphnexa/pull/1#issuecomment-4550660328
+- セルフレビュー: https://github.com/tsuji-tomonori/saphnexa/pull/1#issuecomment-4550662291
