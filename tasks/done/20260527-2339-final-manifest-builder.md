@@ -1,6 +1,6 @@
 # final evidence manifest builder
 
-- 状態: do
+- 状態: done
 - タスク種別: 機能追加
 - 対象ブランチ: `codex/saphnexa-acceptance-impl`
 - 対象PR: `#1`
@@ -40,11 +40,11 @@ final evidence manifest input JSON と final CloudFormation inventory から `do
 
 ## Done 条件
 
-- [ ] builder module / CLI / fixture check / npm script / docs を追加する。
-- [ ] 選定した検証コマンドが pass する。
-- [ ] 作業レポートを `reports/working/` に作成する。
-- [ ] commit / push し、PR に受け入れ条件確認コメントとセルフレビューコメントを投稿する。
-- [ ] PR コメント後に task を `tasks/done/` へ移動し、その更新も commit / push する。
+- [x] builder module / CLI / fixture check / npm script / docs を追加する。
+- [x] 選定した検証コマンドが pass する。
+- [x] 作業レポートを `reports/working/` に作成する。
+- [x] commit / push し、PR に受け入れ条件確認コメントとセルフレビューコメントを投稿する。
+- [x] PR コメント後に task を `tasks/done/` へ移動し、その更新も commit / push する。
 
 ## 実装計画
 
@@ -88,6 +88,11 @@ final evidence manifest input JSON と final CloudFormation inventory から `do
 - `tools/check-final-evidence-manifest-fixtures.js` を追加し、manifest / checklist / CloudFormation inventory の組み合わせで final candidate ready path を確認した。
 - `package.json`、`docs/ops/runbooks/final-acceptance.md`、`docs/ops/local-verification.md`、`tools/check-docs.js` を同期した。
 - 実 final 証跡ファイル、Git release、AWS publish、CloudFormation capture は外部状態変更を伴うため、この task では完了扱いにしていない。
+
+## PR コメント
+
+- 受け入れ条件確認: https://github.com/tsuji-tomonori/saphnexa/pull/1#issuecomment-4555659698
+- セルフレビュー: https://github.com/tsuji-tomonori/saphnexa/pull/1#issuecomment-4555661732
 
 ## PR セルフレビュー観点
 
