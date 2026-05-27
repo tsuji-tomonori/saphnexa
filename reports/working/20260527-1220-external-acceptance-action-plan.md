@@ -46,6 +46,13 @@
 - `npm run verify`: pass
 - `git diff --check`: pass
 - `pre-commit run --files ...`: pass
+- PR #1 GitHub Actions: run `26490021771` / `26490022764` の 14 jobs が pass
+
+## PR コメント
+
+- 受け入れ条件確認: https://github.com/tsuji-tomonori/saphnexa/pull/1#issuecomment-4551096937
+- セルフレビュー: https://github.com/tsuji-tomonori/saphnexa/pull/1#issuecomment-4551111009
+- task 完了更新セルフレビュー: https://github.com/tsuji-tomonori/saphnexa/pull/1#issuecomment-4551118482
 
 ## Fit 評価
 
@@ -56,4 +63,4 @@
 
 - Git tag/release、AWS deploy/publish、CloudFormation 実 capture、final evidence 作成、checklist signoff は未実行。
 - AC-001/002/004/081/150/151/152 は `requires_aws` のまま。
-- GitHub Actions の最新実行結果は、push 後に確認する。
+- レポート更新 commit 後の GitHub Actions は別途確認する。
