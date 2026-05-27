@@ -1,6 +1,6 @@
 # acceptance generated_at freshness
 
-- 状態: do
+- 状態: done
 - タスク種別: 修正
 - 対象ブランチ: `codex/saphnexa-acceptance-impl`
 - 対象PR: `#1`
@@ -59,11 +59,11 @@ acceptance 系の実生成物が実行時点の JST 日付・時刻を記録し�
 
 ## Done 条件
 
-- [ ] helper / builders / checkers を更新する。
-- [ ] 選定した検証コマンドが pass する。
-- [ ] 作業レポートを `reports/working/` に作成する。
-- [ ] commit / push し、PR に受け入れ条件確認コメントとセルフレビューコメントを投稿する。
-- [ ] PR コメント後に task を `tasks/done/` へ移動し、その更新も commit / push する。
+- [x] helper / builders / checkers を更新する。
+- [x] 選定した検証コマンドが pass する。
+- [x] 作業レポートを `reports/working/` に作成する。
+- [x] commit / push し、PR に受け入れ条件確認コメントとセルフレビューコメントを投稿する。
+- [x] PR コメント後に task を `tasks/done/` へ移動し、その更新も commit / push する。
 
 ## 実装計画
 
@@ -105,6 +105,11 @@ acceptance 系の実生成物が実行時点の JST 日付・時刻を記録し�
 - acceptance package draft checklist の `確認日` を current JST date にした。
 - 対応する checker に generated_at / 確認日 の freshness 検査を追加した。
 - 外部 action は実行せず、pending のまま維持した。
+
+## PR コメント
+
+- 受け入れ条件確認: https://github.com/tsuji-tomonori/saphnexa/pull/1#issuecomment-4555963197
+- セルフレビュー: https://github.com/tsuji-tomonori/saphnexa/pull/1#issuecomment-4555966604
 
 ## PR セルフレビュー観点
 
