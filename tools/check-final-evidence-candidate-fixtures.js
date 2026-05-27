@@ -150,6 +150,21 @@ try {
   assert(invalidAllureReportUrlStatus.ready === false, "invalid Allure report URL fixture must not be ready");
   assert(invalidAllureReportUrlStatus.errors.some((error) => error.includes("manifest.test_reports.allure_latest_url_latest_path")), "invalid Allure report URL fixture must reject non-Allure latest path");
 
+  const invalidLayeredTestReportUrls = buildReadyCandidate();
+  invalidLayeredTestReportUrls.manifest.test_reports.unit_report_url = "s3://saphnexa-acceptance-artifacts/test-reports/unit/latest/";
+  invalidLayeredTestReportUrls.manifest.test_reports.integration_report_url = "s3://saphnexa-acceptance-artifacts/test-reports/integration/latest/";
+  invalidLayeredTestReportUrls.manifest.test_reports.e2e_report_url = "s3://saphnexa-acceptance-artifacts/test-reports/e2e/latest/";
+  const invalidLayeredTestReportUrlsPaths = writeCandidateFiles(join(root, "invalid-layered-test-report-urls"), invalidLayeredTestReportUrls);
+  const invalidLayeredTestReportUrlsStatus = buildFinalEvidenceCandidateStatus(join(root, "invalid-layered-test-report-urls-status.json"), {
+    candidatePaths: invalidLayeredTestReportUrlsPaths,
+    resolveGitTagCommit,
+    resolveGitRepository
+  });
+  assert(invalidLayeredTestReportUrlsStatus.ready === false, "invalid layered test report URLs fixture must not be ready");
+  for (const key of ["unit_report_url", "integration_report_url", "e2e_report_url"]) {
+    assert(invalidLayeredTestReportUrlsStatus.errors.some((error) => error.includes(`manifest.test_reports.${key}_allure_path`)), `invalid layered test report URLs fixture must reject ${key}`);
+  }
+
   const missingCostUsageBasis = buildReadyCandidate();
   missingCostUsageBasis.manifest.cost_estimate.assumption = "UAT estimate using approved acceptance usage basis.";
   const missingCostUsageBasisPaths = writeCandidateFiles(join(root, "missing-cost-usage-basis"), missingCostUsageBasis);
@@ -308,9 +323,9 @@ function buildReadyCandidate() {
       },
       test_reports: {
         allure_latest_url: "s3://saphnexa-acceptance-artifacts/test-reports/allure/latest/",
-        unit_report_url: "https://github.com/tsuji-tomonori/saphnexa/actions/runs/26494798563",
-        integration_report_url: "https://github.com/tsuji-tomonori/saphnexa/actions/runs/26494798563",
-        e2e_report_url: "https://github.com/tsuji-tomonori/saphnexa/actions/runs/26494798563"
+        unit_report_url: "s3://saphnexa-acceptance-artifacts/test-reports/allure/runs/unit-20260527/",
+        integration_report_url: "s3://saphnexa-acceptance-artifacts/test-reports/allure/runs/integration-20260527/",
+        e2e_report_url: "s3://saphnexa-acceptance-artifacts/test-reports/allure/runs/e2e-20260527/"
       },
       docs_site: {
         latest_url: "s3://saphnexa-acceptance-artifacts/docs-site/latest/",

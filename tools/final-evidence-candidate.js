@@ -113,8 +113,9 @@ function validateManifest(path, checks, errors, options = {}) {
 
   for (const key of ["allure_latest_url", "unit_report_url", "integration_report_url", "e2e_report_url"]) {
     check(isArtifactUrl(manifest.test_reports?.[key]), `manifest.test_reports.${key}`, checks, errors, "must be a final http(s) or s3 URL");
+    check(isAllureReportUrl(manifest.test_reports?.[key]), `manifest.test_reports.${key}_allure_path`, checks, errors, "must point to an Allure latest or run report path");
   }
-  check(hasPathSuffix(manifest.test_reports?.allure_latest_url, "/test-reports/allure/latest/"), "manifest.test_reports.allure_latest_url_latest_path", checks, errors, "must point to the Allure latest report path");
+  check(isAllureLatestUrl(manifest.test_reports?.allure_latest_url), "manifest.test_reports.allure_latest_url_latest_path", checks, errors, "must point to the Allure latest report path");
   for (const key of ["latest_url", "version_url"]) {
     check(isArtifactUrl(manifest.docs_site?.[key]), `manifest.docs_site.${key}`, checks, errors, "must be a final http(s) or s3 URL");
   }
@@ -237,6 +238,16 @@ function isArtifactUrl(value) {
 
 function hasPathSuffix(value, suffix) {
   return typeof value === "string" && normalizePathSuffix(value).endsWith(suffix);
+}
+
+function isAllureLatestUrl(value) {
+  return hasPathSuffix(value, "/test-reports/allure/latest/");
+}
+
+function isAllureReportUrl(value) {
+  if (typeof value !== "string") return false;
+  const normalized = normalizePathSuffix(value);
+  return isAllureLatestUrl(normalized) || /\/test-reports\/allure\/runs\/[^/]+\/$/.test(normalized);
 }
 
 function isDocsLatestUrl(value) {

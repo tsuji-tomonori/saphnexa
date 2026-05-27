@@ -35,6 +35,10 @@ assert(schema.properties.aws_account_id.pattern === "^[0-9]{12}$", "schema aws a
 assert(schema.properties.git_commit_sha.pattern === "^[a-f0-9]{40}$", "schema git commit pattern mismatch");
 assert(schema.properties.github_release_url.pattern === "^https://github\\.com/.+/releases/tag/.+$", "schema GitHub release URL pattern mismatch");
 assert(schema.properties.cdk_app_version.type === "string", "schema CDK app version type mismatch");
+assert(schema.properties.test_reports.properties.allure_latest_url.pattern === "^(https://.*/admin/test-reports/allure/latest/|s3://.*/test-reports/allure/latest/).*$", "schema Allure latest URL pattern mismatch");
+for (const key of ["unit_report_url", "integration_report_url", "e2e_report_url"]) {
+  assert(schema.properties.test_reports.properties[key].pattern === "^(https://.*/admin/test-reports/allure/(latest|runs/[^/]+)/|s3://.*/test-reports/allure/(latest|runs/[^/]+)/).*$", `schema ${key} Allure URL pattern mismatch`);
+}
 assert(schema.properties.docs_site.properties.latest_url.pattern === "^(https://.*/admin/docs/latest/|s3://.*/docs-site/latest/).*$", "schema docs latest URL pattern mismatch");
 assert(schema.properties.docs_site.properties.version_url.pattern === "^(https://.*/admin/docs/versions/v0\\.16/|s3://.*/docs-site/releases/v0\\.16/).*$", "schema docs version URL pattern mismatch");
 assert(schema.properties.cloudformation_stacks.minItems === 1, "schema CloudFormation stack minItems mismatch");
@@ -81,7 +85,9 @@ assert(/Final acceptance requires/.test(manifest.cost_estimate?.assumption || ""
 for (const key of ["allure_latest_url", "unit_report_url", "integration_report_url", "e2e_report_url"]) {
   assert(typeof manifest.test_reports[key] === "string" && manifest.test_reports[key].length > 0, `test_reports.${key} is required`);
   assert(/example/.test(manifest.test_reports[key]), `example test_reports.${key} must be visibly non-final`);
+  assert(/\/test-reports\/allure\/(latest|runs\/[^/]+)\//.test(manifest.test_reports[key]), `example test_reports.${key} must use Allure latest or run path`);
 }
+assert(manifest.test_reports.allure_latest_url.includes("/test-reports/allure/latest/"), "example allure_latest_url must use Allure latest path");
 for (const key of ["latest_url", "version_url"]) {
   assert(typeof manifest.docs_site[key] === "string" && manifest.docs_site[key].length > 0, `docs_site.${key} is required`);
   assert(/example/.test(manifest.docs_site[key]), `example docs_site.${key} must be visibly non-final`);

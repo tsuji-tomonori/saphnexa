@@ -21,9 +21,9 @@
   },
   "test_reports": {
     "allure_latest_url": "s3://example-admin-artifacts/test-reports/allure/latest/",
-    "unit_report_url": "s3://example-admin-artifacts/test-reports/unit/latest/",
-    "integration_report_url": "s3://example-admin-artifacts/test-reports/integration/latest/",
-    "e2e_report_url": "s3://example-admin-artifacts/test-reports/e2e/latest/"
+    "unit_report_url": "s3://example-admin-artifacts/test-reports/allure/runs/unit-example/",
+    "integration_report_url": "s3://example-admin-artifacts/test-reports/allure/runs/integration-example/",
+    "e2e_report_url": "s3://example-admin-artifacts/test-reports/allure/runs/e2e-example/"
   },
   "docs_site": {
     "latest_url": "s3://example-admin-artifacts/docs-site/latest/",

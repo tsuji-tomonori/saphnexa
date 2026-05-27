@@ -119,16 +119,24 @@
       ],
       "properties": {
         "allure_latest_url": {
-          "type": "string"
+          "type": "string",
+          "description": "Final Allure latest report URL. Use the CloudFront viewer path /admin/test-reports/allure/latest/ or the S3 origin prefix test-reports/allure/latest/.",
+          "pattern": "^(https://.*/admin/test-reports/allure/latest/|s3://.*/test-reports/allure/latest/).*$"
         },
         "unit_report_url": {
-          "type": "string"
+          "type": "string",
+          "description": "Final unit test Allure report URL. Use an Allure latest or run report path.",
+          "pattern": "^(https://.*/admin/test-reports/allure/(latest|runs/[^/]+)/|s3://.*/test-reports/allure/(latest|runs/[^/]+)/).*$"
         },
         "integration_report_url": {
-          "type": "string"
+          "type": "string",
+          "description": "Final integration test Allure report URL. Use an Allure latest or run report path.",
+          "pattern": "^(https://.*/admin/test-reports/allure/(latest|runs/[^/]+)/|s3://.*/test-reports/allure/(latest|runs/[^/]+)/).*$"
         },
         "e2e_report_url": {
-          "type": "string"
+          "type": "string",
+          "description": "Final E2E test Allure report URL. Use an Allure latest or run report path.",
+          "pattern": "^(https://.*/admin/test-reports/allure/(latest|runs/[^/]+)/|s3://.*/test-reports/allure/(latest|runs/[^/]+)/).*$"
         }
       }
     },
