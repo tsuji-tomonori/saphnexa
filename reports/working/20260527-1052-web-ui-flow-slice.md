@@ -57,6 +57,7 @@
 - `npm run verify`: pass
 - `git diff --check`: pass
 - `pre-commit run --files ...`: pass
+- PR #1 GitHub Actions `Saphnexa CI`: pass（14 jobs）
 
 ## Fit 評価
 
@@ -68,4 +69,4 @@
 
 - 実ブラウザ操作、CloudFront 経由のロール別 E2E、axe/Playwright DOM report、Lighthouse CI、本番 bundler analyzer は未検証。
 - 現在の web 検査は Node/local API/source gate であり、レンダリング実行証跡ではない。
-- PR #1 の最新 GitHub Actions 結果は push 後に確認する。
+- PR #1 の最新 GitHub Actions は確認済みで、14 jobs が pass。
