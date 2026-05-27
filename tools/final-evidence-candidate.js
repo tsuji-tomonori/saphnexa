@@ -117,6 +117,8 @@ function validateManifest(path, checks, errors, options = {}) {
   for (const key of ["latest_url", "version_url"]) {
     check(isArtifactUrl(manifest.docs_site?.[key]), `manifest.docs_site.${key}`, checks, errors, "must be a final http(s) or s3 URL");
   }
+  check(hasPathSuffix(manifest.docs_site?.latest_url, "/latest/"), "manifest.docs_site.latest_url_latest_path", checks, errors, "must point to the latest docs path");
+  check(hasPathSuffix(manifest.docs_site?.version_url, "/versions/v0.16/"), "manifest.docs_site.version_url_design_version", checks, errors, "must point to the v0.16 versioned docs path");
   check(isFinalText(manifest.rag_evaluation?.evaluation_run_id), "manifest.rag_evaluation.evaluation_run_id", checks, errors, "must include final evaluation run id");
   check(isArtifactUrl(manifest.rag_evaluation?.report_url), "manifest.rag_evaluation.report_url", checks, errors, "must be a final report URL");
   check(manifest.db_migration?.tool === "Flyway", "manifest.db_migration.tool", checks, errors, "must be Flyway");
@@ -229,6 +231,14 @@ function isReleaseUrlForTag(value, gitTag) {
 
 function isArtifactUrl(value) {
   return typeof value === "string" && /^(https:\/\/|s3:\/\/)/.test(value) && !/example|pending|placeholder|dist\//i.test(value);
+}
+
+function hasPathSuffix(value, suffix) {
+  return typeof value === "string" && normalizePathSuffix(value).endsWith(suffix);
+}
+
+function normalizePathSuffix(value) {
+  return value.endsWith("/") ? value : `${value}/`;
 }
 
 function isAcceptedMonthlyUsd(value) {

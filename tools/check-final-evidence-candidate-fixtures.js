@@ -113,6 +113,19 @@ try {
   assert(mismatchedDbMigrationVersionStatus.ready === false, "mismatched DB migration version fixture must not be ready");
   assert(mismatchedDbMigrationVersionStatus.errors.some((error) => error.includes("manifest.db_migration.latest_version_latest_file")), "mismatched DB migration version fixture must reject latest migration file mismatch");
 
+  const invalidDocsSiteUrls = buildReadyCandidate();
+  invalidDocsSiteUrls.manifest.docs_site.latest_url = "s3://saphnexa-acceptance-artifacts/docs/current/";
+  invalidDocsSiteUrls.manifest.docs_site.version_url = "s3://saphnexa-acceptance-artifacts/docs/versions/v0.15/";
+  const invalidDocsSiteUrlsPaths = writeCandidateFiles(join(root, "invalid-docs-site-urls"), invalidDocsSiteUrls);
+  const invalidDocsSiteUrlsStatus = buildFinalEvidenceCandidateStatus(join(root, "invalid-docs-site-urls-status.json"), {
+    candidatePaths: invalidDocsSiteUrlsPaths,
+    resolveGitTagCommit,
+    resolveGitRepository
+  });
+  assert(invalidDocsSiteUrlsStatus.ready === false, "invalid docs site URLs fixture must not be ready");
+  assert(invalidDocsSiteUrlsStatus.errors.some((error) => error.includes("manifest.docs_site.latest_url_latest_path")), "invalid docs site URLs fixture must reject non-latest docs path");
+  assert(invalidDocsSiteUrlsStatus.errors.some((error) => error.includes("manifest.docs_site.version_url_design_version")), "invalid docs site URLs fixture must reject non-v0.16 docs version path");
+
   for (const [fixtureName, monthlyUsd, message] of [
     ["null-cost", null, "null cost estimate"],
     ["negative-cost", -1, "negative cost estimate"],
@@ -266,7 +279,7 @@ function buildReadyCandidate() {
       },
       docs_site: {
         latest_url: "s3://saphnexa-acceptance-artifacts/docs/latest/",
-        version_url: "s3://saphnexa-acceptance-artifacts/docs/v0.16.0-acceptance.1/"
+        version_url: "s3://saphnexa-acceptance-artifacts/docs/versions/v0.16/"
       },
       rag_evaluation: {
         evaluation_run_id: "eval-20260527-uat-final",
