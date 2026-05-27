@@ -102,6 +102,17 @@ try {
   assert(invalidRequiredValuesStatus.errors.some((error) => error.includes("manifest.db_migration.latest_version")), "invalid required values fixture must reject draft DB migration version");
   assert(invalidRequiredValuesStatus.errors.some((error) => error.includes("manifest.cost_estimate.assumption")), "invalid required values fixture must reject pending cost assumption");
 
+  const mismatchedDbMigrationVersion = buildReadyCandidate();
+  mismatchedDbMigrationVersion.manifest.db_migration.latest_version = "V999__wrong_schema.sql";
+  const mismatchedDbMigrationVersionPaths = writeCandidateFiles(join(root, "mismatched-db-migration-version"), mismatchedDbMigrationVersion);
+  const mismatchedDbMigrationVersionStatus = buildFinalEvidenceCandidateStatus(join(root, "mismatched-db-migration-version-status.json"), {
+    candidatePaths: mismatchedDbMigrationVersionPaths,
+    resolveGitTagCommit,
+    resolveGitRepository
+  });
+  assert(mismatchedDbMigrationVersionStatus.ready === false, "mismatched DB migration version fixture must not be ready");
+  assert(mismatchedDbMigrationVersionStatus.errors.some((error) => error.includes("manifest.db_migration.latest_version_latest_file")), "mismatched DB migration version fixture must reject latest migration file mismatch");
+
   for (const [fixtureName, monthlyUsd, message] of [
     ["null-cost", null, "null cost estimate"],
     ["negative-cost", -1, "negative cost estimate"],

@@ -11,7 +11,7 @@ import {
 } from "./acceptance-checklist-format.js";
 import { currentGitCommit, currentGitRepository, gitTagCommit } from "./git-context.js";
 import { expectedMajorResourceTypes } from "./cloudformation-inventory.js";
-import { readJson, readText } from "./lib.js";
+import { listFiles, readJson, readText } from "./lib.js";
 
 export const finalCandidateStatusPath = "dist/acceptance/final_candidate_status.json";
 export const finalEvidenceManifestPath = "docs/acceptance/final/evidence_manifest.json";
@@ -121,6 +121,7 @@ function validateManifest(path, checks, errors, options = {}) {
   check(isArtifactUrl(manifest.rag_evaluation?.report_url), "manifest.rag_evaluation.report_url", checks, errors, "must be a final report URL");
   check(manifest.db_migration?.tool === "Flyway", "manifest.db_migration.tool", checks, errors, "must be Flyway");
   check(isFinalText(manifest.db_migration?.latest_version), "manifest.db_migration.latest_version", checks, errors, "must include final DB migration version");
+  check(manifest.db_migration?.latest_version === latestFlywayMigrationFile(), "manifest.db_migration.latest_version_latest_file", checks, errors, "must match latest Flyway migration file");
   check(manifest.db_migration?.checksum_status === "matched", "manifest.db_migration.checksum_status", checks, errors, "must be matched");
   check(isAcceptedMonthlyUsd(manifest.cost_estimate?.monthly_usd), "manifest.cost_estimate.monthly_usd", checks, errors, "must be a finite number between 0 and 550");
   check(isFinalText(manifest.cost_estimate?.assumption), "manifest.cost_estimate.assumption", checks, errors, "must include final cost assumption");
@@ -256,6 +257,18 @@ function isCompleteCloudFormationStackStatus(value) {
     "IMPORT_COMPLETE",
     "IMPORT_ROLLBACK_COMPLETE"
   ].includes(value);
+}
+
+function latestFlywayMigrationFile() {
+  const migrationFiles = listFiles(["packages/db-migrations/migrations"], (path) => /\/V\d+__.+\.sql$/.test(path));
+  return migrationFiles
+    .map((path) => path.split("/").at(-1))
+    .sort((left, right) => migrationVersionNumber(right) - migrationVersionNumber(left) || right.localeCompare(left))
+    .at(0);
+}
+
+function migrationVersionNumber(fileName) {
+  return Number(fileName.match(/^V(\d+)__/)?.[1] || 0);
 }
 
 function todayIsoDate() {
