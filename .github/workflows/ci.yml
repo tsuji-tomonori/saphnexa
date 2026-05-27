@@ -100,6 +100,17 @@ jobs:
           node-version: "22"
       - run: npm run license:scan
 
+  admin-artifacts:
+    name: admin artifacts
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+      - run: npm run admin-artifacts:build
+      - run: npm run artifacts:check
+
   contract-generation-diff:
     name: contract generation diff
     runs-on: ubuntu-latest
@@ -111,3 +122,5 @@ jobs:
       - run: npm run test:contract
       - run: npm run acceptance:check
       - run: npm run evidence:check
+      - run: npm run admin-artifacts:build
+      - run: npm run artifacts:check

@@ -30,7 +30,11 @@ test("local user journey covers chat, share, favorite, admin artifact, and evalu
   assert.equal(favorite.status, 201);
   assert.equal(api.request("user-viewer", "listFavorites").body.favorites.length, 1);
 
-  assert.equal(api.request("admin-1", "listPublishedArtifacts").body.artifacts.length, 2);
+  const artifacts = api.request("admin-1", "listPublishedArtifacts").body.artifacts;
+  assert.equal(artifacts.length, 3);
+  assert.equal(artifacts.some((artifact) => artifact.viewer_path === "/admin/docs/versions/v0.16/"), true);
+  assert.equal(api.request("user-owner", "listPublishedArtifacts").status, 403);
+  assert.equal(api.request("admin-1", "issueArtifactAccessCookie", { csrf_token: adminCsrf }).status, 201);
   assert.equal(api.request("admin-1", "startEvaluationRun", { csrf_token: adminCsrf, dataset_id: "dataset-local-golden" }).status, 202);
 });
 

@@ -26,8 +26,8 @@
 | AC-017 | implemented_unverified | document registration creates ingestion job and raw URI source. AWS/S3 inventory は未検証。 |
 | AC-018 | implemented_unverified | document version activation source あり。 |
 | AC-019 | implemented_unverified | evaluation run source あり。 |
-| AC-020 | requires_aws | Docusaurus CloudFront access control は未実施。 |
-| AC-021 | requires_aws | Allure CloudFront access control は未実施。 |
+| AC-020 | implemented_unverified | `npm run artifacts:check` で local API の admin artifact 一覧/アクセス cookie が admin のみ許可、一般/未認証は拒否されることを検査。CloudFront Cookie 実公開は未実施。 |
+| AC-021 | implemented_unverified | `dist/admin/test-reports/allure/latest/` と local API admin artifact policy を `npm run artifacts:check` で検査。Allure/CloudFront 実公開は未実施。 |
 | AC-030 | local_verified | `packages/api-contract/src/routes.js` 38 routes and `tools/check-contracts.js`. |
 | AC-031 | local_verified | `packages/tool-contract/src/tools.js` 6 tools and audit table metadata. |
 | AC-032 | local_verified | `errorResponseSchema` and local API error response shape. |
@@ -70,8 +70,8 @@
 | AC-084 | local_verified | local raw/parsed prefix と OpenSearch 非依存を `npm run storage:check` で検査。S3 inventory は未実施。 |
 | AC-085 | scaffolded | single entry route/path intent only。 |
 | AC-086 | scaffolded | SQS/DLQ construct intent only。 |
-| AC-087 | requires_aws | Docusaurus build/publish 未実施。`docs/ops/runbooks/` は追加済み。 |
-| AC-088 | requires_aws | Allure generate/publish 未実施。CI workflow の report 公開は後続。 |
+| AC-087 | implemented_unverified | `npm run admin-artifacts:build` で `dist/admin/docs/latest/` と `dist/admin/docs/versions/v0.16/` を生成し、runbooks/ADR/trace を manifest に含める。Docusaurus/CloudFront/S3 publish は未実施。 |
+| AC-088 | implemented_unverified | `npm run admin-artifacts:build` で `dist/admin/test-reports/allure/latest/` の Allure 互換 local report を生成し、`npm run artifacts:check` で manifest/source/checksum を検査。Allure CLI/CloudFront/S3 publish は未実施。 |
 | AC-090 | scaffolded | fixture RAG IF あり、Agent contract test 未拡張。 |
 | AC-091 | local_verified | `assertRetrievalPolicyNotRelaxed` test あり。 |
 | AC-092 | local_verified | fixture RAG calls Tools functions and records `tool_invocations`. |
@@ -92,13 +92,13 @@
 | AC-112 | scaffolded | observability construct intent only。 |
 | AC-113 | scaffolded | observability construct intent only。 |
 | AC-114 | implemented_unverified | tool invocation audit source あり、admin audit 未実装。 |
-| AC-120 | local_verified | `.github/workflows/ci.yml` に 10 jobs を追加し `npm run ci:check` で検査。PR #1 の GitHub Actions `Saphnexa CI` で lint/typecheck/unit/integration/e2e/cdk synth/cdk diff/security scan/license scan/contract generation diff が pass。 |
+| AC-120 | local_verified | `.github/workflows/ci.yml` に 11 jobs を追加し `npm run ci:check` で検査。既存 PR #1 の GitHub Actions `Saphnexa CI` は lint/typecheck/unit/integration/e2e/cdk synth/cdk diff/security scan/license scan/contract generation diff が pass。`admin-artifacts` 追加後の CI は push 後に確認する。 |
 | AC-121 | requires_aws | coverage threshold 未導入。unit job は追加済み。 |
 | AC-122 | implemented_unverified | local integration job/test は追加済み。AWS/DSQL/S3/AppSync/Tools 実結合は未実施。 |
 | AC-123 | implemented_unverified | `tests/e2e-local.test.js` と e2e CI job を追加。ブラウザ/CloudFront E2E は未実施。 |
 | AC-124 | local_verified | 基本設計 5.6.3 の 15 pairwise ケースを `packages/testing/src/pairwise.js` に catalog 化し、`npm run pairwise:check` で実行率/要因 coverage を検査。 |
 | AC-125 | local_verified | `npm run test:contract`, `npm run acceptance:check`, `npm run evidence:check` を contract-generation-diff job に追加。生成物 diff の本格化は後続。 |
-| AC-126 | requires_aws | Allure publish 未実施。CI workflow は追加済み。 |
+| AC-126 | implemented_unverified | CI workflow に `admin-artifacts` job を追加し、`npm run admin-artifacts:build` / `npm run artifacts:check` を検査対象化。Allure publish URL は未実施。 |
 | AC-130 | not_started | load test 未実装。 |
 | AC-131 | local_verified | `npm run perf:local` で local 質問受付 p95 <= 2s を検査。AWS load test は未実施。 |
 | AC-132 | implemented_unverified | local started/progress event; timing p95 未実施。 |
@@ -108,7 +108,7 @@
 | AC-140 | local_verified | `packages/model-catalog/src/cost-estimate.js` と `npm run cost:check` で 50 DAU/10質問日の local estimate <= 550 USD を検査。AWS Cost Explorer は未実施。 |
 | AC-141 | local_verified | `npm run storage:check` で code/infra/package に OpenSearch dependency がないことを検査。AWS inventory は未実施。 |
 | AC-142 | scaffolded | retention baseline intent only。 |
-| AC-143 | implemented_unverified | 6 runbook を `docs/ops/runbooks/` に追加し `npm run docs:check` で検査。Docusaurus 公開は未実施。 |
+| AC-143 | local_verified | runbooks を `docs/ops/runbooks/` に追加し `npm run docs:check` で構造検査、`npm run admin-artifacts:build` で docs artifact に含める。Docusaurus 公開は未実施。 |
 | AC-144 | implemented_unverified | `docs/ops/runbooks/backup-restore.md` を追加。復旧試験は未実施。 |
 | AC-150 | requires_aws | P0 全 PASS ではない。 |
 | AC-151 | requires_aws | P1 全 PASS ではない。 |

@@ -54,3 +54,11 @@ tasks:
     desc: Verify local storage prefix and metadata invariants
     cmds:
       - npm run storage:check
+  admin-artifacts:build:
+    desc: Build local admin docs and test report artifacts
+    cmds:
+      - npm run admin-artifacts:build
+  artifacts:check:
+    desc: Verify local admin artifact manifests and access policy
+    cmds:
+      - npm run artifacts:check

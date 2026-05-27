@@ -26,8 +26,12 @@
     "perf:local": "node tools/check-local-performance.js",
     "cost:check": "node tools/check-cost-estimate.js",
     "storage:check": "node tools/check-storage-metadata.js",
+    "docs-site:build": "node tools/build-admin-docs.js",
+    "allure:generate:local": "node tools/build-admin-test-report.js",
+    "admin-artifacts:build": "npm run docs-site:build && npm run allure:generate:local",
+    "artifacts:check": "node tools/check-admin-artifacts.js",
     "scan:bundle-domains": "node tools/scan-bundle-domains.js",
-    "verify": "npm run lint && npm run typecheck && npm run test:contract && npm run test:integration:local && npm run test:e2e:local && npm run cdk:synth:local && npm run cdk:diff:local && npm run security:scan && npm run license:scan && npm run docs:check && npm run evidence:check && npm run acceptance:check && npm run pairwise:check && npm run perf:local && npm run cost:check && npm run storage:check && npm run scan:bundle-domains"
+    "verify": "npm run lint && npm run typecheck && npm run test:contract && npm run test:integration:local && npm run test:e2e:local && npm run cdk:synth:local && npm run cdk:diff:local && npm run security:scan && npm run license:scan && npm run docs:check && npm run evidence:check && npm run acceptance:check && npm run pairwise:check && npm run perf:local && npm run cost:check && npm run storage:check && npm run admin-artifacts:build && npm run artifacts:check && npm run scan:bundle-domains"
   },
   "engines": {
     "node": ">=20"

@@ -39,8 +39,9 @@ export function createLocalStore() {
     }],
     evaluation_runs: [],
     published_artifacts: [
-      artifact("artifact-docs-latest", "design_doc_html", "設計書サイト latest", "/admin/docs/latest/"),
-      artifact("artifact-allure-latest", "allure_report", "Allure レポート latest", "/admin/test-reports/allure/latest/")
+      artifact("artifact-docs-latest", "design_doc_html", "設計書サイト latest", "/admin/docs/latest/", "dist/admin/docs/latest/manifest.json"),
+      artifact("artifact-docs-v0-16", "design_doc_html", "設計書サイト v0.16", "/admin/docs/versions/v0.16/", "dist/admin/docs/versions/v0.16/manifest.json"),
+      artifact("artifact-allure-latest", "allure_report", "Allure レポート latest", "/admin/test-reports/allure/latest/", "dist/admin/test-reports/allure/latest/manifest.json")
     ],
     tool_invocations: []
   };
@@ -480,19 +481,19 @@ function user(user_id, role, email, display_name) {
   return { tenant_id: "tenant-local", user_id, email, display_name, role, department: "local", employment_type: "employee", status: statuses.ACTIVE, created_at: baseTime, updated_at: baseTime };
 }
 
-function artifact(artifact_id, artifact_type, title, viewer_path) {
+function artifact(artifact_id, artifact_type, title, viewer_path, source_ref) {
   return {
     tenant_id: "tenant-local",
     artifact_id,
     artifact_type,
     title,
-    version_label: "local",
-    source_ref: "local-fixture",
+    version_label: viewer_path.includes("/versions/") ? "v0.16" : "latest",
+    source_ref,
     s3_bucket: "saphnexa-local-admin-artifacts",
     s3_prefix: viewer_path.replace(/^\/admin\//, "admin/"),
     viewer_path,
-    status: "published",
-    checksum: "local",
+    status: "published-local",
+    checksum: "sha256:local-generated",
     published_by: "local-ci",
     published_at: baseTime,
     expires_at: null,

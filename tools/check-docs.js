@@ -17,6 +17,11 @@ for (const file of requiredRunbooks) {
   }
 }
 
+const localVerification = readText("docs/ops/local-verification.md");
+for (const command of ["npm run admin-artifacts:build", "npm run artifacts:check"]) {
+  assert(localVerification.includes(command), `local verification docs missing ${command}`);
+}
+
 for (const file of listFiles(["docs"], (path) => path.endsWith(".md"))) {
   const body = readText(file);
   assert(!/[ \t]$/m.test(body), `${file} has trailing whitespace`);
