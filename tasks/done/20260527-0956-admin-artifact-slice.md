@@ -35,7 +35,7 @@
 - [x] npm scripts、Taskfile、CI workflow、docs check を更新する。
 - [x] acceptance trace を実態に合わせて更新する。
 - [x] 検証を実行し、作業レポートを作成する。
-- [ ] commit/push/PR コメント/セルフレビュー/task done 更新まで完了する。
+- [x] commit/push/PR コメント/セルフレビュー/task done 更新まで完了する。
 
 ## Done 条件
 
@@ -98,4 +98,11 @@
 
 ## 状態
 
-doing
+done
+
+## PR
+
+- Pull Request: https://github.com/tsuji-tomonori/saphnexa/pull/1
+- 受け入れ条件確認コメント: https://github.com/tsuji-tomonori/saphnexa/pull/1#issuecomment-4550339795
+- セルフレビューコメント: https://github.com/tsuji-tomonori/saphnexa/pull/1#issuecomment-4550340530
+- GitHub Apps は既知の `Resource not accessible by integration` のため、`gh` fallback で PR コメントを投稿した。
