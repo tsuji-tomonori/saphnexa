@@ -88,7 +88,7 @@ function validateManifest(path, checks, errors, options = {}) {
   check(manifest.system === "Saphnexa", "manifest.system", checks, errors, "must be Saphnexa");
   check(manifest.environment === "uat", "manifest.environment", checks, errors, "must be uat");
   check(manifest.aws_region === "ap-northeast-1", "manifest.aws_region", checks, errors, "must be ap-northeast-1");
-  check(/^[0-9]{12}$/.test(manifest.aws_account_id || "") && manifest.aws_account_id !== "000000000000", "manifest.aws_account_id", checks, errors, "must be a real 12 digit AWS account id");
+  check(isRealAwsAccountId(manifest.aws_account_id), "manifest.aws_account_id", checks, errors, "must be a real 12 digit AWS account id");
   check(/^[a-f0-9]{40}$/.test(manifest.git_commit_sha || "") && !/^0{40}$/.test(manifest.git_commit_sha || ""), "manifest.git_commit_sha", checks, errors, "must be a non-placeholder commit SHA");
   check(manifest.git_commit_sha === currentGitCommit(), "manifest.git_commit_sha_current_ref", checks, errors, "must match current Git ref");
   check(isFinalText(manifest.git_tag), "manifest.git_tag", checks, errors, "must be a final immutable Git tag");
@@ -285,6 +285,14 @@ function countBy(values) {
 
 function isFinalText(value) {
   return typeof value === "string" && value.length > 0 && !hasForbiddenFinalMarker(value);
+}
+
+function isRealAwsAccountId(value) {
+  return /^[0-9]{12}$/.test(value || "") && !/^([0-9])\1{11}$/.test(value || "") && !commonPlaceholderAwsAccountIds().has(value);
+}
+
+function commonPlaceholderAwsAccountIds() {
+  return new Set([["1234", "5678", "9012"].join("")]);
 }
 
 function isUrl(value) {

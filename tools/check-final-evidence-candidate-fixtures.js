@@ -85,6 +85,19 @@ try {
   assert(wrongTagCommitStatus.ready === false, "wrong tag commit fixture must not be ready");
   assert(wrongTagCommitStatus.errors.some((error) => error.includes("manifest.git_tag_commit")), "wrong tag commit fixture must reject tag commit mismatch");
 
+  const placeholderAwsAccount = buildReadyCandidate();
+  placeholderAwsAccount.manifest.aws_account_id = placeholderAwsAccountId();
+  placeholderAwsAccount.manifest.cloudformation_stacks[0].stack_id = placeholderAwsAccount.manifest.cloudformation_stacks[0].stack_id.replace(readyAwsAccountId(), placeholderAwsAccountId());
+  placeholderAwsAccount.inventory.stack_id = placeholderAwsAccount.inventory.stack_id.replace(readyAwsAccountId(), placeholderAwsAccountId());
+  const placeholderAwsAccountPaths = writeCandidateFiles(join(root, "placeholder-aws-account"), placeholderAwsAccount);
+  const placeholderAwsAccountStatus = buildFinalEvidenceCandidateStatus(join(root, "placeholder-aws-account-status.json"), {
+    candidatePaths: placeholderAwsAccountPaths,
+    resolveGitTagCommit,
+    resolveGitRepository
+  });
+  assert(placeholderAwsAccountStatus.ready === false, "placeholder AWS account fixture must not be ready");
+  assert(placeholderAwsAccountStatus.errors.some((error) => error.includes("manifest.aws_account_id")), "placeholder AWS account fixture must reject common placeholder account id");
+
   const missingCdkAppVersion = buildReadyCandidate();
   delete missingCdkAppVersion.manifest.cdk_app_version;
   const missingCdkAppVersionPaths = writeCandidateFiles(join(root, "missing-cdk-app-version"), missingCdkAppVersion);
@@ -437,7 +450,7 @@ function fixtureGitTagResolver() {
 }
 
 function buildReadyCandidate() {
-  const accountId = ["1234", "5678", "9012"].join("");
+  const accountId = readyAwsAccountId();
   const stackId = `arn:aws:cloudformation:ap-northeast-1:${accountId}:stack/saphnexa-uat-app/abc12345`;
   return {
     manifest: {
@@ -540,9 +553,17 @@ function outputValueFor(outputKey, index) {
     RealtimeEndpoint: "wss://realtime.saphnexa-uat.internal/event/realtime",
     DsqlEndpoint: "saphnexa-uat.dsql.ap-northeast-1.on.aws",
     KnowledgeBaseId: "KB12345678",
-    DeployRoleArn: "arn:aws:iam::123456789012:role/saphnexa-uat-github-deploy"
+    DeployRoleArn: `arn:aws:iam::${readyAwsAccountId()}:role/saphnexa-uat-github-deploy`
   };
   return values[outputKey] || `saphnexa-uat-output-${index}`;
+}
+
+function readyAwsAccountId() {
+  return ["2109", "8765", "4321"].join("");
+}
+
+function placeholderAwsAccountId() {
+  return ["1234", "5678", "9012"].join("");
 }
 
 function writeCandidateFiles(dir, candidate) {
