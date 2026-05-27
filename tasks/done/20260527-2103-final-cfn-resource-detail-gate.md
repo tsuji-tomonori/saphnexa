@@ -1,6 +1,6 @@
 # final cfn resource detail gate
 
-- 状態: in_progress
+- 状態: done
 - タスク種別: 機能追加
 - 対象PR: #1
 
@@ -42,12 +42,12 @@ CloudFormation inventory schema は final inventory の提出形式を表すた�
 
 ## 受け入れ条件
 
-- [ ] final candidate validator が `stack_resources` の `LogicalResourceId`、`PhysicalResourceId`、`ResourceType`、`ResourceStatus` を検査する。
-- [ ] final candidate validator が complete 系 resource status だけを受け入れる。
-- [ ] ready fixture が complete resource status を含み、`npm run acceptance:final-candidate:fixture:check` が pass する。
-- [ ] resource detail 欠落 fixture が invalid になり、該当 error label を検査する。
-- [ ] schema / runbook / check が実装と同期している。
-- [ ] `npm run acceptance:package:check` と `npm run verify` が pass する。
+- [x] final candidate validator が `stack_resources` の `LogicalResourceId`、`PhysicalResourceId`、`ResourceType`、`ResourceStatus` を検査する。
+- [x] final candidate validator が complete 系 resource status だけを受け入れる。
+- [x] ready fixture が complete resource status を含み、`npm run acceptance:final-candidate:fixture:check` が pass する。
+- [x] resource detail 欠落 fixture が invalid になり、該当 error label を検査する。
+- [x] schema / runbook / check が実装と同期している。
+- [x] `npm run acceptance:package:check` と `npm run verify` が pass する。
 
 ## 検証計画
 
@@ -70,3 +70,27 @@ CloudFormation inventory schema は final inventory の提出形式を表すた�
 
 - 実 CloudFormation resource status に一時的な進行中 status が含まれる場合、final acceptance 候補としては reject される。
 - 外部作業が必要な final acceptance 残件はこのタスクでは解消しない。
+
+## 実施結果
+
+- 実装 commit: `8c9f615` `✅ test: final cfn resource detail検査を追加`
+- 作業レポート: `reports/working/20260527-2107-final-cfn-resource-detail-gate.md`
+- PR 受け入れ条件コメント: https://github.com/tsuji-tomonori/saphnexa/pull/1#issuecomment-4554343170
+- PR セルフレビューコメント: https://github.com/tsuji-tomonori/saphnexa/pull/1#issuecomment-4554346427
+
+## 検証結果
+
+- `npm run acceptance:final-candidate:fixture:check`: pass
+- `npm run cfn:inventory:check`: pass
+- `npm run docs:check`: pass
+- `npm run acceptance:final-candidate:check`: pass（final file 未配置のため not ready）
+- `npm run acceptance:package:check`: pass
+- `npm run verify`: pass
+- `git diff --check`: pass
+- `pre-commit run --files docs/acceptance/cloudformation/cloudformation_inventory.schema.json docs/ops/runbooks/final-acceptance.md tools/check-cloudformation-inventory.js tools/check-final-evidence-candidate-fixtures.js tools/final-evidence-candidate.js tasks/do/20260527-2103-final-cfn-resource-detail-gate.md`: pass
+- `pre-commit run --files reports/working/20260527-2107-final-cfn-resource-detail-gate.md`: pass
+- `pre-commit run --files tasks/done/20260527-2103-final-cfn-resource-detail-gate.md`: pass
+
+## 残件
+
+- final acceptance は未完了。Git tag/release、AWS deploy/publish、CloudFormation capture、final evidence candidate、final checklist signoff は pending。
