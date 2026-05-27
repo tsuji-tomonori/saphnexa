@@ -1,6 +1,6 @@
 # acceptance package cdk version check
 
-状態: doing
+状態: done
 
 ## 背景
 
@@ -85,10 +85,10 @@ acceptance package checker が draft evidence manifest の `cdk_app_version` を
 
 ## Done 条件
 
-- [ ] 実装差分が PR branch に commit / push されている。
-- [ ] 受け入れ条件確認コメントとセルフレビューコメントを PR に投稿している。
-- [ ] task md に PR コメント URL と検証結果を記録し、`tasks/done/` へ移動している。
-- [ ] 作業レポートを `reports/working/` に保存している。
+- [x] 実装差分が PR branch に commit / push されている。
+- [x] 受け入れ条件確認コメントとセルフレビューコメントを PR に投稿している。
+- [x] task md に PR コメント URL と検証結果を記録し、`tasks/done/` へ移動している。
+- [x] 作業レポートを `reports/working/` に保存している。
 
 ## 検証計画
 
@@ -110,7 +110,9 @@ acceptance package checker が draft evidence manifest の `cdk_app_version` を
 
 ## PR コメント
 
-- 未投稿。PR push 後に受け入れ条件確認とセルフレビューを記録する。
+- 受け入れ条件確認: https://github.com/tsuji-tomonori/saphnexa/pull/1#issuecomment-4553652485
+- セルフレビュー: https://github.com/tsuji-tomonori/saphnexa/pull/1#issuecomment-4553654972
+- GitHub Apps comment は既知の 403 `Resource not accessible by integration` のため、`gh pr comment` fallback で投稿した。
 
 ## PR レビュー観点
 
