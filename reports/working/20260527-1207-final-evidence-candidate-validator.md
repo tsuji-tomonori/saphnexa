@@ -31,6 +31,8 @@
 - `dist/acceptance/final_candidate_status.json`
 - `npm run acceptance:final-candidate:check`
 - `docs/ops/runbooks/final-acceptance.md`
+- PR 受け入れ条件コメント: https://github.com/tsuji-tomonori/saphnexa/pull/1#issuecomment-4550880124
+- PR セルフレビューコメント: https://github.com/tsuji-tomonori/saphnexa/pull/1#issuecomment-4550880123
 
 ## 検証
 

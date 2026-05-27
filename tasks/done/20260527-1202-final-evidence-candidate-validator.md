@@ -1,6 +1,6 @@
 # final evidence candidate validator
 
-- 状態: doing
+- 状態: done
 - タスク種別: 機能追加
 - 作成日時: 2026-05-27 12:02 JST
 - 対象 PR: #1
@@ -27,7 +27,7 @@
 - [x] readiness gate に final candidate validator の結果を含める。
 - [x] docs/trace/local verification/CI/admin report/Taskfile を同期する。
 - [x] 対象検証と `npm run verify` を通す。
-- [ ] PR へ受け入れ条件コメントとセルフレビューコメントを追加する。
+- [x] PR へ受け入れ条件コメントとセルフレビューコメントを追加する。
 
 ## Done 条件
 
