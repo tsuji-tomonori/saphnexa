@@ -1,0 +1,5 @@
+{
+  "suite": "aws-dev-uat-e2e",
+  "scenario_count": 6,
+  "passed_count": 6
+}

@@ -1,0 +1,5 @@
+{
+  "cloudfront": "passed",
+  "cognito": "passed",
+  "appsync_events": "passed"
+}

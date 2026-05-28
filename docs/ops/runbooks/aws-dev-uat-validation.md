@@ -83,6 +83,7 @@ bedrock-evaluation-job
 ```
 
 `capture_provenance` は builder output の `capture_provenance` に引き継がれる。raw input に provenance がない場合は builder が fail し、final evidence を作成しない。
+各 `commands[].output_ref` は raw input ファイルからの相対パスで、参照先ファイルが存在する必要がある。絶対パスと `..` によるディレクトリ traversal は使用しない。
 
 ## 手順
 

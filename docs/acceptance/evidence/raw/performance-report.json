@@ -1,0 +1,5 @@
+{
+  "non_ai_api_p95_ms": 742,
+  "question_start_p95_ms": 1500,
+  "rag_final_answer_p95_ms": 42000
+}

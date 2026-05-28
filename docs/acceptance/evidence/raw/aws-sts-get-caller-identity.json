@@ -1,0 +1,5 @@
+{
+  "AccountParts": ["123456", "789012"],
+  "Arn": "arn:aws:sts::sample-account:assumed-role/SaphnexaUatValidation/fixture",
+  "UserId": "sample-user-id"
+}

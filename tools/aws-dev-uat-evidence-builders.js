@@ -1,5 +1,5 @@
-import { mkdirSync, writeFileSync } from "node:fs";
-import { dirname } from "node:path";
+import { existsSync, mkdirSync, writeFileSync } from "node:fs";
+import { dirname, isAbsolute, resolve } from "node:path";
 import { currentGitCommit } from "./git-context.js";
 import { assert, readJson } from "./lib.js";
 
@@ -9,7 +9,7 @@ export const validationEvidenceOutputPath = "dist/acceptance/aws_dev_uat_validat
 export function buildAwsDevUatPreflightEvidence(inputPath, outputPath = preflightEvidenceOutputPath) {
   assert(inputPath, "preflight evidence input path is required");
   const input = readJson(inputPath);
-  const captureProvenance = assertCaptureProvenance(input.capture_provenance, [
+  const captureProvenance = assertCaptureProvenance(input.capture_provenance, inputPath, [
     "aws-sts",
     "cloudformation-describe-stacks",
     "cloudformation-list-stack-resources",
@@ -99,7 +99,7 @@ export function buildAwsDevUatPreflightEvidence(inputPath, outputPath = prefligh
 export function buildAwsDevUatValidationEvidence(inputPath, outputPath = validationEvidenceOutputPath) {
   assert(inputPath, "validation evidence input path is required");
   const input = readJson(inputPath);
-  const captureProvenance = assertCaptureProvenance(input.capture_provenance, [
+  const captureProvenance = assertCaptureProvenance(input.capture_provenance, inputPath, [
     "e2e-allure",
     "cloudfront-access-log",
     "performance-report",
@@ -171,7 +171,7 @@ function arn(service, region, accountId, resource) {
   return `arn:aws:${service}:${region}:${accountId}:${resource}`;
 }
 
-function assertCaptureProvenance(provenance, requiredIds) {
+function assertCaptureProvenance(provenance, inputPath, requiredIds) {
   assert(provenance && typeof provenance === "object", "capture_provenance is required");
   assert(provenance.source === "aws-dev-uat-raw-capture", "capture_provenance.source must be aws-dev-uat-raw-capture");
   assert(/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\+09:00$/.test(provenance.captured_at || ""), "capture_provenance.captured_at must be JST timestamp");
@@ -183,6 +183,9 @@ function assertCaptureProvenance(provenance, requiredIds) {
     assert(typeof item.command === "string" && item.command.trim().length > 0, `capture_provenance.commands.${id}.command is required`);
     assert(!/(placeholder|todo|tbd|dummy|mock|localhost|127\.0\.0\.1|0\.0\.0\.0)/i.test(item.command), `capture_provenance.commands.${id}.command must not be placeholder/local text`);
     assert(typeof item.output_ref === "string" && item.output_ref.trim().length > 0, `capture_provenance.commands.${id}.output_ref is required`);
+    assert(!isAbsolute(item.output_ref), `capture_provenance.commands.${id}.output_ref must be relative`);
+    assert(!item.output_ref.split(/[\\/]/).includes(".."), `capture_provenance.commands.${id}.output_ref must not traverse directories`);
+    assert(existsSync(resolve(dirname(inputPath), item.output_ref)), `capture_provenance.commands.${id}.output_ref file missing: ${item.output_ref}`);
     assert(item.status === "captured", `capture_provenance.commands.${id}.status must be captured`);
   }
   assert(JSON.stringify(provenance.required_command_ids || []) === JSON.stringify(requiredIds), "capture_provenance.required_command_ids mismatch");

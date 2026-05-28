@@ -1,4 +1,4 @@
-import { mkdtempSync, rmSync } from "node:fs";
+import { mkdtempSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { spawnSync } from "node:child_process";
@@ -39,6 +39,21 @@ try {
   assertThrows(
     () => buildAwsDevUatValidationEvidence("docs/acceptance/evidence/aws_dev_uat_validation.example.json", join(tmpRoot, "invalid-validation.json")),
     "capture_provenance is required"
+  );
+  const missingRefInput = {
+    ...readJson("docs/acceptance/evidence/aws_dev_uat_preflight.capture.sample.json"),
+    capture_provenance: {
+      ...readJson("docs/acceptance/evidence/aws_dev_uat_preflight.capture.sample.json").capture_provenance,
+      commands: readJson("docs/acceptance/evidence/aws_dev_uat_preflight.capture.sample.json").capture_provenance.commands.map((item, index) =>
+        index === 0 ? { ...item, output_ref: "raw/missing-output.json" } : item
+      )
+    }
+  };
+  const missingRefInputPath = join(tmpRoot, "missing-output-ref-input.json");
+  writeFileSync(missingRefInputPath, `${JSON.stringify(missingRefInput, null, 2)}\n`);
+  assertThrows(
+    () => buildAwsDevUatPreflightEvidence(missingRefInputPath, join(tmpRoot, "missing-output-ref.json")),
+    "output_ref file missing"
   );
 
   console.log("AWS dev/UAT evidence builder fixture check passed");
