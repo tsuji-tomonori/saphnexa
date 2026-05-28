@@ -1,6 +1,6 @@
 # operator handoff bundle gate summary
 
-- 状態: do
+- 状態: done
 - タスク種別: 機能追加
 - ブランチ: `codex/aws-dev-uat-preflight`
 - PR: https://github.com/tsuji-tomonori/saphnexa/pull/2
@@ -58,6 +58,11 @@ AWS dev/UAT 実行担当者が handoff artifact だけでも evidence bundle gat
 ## 作業レポート
 
 - `reports/working/20260528-2208-operator-handoff-bundle-gate-summary.md`
+
+## PR コメント
+
+- 受け入れ条件確認: https://github.com/tsuji-tomonori/saphnexa/pull/2#issuecomment-4564281238
+- セルフレビュー: https://github.com/tsuji-tomonori/saphnexa/pull/2#issuecomment-4564283360
 
 ## PR レビュー観点
 
