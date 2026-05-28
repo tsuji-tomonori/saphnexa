@@ -80,6 +80,9 @@ for (const command of [
   "npm run aws:dev-uat:raw-capture-plan:check",
   "npm run aws:dev-uat:raw-input-scaffold:build",
   "npm run aws:dev-uat:raw-input-scaffold:check",
+  "npm run aws:dev-uat:operator-input:build",
+  "npm run aws:dev-uat:operator-input:check",
+  "npm run aws:dev-uat:operator-input:fixture:check",
   "npm run aws:dev-uat:raw-output:check",
   "npm run aws:dev-uat:raw-output:fixture:check",
   "npm run aws:dev-uat:raw-input:check",
@@ -115,7 +118,9 @@ for (const phrase of [
   "materialization.command",
   "materialized flow fixture",
   "final readiness manifest",
-  "operator handoff"
+  "operator handoff",
+  "operator input",
+  "resolved operator input"
 ]) {
   assert(awsDevUatRunbook.includes(phrase) || localVerification.includes(phrase), `docs missing AWS dev/UAT materializer plan phrase: ${phrase}`);
 }

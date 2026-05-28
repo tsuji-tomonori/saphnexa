@@ -72,6 +72,8 @@ for (const command of [
   "npm run aws:dev-uat:execution-bridge:check",
   "npm run aws:dev-uat:raw-capture-plan:check",
   "npm run aws:dev-uat:raw-input-scaffold:check",
+  "npm run aws:dev-uat:operator-input:check",
+  "npm run aws:dev-uat:operator-input:fixture:check",
   "npm run aws:dev-uat:raw-output:fixture:check",
   "npm run aws:dev-uat:raw-input:fixture:check",
   "npm run aws:dev-uat:evidence-bundle:fixture:check",

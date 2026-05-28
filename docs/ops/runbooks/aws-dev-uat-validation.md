@@ -21,6 +21,8 @@ E2E、性能、RAG 品質検証の実行結果は `dist/acceptance/aws_dev_uat_v
 ```text
 dist/acceptance/aws_dev_uat_execution_bridge.json
 dist/acceptance/aws_dev_uat_raw_capture_plan.json
+dist/acceptance/aws_dev_uat_operator_input.scaffold.json
+dist/acceptance/aws_dev_uat_operator_input.json
 dist/acceptance/raw/aws_dev_uat_preflight.raw.scaffold.json
 dist/acceptance/raw/aws_dev_uat_validation.raw.scaffold.json
 dist/acceptance/aws_dev_uat_preflight.json
@@ -105,6 +107,8 @@ npm run aws:dev-uat:raw-capture-plan:build
 npm run aws:dev-uat:raw-capture-plan:check
 npm run aws:dev-uat:raw-input-scaffold:build
 npm run aws:dev-uat:raw-input-scaffold:check
+npm run aws:dev-uat:operator-input:build
+npm run aws:dev-uat:operator-input:check
 npm run aws:dev-uat:capture-helpers:check
 ```
 
@@ -118,6 +122,14 @@ dist/acceptance/raw/aws_dev_uat_validation.raw.scaffold.json
 ```
 
 scaffold は `schema_version: saphnexa-aws-dev-uat-raw-input-scaffold.v1`、`scaffold_status: requires_operator_values`、`final_evidence: false`、`capture_provenance.commands[].status: pending_capture` のまま出力される。preflight scaffold は `materialization.command` に raw output files から final preflight raw input を生成する command を持つ。validation scaffold は `materialization.command` に raw output files から final validation raw input を生成する command を持つ。実 AWS raw output を取得し、必要値、`captured_at`、`capture_provenance.captured_at`、各 `output_ref` の参照先ファイルを揃えたうえで、operator が final raw input として別名保存する。scaffold そのものは `npm run aws:dev-uat:preflight:final` や `npm run aws:dev-uat:validation:final` の根拠にしない。
+
+`npm run aws:dev-uat:operator-input:check` は `dist/acceptance/aws_dev_uat_operator_input.scaffold.json` を生成し、release tag、GitHub release URL、AWS account id、admin artifacts bucket、test run id、Bedrock evaluation job、report URL、resolved command の必須入力を 1 つの operator input として列挙する。operator は値を確定した後、`dist/acceptance/aws_dev_uat_operator_input.json` に保存し、raw input materialization の前に resolved operator input を検査する。
+
+```bash
+npm run aws:dev-uat:operator-input:check -- --input dist/acceptance/aws_dev_uat_operator_input.json --require-resolved
+```
+
+resolved operator input checker は `<release-tag>`、`<aws-account-id>`、`sample`、`mock`、`localhost`、空値、不正な GitHub release URL、不正な AWS account id を reject する。`command_templates` は未解決 placeholder を含むテンプレートとして保持してよいが、`resolved_commands` は実値に置き換える。operator input scaffold は実 AWS 完了 evidence ではない。
 
 operator が final raw input を保存したら、`dist/acceptance/` の final evidence を更新する前に dry-run checker を実行する。dry-run checker は一時ディレクトリに evidence を生成し、既存 final gate を通す。scaffold、`pending_capture`、`captured_at` 未設定、`output_ref` 参照先欠落、閾値未達は fail する。
 
@@ -193,6 +205,8 @@ npm run aws:dev-uat:preflight
 npm run aws:dev-uat:execution-bridge:check
 npm run aws:dev-uat:raw-capture-plan:check
 npm run aws:dev-uat:raw-input-scaffold:check
+npm run aws:dev-uat:operator-input:check
+npm run aws:dev-uat:operator-input:fixture:check
 npm run aws:dev-uat:raw-output:fixture:check
 npm run aws:dev-uat:raw-input:fixture:check
 npm run aws:dev-uat:evidence-bundle:fixture:check
@@ -214,6 +228,8 @@ npm run aws:dev-uat:evidence:fixture:check
 `npm run aws:dev-uat:execution-bridge:check` は AWS STS probe を行わず、final evidence path、AWS identity probe command、final gate command order、必要 input、証跡 mapping の整合を検査する。`npm run aws:dev-uat:execution-bridge:probe` は `aws sts get-caller-identity --output json` を read-only で実行し、credentials がなければ `waiting_for_external_execution` として `dist/acceptance/aws_dev_uat_execution_bridge.json` に記録する。
 `npm run aws:dev-uat:raw-capture-plan:check` は raw capture plan を生成してから、preflight / validation の command id、`output_ref`、materialize command、raw output/input check command、build command、final command が builder と同期していることを検査する。この command は plan を書き出すだけで、AWS command の実行や外部状態変更は行わない。
 `npm run aws:dev-uat:raw-input-scaffold:check` は scaffold を生成してから、preflight / validation の command id、command、`output_ref` が raw capture plan と同期していること、かつ全 command が `pending_capture` のままで final evidence ではないことを検査する。この command は scaffold を書き出すだけで、AWS command の実行や外部状態変更は行わない。
+`npm run aws:dev-uat:operator-input:check` は operator input scaffold を生成して、raw capture plan、preflight / validation scaffold、resolved operator input path、materialize command template、final readiness command の同期を検査する。この command は scaffold を書き出すだけで、AWS command の実行や外部状態変更は行わない。
+`npm run aws:dev-uat:operator-input:fixture:check` は resolved operator input の positive path と、scaffold の誤用、未解決 placeholder、不正 AWS account id、不正 release URL、未解決 S3 URI の negative path を検査する。fixture は最終検収 evidence として扱わない。
 `npm run aws:dev-uat:raw-output:fixture:check` は sample raw input の `output_ref` 参照先を読み、JSON parse と text non-empty の positive path、parse 不能 JSON、空 text、sample/fixture text rejection の negative path を検査する。sample raw output は最終検収 evidence として扱わない。
 `npm run aws:dev-uat:raw-input:fixture:check` は sample raw input を dry-run checker に通し、scaffold と `pending_capture` raw input が reject されることを検査する。sample raw input は最終検収 evidence として扱わない。
 `npm run aws:dev-uat:evidence-bundle:fixture:check` は sample raw input/output から preflight / validation evidence と bundle manifest を生成し、各 artifact の path、size、sha256 と missing artifact の negative path を検査する。sample bundle manifest は最終検収 evidence として扱わない。
@@ -249,6 +265,9 @@ npm run aws:dev-uat:raw-capture-plan:build
 npm run aws:dev-uat:raw-capture-plan:check
 npm run aws:dev-uat:raw-input-scaffold:build
 npm run aws:dev-uat:raw-input-scaffold:check
+npm run aws:dev-uat:operator-input:build
+npm run aws:dev-uat:operator-input:check
+npm run aws:dev-uat:operator-input:fixture:check
 npm run aws:dev-uat:raw-output:check -- preflight --input <raw-preflight-input.json>
 npm run aws:dev-uat:raw-output:fixture:check
 npm run aws:dev-uat:raw-input:check -- preflight --input <raw-preflight-input.json>

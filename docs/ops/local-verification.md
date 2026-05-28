@@ -59,6 +59,10 @@ npm run aws:dev-uat:raw-capture-plan:build
 npm run aws:dev-uat:raw-capture-plan:check
 npm run aws:dev-uat:raw-input-scaffold:build
 npm run aws:dev-uat:raw-input-scaffold:check
+npm run aws:dev-uat:operator-input:build
+npm run aws:dev-uat:operator-input:check
+npm run aws:dev-uat:operator-input:check -- --input dist/acceptance/aws_dev_uat_operator_input.json --require-resolved
+npm run aws:dev-uat:operator-input:fixture:check
 npm run aws:dev-uat:raw-output:check -- preflight --input <raw-preflight-input.json>
 npm run aws:dev-uat:raw-output:check -- validation --input <raw-validation-input.json>
 npm run aws:dev-uat:raw-output:fixture:check
@@ -135,6 +139,9 @@ git diff --check
 - `npm run aws:dev-uat:execution-bridge:probe` が AWS STS の read-only probe と final evidence file の有無を記録し、credentials や `aws-captured` 証跡が足りない場合は `waiting_for_external_execution` として残すこと。
 - `npm run aws:dev-uat:raw-capture-plan:check` が `dist/acceptance/aws_dev_uat_raw_capture_plan.json` を生成し、preflight / validation の command id、`output_ref`、preflight `materialize_command`、validation `materialize_command`、raw output/input check command、build command、final command が builder と同期していることを検査すること。
 - `npm run aws:dev-uat:raw-input-scaffold:check` が `dist/acceptance/raw/aws_dev_uat_preflight.raw.scaffold.json` と `dist/acceptance/raw/aws_dev_uat_validation.raw.scaffold.json` を生成し、raw capture plan の command id、command、`output_ref` と同期していること、かつ `pending_capture` の未捕捉 draft として final evidence ではないことを検査すること。
+- `npm run aws:dev-uat:operator-input:check` が `dist/acceptance/aws_dev_uat_operator_input.scaffold.json` を生成し、raw capture plan、preflight / validation scaffold、resolved operator input path、release/AWS/test/report 入力、resolved operator input check command、materialize command template と同期していることを検査すること。
+- `npm run aws:dev-uat:operator-input:check -- --input dist/acceptance/aws_dev_uat_operator_input.json --require-resolved` が operator の resolved operator input から `<release-tag>`、`<aws-account-id>`、`sample`、`mock`、`localhost`、空値、不正 GitHub release URL、不正 AWS account id を reject すること。
+- `npm run aws:dev-uat:operator-input:fixture:check` が resolved operator input の positive path と、scaffold の誤用、未解決 placeholder、不正 AWS account id、不正 release URL、未解決 S3 URI の negative path を検査すること。
 - `npm run aws:dev-uat:raw-output:check -- preflight --input <raw-preflight-input.json>` と `npm run aws:dev-uat:raw-output:check -- validation --input <raw-validation-input.json>` が raw input の `output_ref` 参照先を読み、JSON output の parse と text output の non-empty を検査すること。
 - `npm run aws:dev-uat:raw-output:fixture:check` が sample raw output の positive path と、parse 不能 JSON、空 text、sample/fixture text rejection を検査すること。
 - `npm run aws:dev-uat:raw-input:check -- preflight --input <raw-preflight-input.json>` と `npm run aws:dev-uat:raw-input:check -- validation --input <raw-validation-input.json>` が operator 入力を一時ディレクトリで evidence build し、既存 final gate 相当を通すこと。
@@ -176,6 +183,8 @@ git diff --check
 - `npm run aws:dev-uat:execution-bridge:probe` は AWS credentials と final evidence file の有無を記録するだけであり、deploy、migration、publish、load test、Bedrock Evaluations は実行しない。
 - `npm run aws:dev-uat:raw-capture-plan:check` は raw capture plan の生成と構造検査だけを行う。plan に listed された command の実行や raw output の取得は行わない。
 - `npm run aws:dev-uat:raw-input-scaffold:check` は raw input scaffold の生成と構造検査だけを行う。`pending_capture` の scaffold は final raw input ではなく、実 AWS raw output、`captured_at`、`capture_provenance.commands[].status: captured`、参照先 `output_ref` が揃うまで最終検収 evidence として扱わない。
+- `npm run aws:dev-uat:operator-input:check` は operator input scaffold の生成と構造検査だけを行う。resolved operator input が pass しても、実 AWS credentials、実 raw output、実 deploy/publish、実 E2E・性能・RAG品質結果の代替にはしない。
+- `npm run aws:dev-uat:operator-input:fixture:check` は resolved operator input fixture の構造確認だけを行う。実 AWS dev/UAT 完了の根拠にはしない。
 - `npm run aws:dev-uat:raw-output:fixture:check` は sample raw output の形式確認だけを行う。実 AWS credentials、実 raw output、実 deploy/publish がなければ最終検収 evidence として扱わない。
 - `npm run aws:dev-uat:raw-input:fixture:check` は sample raw input の dry-run 構造確認だけを行う。実 AWS credentials、実 raw output、実 deploy/publish がなければ最終検収 evidence として扱わない。
 - `npm run aws:dev-uat:evidence-bundle:fixture:check` は sample bundle manifest の構造確認だけを行う。実 AWS credentials、実 raw output、final evidence、execution bridge が揃わなければ最終検収 evidence として扱わない。

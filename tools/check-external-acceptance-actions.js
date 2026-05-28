@@ -47,12 +47,16 @@ const perfCaptureCommand = "node tools/capture-aws-dev-uat-performance-result.js
 const ragCaptureCommand = "node tools/capture-aws-dev-uat-rag-quality-result.js --env uat --run-id <run-id> > raw/rag-quality-report.json";
 const preflightMaterializeCommand = "npm run aws:dev-uat:preflight-raw-input:build -- --scaffold dist/acceptance/raw/aws_dev_uat_preflight.raw.scaffold.json --output <raw-preflight-input.json> --captured-at <capture-jst-timestamp> --git-tag <release-tag> --github-release-url <github-release-url>";
 const validationMaterializeCommand = "npm run aws:dev-uat:validation-raw-input:build -- --scaffold dist/acceptance/raw/aws_dev_uat_validation.raw.scaffold.json --output <raw-validation-input.json> --captured-at <capture-jst-timestamp> --git-tag <release-tag> --github-release-url <github-release-url> --aws-account-id <aws-account-id>";
+const operatorInputCheckCommand = "npm run aws:dev-uat:operator-input:check";
+const resolvedOperatorInputCheckCommand = "npm run aws:dev-uat:operator-input:check -- --input dist/acceptance/aws_dev_uat_operator_input.json --require-resolved";
 for (const command of [
   "npm run aws:dev-uat:execution-bridge:probe",
   "npm run aws:dev-uat:raw-capture-plan:build",
   "npm run aws:dev-uat:raw-capture-plan:check",
   "npm run aws:dev-uat:raw-input-scaffold:build",
   "npm run aws:dev-uat:raw-input-scaffold:check",
+  operatorInputCheckCommand,
+  resolvedOperatorInputCheckCommand,
   "npm run aws:dev-uat:capture-helpers:check",
   preflightMaterializeCommand,
   "npm run aws:dev-uat:raw-output:check -- preflight --input <raw-preflight-input.json>",
@@ -85,8 +89,18 @@ assert(
 );
 assert(
   awsDevUatValidation.candidate_commands.indexOf("npm run aws:dev-uat:raw-input-scaffold:check") <
+    awsDevUatValidation.candidate_commands.indexOf(operatorInputCheckCommand),
+  "AWS dev/UAT validation action must verify raw input scaffold before building operator input scaffold"
+);
+assert(
+  awsDevUatValidation.candidate_commands.indexOf(operatorInputCheckCommand) <
+    awsDevUatValidation.candidate_commands.indexOf(resolvedOperatorInputCheckCommand),
+  "AWS dev/UAT validation action must build operator input scaffold before requiring resolved operator input"
+);
+assert(
+  awsDevUatValidation.candidate_commands.indexOf(resolvedOperatorInputCheckCommand) <
     awsDevUatValidation.candidate_commands.indexOf(preflightMaterializeCommand),
-  "AWS dev/UAT validation action must verify raw input scaffold before materializing preflight raw input"
+  "AWS dev/UAT validation action must verify resolved operator input before materializing preflight raw input"
 );
 assert(
   awsDevUatValidation.candidate_commands.indexOf(preflightMaterializeCommand) <
@@ -160,6 +174,8 @@ assert(
 );
 assert(awsDevUatValidation.evidence_outputs.includes("dist/acceptance/aws_dev_uat_execution_bridge.json"), "AWS dev/UAT validation action must output execution bridge snapshot");
 assert(awsDevUatValidation.evidence_outputs.includes("dist/acceptance/aws_dev_uat_raw_capture_plan.json"), "AWS dev/UAT validation action must output raw capture plan");
+assert(awsDevUatValidation.evidence_outputs.includes("dist/acceptance/aws_dev_uat_operator_input.scaffold.json"), "AWS dev/UAT validation action must output operator input scaffold");
+assert(awsDevUatValidation.evidence_outputs.includes("dist/acceptance/aws_dev_uat_operator_input.json"), "AWS dev/UAT validation action must output resolved operator input");
 assert(awsDevUatValidation.evidence_outputs.includes("dist/acceptance/raw/aws_dev_uat_preflight.raw.scaffold.json"), "AWS dev/UAT validation action must output preflight raw input scaffold");
 assert(awsDevUatValidation.evidence_outputs.includes("dist/acceptance/raw/aws_dev_uat_validation.raw.scaffold.json"), "AWS dev/UAT validation action must output validation raw input scaffold");
 assert(awsDevUatValidation.evidence_outputs.includes("dist/acceptance/aws_dev_uat_preflight.json"), "AWS dev/UAT validation action must output preflight evidence");

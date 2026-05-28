@@ -3,6 +3,7 @@ import { dirname } from "node:path";
 import { buildExternalAcceptanceActionPlan, externalActionPlanPath } from "./external-acceptance-actions.js";
 import { buildAwsDevUatRawCapturePlan, rawCapturePlanOutputPath } from "./aws-dev-uat-raw-capture-plan.js";
 import { buildAwsDevUatFinalReadiness, awsDevUatFinalReadinessPath } from "./aws-dev-uat-final-readiness.js";
+import { awsDevUatOperatorInputScaffoldPath, buildAwsDevUatOperatorInputScaffold } from "./aws-dev-uat-operator-input.js";
 import { currentGitCommit } from "./git-context.js";
 import { currentJstTimestamp } from "./lib.js";
 
@@ -24,6 +25,11 @@ export function buildAwsDevUatOperatorHandoff(options = {}) {
   const externalActionPlan = options.externalActionPlan || buildExternalAcceptanceActionPlan(options.externalActionPlanPath || externalActionPlanPath);
   const rawCapturePlan = options.rawCapturePlan || buildAwsDevUatRawCapturePlan({
     outputPath: options.rawCapturePlanPath || rawCapturePlanOutputPath
+  });
+  const operatorInput = options.operatorInput || buildAwsDevUatOperatorInputScaffold({
+    outputPath: options.operatorInputPath || awsDevUatOperatorInputScaffoldPath,
+    rawCapturePlan,
+    rawCapturePlanPath: options.rawCapturePlanPath || rawCapturePlanOutputPath
   });
   const finalReadiness = options.finalReadiness || buildAwsDevUatFinalReadiness({
     outputPath: options.finalReadinessPath || awsDevUatFinalReadinessPath,
@@ -50,12 +56,18 @@ export function buildAwsDevUatOperatorHandoff(options = {}) {
     source_artifacts: {
       external_action_plan: options.externalActionPlanPath || externalActionPlanPath,
       raw_capture_plan: options.rawCapturePlanPath || rawCapturePlanOutputPath,
+      operator_input_scaffold: options.operatorInputPath || awsDevUatOperatorInputScaffoldPath,
       final_readiness: options.finalReadinessPath || awsDevUatFinalReadinessPath
     },
     required_inputs: {
       environment: rawCapturePlan.environment,
       region: rawCapturePlan.region,
       stack_name: rawCapturePlan.stack_name,
+      operator_input: {
+        scaffold_path: operatorInput.source_artifacts.operator_input_scaffold,
+        resolved_path: operatorInput.source_artifacts.resolved_operator_input,
+        resolved_check_command: operatorInput.command_templates.resolved_operator_input_check
+      },
       release: ["commit_sha", "git_tag", "github_release_url"],
       aws_identity: "aws sts get-caller-identity --output json",
       test_identities: ["general_user", "admin"],

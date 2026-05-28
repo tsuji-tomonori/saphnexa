@@ -184,6 +184,8 @@ jobs:
       - run: npm run aws:dev-uat:execution-bridge:check
       - run: npm run aws:dev-uat:raw-capture-plan:check
       - run: npm run aws:dev-uat:raw-input-scaffold:check
+      - run: npm run aws:dev-uat:operator-input:check
+      - run: npm run aws:dev-uat:operator-input:fixture:check
       - run: npm run aws:dev-uat:raw-output:fixture:check
       - run: npm run aws:dev-uat:raw-input:fixture:check
       - run: npm run aws:dev-uat:evidence-bundle:fixture:check

@@ -79,6 +79,8 @@ export function buildExternalAcceptanceActionPlan(outputPath = externalActionPla
         "npm run aws:dev-uat:raw-capture-plan:check",
         "npm run aws:dev-uat:raw-input-scaffold:build",
         "npm run aws:dev-uat:raw-input-scaffold:check",
+        "npm run aws:dev-uat:operator-input:check",
+        "npm run aws:dev-uat:operator-input:check -- --input dist/acceptance/aws_dev_uat_operator_input.json --require-resolved",
         "npm run aws:dev-uat:capture-helpers:check",
         "npm run aws:dev-uat:preflight-raw-input:build -- --scaffold dist/acceptance/raw/aws_dev_uat_preflight.raw.scaffold.json --output <raw-preflight-input.json> --captured-at <capture-jst-timestamp> --git-tag <release-tag> --github-release-url <github-release-url>",
         "npm run aws:dev-uat:raw-output:check -- preflight --input <raw-preflight-input.json>",
@@ -106,6 +108,8 @@ export function buildExternalAcceptanceActionPlan(outputPath = externalActionPla
       evidence_outputs: [
         "dist/acceptance/aws_dev_uat_execution_bridge.json",
         "dist/acceptance/aws_dev_uat_raw_capture_plan.json",
+        "dist/acceptance/aws_dev_uat_operator_input.scaffold.json",
+        "dist/acceptance/aws_dev_uat_operator_input.json",
         "dist/acceptance/raw/aws_dev_uat_preflight.raw.scaffold.json",
         "dist/acceptance/raw/aws_dev_uat_validation.raw.scaffold.json",
         "dist/acceptance/aws_dev_uat_preflight.json",

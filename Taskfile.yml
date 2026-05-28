@@ -226,6 +226,18 @@ tasks:
     desc: Build and verify AWS dev/UAT raw input scaffolds without changing AWS state
     cmds:
       - npm run aws:dev-uat:raw-input-scaffold:check
+  aws:dev-uat:operator-input:build:
+    desc: Build the AWS dev/UAT operator input scaffold
+    cmds:
+      - npm run aws:dev-uat:operator-input:build
+  aws:dev-uat:operator-input:check:
+    desc: Build and verify the AWS dev/UAT operator input scaffold without changing AWS state
+    cmds:
+      - npm run aws:dev-uat:operator-input:check
+  aws:dev-uat:operator-input:fixture:check:
+    desc: Verify AWS dev/UAT resolved operator input fixture branches
+    cmds:
+      - npm run aws:dev-uat:operator-input:fixture:check
   aws:dev-uat:raw-output:fixture:check:
     desc: Verify AWS dev/UAT raw output files for sample captured inputs
     cmds:
