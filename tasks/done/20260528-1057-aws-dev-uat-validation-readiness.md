@@ -1,6 +1,6 @@
 # AWS dev/UAT 検証 readiness 実装
 
-状態: implemented_pending_pr_comment
+状態: done
 
 ## 背景
 
@@ -43,7 +43,12 @@ AWS dev/UAT で E2E、性能、RAG品質検証を実行した後、結果を最�
 - [x] E2E pass 100%、非AI API p95 <= 800ms、質問開始 p95 <= 2s、初回通知 p95 <= 5s、最終回答 p95 <= 60s、timeout rate < 2%、RAG品質閾値を checker が検査する。
 - [x] runbook / local verification / traceability / docs check が更新される。
 - [x] 変更に見合う検証を実行し、作業レポートに結果と未実施 AWS 実行を記録する。
-- [ ] PR に受け入れ条件確認とセルフレビューコメントを追加できる。
+- [x] PR に受け入れ条件確認とセルフレビューコメントを追加できる。
+
+## PR コメント
+
+- 受け入れ条件確認: https://github.com/tsuji-tomonori/saphnexa/pull/2#issuecomment-4560240177
+- セルフレビュー: https://github.com/tsuji-tomonori/saphnexa/pull/2#issuecomment-4560240767
 
 ## 検証計画
 
