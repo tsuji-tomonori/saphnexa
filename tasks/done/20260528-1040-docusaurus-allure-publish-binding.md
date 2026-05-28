@@ -1,6 +1,6 @@
 # Docusaurus / Allure 公開バインディング実装
 
-状態: implemented_pending_pr_comment
+状態: done
 
 ## 背景
 
@@ -44,7 +44,12 @@ Docusaurus docs site と Allure static report を admin artifacts bucket / Cloud
 - [x] `npm run admin-artifacts:build` と `npm run artifacts:check` が pass する。
 - [x] Docusaurus/Allure publish binding 専用の検査コマンドが pass する。
 - [x] 変更に見合う docs/acceptance/ops の同期と検証結果が作業レポートに残る。
-- [ ] PR に受け入れ条件確認とセルフレビューコメントを追加できる。
+- [x] PR に受け入れ条件確認とセルフレビューコメントを追加できる。
+
+## PR コメント
+
+- 受け入れ条件確認: https://github.com/tsuji-tomonori/saphnexa/pull/2#issuecomment-4560171501
+- セルフレビュー: https://github.com/tsuji-tomonori/saphnexa/pull/2#issuecomment-4560173089
 
 ## 検証計画
 
