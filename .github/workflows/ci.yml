@@ -194,6 +194,8 @@ jobs:
       - run: npm run aws:dev-uat:materialized-flow:fixture:check
       - run: npm run aws:dev-uat:final-readiness:check
       - run: npm run aws:dev-uat:final-readiness:fixture:check
+      - run: npm run aws:dev-uat:operator-handoff:check
+      - run: npm run aws:dev-uat:operator-handoff:fixture:check
       - run: npm run aws:dev-uat:evidence:fixture:check
       - run: npm run aws:dev-uat:validation:check
       - run: npm run aws:dev-uat:validation:fixture:check

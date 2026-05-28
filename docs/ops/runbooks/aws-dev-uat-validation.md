@@ -203,6 +203,8 @@ npm run aws:dev-uat:validation-raw-input:fixture:check
 npm run aws:dev-uat:materialized-flow:fixture:check
 npm run aws:dev-uat:final-readiness:check
 npm run aws:dev-uat:final-readiness:fixture:check
+npm run aws:dev-uat:operator-handoff:check
+npm run aws:dev-uat:operator-handoff:fixture:check
 npm run aws:dev-uat:validation:check
 npm run aws:dev-uat:validation:fixture:check
 npm run aws:dev-uat:evidence:fixture:check
@@ -222,6 +224,8 @@ npm run aws:dev-uat:evidence:fixture:check
 `npm run aws:dev-uat:materialized-flow:fixture:check` は materialized flow fixture として、preflight / validation scaffold から raw input を生成し、raw output/input check、preflight/validation final evidence build、validation suite gate、raw input/output/final evidence/execution bridge を含む evidence bundle manifest まで通す。missing materialized raw input と missing raw output の negative path も検査するが、sample raw output は最終検収 evidence として扱わない。
 `npm run aws:dev-uat:final-readiness:check` は final readiness manifest を生成し、raw capture plan、execution bridge、preflight/validation raw input、final evidence、evidence bundle manifest、blockers、next commands を記録する。実 evidence と AWS credentials が揃わない場合は `blocked_by_external_execution` として残し、`--require-ready` では fail する。
 `npm run aws:dev-uat:final-readiness:fixture:check` は missing evidence path と ready evidence path を fixture で検査する。sample evidence は最終検収 evidence として扱わない。
+`npm run aws:dev-uat:operator-handoff:check` は operator handoff artifact を生成し、external action plan、raw capture plan、final readiness manifest、承認必須 action、critical command order、evidence outputs、blockers、next commands を集約する。この command は release 作成、deploy、migration、publish、E2E、負荷試験、Bedrock Evaluations、signoff を実行しない。
+`npm run aws:dev-uat:operator-handoff:fixture:check` は operator handoff の pending / requires_confirmation / AWS not-ready branch を fixture で検査する。sample handoff は最終検収 evidence として扱わない。
 `npm run aws:dev-uat:validation:check` も `docs/acceptance/evidence/aws_dev_uat_validation.example.json` だけを検査する。`npm run aws:dev-uat:validation:fixture:check` は fixture の positive path と、final 指定・E2E失敗・性能閾値超過・RAG品質閾値超過の negative path を検査する。
 `npm run aws:dev-uat:evidence:fixture:check` は `*.capture.sample.json` から一時ディレクトリに `aws-captured` evidence を生成し、既存 final checker に通す。sample raw input は最終検収 evidence として扱わない。
 
@@ -273,6 +277,7 @@ npm run aws:dev-uat:materialized-flow:fixture:check
 npm run aws:dev-uat:validation:final
 npm run aws:dev-uat:evidence-bundle:check -- --preflight-raw-input <raw-preflight-input.json> --validation-raw-input <raw-validation-input.json> --preflight-evidence dist/acceptance/aws_dev_uat_preflight.json --validation-evidence dist/acceptance/aws_dev_uat_validation.json --execution-bridge dist/acceptance/aws_dev_uat_execution_bridge.json --output dist/acceptance/aws_dev_uat_evidence_bundle_manifest.json
 npm run aws:dev-uat:final-readiness:check -- --probe-aws-identity --require-ready
+npm run aws:dev-uat:operator-handoff:check
 npm run acceptance:external-actions:check
 npm run acceptance:final:check
 ```

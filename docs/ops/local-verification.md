@@ -76,6 +76,8 @@ npm run aws:dev-uat:validation-raw-input:fixture:check
 npm run aws:dev-uat:materialized-flow:fixture:check
 npm run aws:dev-uat:final-readiness:check
 npm run aws:dev-uat:final-readiness:fixture:check
+npm run aws:dev-uat:operator-handoff:check
+npm run aws:dev-uat:operator-handoff:fixture:check
 npm run aws:dev-uat:validation:build -- --input <raw-validation-input.json>
 npm run aws:dev-uat:validation:check
 npm run aws:dev-uat:validation:fixture:check
@@ -146,6 +148,8 @@ git diff --check
 - `npm run aws:dev-uat:materialized-flow:fixture:check` が materialized flow fixture として preflight / validation scaffold から raw input を生成し、raw output/input check、preflight/validation final evidence build、validation suite gate、raw input/output/final evidence/execution bridge を含む evidence bundle manifest まで一気通貫で検査すること。
 - `npm run aws:dev-uat:final-readiness:check` が final readiness manifest を生成し、raw capture plan、execution bridge、preflight/validation raw input、final evidence、evidence bundle manifest、blockers、next commands を記録すること。実 evidence がなければ `blocked_by_external_execution` として残す。
 - `npm run aws:dev-uat:final-readiness:fixture:check` が final readiness manifest の missing evidence path と ready evidence path を fixture で検査すること。
+- `npm run aws:dev-uat:operator-handoff:check` が operator handoff artifact を生成し、external action plan、raw capture plan、final readiness manifest、承認必須 action、critical command order、evidence outputs、blockers、next commands を集約すること。
+- `npm run aws:dev-uat:operator-handoff:fixture:check` が operator handoff の pending / requires_confirmation / AWS not-ready branch を fixture で検査すること。
 - `npm run aws:dev-uat:validation:build -- --input <raw-validation-input.json>` が実 AWS E2E・性能・RAG品質 raw result から `dist/acceptance/aws_dev_uat_validation.json` を生成すること。
 - `npm run aws:dev-uat:validation:check` が E2E・性能・RAG品質結果の fixture 構造と閾値を検査し、`npm run aws:dev-uat:validation:fixture:check` が fixture/negative path を検査し、実証跡では `npm run test:e2e:aws`、`npm run perf:aws`、`npm run rag:quality:aws`、`npm run aws:dev-uat:validation:final` が必要であること。
 - `npm run aws:dev-uat:evidence:fixture:check` が sample raw input を一時ディレクトリへ変換し、既存 final checker で builder output を検査すること。raw input の `capture_provenance` 欠落時と `output_ref` 参照先欠落時に builder が fail することも検査する。
@@ -181,6 +185,8 @@ git diff --check
 - `npm run aws:dev-uat:materialized-flow:fixture:check` は sample raw output から raw input、final evidence、bundle manifest を生成する materialized flow fixture であり、実 AWS credentials、実 raw output、実 deploy/publish、実 E2E・性能・RAG品質結果の代替にはしない。
 - `npm run aws:dev-uat:final-readiness:check` は final readiness manifest を生成するだけで、deploy、migration、publish、E2E、負荷試験、Bedrock Evaluations は実行しない。実 evidence と AWS credentials が揃わなければ ready にはしない。
 - `npm run aws:dev-uat:final-readiness:fixture:check` は sample evidence による構造確認だけを行う。実 AWS dev/UAT 完了の根拠にはしない。
+- `npm run aws:dev-uat:operator-handoff:check` は operator handoff artifact を生成するだけで、release 作成、deploy、migration、publish、E2E、負荷試験、Bedrock Evaluations、signoff は実行しない。承認必須 action は pending のまま残す。
+- `npm run aws:dev-uat:operator-handoff:fixture:check` は handoff 構造確認だけを行う。実 AWS dev/UAT 完了の根拠にはしない。
 - `npm run aws:dev-uat:validation:check` は fixture の構造確認だけを行う。実 AWS dev/UAT E2E・性能・RAG品質証跡は `dist/acceptance/aws_dev_uat_validation.json` を `evidence_class: aws-captured` で作成し、final suite gate を通す必要がある。
 - Git tag、GitHub release、検収用 `evidence_manifest.json` の最終確定。
 - 外部 action plan に記載された release、deploy、publish、AWS dev/UAT validation、CloudFormation capture、defect snapshot refresh、final evidence 作成、signoff の実行。

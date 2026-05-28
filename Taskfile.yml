@@ -262,6 +262,14 @@ tasks:
     desc: Verify AWS dev/UAT final readiness manifest fixture branches
     cmds:
       - npm run aws:dev-uat:final-readiness:fixture:check
+  aws:dev-uat:operator-handoff:check:
+    desc: Build and verify the AWS dev/UAT operator handoff artifact
+    cmds:
+      - npm run aws:dev-uat:operator-handoff:check
+  aws:dev-uat:operator-handoff:fixture:check:
+    desc: Verify AWS dev/UAT operator handoff fixture branches
+    cmds:
+      - npm run aws:dev-uat:operator-handoff:fixture:check
   aws:dev-uat:evidence-bundle:fixture:check:
     desc: Verify AWS dev/UAT evidence bundle manifest fixture
     cmds:

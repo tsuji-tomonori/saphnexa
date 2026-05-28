@@ -82,6 +82,8 @@ for (const command of [
   "npm run aws:dev-uat:materialized-flow:fixture:check",
   "npm run aws:dev-uat:final-readiness:check",
   "npm run aws:dev-uat:final-readiness:fixture:check",
+  "npm run aws:dev-uat:operator-handoff:check",
+  "npm run aws:dev-uat:operator-handoff:fixture:check",
   "npm run aws:dev-uat:evidence:fixture:check",
   "npm run aws:dev-uat:validation:check",
   "npm run aws:dev-uat:validation:fixture:check"
