@@ -1,6 +1,6 @@
 # final readiness all bundle artifacts
 
-状態: do
+状態: done
 タスク種別: 修正
 
 ## 背景
@@ -49,12 +49,23 @@ final readiness は evidence bundle manifest の required artifact について 
 
 ## 受け入れ条件
 
-- [ ] final readiness が evidence bundle manifest 内の全 artifact の path exists、`sha256`、`size_bytes` を現在ファイルから再計算して照合する。
-- [ ] required artifact 以外の raw-output artifact で digest / size mismatch がある場合も、`invalid_evidence_bundle_manifest` として ready 扱いしない。
-- [ ] ready final readiness が `all_artifacts_metadata_matches: true` を持つ。
-- [ ] fixture check が raw-output digest mismatch bundle manifest path を検査する。
-- [ ] docs と docs check が全 bundle artifact metadata 照合と同期している。
-- [ ] 実行した検証と未実施の AWS 実検証を、PR コメントと作業レポートに正直に記載する。
+- [x] final readiness が evidence bundle manifest 内の全 artifact の path exists、`sha256`、`size_bytes` を現在ファイルから再計算して照合する。
+- [x] required artifact 以外の raw-output artifact で digest / size mismatch がある場合も、`invalid_evidence_bundle_manifest` として ready 扱いしない。
+- [x] ready final readiness が `all_artifacts_metadata_matches: true` を持つ。
+- [x] fixture check が raw-output digest mismatch bundle manifest path を検査する。
+- [x] docs と docs check が全 bundle artifact metadata 照合と同期している。
+- [x] 実行した検証と未実施の AWS 実検証を、PR コメントと作業レポートに正直に記載する。
+
+## 完了メモ
+
+- 実装 commit: `7686b4f`
+- PR: https://github.com/tsuji-tomonori/saphnexa/pull/2
+- 受け入れ条件コメント: https://github.com/tsuji-tomonori/saphnexa/pull/2#issuecomment-4562380064
+- セルフレビューコメント: https://github.com/tsuji-tomonori/saphnexa/pull/2#issuecomment-4562380083
+- 作業レポート: `reports/working/20260528-1800-final-readiness-all-bundle-artifacts.md`
+- 検証: `npm run aws:dev-uat:final-readiness:check` pass、`npm run aws:dev-uat:final-readiness:fixture:check` pass、`npm run docs:check` pass、`git diff --check` pass、`npm run verify` pass。
+- 制約: `aws sts get-caller-identity --output json` は AWS credentials 不在で fail。実 AWS dev/UAT E2E・性能・RAG品質検証は未実施。
+- GitHub Apps: PR コメント投稿は 403 `Resource not accessible by integration` のため `gh` fallback を使用。
 
 ## 検証計画
 
