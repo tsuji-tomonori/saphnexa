@@ -27,6 +27,7 @@ export function validateAwsDevUatOperatorHandoff(handoff) {
   assert(existsOrGeneratedPath(handoff.source_artifacts.external_action_plan), "operator handoff external action plan path mismatch");
   assert(existsOrGeneratedPath(handoff.source_artifacts.raw_capture_plan), "operator handoff raw capture plan path mismatch");
   assert(existsOrGeneratedPath(handoff.source_artifacts.operator_input_scaffold), "operator handoff operator input scaffold path mismatch");
+  assert(existsOrGeneratedPath(handoff.source_artifacts.operator_execution_runbook), "operator handoff execution runbook path mismatch");
   assert(existsOrGeneratedPath(handoff.source_artifacts.final_readiness), "operator handoff final readiness path mismatch");
   assert(handoff.required_inputs.region === "ap-northeast-1", "operator handoff region mismatch");
   assert(handoff.required_inputs.operator_input?.scaffold_path === "dist/acceptance/aws_dev_uat_operator_input.scaffold.json", "operator handoff operator input scaffold mismatch");
@@ -34,6 +35,10 @@ export function validateAwsDevUatOperatorHandoff(handoff) {
   assert(
     handoff.required_inputs.operator_input?.resolved_check_command === "npm run aws:dev-uat:operator-input:check -- --input dist/acceptance/aws_dev_uat_operator_input.json --require-resolved",
     "operator handoff resolved operator input check mismatch"
+  );
+  assert(
+    handoff.required_inputs.operator_input?.runbook_check_command === "npm run aws:dev-uat:operator-runbook:check -- --input dist/acceptance/aws_dev_uat_operator_input.json --require-resolved",
+    "operator handoff operator runbook check mismatch"
   );
   assert(handoff.required_inputs.approval_required_for.includes("cdk deploy"), "operator handoff must require deploy approval");
   assert(handoff.required_inputs.approval_required_for.includes("Bedrock evaluation"), "operator handoff must require Bedrock approval");
@@ -53,6 +58,7 @@ export function validateAwsDevUatOperatorHandoff(handoff) {
     "npm run aws:dev-uat:execution-bridge:probe",
     "npm run aws:dev-uat:operator-input:check",
     "npm run aws:dev-uat:operator-input:check -- --input dist/acceptance/aws_dev_uat_operator_input.json --require-resolved",
+    "npm run aws:dev-uat:operator-runbook:check -- --input dist/acceptance/aws_dev_uat_operator_input.json --require-resolved",
     "npm run aws:dev-uat:preflight:final",
     "npm run test:e2e:aws",
     "npm run perf:aws",
@@ -77,6 +83,7 @@ export function validateAwsDevUatOperatorHandoff(handoff) {
     "dist/acceptance/aws_dev_uat_raw_capture_plan.json",
     "dist/acceptance/aws_dev_uat_operator_input.scaffold.json",
     "dist/acceptance/aws_dev_uat_operator_input.json",
+    "dist/acceptance/aws_dev_uat_operator_execution_runbook.json",
     "dist/acceptance/aws_dev_uat_preflight.json",
     "dist/acceptance/aws_dev_uat_validation.json",
     "dist/acceptance/aws_dev_uat_evidence_bundle_manifest.json",

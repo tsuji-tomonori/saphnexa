@@ -4,6 +4,7 @@ import { buildExternalAcceptanceActionPlan, externalActionPlanPath } from "./ext
 import { buildAwsDevUatRawCapturePlan, rawCapturePlanOutputPath } from "./aws-dev-uat-raw-capture-plan.js";
 import { buildAwsDevUatFinalReadiness, awsDevUatFinalReadinessPath } from "./aws-dev-uat-final-readiness.js";
 import { awsDevUatOperatorInputScaffoldPath, buildAwsDevUatOperatorInputScaffold } from "./aws-dev-uat-operator-input.js";
+import { awsDevUatOperatorExecutionRunbookPath } from "./aws-dev-uat-operator-execution-runbook.js";
 import { currentGitCommit } from "./git-context.js";
 import { currentJstTimestamp } from "./lib.js";
 
@@ -57,6 +58,7 @@ export function buildAwsDevUatOperatorHandoff(options = {}) {
       external_action_plan: options.externalActionPlanPath || externalActionPlanPath,
       raw_capture_plan: options.rawCapturePlanPath || rawCapturePlanOutputPath,
       operator_input_scaffold: options.operatorInputPath || awsDevUatOperatorInputScaffoldPath,
+      operator_execution_runbook: awsDevUatOperatorExecutionRunbookPath,
       final_readiness: options.finalReadinessPath || awsDevUatFinalReadinessPath
     },
     required_inputs: {
@@ -66,7 +68,8 @@ export function buildAwsDevUatOperatorHandoff(options = {}) {
       operator_input: {
         scaffold_path: operatorInput.source_artifacts.operator_input_scaffold,
         resolved_path: operatorInput.source_artifacts.resolved_operator_input,
-        resolved_check_command: operatorInput.command_templates.resolved_operator_input_check
+        resolved_check_command: operatorInput.command_templates.resolved_operator_input_check,
+        runbook_check_command: `npm run aws:dev-uat:operator-runbook:check -- --input ${operatorInput.source_artifacts.resolved_operator_input} --require-resolved`
       },
       release: ["commit_sha", "git_tag", "github_release_url"],
       aws_identity: "aws sts get-caller-identity --output json",

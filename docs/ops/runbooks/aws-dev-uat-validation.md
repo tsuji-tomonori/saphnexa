@@ -23,6 +23,7 @@ dist/acceptance/aws_dev_uat_execution_bridge.json
 dist/acceptance/aws_dev_uat_raw_capture_plan.json
 dist/acceptance/aws_dev_uat_operator_input.scaffold.json
 dist/acceptance/aws_dev_uat_operator_input.json
+dist/acceptance/aws_dev_uat_operator_execution_runbook.json
 dist/acceptance/raw/aws_dev_uat_preflight.raw.scaffold.json
 dist/acceptance/raw/aws_dev_uat_validation.raw.scaffold.json
 dist/acceptance/aws_dev_uat_preflight.json
@@ -109,6 +110,7 @@ npm run aws:dev-uat:raw-input-scaffold:build
 npm run aws:dev-uat:raw-input-scaffold:check
 npm run aws:dev-uat:operator-input:build
 npm run aws:dev-uat:operator-input:check
+npm run aws:dev-uat:operator-runbook:check
 npm run aws:dev-uat:capture-helpers:check
 ```
 
@@ -130,6 +132,14 @@ npm run aws:dev-uat:operator-input:check -- --input dist/acceptance/aws_dev_uat_
 ```
 
 resolved operator input checker は `<release-tag>`、`<aws-account-id>`、`sample`、`mock`、`localhost`、空値、不正な GitHub release URL、不正な AWS account id を reject する。`command_templates` は未解決 placeholder を含むテンプレートとして保持してよいが、`resolved_commands` は実値に置き換える。operator input scaffold は実 AWS 完了 evidence ではない。
+
+resolved operator input が pass したら、外部実行前に operator execution runbook を生成・検査する。runbook は release、deploy_publish、preflight_capture、preflight_materialization、validation_capture、validation_materialization、final_gates、final_acceptance の順序、各 phase の `requires_confirmation`、`stop_on_failure`、証跡出力を固定する。未解決 operator input では `requires_resolved_operator_input` のまま残り、resolved mode では `<...>`、`sample`、`mock`、`localhost` を含む command を reject する。
+
+```bash
+npm run aws:dev-uat:operator-runbook:check -- --input dist/acceptance/aws_dev_uat_operator_input.json --require-resolved
+```
+
+operator execution runbook は command を実行しない。release 作成、deploy、migration、publish、E2E、負荷試験、Bedrock Evaluations、signoff には別途 operator の確認が必要であり、runbook だけでは AWS dev/UAT 完了 evidence にならない。
 
 operator が final raw input を保存したら、`dist/acceptance/` の final evidence を更新する前に dry-run checker を実行する。dry-run checker は一時ディレクトリに evidence を生成し、既存 final gate を通す。scaffold、`pending_capture`、`captured_at` 未設定、`output_ref` 参照先欠落、閾値未達は fail する。
 
@@ -207,6 +217,8 @@ npm run aws:dev-uat:raw-capture-plan:check
 npm run aws:dev-uat:raw-input-scaffold:check
 npm run aws:dev-uat:operator-input:check
 npm run aws:dev-uat:operator-input:fixture:check
+npm run aws:dev-uat:operator-runbook:check
+npm run aws:dev-uat:operator-runbook:fixture:check
 npm run aws:dev-uat:raw-output:fixture:check
 npm run aws:dev-uat:raw-input:fixture:check
 npm run aws:dev-uat:evidence-bundle:fixture:check
@@ -230,6 +242,8 @@ npm run aws:dev-uat:evidence:fixture:check
 `npm run aws:dev-uat:raw-input-scaffold:check` は scaffold を生成してから、preflight / validation の command id、command、`output_ref` が raw capture plan と同期していること、かつ全 command が `pending_capture` のままで final evidence ではないことを検査する。この command は scaffold を書き出すだけで、AWS command の実行や外部状態変更は行わない。
 `npm run aws:dev-uat:operator-input:check` は operator input scaffold を生成して、raw capture plan、preflight / validation scaffold、resolved operator input path、materialize command template、final readiness command の同期を検査する。この command は scaffold を書き出すだけで、AWS command の実行や外部状態変更は行わない。
 `npm run aws:dev-uat:operator-input:fixture:check` は resolved operator input の positive path と、scaffold の誤用、未解決 placeholder、不正 AWS account id、不正 release URL、未解決 S3 URI の negative path を検査する。fixture は最終検収 evidence として扱わない。
+`npm run aws:dev-uat:operator-runbook:check` は operator execution runbook を生成し、未解決 operator input では external execution ready と扱わず、resolved input がある場合だけ外部実行用の command order、confirmation gate、stop condition、evidence output を検査する。この command は runbook を書き出すだけで、AWS command の実行や外部状態変更は行わない。
+`npm run aws:dev-uat:operator-runbook:fixture:check` は operator execution runbook の resolved ready path、placeholder 混入、確認なし外部 phase、phase order mismatch の negative path を検査する。fixture は最終検収 evidence として扱わない。
 `npm run aws:dev-uat:raw-output:fixture:check` は sample raw input の `output_ref` 参照先を読み、JSON parse と text non-empty の positive path、parse 不能 JSON、空 text、sample/fixture text rejection の negative path を検査する。sample raw output は最終検収 evidence として扱わない。
 `npm run aws:dev-uat:raw-input:fixture:check` は sample raw input を dry-run checker に通し、scaffold と `pending_capture` raw input が reject されることを検査する。sample raw input は最終検収 evidence として扱わない。
 `npm run aws:dev-uat:evidence-bundle:fixture:check` は sample raw input/output から preflight / validation evidence と bundle manifest を生成し、各 artifact の path、size、sha256 と missing artifact の negative path を検査する。sample bundle manifest は最終検収 evidence として扱わない。
@@ -268,6 +282,8 @@ npm run aws:dev-uat:raw-input-scaffold:build
 npm run aws:dev-uat:raw-input-scaffold:check
 npm run aws:dev-uat:operator-input:build
 npm run aws:dev-uat:operator-input:check
+npm run aws:dev-uat:operator-runbook:build
+npm run aws:dev-uat:operator-runbook:check
 npm run aws:dev-uat:operator-input:fixture:check
 npm run aws:dev-uat:raw-output:check -- preflight --input <raw-preflight-input.json>
 npm run aws:dev-uat:raw-output:fixture:check

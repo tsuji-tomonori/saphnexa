@@ -238,6 +238,18 @@ tasks:
     desc: Verify AWS dev/UAT resolved operator input fixture branches
     cmds:
       - npm run aws:dev-uat:operator-input:fixture:check
+  aws:dev-uat:operator-runbook:build:
+    desc: Build the AWS dev/UAT operator execution runbook
+    cmds:
+      - npm run aws:dev-uat:operator-runbook:build
+  aws:dev-uat:operator-runbook:check:
+    desc: Build and verify the AWS dev/UAT operator execution runbook
+    cmds:
+      - npm run aws:dev-uat:operator-runbook:check
+  aws:dev-uat:operator-runbook:fixture:check:
+    desc: Verify AWS dev/UAT operator execution runbook ready and blocked branches
+    cmds:
+      - npm run aws:dev-uat:operator-runbook:fixture:check
   aws:dev-uat:raw-output:fixture:check:
     desc: Verify AWS dev/UAT raw output files for sample captured inputs
     cmds:

@@ -83,6 +83,9 @@ for (const command of [
   "npm run aws:dev-uat:operator-input:build",
   "npm run aws:dev-uat:operator-input:check",
   "npm run aws:dev-uat:operator-input:fixture:check",
+  "npm run aws:dev-uat:operator-runbook:build",
+  "npm run aws:dev-uat:operator-runbook:check",
+  "npm run aws:dev-uat:operator-runbook:fixture:check",
   "npm run aws:dev-uat:raw-output:check",
   "npm run aws:dev-uat:raw-output:fixture:check",
   "npm run aws:dev-uat:raw-input:check",
@@ -121,6 +124,8 @@ for (const phrase of [
   "operator handoff",
   "operator input",
   "resolved operator input",
+  "operator execution runbook",
+  "requires_resolved_operator_input",
   "missing_operator_input",
   "invalid_operator_input"
 ]) {
