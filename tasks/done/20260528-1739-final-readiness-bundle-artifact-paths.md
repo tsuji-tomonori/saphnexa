@@ -1,6 +1,6 @@
 # final readiness bundle artifact paths
 
-状態: do
+状態: done
 タスク種別: 修正
 
 ## 背景
@@ -49,12 +49,23 @@ final readiness は evidence bundle manifest の `schema_version`、`status`、`
 
 ## 受け入れ条件
 
-- [ ] final readiness が bundle manifest の required artifacts を現在の preflight raw input、validation raw input、preflight final evidence、validation final evidence、execution bridge path と照合する。
-- [ ] bundle artifact の `kind` / `mode` は揃っていても path が異なる場合、`invalid_evidence_bundle_manifest` として ready 扱いしない。
-- [ ] ready final readiness の `evidence_bundle_manifest.required_artifacts` が `expected_path` と `path_matches: true` を持つ。
-- [ ] fixture check が path mismatch bundle manifest path を検査する。
-- [ ] docs と docs check が path 照合を含む artifact coverage と同期している。
-- [ ] 実行した検証と未実施の AWS 実検証を、PR コメントと作業レポートに正直に記載する。
+- [x] final readiness が bundle manifest の required artifacts を現在の preflight raw input、validation raw input、preflight final evidence、validation final evidence、execution bridge path と照合する。
+- [x] bundle artifact の `kind` / `mode` は揃っていても path が異なる場合、`invalid_evidence_bundle_manifest` として ready 扱いしない。
+- [x] ready final readiness の `evidence_bundle_manifest.required_artifacts` が `expected_path` と `path_matches: true` を持つ。
+- [x] fixture check が path mismatch bundle manifest path を検査する。
+- [x] docs と docs check が path 照合を含む artifact coverage と同期している。
+- [x] 実行した検証と未実施の AWS 実検証を、PR コメントと作業レポートに正直に記載する。
+
+## 完了メモ
+
+- 実装 commit: `1ea8141`
+- PR: https://github.com/tsuji-tomonori/saphnexa/pull/2
+- 受け入れ条件コメント: https://github.com/tsuji-tomonori/saphnexa/pull/2#issuecomment-4562259169
+- セルフレビューコメント: https://github.com/tsuji-tomonori/saphnexa/pull/2#issuecomment-4562259168
+- 作業レポート: `reports/working/20260528-1742-final-readiness-bundle-artifact-paths.md`
+- 検証: `npm run aws:dev-uat:final-readiness:check` pass、`npm run aws:dev-uat:final-readiness:fixture:check` pass、`npm run docs:check` pass、`git diff --check` pass、`npm run verify` pass。
+- 制約: `aws sts get-caller-identity --output json` は AWS credentials 不在で fail。実 AWS dev/UAT E2E・性能・RAG品質検証は未実施。
+- GitHub Apps: PR コメント投稿は 403 `Resource not accessible by integration` のため `gh` fallback を使用。
 
 ## 検証計画
 
