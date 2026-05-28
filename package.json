@@ -12,6 +12,7 @@
     "typecheck": "node tools/check-type-surface.js",
     "test": "node --test tests/*.test.js",
     "test:contract": "node tools/check-contracts.js",
+    "api:openapi:check": "node tools/check-api-openapi.js",
     "test:integration:local": "node --test tests/integration-local.test.js",
     "test:e2e:local": "node --test tests/e2e-local.test.js",
     "cdk:synth:local": "node tools/check-cdk-inventory.js",
