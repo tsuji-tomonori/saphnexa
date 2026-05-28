@@ -72,6 +72,8 @@ for (const command of [
   "npm run acceptance:package:build",
   "npm run acceptance:package:check",
   "npm run aws:dev-uat:preflight",
+  "npm run aws:dev-uat:execution-bridge:check",
+  "npm run aws:dev-uat:execution-bridge:probe",
   "npm run aws:dev-uat:validation:check",
   "npm run aws:dev-uat:validation:fixture:check",
   "npm run cfn:inventory:build",

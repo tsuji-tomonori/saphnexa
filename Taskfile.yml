@@ -198,6 +198,14 @@ tasks:
     desc: Verify final AWS-captured dev/UAT evidence contract before real validation runs
     cmds:
       - npm run aws:dev-uat:preflight:final
+  aws:dev-uat:execution-bridge:check:
+    desc: Build and verify the AWS dev/UAT final evidence execution bridge
+    cmds:
+      - npm run aws:dev-uat:execution-bridge:check
+  aws:dev-uat:execution-bridge:probe:
+    desc: Probe local AWS credentials and final evidence readiness without changing AWS state
+    cmds:
+      - npm run aws:dev-uat:execution-bridge:probe
   aws:dev-uat:validation:check:
     desc: Verify AWS dev/UAT E2E, performance, and RAG quality validation evidence fixture
     cmds:

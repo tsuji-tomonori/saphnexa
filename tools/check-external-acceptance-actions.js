@@ -43,6 +43,7 @@ const awsDevUatValidation = plan.actions.find((action) => action.id === "aws-dev
 assert(awsDevUatValidation.acceptance_ids.includes("AC-098"), "AWS dev/UAT validation action must cover RAG quality");
 assert(awsDevUatValidation.acceptance_ids.includes("AC-123"), "AWS dev/UAT validation action must cover E2E");
 for (const command of [
+  "npm run aws:dev-uat:execution-bridge:probe",
   "npm run aws:dev-uat:preflight:final",
   "npm run test:e2e:aws",
   "npm run perf:aws",
@@ -51,6 +52,7 @@ for (const command of [
 ]) {
   assert(awsDevUatValidation.candidate_commands.includes(command), `AWS dev/UAT validation action missing ${command}`);
 }
+assert(awsDevUatValidation.evidence_outputs.includes("dist/acceptance/aws_dev_uat_execution_bridge.json"), "AWS dev/UAT validation action must output execution bridge snapshot");
 assert(awsDevUatValidation.evidence_outputs.includes("dist/acceptance/aws_dev_uat_validation.json"), "AWS dev/UAT validation action must output validation evidence");
 const defectSnapshotRefresh = plan.actions.find((action) => action.id === "defect-snapshot-refresh");
 assert(defectSnapshotRefresh.acceptance_ids.includes("AC-153"), "defect snapshot refresh action must cover AC-153");

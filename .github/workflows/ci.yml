@@ -181,6 +181,7 @@ jobs:
       - run: npm run acceptance:final:check
       - run: npm run acceptance:package:build
       - run: npm run acceptance:package:check
+      - run: npm run aws:dev-uat:execution-bridge:check
       - run: npm run aws:dev-uat:validation:check
       - run: npm run aws:dev-uat:validation:fixture:check
       - run: npm run admin-artifacts:build

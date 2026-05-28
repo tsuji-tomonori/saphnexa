@@ -19,7 +19,9 @@ E2E、性能、RAG 品質検証の実行結果は `dist/acceptance/aws_dev_uat_v
 最終証跡の保存先:
 
 ```text
+dist/acceptance/aws_dev_uat_execution_bridge.json
 dist/acceptance/aws_dev_uat_preflight.json
+dist/acceptance/aws_dev_uat_validation.json
 ```
 
 構造確認用の fixture:
@@ -54,16 +56,22 @@ docs/acceptance/evidence/aws_dev_uat_validation.example.json
 
 1. 実 AWS dev/UAT へ deploy / publish / migration を行う。
 2. CloudFormation outputs、DSQL/Flyway 結果、公開 URL、RAG runtime ID を収集する。
-3. `dist/acceptance/aws_dev_uat_preflight.json` を `evidence_class: aws-captured` で作成する。
-4. 次を実行する。
+3. AWS 認証と final evidence file の準備状況を read-only probe で記録する。
+
+```bash
+npm run aws:dev-uat:execution-bridge:probe
+```
+
+4. `dist/acceptance/aws_dev_uat_preflight.json` を `evidence_class: aws-captured` で作成する。
+5. 次を実行する。
 
 ```bash
 npm run aws:dev-uat:preflight:final
 ```
 
-5. pass 後に AWS dev/UAT E2E、性能、RAG 品質検証へ進む。
-6. 実 AWS dev/UAT で主要 E2E、負荷試験、RAG 品質評価を実行し、`dist/acceptance/aws_dev_uat_validation.json` を `evidence_class: aws-captured` で作成する。
-7. 次を実行する。
+6. pass 後に AWS dev/UAT E2E、性能、RAG 品質検証へ進む。
+7. 実 AWS dev/UAT で主要 E2E、負荷試験、RAG 品質評価を実行し、`dist/acceptance/aws_dev_uat_validation.json` を `evidence_class: aws-captured` で作成する。
+8. 次を実行する。
 
 ```bash
 npm run test:e2e:aws
@@ -80,11 +88,13 @@ npm run aws:dev-uat:validation:final
 
 ```bash
 npm run aws:dev-uat:preflight
+npm run aws:dev-uat:execution-bridge:check
 npm run aws:dev-uat:validation:check
 npm run aws:dev-uat:validation:fixture:check
 ```
 
 この command は `docs/acceptance/evidence/aws_dev_uat_preflight.example.json` を検査する。`fixture` 証跡なので最終検収や AWS dev/UAT 実行完了の根拠にはしない。
+`npm run aws:dev-uat:execution-bridge:check` は AWS STS probe を行わず、final evidence path、AWS identity probe command、final gate command order、必要 input、証跡 mapping の整合を検査する。`npm run aws:dev-uat:execution-bridge:probe` は `aws sts get-caller-identity --output json` を read-only で実行し、credentials がなければ `waiting_for_external_execution` として `dist/acceptance/aws_dev_uat_execution_bridge.json` に記録する。
 `npm run aws:dev-uat:validation:check` も `docs/acceptance/evidence/aws_dev_uat_validation.example.json` だけを検査する。`npm run aws:dev-uat:validation:fixture:check` は fixture の positive path と、final 指定・E2E失敗・性能閾値超過・RAG品質閾値超過の negative path を検査する。
 
 ## fail 時の扱い
@@ -100,6 +110,8 @@ npm run aws:dev-uat:validation:fixture:check
 
 ```bash
 npm run aws:dev-uat:preflight
+npm run aws:dev-uat:execution-bridge:check
+npm run aws:dev-uat:execution-bridge:probe
 npm run aws:dev-uat:preflight:final
 npm run aws:dev-uat:validation:check
 npm run aws:dev-uat:validation:fixture:check
