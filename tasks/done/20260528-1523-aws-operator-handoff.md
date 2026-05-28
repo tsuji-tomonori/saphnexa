@@ -1,6 +1,6 @@
 # AWS dev/UAT operator handoff
 
-- 状態: doing
+- 状態: done
 - タスク種別: 機能追加
 - 対象ブランチ: `codex/aws-dev-uat-preflight`
 - 対象PR: #2
@@ -37,12 +37,12 @@ AWS dev/UAT operator handoff artifact を生成・検査し、実 AWS 実行前�
 
 ## 受け入れ条件
 
-- [ ] operator handoff が external action plan、raw capture plan、final readiness manifest の要点を集約する。
-- [ ] handoff が deploy / publish / migration / E2E / performance / RAG quality / final readiness の command order と evidence outputs を含む。
-- [ ] handoff が external state change を実行せず、承認必須 pending actions と blockers を明示する。
-- [ ] fixture check が pending handoff と ready-for-handoff 構造を検査する。
-- [ ] runbook、local verification、CI/verify/Taskfile/docs check に operator handoff fixture が反映される。
-- [ ] 実 AWS credentials がないことを未実施制約として記録し、実 AWS dev/UAT 完了扱いにしない。
+- [x] operator handoff が external action plan、raw capture plan、final readiness manifest の要点を集約する。
+- [x] handoff が deploy / publish / migration / E2E / performance / RAG quality / final readiness の command order と evidence outputs を含む。
+- [x] handoff が external state change を実行せず、承認必須 pending actions と blockers を明示する。
+- [x] fixture check が pending handoff と ready-for-handoff 構造を検査する。
+- [x] runbook、local verification、CI/verify/Taskfile/docs check に operator handoff fixture が反映される。
+- [x] 実 AWS credentials がないことを未実施制約として記録し、実 AWS dev/UAT 完了扱いにしない。
 
 ## 検証計画
 
@@ -66,3 +66,27 @@ AWS dev/UAT operator handoff artifact を生成・検査し、実 AWS 実行前�
 ## リスク
 
 - handoff は実行前の操作引き継ぎ artifact であり、実 AWS dev/UAT 実行の代替ではない。
+
+## 完了メモ
+
+- 実装commit: `3ba8da7f398959d3cd4f4d63447be6c6da180676`
+- PR: https://github.com/tsuji-tomonori/saphnexa/pull/2
+- 受け入れ条件コメント: https://github.com/tsuji-tomonori/saphnexa/pull/2#issuecomment-4561376478
+- セルフレビューコメント: https://github.com/tsuji-tomonori/saphnexa/pull/2#issuecomment-4561377632
+- 作業レポート: `reports/working/20260528-1523-aws-operator-handoff.md`
+
+### 実行した検証
+
+- `npm run aws:dev-uat:operator-handoff:check`: pass
+- `npm run aws:dev-uat:operator-handoff:fixture:check`: pass
+- `npm run aws:dev-uat:final-readiness:check`: pass
+- `npm run acceptance:external-actions:check`: pass
+- `npm run ci:check`: pass
+- `npm run docs:check`: pass
+- `task aws:dev-uat:operator-handoff:fixture:check`: pass
+- `git diff --check`: pass
+- `npm run verify`: pass
+
+### 未実施・制約
+
+- `aws sts get-caller-identity --output json`: fail。AWS credentials 未設定のため、実 AWS dev/UAT 実行、Flyway 実適用、E2E、性能、RAG品質評価、実 evidence 作成は未実施。
