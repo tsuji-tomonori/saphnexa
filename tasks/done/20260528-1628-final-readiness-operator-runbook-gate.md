@@ -1,6 +1,6 @@
 # Final readiness operator runbook gate
 
-状態: do
+状態: done
 
 ## 背景
 
@@ -66,3 +66,11 @@ AWS dev/UAT operator execution runbook は、resolved operator input 後の外�
 
 - 実 AWS credentials がないため、ready path は fixture による構造検査に留まる。
 - operator execution runbook は final readiness の必要条件であり、実 AWS 証跡や外部承認の代替ではない。
+
+## 完了メモ
+
+- 実装 commit: `38a329b`
+- PR: https://github.com/tsuji-tomonori/saphnexa/pull/2
+- 受け入れ条件コメント: https://github.com/tsuji-tomonori/saphnexa/pull/2#issuecomment-4561755209
+- セルフレビューコメント: https://github.com/tsuji-tomonori/saphnexa/pull/2#issuecomment-4561755194
+- 作業レポート: `reports/working/20260528-1631-final-readiness-operator-runbook-gate.md`
