@@ -122,8 +122,11 @@ scaffold は `schema_version: saphnexa-aws-dev-uat-raw-input-scaffold.v1`、`sca
 operator が final raw input を保存したら、`dist/acceptance/` の final evidence を更新する前に dry-run checker を実行する。dry-run checker は一時ディレクトリに evidence を生成し、既存 final gate を通す。scaffold、`pending_capture`、`captured_at` 未設定、`output_ref` 参照先欠落、閾値未達は fail する。
 
 ```bash
+npm run aws:dev-uat:raw-output:check -- preflight --input <raw-preflight-input.json>
 npm run aws:dev-uat:raw-input:check -- preflight --input <raw-preflight-input.json>
 ```
+
+raw output checker は `capture_provenance.commands[].output_ref` の参照先を raw input ファイルからの相対パスとして解決し、preflight / validation の command id ごとの期待形式を検査する。JSON output は parse 可能で空でない object / array、text output は空でない file である必要がある。通常実行では `sample`、`fixture`、`mock`、`localhost` などの text を含む raw output は fail する。
 
 | helper | 必須 env |
 |---|---|
@@ -147,6 +150,7 @@ npm run aws:dev-uat:preflight:final
 8. 実 AWS dev/UAT で主要 E2E、負荷試験、RAG 品質評価を実行し、raw result input から `dist/acceptance/aws_dev_uat_validation.json` を生成する。
 
 ```bash
+npm run aws:dev-uat:raw-output:check -- validation --input <raw-validation-input.json>
 npm run aws:dev-uat:raw-input:check -- validation --input <raw-validation-input.json>
 npm run aws:dev-uat:validation:build -- --input <raw-validation-input.json>
 ```
@@ -171,6 +175,7 @@ npm run aws:dev-uat:preflight
 npm run aws:dev-uat:execution-bridge:check
 npm run aws:dev-uat:raw-capture-plan:check
 npm run aws:dev-uat:raw-input-scaffold:check
+npm run aws:dev-uat:raw-output:fixture:check
 npm run aws:dev-uat:raw-input:fixture:check
 npm run aws:dev-uat:capture-helpers:check
 npm run aws:dev-uat:validation:check
@@ -182,6 +187,7 @@ npm run aws:dev-uat:evidence:fixture:check
 `npm run aws:dev-uat:execution-bridge:check` は AWS STS probe を行わず、final evidence path、AWS identity probe command、final gate command order、必要 input、証跡 mapping の整合を検査する。`npm run aws:dev-uat:execution-bridge:probe` は `aws sts get-caller-identity --output json` を read-only で実行し、credentials がなければ `waiting_for_external_execution` として `dist/acceptance/aws_dev_uat_execution_bridge.json` に記録する。
 `npm run aws:dev-uat:raw-capture-plan:check` は raw capture plan を生成してから、preflight / validation の command id、`output_ref`、build command、final command が builder と同期していることを検査する。この command は plan を書き出すだけで、AWS command の実行や外部状態変更は行わない。
 `npm run aws:dev-uat:raw-input-scaffold:check` は scaffold を生成してから、preflight / validation の command id、command、`output_ref` が raw capture plan と同期していること、かつ全 command が `pending_capture` のままで final evidence ではないことを検査する。この command は scaffold を書き出すだけで、AWS command の実行や外部状態変更は行わない。
+`npm run aws:dev-uat:raw-output:fixture:check` は sample raw input の `output_ref` 参照先を読み、JSON parse と text non-empty の positive path、parse 不能 JSON、空 text、sample/fixture text rejection の negative path を検査する。sample raw output は最終検収 evidence として扱わない。
 `npm run aws:dev-uat:raw-input:fixture:check` は sample raw input を dry-run checker に通し、scaffold と `pending_capture` raw input が reject されることを検査する。sample raw input は最終検収 evidence として扱わない。
 `npm run aws:dev-uat:capture-helpers:check` は helper entrypoint の `--help` と missing-env failure を検査する。実環境 endpoint への HTTP probe は行わない。
 `npm run aws:dev-uat:validation:check` も `docs/acceptance/evidence/aws_dev_uat_validation.example.json` だけを検査する。`npm run aws:dev-uat:validation:fixture:check` は fixture の positive path と、final 指定・E2E失敗・性能閾値超過・RAG品質閾値超過の negative path を検査する。
@@ -207,10 +213,13 @@ npm run aws:dev-uat:raw-capture-plan:build
 npm run aws:dev-uat:raw-capture-plan:check
 npm run aws:dev-uat:raw-input-scaffold:build
 npm run aws:dev-uat:raw-input-scaffold:check
+npm run aws:dev-uat:raw-output:check -- preflight --input <raw-preflight-input.json>
+npm run aws:dev-uat:raw-output:fixture:check
 npm run aws:dev-uat:raw-input:check -- preflight --input <raw-preflight-input.json>
 npm run aws:dev-uat:raw-input:fixture:check
 npm run aws:dev-uat:capture-helpers:check
 npm run aws:dev-uat:preflight:final
+npm run aws:dev-uat:raw-output:check -- validation --input <raw-validation-input.json>
 npm run aws:dev-uat:raw-input:check -- validation --input <raw-validation-input.json>
 npm run aws:dev-uat:validation:build -- --input <raw-validation-input.json>
 npm run aws:dev-uat:validation:check
