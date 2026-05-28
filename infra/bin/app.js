@@ -16,6 +16,7 @@ export function synthLocalInventory(env = "dev") {
       edgeRoutingIntent: item.edgeRoutingIntent || null,
       cognitoBindingIntent: item.cognitoBindingIntent || null,
       channelPolicyIntent: item.channelPolicyIntent || null,
+      ragRuntimeIntent: item.ragRuntimeIntent || null,
       kmsPolicyIntent: item.kmsPolicyIntent || null,
       queuePolicyIntent: item.queuePolicyIntent || null,
       iamReviewIntent: item.iamReviewIntent || null

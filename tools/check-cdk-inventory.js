@@ -24,5 +24,7 @@ assert(inventory.intent_catalog.RealtimeConstruct.cfnResourceTypes.includes("AWS
 assert(inventory.intent_catalog.RealtimeConstruct.cfnResourceTypes.includes("AWS::AppSync::ChannelNamespace"), "AppSync Events channel namespace resource type missing");
 assert(inventory.intent_catalog.RagProcessingConstruct.cfnResourceTypes.includes("AWS::Bedrock::KnowledgeBase"), "Bedrock KB resource type missing");
 assert(inventory.intent_catalog.RagProcessingConstruct.cfnResourceTypes.includes("AWS::BedrockAgentCore::Runtime"), "AgentCore runtime resource type missing");
+assert(inventory.intent_catalog.RagProcessingConstruct.cfnResourceTypes.includes("AWS::BedrockAgentCore::GatewayTarget"), "AgentCore gateway target resource type missing");
+assert(inventory.intent_catalog.RagProcessingConstruct.ragRuntimeIntent.agentCore.aclPrecheckEnabled === true, "AgentCore ACL precheck binding missing");
 
 console.log("local CDK synth inventory check passed");

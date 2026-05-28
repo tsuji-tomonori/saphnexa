@@ -1,4 +1,5 @@
 import { specByConstructName } from "../../cdk/resource-specs.js";
+import { ragRuntimeBindings } from "../../cdk/rag-runtime-bindings.js";
 
 const spec = specByConstructName("RagProcessingConstruct");
 
@@ -9,10 +10,11 @@ export const RagProcessingConstruct = {
   cfnResources: spec.resources,
   outputs: ["knowledgeBaseId", "agentRuntimeArn", "gatewayId", "stateMachineArns", "queueUrls"],
   cfnOutputs: spec.outputs,
+  ragRuntimeIntent: ragRuntimeBindings,
   queuePolicyIntent: {
     queues: ["ingestion", "evaluation", "event-delivery"],
     deadLetterQueues: ["ingestion-dlq", "evaluation-dlq", "event-delivery-dlq"],
     maxReceiveCount: 3,
-    visibilityTimeoutSeconds: 300
+    visibilityTimeoutSeconds: 960
   }
 };

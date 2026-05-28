@@ -52,17 +52,21 @@ export const cdkConstructResourceSpecs = [
     resource("DataKmsKey", "AWS::KMS::Key")
   ], ["DsqlEndpoint", "DsqlClusterArn", "RawDocumentsBucketName", "S3VectorBucketName", "S3VectorIndexName", "DataKmsKeyArn"]),
   constructSpec("RagProcessingConstruct", [
+    resource("BedrockKnowledgeBaseRole", "AWS::IAM::Role"),
     resource("BedrockKnowledgeBase", "AWS::Bedrock::KnowledgeBase"),
     resource("BedrockDataSource", "AWS::Bedrock::DataSource"),
+    resource("AgentCoreRuntimeRole", "AWS::IAM::Role"),
     resource("AgentCoreRuntime", "AWS::BedrockAgentCore::Runtime"),
+    resource("AgentCoreGatewayRole", "AWS::IAM::Role"),
     resource("AgentCoreGateway", "AWS::BedrockAgentCore::Gateway"),
+    resource("AgentCoreToolsGatewayTarget", "AWS::BedrockAgentCore::GatewayTarget"),
     resource("IngestionQueue", "AWS::SQS::Queue"),
     resource("IngestionDlq", "AWS::SQS::Queue"),
     resource("EvaluationQueue", "AWS::SQS::Queue"),
     resource("EvaluationDlq", "AWS::SQS::Queue"),
     resource("IngestionWorkerLambda", "AWS::Lambda::Function"),
     resource("EvaluationWorkerLambda", "AWS::Lambda::Function")
-  ], ["KnowledgeBaseId", "KnowledgeBaseArn", "AgentCoreRuntimeArn", "AgentCoreGatewayId", "IngestionQueueUrl", "EvaluationQueueUrl"]),
+  ], ["KnowledgeBaseId", "KnowledgeBaseArn", "AgentCoreRuntimeArn", "AgentCoreGatewayId", "AgentCoreToolsGatewayTargetId", "IngestionQueueUrl", "EvaluationQueueUrl"]),
   constructSpec("ObservabilityCicdConstruct", [
     resource("DeployRole", "AWS::IAM::Role"),
     resource("EventBus", "AWS::Events::EventBus"),

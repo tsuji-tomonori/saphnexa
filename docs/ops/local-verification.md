@@ -28,6 +28,7 @@ npm run perf:api:local
 npm run failure:check
 npm run rag:quality:check
 npm run rag:security:check
+npm run rag:aws-binding:check
 npm run rag:perf:local
 npm run db:migration:check
 npm run db:integrity:check
@@ -78,6 +79,7 @@ git diff --check
 - retrieval、generation、worker notify の failure injection で failed 状態、error event、retryable が残ること。
 - local RAG golden dataset で品質 metrics と参照展開が基準を満たすこと。
 - prompt injection attack 20件で policy violation と tool invocation が発生しないこと。
+- Bedrock KB / S3 Vectors / AgentCore Runtime / AgentCore Gateway Target が Tools API、ACL precheck、S3 Vectors metadata、DSQL endpoint と source-level で接続されていること。
 - local RAG timing smoke で初回通知と最終回答の p95 が基準を満たすこと。
 - Flyway versioned SQL migration の命名、schema_migrations、required tables、checksum、自動 migration 不採用。
 - local DB-like store の主要ドメイン整合性と chat event append-only invariant。

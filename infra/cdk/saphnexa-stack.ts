@@ -15,6 +15,17 @@ interface IdentityConstructProps extends SaphnexaConstructProps {
   readonly viewerBaseUrl: string;
 }
 
+interface RagProcessingConstructProps extends SaphnexaConstructProps {
+  readonly dsqlEndpoint: string;
+  readonly rawDocumentsBucketName: string;
+  readonly parsedDocumentsBucketName: string;
+  readonly evaluationArtifactsBucketName: string;
+  readonly vectorBucketName: string;
+  readonly vectorIndexName: string;
+  readonly dataKmsKeyArn: string;
+  readonly toolsApiEndpoint: string;
+}
+
 export class SaphnexaStack extends cdk.Stack {
   constructor(scope: Construct, id: string, props: cdk.StackProps & SaphnexaConstructProps) {
     super(scope, id, props);
@@ -27,7 +38,17 @@ export class SaphnexaStack extends cdk.Stack {
     const api = new ApiConstruct(this, "Api", props);
     const realtime = new RealtimeConstruct(this, "Realtime", props);
     const data = new DataConstruct(this, "Data", props);
-    const rag = new RagProcessingConstruct(this, "RagProcessing", props);
+    const rag = new RagProcessingConstruct(this, "RagProcessing", {
+      ...props,
+      dsqlEndpoint: data.dsqlEndpoint,
+      rawDocumentsBucketName: data.rawDocumentsBucketName,
+      parsedDocumentsBucketName: data.parsedDocumentsBucketName,
+      evaluationArtifactsBucketName: data.evaluationArtifactsBucketName,
+      vectorBucketName: data.vectorBucketName,
+      vectorIndexName: data.vectorIndexName,
+      dataKmsKeyArn: data.dataKmsKeyArn,
+      toolsApiEndpoint: api.toolsApiEndpoint
+    });
     const observability = new ObservabilityCicdConstruct(this, "ObservabilityCicd", props);
     const edge = new EdgeStaticConstruct(this, "EdgeStatic", {
       ...props,
@@ -54,7 +75,10 @@ export class SaphnexaStack extends cdk.Stack {
     output(this, "S3VectorBucketName", data.vectorBucketName);
     output(this, "S3VectorIndexName", data.vectorIndexName);
     output(this, "KnowledgeBaseId", rag.knowledgeBaseId);
+    output(this, "BedrockKnowledgeBaseId", rag.knowledgeBaseId);
     output(this, "AgentCoreRuntimeArn", rag.agentCoreRuntimeArn);
+    output(this, "AgentCoreGatewayId", rag.agentCoreGatewayId);
+    output(this, "AgentCoreToolsGatewayTargetId", rag.agentCoreToolsGatewayTargetId);
     output(this, "DocusaurusLatestUrl", edge.docusaurusLatestUrl);
     output(this, "AllureLatestUrl", edge.allureLatestUrl);
     output(this, "DeployRoleArn", observability.deployRoleArn);
@@ -236,6 +260,10 @@ export class DataConstruct extends Construct {
   readonly dsqlEndpoint = cdk.Fn.getAtt("DsqlCluster", "Endpoint").toString();
   readonly vectorBucketName = cdk.Fn.ref("S3VectorBucket");
   readonly vectorIndexName = cdk.Fn.ref("S3VectorIndex");
+  readonly rawDocumentsBucketName = cdk.Fn.ref("RawDocumentsBucket");
+  readonly parsedDocumentsBucketName = cdk.Fn.ref("ParsedDocumentsBucket");
+  readonly evaluationArtifactsBucketName = cdk.Fn.ref("EvaluationArtifactsBucket");
+  readonly dataKmsKeyArn = cdk.Fn.getAtt("DataKmsKey", "Arn").toString();
 
   constructor(scope: Construct, id: string, props: SaphnexaConstructProps) {
     super(scope, id);
@@ -256,7 +284,14 @@ export class DataConstruct extends Construct {
       IndexName: `saphnexa-${props.envName}-documents`,
       DataType: "float32",
       Dimension: 1536,
-      DistanceMetric: "cosine"
+      DistanceMetric: "cosine",
+      MetadataConfiguration: {
+        NonFilterableMetadataKeys: ["source_s3_uri"]
+      },
+      Tags: {
+        metadata_fields: "tenant_id,document_id,version_id,acl_scope_id,source_s3_uri,page,section",
+        filterable_metadata_fields: "tenant_id,document_id,version_id,acl_scope_id,page,section"
+      }
     });
   }
 }
@@ -264,39 +299,140 @@ export class DataConstruct extends Construct {
 export class RagProcessingConstruct extends Construct {
   readonly knowledgeBaseId = cdk.Fn.ref("BedrockKnowledgeBase");
   readonly agentCoreRuntimeArn = cdk.Fn.getAtt("AgentCoreRuntime", "AgentRuntimeArn").toString();
+  readonly agentCoreGatewayId = cdk.Fn.ref("AgentCoreGateway");
+  readonly agentCoreToolsGatewayTargetId = cdk.Fn.ref("AgentCoreToolsGatewayTarget");
 
-  constructor(scope: Construct, id: string, props: SaphnexaConstructProps) {
+  constructor(scope: Construct, id: string, props: RagProcessingConstructProps) {
     super(scope, id);
+    cfn(this, "BedrockKnowledgeBaseRole", "AWS::IAM::Role", serviceRole("bedrock.amazonaws.com", [
+      policyStatement(["s3:GetObject", "s3:ListBucket"], [
+        cdk.Fn.sub("arn:${AWS::Partition}:s3:::${BucketName}", { BucketName: props.rawDocumentsBucketName }),
+        cdk.Fn.sub("arn:${AWS::Partition}:s3:::${BucketName}/*", { BucketName: props.rawDocumentsBucketName })
+      ]),
+      policyStatement(["s3vectors:GetVectors", "s3vectors:PutVectors", "s3vectors:QueryVectors"], ["*"]),
+      policyStatement(["kms:Decrypt", "kms:GenerateDataKey"], [props.dataKmsKeyArn])
+    ]));
     cfn(this, "BedrockKnowledgeBase", "AWS::Bedrock::KnowledgeBase", {
       Name: `Saphnexa${props.envName}KnowledgeBase`,
-      RoleArn: cdk.Fn.sub("arn:${AWS::Partition}:iam::${AWS::AccountId}:role/saphnexa-bedrock-kb-role"),
+      RoleArn: cdk.Fn.getAtt("BedrockKnowledgeBaseRole", "Arn"),
       KnowledgeBaseConfiguration: {
         Type: "VECTOR",
-        VectorKnowledgeBaseConfiguration: { EmbeddingModelArn: cdk.Fn.sub("arn:${AWS::Partition}:bedrock:${AWS::Region}::foundation-model/amazon.titan-embed-text-v2:0") }
+        VectorKnowledgeBaseConfiguration: {
+          EmbeddingModelArn: cdk.Fn.sub("arn:${AWS::Partition}:bedrock:${AWS::Region}::foundation-model/amazon.titan-embed-text-v2:0"),
+          EmbeddingModelConfiguration: {
+            BedrockEmbeddingModelConfiguration: { Dimensions: 1536 }
+          }
+        }
       },
-      StorageConfiguration: { Type: "S3_VECTORS" }
+      StorageConfiguration: {
+        Type: "S3_VECTORS",
+        S3VectorsConfiguration: {
+          VectorBucketArn: cdk.Fn.sub("arn:${AWS::Partition}:s3vectors:${AWS::Region}:${AWS::AccountId}:bucket/${VectorBucketName}", { VectorBucketName: props.vectorBucketName }),
+          IndexName: props.vectorIndexName,
+          FieldMapping: {
+            TextField: "text",
+            MetadataField: "metadata",
+            VectorField: "vector"
+          }
+        }
+      },
+      Tags: {
+        acl_filter_fields: "tenant_id,acl_scope_id,document_id,version_id",
+        source_vector_index: props.vectorIndexName
+      }
     });
     cfn(this, "BedrockDataSource", "AWS::Bedrock::DataSource", {
       KnowledgeBaseId: this.knowledgeBaseId,
       Name: "saphnexa-documents",
-      DataSourceConfiguration: { Type: "S3", S3Configuration: { BucketArn: cdk.Fn.sub("arn:${AWS::Partition}:s3:::saphnexa-${AWS::AccountId}-${AWS::Region}-raw") } }
+      DataSourceConfiguration: {
+        Type: "S3",
+        S3Configuration: {
+          BucketArn: cdk.Fn.sub("arn:${AWS::Partition}:s3:::${BucketName}", { BucketName: props.rawDocumentsBucketName }),
+          InclusionPrefixes: ["documents/active/"]
+        }
+      },
+      VectorIngestionConfiguration: {
+        ChunkingConfiguration: {
+          ChunkingStrategy: "FIXED_SIZE",
+          FixedSizeChunkingConfiguration: { MaxTokens: 800, OverlapPercentage: 15 }
+        },
+        CustomTransformationConfiguration: {
+          IntermediateStorage: {
+            S3Location: { URI: cdk.Fn.sub("s3://${BucketName}/bedrock-kb/intermediate/", { BucketName: props.parsedDocumentsBucketName }) }
+          },
+          Transformations: [{
+            StepToApply: "POST_CHUNKING",
+            TransformationFunction: {
+              TransformationLambdaConfiguration: { LambdaArn: cdk.Fn.getAtt("IngestionWorkerLambda", "Arn") }
+            }
+          }]
+        }
+      }
     });
+    cfn(this, "AgentCoreRuntimeRole", "AWS::IAM::Role", serviceRole("bedrock-agentcore.amazonaws.com", [
+      policyStatement(["execute-api:Invoke"], [cdk.Fn.sub("arn:${AWS::Partition}:execute-api:${AWS::Region}:${AWS::AccountId}:*/*/POST/v1/tools/*")]),
+      policyStatement(["bedrock:Retrieve", "bedrock:RetrieveAndGenerate"], [cdk.Fn.getAtt("BedrockKnowledgeBase", "KnowledgeBaseArn")]),
+      policyStatement(["sqs:SendMessage"], [cdk.Fn.getAtt("IngestionQueue", "Arn"), cdk.Fn.getAtt("EvaluationQueue", "Arn")])
+    ]));
     cfn(this, "AgentCoreRuntime", "AWS::BedrockAgentCore::Runtime", {
       AgentRuntimeName: `Saphnexa${props.envName}Agent`,
-      RoleArn: cdk.Fn.sub("arn:${AWS::Partition}:iam::${AWS::AccountId}:role/saphnexa-agentcore-role"),
+      RoleArn: cdk.Fn.getAtt("AgentCoreRuntimeRole", "Arn"),
       NetworkConfiguration: { NetworkMode: "PUBLIC" },
       AgentRuntimeArtifact: { ContainerConfiguration: { ContainerUri: "replace-with-ecr-image-uri" } },
-      ProtocolConfiguration: "HTTP"
+      ProtocolConfiguration: "HTTP",
+      EnvironmentVariables: {
+        TOOLS_API_ENDPOINT: props.toolsApiEndpoint,
+        BEDROCK_KNOWLEDGE_BASE_ID: this.knowledgeBaseId,
+        S3_VECTOR_BUCKET_NAME: props.vectorBucketName,
+        S3_VECTOR_INDEX_NAME: props.vectorIndexName,
+        DSQL_ENDPOINT: props.dsqlEndpoint,
+        ACL_PRECHECK_ENABLED: "true",
+        EVALUATION_ARTIFACTS_BUCKET: props.evaluationArtifactsBucketName
+      }
     });
+    cfn(this, "AgentCoreGatewayRole", "AWS::IAM::Role", serviceRole("bedrock-agentcore.amazonaws.com", [
+      policyStatement(["execute-api:Invoke"], [cdk.Fn.sub("arn:${AWS::Partition}:execute-api:${AWS::Region}:${AWS::AccountId}:*/*/POST/v1/tools/*")])
+    ]));
     cfn(this, "AgentCoreGateway", "AWS::BedrockAgentCore::Gateway", {
       Name: `saphnexa-${props.envName}-tools`,
-      RoleArn: cdk.Fn.sub("arn:${AWS::Partition}:iam::${AWS::AccountId}:role/saphnexa-agentcore-gateway-role"),
-      ProtocolType: "MCP"
+      RoleArn: cdk.Fn.getAtt("AgentCoreGatewayRole", "Arn"),
+      ProtocolType: "MCP",
+      AuthorizerType: "AWS_IAM",
+      Description: "MCP gateway for audited Saphnexa RAG tools."
     });
-    for (const name of ["IngestionQueue", "EvaluationQueue"]) cfn(this, name, "AWS::SQS::Queue", { VisibilityTimeout: 300, RedrivePolicy: { maxReceiveCount: 3 } });
     for (const name of ["IngestionDlq", "EvaluationDlq"]) cfn(this, name, "AWS::SQS::Queue", { MessageRetentionPeriod: 1209600 });
-    cfn(this, "IngestionWorkerLambda", "AWS::Lambda::Function", lambdaStub("apps/workers"));
-    cfn(this, "EvaluationWorkerLambda", "AWS::Lambda::Function", lambdaStub("apps/workers"));
+    cfn(this, "IngestionQueue", "AWS::SQS::Queue", {
+      VisibilityTimeout: 960,
+      KmsMasterKeyId: props.dataKmsKeyArn,
+      RedrivePolicy: { deadLetterTargetArn: cdk.Fn.getAtt("IngestionDlq", "Arn"), maxReceiveCount: 3 }
+    });
+    cfn(this, "EvaluationQueue", "AWS::SQS::Queue", {
+      VisibilityTimeout: 960,
+      KmsMasterKeyId: props.dataKmsKeyArn,
+      RedrivePolicy: { deadLetterTargetArn: cdk.Fn.getAtt("EvaluationDlq", "Arn"), maxReceiveCount: 3 }
+    });
+    cfn(this, "IngestionWorkerLambda", "AWS::Lambda::Function", {
+      ...lambdaStub("apps/workers"),
+      Environment: { Variables: { DSQL_ENDPOINT: props.dsqlEndpoint, RAW_BUCKET: props.rawDocumentsBucketName, PARSED_BUCKET: props.parsedDocumentsBucketName, BEDROCK_KNOWLEDGE_BASE_ID: this.knowledgeBaseId } }
+    });
+    cfn(this, "EvaluationWorkerLambda", "AWS::Lambda::Function", {
+      ...lambdaStub("apps/workers"),
+      Environment: { Variables: { AGENT_RUNTIME_ARN: this.agentCoreRuntimeArn, DSQL_ENDPOINT: props.dsqlEndpoint, EVALUATION_ARTIFACTS_BUCKET: props.evaluationArtifactsBucketName } }
+    });
+    cfn(this, "AgentCoreToolsGatewayTarget", "AWS::BedrockAgentCore::GatewayTarget", {
+      GatewayIdentifier: this.agentCoreGatewayId,
+      Name: "saphnexa-rag-tools",
+      TargetConfiguration: {
+        Mcp: {
+          OpenApiSchema: {
+            InlinePayload: JSON.stringify(agentCoreToolsOpenApiDocument())
+          }
+        }
+      },
+      CredentialProviderConfigurations: [{
+        CredentialProviderType: "GATEWAY_IAM_ROLE"
+      }]
+    });
   }
 }
 
@@ -333,6 +469,52 @@ function lambdaStub(packagePath: string) {
     Handler: "index.handler",
     Role: cdk.Fn.sub("arn:${AWS::Partition}:iam::${AWS::AccountId}:role/saphnexa-lambda-role"),
     Code: { S3Bucket: "replace-with-deployment-artifacts-bucket", S3Key: `${packagePath}/bundle.zip` }
+  };
+}
+
+function serviceRole(servicePrincipal: string, statements: Record<string, unknown>[]) {
+  return {
+    AssumeRolePolicyDocument: {
+      Version: "2012-10-17",
+      Statement: [{
+        Effect: "Allow",
+        Principal: { Service: servicePrincipal },
+        Action: "sts:AssumeRole"
+      }]
+    },
+    Policies: [{
+      PolicyName: "least-privilege-inline",
+      PolicyDocument: { Version: "2012-10-17", Statement: statements }
+    }]
+  };
+}
+
+function policyStatement(actions: string[], resources: unknown[]) {
+  return { Effect: "Allow", Action: actions, Resource: resources };
+}
+
+function agentCoreToolsOpenApiDocument() {
+  const toolPaths = {
+    "/v1/tools/kb-retrieve": "kbRetrieve",
+    "/v1/tools/bm25-search": "bm25Search",
+    "/v1/tools/acl-check": "aclCheck",
+    "/v1/tools/reference-expand": "referenceExpand",
+    "/v1/tools/evidence-pack": "evidencePack",
+    "/v1/tools/citation-format": "citationFormat"
+  };
+  return {
+    openapi: "3.0.3",
+    info: { title: "Saphnexa AgentCore Tools", version: "1.0.0" },
+    paths: Object.fromEntries(Object.entries(toolPaths).map(([path, operationId]) => [path, {
+      post: {
+        operationId,
+        security: [{ sigv4: [] }],
+        responses: { "200": { description: "Tool response" }, "403": { description: "Tool authorization denied" } }
+      }
+    }])),
+    components: {
+      securitySchemes: { sigv4: { type: "apiKey", in: "header", name: "Authorization" } }
+    }
   };
 }
 

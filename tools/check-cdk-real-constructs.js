@@ -38,7 +38,9 @@ for (const type of [
   "AWS::Bedrock::KnowledgeBase",
   "AWS::Bedrock::DataSource",
   "AWS::BedrockAgentCore::Runtime",
-  "AWS::BedrockAgentCore::Gateway"
+  "AWS::BedrockAgentCore::Gateway",
+  "AWS::BedrockAgentCore::GatewayTarget",
+  "AWS::IAM::Role"
 ]) {
   assert(cdkRequiredResourceTypes.includes(type), `required CDK resource type missing from spec: ${type}`);
 }

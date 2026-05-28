@@ -72,17 +72,17 @@
 | AC-086 | local_verified | RagProcessingConstruct の queues/DLQs/maxReceiveCount/visibilityTimeout intent を `npm run edge:security:check` で検査。実 SQS/DLQ は未確認。 |
 | AC-087 | local_verified | `npm run admin-artifacts:build` で `dist/admin/docs/latest/` と `dist/admin/docs/versions/v0.16/` を生成し、runbooks/ADR/trace を manifest に含める。Docusaurus/CloudFront/S3 publish は未実施。 |
 | AC-088 | local_verified | `npm run admin-artifacts:build` で `dist/admin/test-reports/allure/latest/` の Allure 互換 local report を生成し、`npm run artifacts:check` で manifest/source/checksum を検査。Allure CLI/CloudFront/S3 publish は未実施。 |
-| AC-090 | local_verified | `npm run rag:quality:check` で fixture RAG Agent IF が question/actor/retrieval_policy/run context を受け final/refusal output と tool invocation を返すことを検査。実 AgentCore Runtime logs は未実施。 |
+| AC-090 | local_verified | `npm run rag:quality:check` で fixture RAG Agent IF が question/actor/retrieval_policy/run context を受け final/refusal output と tool invocation を返すことを検査。`npm run rag:aws-binding:check` で AgentCore Runtime env と Tools API binding を検査。実 AgentCore Runtime logs は未実施。 |
 | AC-091 | local_verified | `assertRetrievalPolicyNotRelaxed` test あり。 |
-| AC-092 | local_verified | fixture RAG calls Tools functions and records `tool_invocations`. |
+| AC-092 | local_verified | fixture RAG calls Tools functions and records `tool_invocations`. `npm run rag:aws-binding:check` で AgentCore GatewayTarget の tool path / scope が `packages/tool-contract` と一致することを検査。 |
 | AC-093 | local_verified | `kbRetrieve` requires retrieval policy and returns results. |
 | AC-094 | local_verified | ACL check is called before evidence packing. |
 | AC-095 | local_verified | `npm run rag:quality:check` で reference expansion golden 10件中10件成功を検査。実 reference_edges/KB 評価は未実施。 |
 | AC-096 | local_verified | citation format and event detail tested locally. |
 | AC-097 | local_verified | evaluation metrics categories in local source and `tests/e2e-local.test.js` local path. AWS 評価 report は未実施。 |
-| AC-098 | local_verified | `npm run rag:quality:check` で `dist/reports/rag-quality-local.json` を生成し、recall@10/citation precision/groundedness/refusal accuracy/unsupported claim rate の local thresholds を検査。Bedrock Evaluations/実KB report は未実施。 |
+| AC-098 | local_verified | `npm run rag:quality:check` で `dist/reports/rag-quality-local.json` を生成し、recall@10/citation precision/groundedness/refusal accuracy/unsupported claim rate の local thresholds を検査。`npm run rag:aws-binding:check` で Bedrock KB / S3 Vectors / AgentCore binding source を検査。Bedrock Evaluations/実KB report は未実施。 |
 | AC-099 | local_verified | `npm run rag:security:check` で prompt injection attack 20件中 policy violation 0件、tool invocation 0件を検査。実 AgentCore trace は未実施。 |
-| AC-100 | local_verified | `npm run offline-artifacts:check` で raw/parsed/chunk/reference/BM25F/parser artifact inventory を生成・検査。PDF/KB/S3 Vectors 実行は未実施。 |
+| AC-100 | local_verified | `npm run offline-artifacts:check` で raw/parsed/chunk/reference/BM25F/parser artifact inventory を生成・検査。`npm run rag:aws-binding:check` で S3 Vectors index dimension / metadata field binding を検査。PDF/KB/S3 Vectors 実行は未実施。 |
 | AC-101 | local_verified | document metadata 必須 field と raw prefix を `tests/integration-local.test.js` / `npm run storage:check` で検査。Retrieve metadata 実体は未実施。 |
 | AC-102 | local_verified | `npm run storage:check` で parsed prefix、`npm run offline-artifacts:check` で chunk/reference/BM25F/parser artifact inventory を検査。実 S3 inventory は未実施。 |
 | AC-103 | local_verified | 同一 document_id/version_id の再登録で document_version が重複しないことを `tests/integration-local.test.js` で検証。 |
@@ -94,7 +94,7 @@
 | AC-114 | local_verified | `audit_events` table/store と `npm run admin:workflow:check` で admin 操作、文書公開/成果物、チャット共有、Tools execution、評価の audit category を検査。 |
 | AC-120 | local_verified | `.github/workflows/ci.yml` に 14 jobs を追加し `npm run ci:check` で workflow shape を検査。PR #1 の GitHub Actions `Saphnexa CI` で lint/typecheck/unit/integration/e2e/cdk synth/cdk diff/security scan/license scan/admin artifacts/quality gates/db observability/admin offline restore/contract generation diff が pass。 |
 | AC-121 | local_verified | `npm run coverage:check` で Node test coverage line >=80% / branch >=70% と test pass 100% を検査。Allure unit artifact への publish は未実施。 |
-| AC-122 | local_verified | `npm run test:integration:local` と `npm run verify` で local API/store/RAG/tools/admin artifact/edge intent の統合 smoke を検査。AWS/DSQL/S3/AppSync/Tools 実結合は未実施。 |
+| AC-122 | local_verified | `npm run test:integration:local`、`npm run rag:aws-binding:check`、`npm run verify` で local API/store/RAG/tools/admin artifact/edge intent と AWS binding source の統合 smoke を検査。AWS/DSQL/S3/AppSync/Tools 実結合は未実施。 |
 | AC-123 | local_verified | `tests/e2e-local.test.js` と `npm run web:flow:check` を CI 対象化し、local API/source gate の E2E smoke を検査。ブラウザ/CloudFront E2E は未実施。 |
 | AC-124 | local_verified | 基本設計 5.6.3 の 15 pairwise ケースを `packages/testing/src/pairwise.js` に catalog 化し、`npm run pairwise:check` で実行率/要因 coverage を検査。 |
 | AC-125 | local_verified | `npm run test:contract`, `npm run acceptance:check`, `npm run evidence:check` を contract-generation-diff job に追加。生成物 diff の本格化は後続。 |

@@ -48,6 +48,7 @@ for (const command of [
   "npm run failure:check",
   "npm run rag:quality:check",
   "npm run rag:security:check",
+  "npm run rag:aws-binding:check",
   "npm run rag:perf:local",
   "npm run db:migration:check",
   "npm run db:integrity:check",
