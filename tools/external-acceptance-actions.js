@@ -90,6 +90,7 @@ export function buildExternalAcceptanceActionPlan(outputPath = externalActionPla
         "aws cloudwatch get-dashboard --dashboard-name saphnexa-uat --region ap-northeast-1 > raw/cloudwatch-dashboard.json",
         "node tools/capture-aws-dev-uat-rag-quality-result.js --env uat --run-id <run-id> > raw/rag-quality-report.json",
         "aws bedrock get-evaluation-job --job-identifier rag-eval-<run-id> --region ap-northeast-1 > raw/bedrock-evaluation-job.json",
+        "npm run aws:dev-uat:validation-raw-input:build -- --scaffold dist/acceptance/raw/aws_dev_uat_validation.raw.scaffold.json --output <raw-validation-input.json> --captured-at <capture-jst-timestamp> --git-tag <release-tag> --github-release-url <github-release-url> --aws-account-id <aws-account-id>",
         "npm run aws:dev-uat:raw-output:check -- validation --input <raw-validation-input.json>",
         "npm run aws:dev-uat:raw-input:check -- validation --input <raw-validation-input.json>",
         "npm run aws:dev-uat:validation:build -- --input <raw-validation-input.json>",

@@ -9,13 +9,15 @@ import {
 } from "./aws-dev-uat-capture-helper-lib.js";
 
 const required = [
+  "SAPHNEXA_PERF_LOAD_PROFILE",
   "SAPHNEXA_PERF_NON_AI_API_P95_MS",
   "SAPHNEXA_PERF_ERROR_RATE",
   "SAPHNEXA_PERF_QUESTION_START_P95_MS",
   "SAPHNEXA_PERF_RAG_FIRST_NOTICE_P95_MS",
   "SAPHNEXA_PERF_FINAL_ANSWER_P95_MS",
   "SAPHNEXA_PERF_TIMEOUT_RATE",
-  "SAPHNEXA_PERF_REPORT_URL"
+  "SAPHNEXA_PERF_REPORT_URL",
+  "SAPHNEXA_CLOUDWATCH_DASHBOARD_URL"
 ];
 
 const args = parseArgs(process.argv.slice(2));
@@ -33,6 +35,7 @@ const ragFirstNoticeP95Ms = requiredNumber(env.SAPHNEXA_PERF_RAG_FIRST_NOTICE_P9
 const finalAnswerP95Ms = requiredNumber(env.SAPHNEXA_PERF_FINAL_ANSWER_P95_MS, "SAPHNEXA_PERF_FINAL_ANSWER_P95_MS");
 const timeoutRate = requiredNumber(env.SAPHNEXA_PERF_TIMEOUT_RATE, "SAPHNEXA_PERF_TIMEOUT_RATE");
 const reportUrl = requiredHttpsUrl(env.SAPHNEXA_PERF_REPORT_URL, "SAPHNEXA_PERF_REPORT_URL");
+const cloudwatchDashboardUrl = requiredHttpsUrl(env.SAPHNEXA_CLOUDWATCH_DASHBOARD_URL, "SAPHNEXA_CLOUDWATCH_DASHBOARD_URL");
 
 assert(nonAiApiP95Ms <= 800, "non-AI API p95 must be <= 800ms");
 assert(errorRate < 0.01, "error rate must be < 0.01");
@@ -45,13 +48,15 @@ writeCapture({
   schema_version: "saphnexa-aws-dev-uat-performance-result.raw.v1",
   ...context,
   status: "captured",
+  load_profile: env.SAPHNEXA_PERF_LOAD_PROFILE,
   non_ai_api_p95_ms: nonAiApiP95Ms,
   error_rate: errorRate,
   question_start_p95_ms: questionStartP95Ms,
   rag_first_notice_p95_ms: ragFirstNoticeP95Ms,
   final_answer_p95_ms: finalAnswerP95Ms,
   timeout_rate: timeoutRate,
-  report_url: reportUrl
+  report_url: reportUrl,
+  cloudwatch_dashboard_url: cloudwatchDashboardUrl
 });
 
 function requiredNumber(value, label) {

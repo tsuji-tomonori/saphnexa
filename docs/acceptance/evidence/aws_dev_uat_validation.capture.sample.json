@@ -22,7 +22,7 @@
     "commands": [
       {
         "id": "e2e-allure",
-        "command": "npm run test:e2e:aws",
+        "command": "node tools/capture-aws-dev-uat-e2e-result.js --env uat --run-id e2e-20260528",
         "output_ref": "raw/e2e-allure-run.json",
         "status": "captured"
       },
@@ -34,7 +34,7 @@
       },
       {
         "id": "performance-report",
-        "command": "npm run perf:aws",
+        "command": "node tools/capture-aws-dev-uat-performance-result.js --env uat --run-id e2e-20260528",
         "output_ref": "raw/performance-report.json",
         "status": "captured"
       },
@@ -46,7 +46,7 @@
       },
       {
         "id": "rag-quality-report",
-        "command": "npm run rag:quality:aws",
+        "command": "node tools/capture-aws-dev-uat-rag-quality-result.js --env uat --run-id e2e-20260528",
         "output_ref": "raw/rag-quality-report.json",
         "status": "captured"
       },

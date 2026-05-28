@@ -1,5 +1,15 @@
 {
+  "schema_version": "saphnexa-aws-dev-uat-rag-quality-result.raw.v1",
+  "environment": "uat",
+  "run_id": "e2e-20260528",
+  "status": "captured",
+  "golden_dataset": "golden-v0.17",
+  "evaluation_job_id": "rag-eval-20260528-uat",
+  "bedrock_evaluation_job_arn": "arn:aws:bedrock:ap-northeast-1:sample-account:evaluation-job/rag-eval-20260528-uat",
   "recall_at_10": 0.88,
   "citation_precision": 0.93,
-  "groundedness": 0.94
+  "groundedness": 0.94,
+  "refusal_accuracy": 0.97,
+  "unsupported_claim_rate": 0.01,
+  "report_url": "https://d3saphnexauat.cloudfront.net/admin/evaluation-reports/rag-eval-20260528-uat/"
 }

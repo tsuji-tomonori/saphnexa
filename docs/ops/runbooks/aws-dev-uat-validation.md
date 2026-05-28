@@ -160,9 +160,10 @@ node tools/capture-aws-dev-uat-rag-quality-result.js --env uat --run-id <run-id>
 aws bedrock get-evaluation-job --job-identifier rag-eval-<run-id> --region ap-northeast-1 > raw/bedrock-evaluation-job.json
 ```
 
-8. 実 AWS dev/UAT の raw result input から `dist/acceptance/aws_dev_uat_validation.json` を生成する。
+8. 実 AWS dev/UAT の raw output files と scaffold から final validation raw input を生成し、`dist/acceptance/aws_dev_uat_validation.json` を生成する。
 
 ```bash
+npm run aws:dev-uat:validation-raw-input:build -- --scaffold dist/acceptance/raw/aws_dev_uat_validation.raw.scaffold.json --output <raw-validation-input.json> --captured-at <capture-jst-timestamp> --git-tag <release-tag> --github-release-url <github-release-url> --aws-account-id <aws-account-id>
 npm run aws:dev-uat:raw-output:check -- validation --input <raw-validation-input.json>
 npm run aws:dev-uat:raw-input:check -- validation --input <raw-validation-input.json>
 npm run aws:dev-uat:validation:build -- --input <raw-validation-input.json>
@@ -194,6 +195,7 @@ npm run aws:dev-uat:raw-input:fixture:check
 npm run aws:dev-uat:evidence-bundle:fixture:check
 npm run aws:dev-uat:capture-helpers:check
 npm run aws:dev-uat:validation-capture:fixture:check
+npm run aws:dev-uat:validation-raw-input:fixture:check
 npm run aws:dev-uat:validation:check
 npm run aws:dev-uat:validation:fixture:check
 npm run aws:dev-uat:evidence:fixture:check
@@ -208,6 +210,7 @@ npm run aws:dev-uat:evidence:fixture:check
 `npm run aws:dev-uat:evidence-bundle:fixture:check` は sample raw input/output から preflight / validation evidence と bundle manifest を生成し、各 artifact の path、size、sha256 と missing artifact の negative path を検査する。sample bundle manifest は最終検収 evidence として扱わない。
 `npm run aws:dev-uat:capture-helpers:check` は helper entrypoint の `--help` と missing-env failure を検査する。実環境 endpoint への HTTP probe は行わない。
 `npm run aws:dev-uat:validation-capture:fixture:check` は E2E、性能、RAG品質結果 capture helper の `--help`、missing-env failure、閾値未達 failure、valid env JSON output を検査する。sample env は最終検収 evidence として扱わない。
+`npm run aws:dev-uat:validation-raw-input:fixture:check` は validation scaffold と sample raw output files から final raw input を生成し、raw output check、raw input dry-run、validation final gate へ進めることを検査する。sample raw output は最終検収 evidence として扱わない。
 `npm run aws:dev-uat:validation:check` も `docs/acceptance/evidence/aws_dev_uat_validation.example.json` だけを検査する。`npm run aws:dev-uat:validation:fixture:check` は fixture の positive path と、final 指定・E2E失敗・性能閾値超過・RAG品質閾値超過の negative path を検査する。
 `npm run aws:dev-uat:evidence:fixture:check` は `*.capture.sample.json` から一時ディレクトリに `aws-captured` evidence を生成し、既存 final checker に通す。sample raw input は最終検収 evidence として扱わない。
 
@@ -242,6 +245,7 @@ npm run aws:dev-uat:preflight:final
 node tools/capture-aws-dev-uat-e2e-result.js --env uat --run-id <run-id> > raw/e2e-allure-run.json
 node tools/capture-aws-dev-uat-performance-result.js --env uat --run-id <run-id> > raw/performance-report.json
 node tools/capture-aws-dev-uat-rag-quality-result.js --env uat --run-id <run-id> > raw/rag-quality-report.json
+npm run aws:dev-uat:validation-raw-input:build -- --scaffold dist/acceptance/raw/aws_dev_uat_validation.raw.scaffold.json --output <raw-validation-input.json> --captured-at <capture-jst-timestamp> --git-tag <release-tag> --github-release-url <github-release-url> --aws-account-id <aws-account-id>
 npm run aws:dev-uat:raw-output:check -- validation --input <raw-validation-input.json>
 npm run aws:dev-uat:raw-input:check -- validation --input <raw-validation-input.json>
 npm run aws:dev-uat:validation:build -- --input <raw-validation-input.json>

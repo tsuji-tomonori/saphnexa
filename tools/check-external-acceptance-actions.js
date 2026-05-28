@@ -45,6 +45,7 @@ assert(awsDevUatValidation.acceptance_ids.includes("AC-123"), "AWS dev/UAT valid
 const e2eCaptureCommand = "node tools/capture-aws-dev-uat-e2e-result.js --env uat --run-id <run-id> > raw/e2e-allure-run.json";
 const perfCaptureCommand = "node tools/capture-aws-dev-uat-performance-result.js --env uat --run-id <run-id> > raw/performance-report.json";
 const ragCaptureCommand = "node tools/capture-aws-dev-uat-rag-quality-result.js --env uat --run-id <run-id> > raw/rag-quality-report.json";
+const validationMaterializeCommand = "npm run aws:dev-uat:validation-raw-input:build -- --scaffold dist/acceptance/raw/aws_dev_uat_validation.raw.scaffold.json --output <raw-validation-input.json> --captured-at <capture-jst-timestamp> --git-tag <release-tag> --github-release-url <github-release-url> --aws-account-id <aws-account-id>";
 for (const command of [
   "npm run aws:dev-uat:execution-bridge:probe",
   "npm run aws:dev-uat:raw-capture-plan:build",
@@ -62,6 +63,7 @@ for (const command of [
   "aws cloudwatch get-dashboard --dashboard-name saphnexa-uat --region ap-northeast-1 > raw/cloudwatch-dashboard.json",
   ragCaptureCommand,
   "aws bedrock get-evaluation-job --job-identifier rag-eval-<run-id> --region ap-northeast-1 > raw/bedrock-evaluation-job.json",
+  validationMaterializeCommand,
   "npm run aws:dev-uat:raw-output:check -- validation --input <raw-validation-input.json>",
   "npm run aws:dev-uat:raw-input:check -- validation --input <raw-validation-input.json>",
   "npm run aws:dev-uat:validation:build -- --input <raw-validation-input.json>",
@@ -108,8 +110,13 @@ assert(
 assert(
   ragCaptureCommand &&
     awsDevUatValidation.candidate_commands.indexOf(ragCaptureCommand) <
-    awsDevUatValidation.candidate_commands.indexOf("npm run aws:dev-uat:raw-output:check -- validation --input <raw-validation-input.json>"),
+    awsDevUatValidation.candidate_commands.indexOf(validationMaterializeCommand),
   "AWS dev/UAT validation action must capture RAG quality result before checking validation raw outputs"
+);
+assert(
+  awsDevUatValidation.candidate_commands.indexOf(validationMaterializeCommand) <
+    awsDevUatValidation.candidate_commands.indexOf("npm run aws:dev-uat:raw-output:check -- validation --input <raw-validation-input.json>"),
+  "AWS dev/UAT validation action must materialize validation raw input before checking validation raw outputs"
 );
 assert(
   awsDevUatValidation.candidate_commands.indexOf("npm run aws:dev-uat:raw-output:check -- validation --input <raw-validation-input.json>") <

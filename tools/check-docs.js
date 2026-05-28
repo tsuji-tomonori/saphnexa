@@ -86,6 +86,8 @@ for (const command of [
   "npm run aws:dev-uat:evidence-bundle:check",
   "npm run aws:dev-uat:evidence-bundle:fixture:check",
   "npm run aws:dev-uat:validation-capture:fixture:check",
+  "npm run aws:dev-uat:validation-raw-input:build",
+  "npm run aws:dev-uat:validation-raw-input:fixture:check",
   "npm run aws:dev-uat:capture-helpers:check",
   "npm run aws:dev-uat:validation:build",
   "npm run aws:dev-uat:validation:check",
