@@ -1,6 +1,6 @@
 # final readiness evidence bundle validation
 
-状態: do
+状態: done
 タスク種別: 修正
 
 ## 背景
@@ -51,12 +51,22 @@ AWS dev/UAT の final readiness は、raw input、final evidence、operator inpu
 
 ## 受け入れ条件
 
-- [ ] final readiness が `schema_version !== saphnexa-aws-dev-uat-evidence-bundle.v1`、`status !== checked`、`evidence_class !== aws-captured`、artifact coverage 不足、`artifact_count` 不整合を `invalid_evidence_bundle_manifest` として ready 扱いしない。
-- [ ] final readiness が bundle manifest の `git_commit_sha` 不一致を `stale_evidence_bundle_manifest` として ready 扱いしない。
-- [ ] ready final readiness は current git の `aws-captured` bundle manifest と、preflight/validation raw input、preflight/validation final evidence、execution bridge の artifact coverage を要求する。
-- [ ] fixture check が missing/invalid/stale/ready bundle manifest path を検査する。
-- [ ] docs と docs check が final readiness の bundle manifest 内容検証と同期している。
-- [ ] 実行した検証と未実施の AWS 実検証を、PR コメントと作業レポートに正直に記載する。
+- [x] final readiness が `schema_version !== saphnexa-aws-dev-uat-evidence-bundle.v1`、`status !== checked`、`evidence_class !== aws-captured`、artifact coverage 不足、`artifact_count` 不整合を `invalid_evidence_bundle_manifest` として ready 扱いしない。
+- [x] final readiness が bundle manifest の `git_commit_sha` 不一致を `stale_evidence_bundle_manifest` として ready 扱いしない。
+- [x] ready final readiness は current git の `aws-captured` bundle manifest と、preflight/validation raw input、preflight/validation final evidence、execution bridge の artifact coverage を要求する。
+- [x] fixture check が missing/invalid/stale/ready bundle manifest path を検査する。
+- [x] docs と docs check が final readiness の bundle manifest 内容検証と同期している。
+- [x] 実行した検証と未実施の AWS 実検証を、PR コメントと作業レポートに正直に記載する。
+
+## 完了メモ
+
+- 実装 commit: `87adca2`
+- PR: https://github.com/tsuji-tomonori/saphnexa/pull/2
+- 受け入れ条件コメント: https://github.com/tsuji-tomonori/saphnexa/pull/2#issuecomment-4562193637
+- セルフレビューコメント: https://github.com/tsuji-tomonori/saphnexa/pull/2#issuecomment-4562193629
+- 作業レポート: `reports/working/20260528-1732-final-readiness-evidence-bundle-validation.md`
+- 検証: `npm run aws:dev-uat:final-readiness:check` pass、`npm run aws:dev-uat:final-readiness:fixture:check` pass、`npm run docs:check` pass、`git diff --check` pass、`npm run verify` pass。
+- 制約: `aws sts get-caller-identity --output json` は AWS credentials 不在で fail。実 AWS dev/UAT E2E・性能・RAG品質検証は未実施。
 
 ## 検証計画
 
