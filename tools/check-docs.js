@@ -122,6 +122,8 @@ for (const phrase of [
   "materialized flow fixture",
   "final readiness manifest",
   "operator handoff",
+  "evidence input map",
+  "required_inputs.evidence",
   "operator input",
   "resolved operator input",
   "operator execution runbook",

@@ -42,6 +42,35 @@ export function validateAwsDevUatOperatorHandoff(handoff) {
   );
   assert(handoff.required_inputs.approval_required_for.includes("cdk deploy"), "operator handoff must require deploy approval");
   assert(handoff.required_inputs.approval_required_for.includes("Bedrock evaluation"), "operator handoff must require Bedrock approval");
+  assertEvidenceInput(handoff.required_inputs.evidence?.preflight, {
+    mode: "preflight",
+    rawInputSuffix: "aws_dev_uat_preflight.raw.json",
+    scaffoldSuffix: "aws_dev_uat_preflight.raw.scaffold.json",
+    finalEvidencePath: "dist/acceptance/aws_dev_uat_preflight.json",
+    buildCommand: "npm run aws:dev-uat:preflight:build -- --input dist/acceptance/raw/aws_dev_uat_preflight.raw.json",
+    finalCommand: "npm run aws:dev-uat:preflight:final"
+  });
+  assertEvidenceInput(handoff.required_inputs.evidence?.validation, {
+    mode: "validation",
+    rawInputSuffix: "aws_dev_uat_validation.raw.json",
+    scaffoldSuffix: "aws_dev_uat_validation.raw.scaffold.json",
+    finalEvidencePath: "dist/acceptance/aws_dev_uat_validation.json",
+    buildCommand: "npm run aws:dev-uat:validation:build -- --input dist/acceptance/raw/aws_dev_uat_validation.raw.json",
+    finalCommand: "npm run aws:dev-uat:validation:final"
+  });
+  assert(
+    handoff.required_inputs.evidence?.evidence_bundle?.manifest_path === "dist/acceptance/aws_dev_uat_evidence_bundle_manifest.json",
+    "operator handoff evidence bundle path mismatch"
+  );
+  assert(
+    handoff.required_inputs.evidence?.evidence_bundle?.check_command.includes("npm run aws:dev-uat:evidence-bundle:check") &&
+      handoff.required_inputs.evidence.evidence_bundle.check_command.includes("--preflight-raw-input") &&
+      handoff.required_inputs.evidence.evidence_bundle.check_command.includes("aws_dev_uat_preflight.raw.json") &&
+      handoff.required_inputs.evidence.evidence_bundle.check_command.includes("--validation-raw-input") &&
+      handoff.required_inputs.evidence.evidence_bundle.check_command.includes("aws_dev_uat_validation.raw.json") &&
+      handoff.required_inputs.evidence.evidence_bundle.check_command.includes("--output dist/acceptance/aws_dev_uat_evidence_bundle_manifest.json"),
+    "operator handoff evidence bundle check command mismatch"
+  );
 
   const actionIds = new Set(handoff.execution_groups.flatMap((group) => group.action_ids));
   for (const id of requiredAwsDevUatOperatorHandoffActionIds()) {
@@ -101,6 +130,26 @@ export function validateAwsDevUatOperatorHandoff(handoff) {
   assert(handoff.note.includes("approval-required execution plan"), "operator handoff must state approval scope");
 
   if (existsSync(handoff.source_artifacts.external_action_plan)) readJson(handoff.source_artifacts.external_action_plan);
+}
+
+function assertEvidenceInput(actual, expected) {
+  assert(pathEndsWith(actual?.raw_input_path, expected.rawInputSuffix), `${expected.mode} raw input path mismatch`);
+  assert(pathEndsWith(actual?.raw_input_scaffold_path, expected.scaffoldSuffix), `${expected.mode} raw input scaffold path mismatch`);
+  assert(
+    actual?.raw_output_check_command === `npm run aws:dev-uat:raw-output:check -- ${expected.mode} --input ${actual.raw_input_path}`,
+    `${expected.mode} raw output check command mismatch`
+  );
+  assert(
+    actual?.raw_input_check_command === `npm run aws:dev-uat:raw-input:check -- ${expected.mode} --input ${actual.raw_input_path}`,
+    `${expected.mode} raw input check command mismatch`
+  );
+  assert(actual?.final_evidence_path === expected.finalEvidencePath, `${expected.mode} final evidence path mismatch`);
+  assert(actual?.build_command === expected.buildCommand, `${expected.mode} build command mismatch`);
+  assert(actual?.final_command === expected.finalCommand, `${expected.mode} final command mismatch`);
+}
+
+function pathEndsWith(path, suffix) {
+  return typeof path === "string" && path.endsWith(suffix) && !path.split(/[\\/]/).includes("..");
 }
 
 function existsOrGeneratedPath(path) {

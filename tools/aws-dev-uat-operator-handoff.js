@@ -2,7 +2,11 @@ import { mkdirSync, writeFileSync } from "node:fs";
 import { dirname } from "node:path";
 import { buildExternalAcceptanceActionPlan, externalActionPlanPath } from "./external-acceptance-actions.js";
 import { buildAwsDevUatRawCapturePlan, rawCapturePlanOutputPath } from "./aws-dev-uat-raw-capture-plan.js";
-import { buildAwsDevUatFinalReadiness, awsDevUatFinalReadinessPath } from "./aws-dev-uat-final-readiness.js";
+import {
+  buildAwsDevUatFinalReadiness,
+  awsDevUatEvidenceBundleManifestPath,
+  awsDevUatFinalReadinessPath
+} from "./aws-dev-uat-final-readiness.js";
 import { awsDevUatOperatorInputScaffoldPath, buildAwsDevUatOperatorInputScaffold } from "./aws-dev-uat-operator-input.js";
 import { awsDevUatOperatorExecutionRunbookPath } from "./aws-dev-uat-operator-execution-runbook.js";
 import { currentGitCommit } from "./git-context.js";
@@ -75,6 +79,7 @@ export function buildAwsDevUatOperatorHandoff(options = {}) {
       aws_identity: "aws sts get-caller-identity --output json",
       test_identities: ["general_user", "admin"],
       datasets: ["golden-v0.17"],
+      evidence: evidenceInputs(rawCapturePlan),
       approval_required_for: ["cdk deploy", "flyway apply", "s3 publish", "load test", "Bedrock evaluation", "final checklist signoff"]
     },
     execution_groups: [
@@ -132,6 +137,31 @@ function group(id, actionIds, actions) {
     external_state_change: selected.some((action) => action.external_state_change === true),
     candidate_commands: selected.flatMap((action) => action.candidate_commands),
     evidence_outputs: unique(selected.flatMap((action) => action.evidence_outputs))
+  };
+}
+
+function evidenceInputs(rawCapturePlan) {
+  const preflight = rawCapturePlan.modes.preflight;
+  const validation = rawCapturePlan.modes.validation;
+  return {
+    preflight: evidenceStageInput(preflight),
+    validation: evidenceStageInput(validation),
+    evidence_bundle: {
+      manifest_path: awsDevUatEvidenceBundleManifestPath,
+      check_command: `npm run aws:dev-uat:evidence-bundle:check -- --preflight-raw-input ${preflight.raw_input_path} --validation-raw-input ${validation.raw_input_path} --preflight-evidence ${preflight.evidence_output_path} --validation-evidence ${validation.evidence_output_path} --execution-bridge dist/acceptance/aws_dev_uat_execution_bridge.json --output ${awsDevUatEvidenceBundleManifestPath}`
+    }
+  };
+}
+
+function evidenceStageInput(stage) {
+  return {
+    raw_input_path: stage.raw_input_path,
+    raw_input_scaffold_path: stage.raw_input_scaffold_path,
+    raw_output_check_command: stage.raw_output_check_command,
+    raw_input_check_command: stage.raw_input_check_command,
+    final_evidence_path: stage.evidence_output_path,
+    build_command: stage.build_command,
+    final_command: stage.final_command
   };
 }
 

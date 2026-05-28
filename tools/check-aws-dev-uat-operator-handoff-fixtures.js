@@ -38,6 +38,11 @@ try {
   assert(handoff.aws_ready === false, "operator handoff fixture must not mark AWS ready");
   assert(handoff.execution_groups.every((group) => group.status === "pending"), "all handoff groups must stay pending");
   assert(handoff.execution_groups.every((group) => group.requires_confirmation === true), "all handoff groups must require confirmation");
+  assert(handoff.required_inputs.evidence.preflight.raw_input_path.endsWith("aws_dev_uat_preflight.raw.json"), "handoff must include preflight raw input path");
+  assert(handoff.required_inputs.evidence.preflight.final_evidence_path.endsWith("aws_dev_uat_preflight.json"), "handoff must include preflight final evidence path");
+  assert(handoff.required_inputs.evidence.validation.raw_input_path.endsWith("aws_dev_uat_validation.raw.json"), "handoff must include validation raw input path");
+  assert(handoff.required_inputs.evidence.validation.final_evidence_path.endsWith("aws_dev_uat_validation.json"), "handoff must include validation final evidence path");
+  assert(handoff.required_inputs.evidence.evidence_bundle.check_command.includes("aws:dev-uat:evidence-bundle:check"), "handoff must include evidence bundle check command");
 
   const invalid = structuredClone(handoff);
   invalid.execution_groups[0].requires_confirmation = false;
