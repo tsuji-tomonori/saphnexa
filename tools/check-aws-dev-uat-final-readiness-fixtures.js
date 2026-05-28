@@ -1,9 +1,11 @@
 import { mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { dirname, join, resolve } from "node:path";
+import { buildExternalAcceptanceActionPlan } from "./external-acceptance-actions.js";
 import { buildAwsDevUatRawCapturePlan } from "./aws-dev-uat-raw-capture-plan.js";
 import { buildAwsDevUatFinalReadiness } from "./aws-dev-uat-final-readiness.js";
 import { buildAwsDevUatOperatorInputScaffold } from "./aws-dev-uat-operator-input.js";
+import { buildAwsDevUatOperatorExecutionRunbook } from "./aws-dev-uat-operator-execution-runbook.js";
 import { buildAwsDevUatPreflightEvidence, buildAwsDevUatValidationEvidence } from "./aws-dev-uat-evidence-builders.js";
 import { checkAwsDevUatEvidenceBundle } from "./aws-dev-uat-evidence-bundle.js";
 import { validateAwsDevUatFinalReadiness } from "./check-aws-dev-uat-final-readiness.js";
@@ -23,6 +25,9 @@ try {
   });
   const bridgePath = join(tmpRoot, "aws_dev_uat_execution_bridge.json");
   const operatorInputPath = join(tmpRoot, "aws_dev_uat_operator_input.json");
+  const operatorRunbookPath = join(tmpRoot, "aws_dev_uat_operator_execution_runbook.json");
+  const externalActionPlanPath = join(tmpRoot, "external_action_plan.json");
+  const externalActionPlan = buildExternalAcceptanceActionPlan(externalActionPlanPath);
   writeBridge(bridgePath, "not_probed");
 
   const blocked = buildAwsDevUatFinalReadiness({
@@ -32,6 +37,7 @@ try {
     executionBridgePath: bridgePath,
     executionBridge: readJson(bridgePath),
     operatorInputPath,
+    operatorRunbookPath,
     evidenceBundleManifestPath: join(tmpRoot, "missing", "aws_dev_uat_evidence_bundle_manifest.json")
   });
   validateAwsDevUatFinalReadiness(blocked);
@@ -40,10 +46,15 @@ try {
   assert(blocked.blockers.includes("missing_preflight_raw_input"), "blocked fixture must include preflight raw input blocker");
   assert(blocked.blockers.includes("missing_validation_raw_input"), "blocked fixture must include validation raw input blocker");
   assert(blocked.blockers.includes("missing_operator_input"), "blocked fixture must include operator input blocker");
+  assert(blocked.blockers.includes("missing_operator_runbook"), "blocked fixture must include operator runbook blocker");
   assert(blocked.next_commands.includes("npm run aws:dev-uat:execution-bridge:probe"), "blocked fixture must suggest AWS identity probe");
   assert(
     blocked.next_commands.includes(`npm run aws:dev-uat:operator-input:check -- --input ${operatorInputPath} --require-resolved`),
     "blocked fixture must suggest resolved operator input check"
+  );
+  assert(
+    blocked.next_commands.includes(`npm run aws:dev-uat:operator-runbook:check -- --input ${operatorInputPath} --require-resolved`),
+    "blocked fixture must suggest operator runbook check"
   );
 
   const operatorInputScaffold = buildAwsDevUatOperatorInputScaffold({
@@ -59,11 +70,33 @@ try {
     executionBridgePath: bridgePath,
     executionBridge: readJson(bridgePath),
     operatorInputPath,
+    operatorRunbookPath,
     evidenceBundleManifestPath: join(tmpRoot, "missing", "aws_dev_uat_evidence_bundle_manifest.json")
   });
   validateAwsDevUatFinalReadiness(invalidOperatorInput);
   assert(invalidOperatorInput.blockers.includes("invalid_operator_input"), "invalid operator input fixture must block readiness");
   writeText(operatorInputPath, `${JSON.stringify(resolvedOperatorInput(operatorInputScaffold), null, 2)}\n`);
+  buildAwsDevUatOperatorExecutionRunbook({
+    outputPath: operatorRunbookPath,
+    externalActionPlan,
+    externalActionPlanPath,
+    rawCapturePlan: plan,
+    rawCapturePlanPath: planPath,
+    operatorInput: operatorInputScaffold,
+    operatorInputPath
+  });
+  const invalidOperatorRunbook = buildAwsDevUatFinalReadiness({
+    outputPath: join(tmpRoot, "invalid-operator-runbook-readiness.json"),
+    rawCapturePlanPath: planPath,
+    rawCapturePlan: plan,
+    executionBridgePath: bridgePath,
+    executionBridge: readJson(bridgePath),
+    operatorInputPath,
+    operatorRunbookPath,
+    evidenceBundleManifestPath: join(tmpRoot, "missing", "aws_dev_uat_evidence_bundle_manifest.json")
+  });
+  validateAwsDevUatFinalReadiness(invalidOperatorRunbook);
+  assert(invalidOperatorRunbook.blockers.includes("invalid_operator_runbook"), "invalid operator runbook fixture must block readiness");
 
   const preflightRawInputPath = plan.modes.preflight.raw_input_path;
   const validationRawInputPath = plan.modes.validation.raw_input_path;
@@ -75,6 +108,15 @@ try {
   buildAwsDevUatPreflightEvidence(preflightRawInputPath, preflightEvidencePath);
   buildAwsDevUatValidationEvidence(validationRawInputPath, validationEvidencePath);
   writeBridge(bridgePath, "authenticated");
+  buildAwsDevUatOperatorExecutionRunbook({
+    outputPath: operatorRunbookPath,
+    externalActionPlan,
+    externalActionPlanPath,
+    rawCapturePlan: plan,
+    rawCapturePlanPath: planPath,
+    operatorInput: readJson(operatorInputPath),
+    operatorInputPath
+  });
   checkAwsDevUatEvidenceBundle({
     preflightRawInputPath,
     validationRawInputPath,
@@ -93,6 +135,7 @@ try {
     executionBridge: readJson(bridgePath),
     awsIdentity: authenticatedIdentity(),
     operatorInputPath,
+    operatorRunbookPath,
     preflightRawInputPath,
     validationRawInputPath,
     preflightEvidencePath,
@@ -102,6 +145,7 @@ try {
   validateAwsDevUatFinalReadiness(ready, { requireReady: true });
   assert(ready.ready === true, "ready fixture must be ready");
   assert(ready.operator_input.ready === true, "ready fixture must include resolved operator input");
+  assert(ready.operator_execution_runbook.ready === true, "ready fixture must include ready operator runbook");
   assert(ready.blockers.length === 0, "ready fixture must not have blockers");
   assert(ready.next_commands.length === 0, "ready fixture must not have next commands");
 

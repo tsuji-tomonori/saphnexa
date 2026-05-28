@@ -160,8 +160,8 @@ git diff --check
 - `npm run aws:dev-uat:validation-raw-input:build -- ...` が validation scaffold と raw output files から final validation raw input を生成すること。
 - `npm run aws:dev-uat:validation-raw-input:fixture:check` が materialized raw input を raw output check、raw input dry-run、validation final gate へ通せることを検査すること。
 - `npm run aws:dev-uat:materialized-flow:fixture:check` が materialized flow fixture として preflight / validation scaffold から raw input を生成し、raw output/input check、preflight/validation final evidence build、validation suite gate、raw input/output/final evidence/execution bridge を含む evidence bundle manifest まで一気通貫で検査すること。
-- `npm run aws:dev-uat:final-readiness:check` が final readiness manifest を生成し、raw capture plan、execution bridge、resolved operator input、preflight/validation raw input、final evidence、evidence bundle manifest、blockers、next commands を記録すること。実 evidence または resolved operator input がなければ `blocked_by_external_execution` として残す。
-- `npm run aws:dev-uat:final-readiness:fixture:check` が final readiness manifest の missing evidence / missing operator input / invalid operator input path と ready evidence path を fixture で検査すること。
+- `npm run aws:dev-uat:final-readiness:check` が final readiness manifest を生成し、raw capture plan、execution bridge、resolved operator input、ready operator execution runbook、preflight/validation raw input、final evidence、evidence bundle manifest、blockers、next commands を記録すること。実 evidence、resolved operator input、ready operator execution runbook のいずれかがなければ `blocked_by_external_execution` として残す。
+- `npm run aws:dev-uat:final-readiness:fixture:check` が final readiness manifest の missing evidence / missing operator input / invalid operator input / missing operator runbook / invalid operator runbook path と ready evidence path を fixture で検査すること。
 - `npm run aws:dev-uat:operator-handoff:check` が operator handoff artifact を生成し、external action plan、raw capture plan、final readiness manifest、承認必須 action、critical command order、evidence outputs、blockers、next commands を集約すること。
 - `npm run aws:dev-uat:operator-handoff:fixture:check` が operator handoff の pending / requires_confirmation / AWS not-ready branch を fixture で検査すること。
 - `npm run aws:dev-uat:validation:build -- --input <raw-validation-input.json>` が実 AWS E2E・性能・RAG品質 raw result から `dist/acceptance/aws_dev_uat_validation.json` を生成すること。
@@ -201,7 +201,7 @@ git diff --check
 - `npm run aws:dev-uat:validation-capture:fixture:check` は helper の構造確認だけを行う。実 E2E 実行、負荷試験、Bedrock Evaluations job 実行、CloudFront log 取得は行わない。
 - `npm run aws:dev-uat:validation-raw-input:fixture:check` は sample raw output から raw input を生成する構造確認だけを行う。実 E2E・性能・RAG品質結果の代替にはしない。
 - `npm run aws:dev-uat:materialized-flow:fixture:check` は sample raw output から raw input、final evidence、bundle manifest を生成する materialized flow fixture であり、実 AWS credentials、実 raw output、実 deploy/publish、実 E2E・性能・RAG品質結果の代替にはしない。
-- `npm run aws:dev-uat:final-readiness:check` は final readiness manifest を生成するだけで、deploy、migration、publish、E2E、負荷試験、Bedrock Evaluations は実行しない。実 evidence、AWS credentials、resolved operator input が揃わなければ ready にはしない。
+- `npm run aws:dev-uat:final-readiness:check` は final readiness manifest を生成するだけで、deploy、migration、publish、E2E、負荷試験、Bedrock Evaluations は実行しない。実 evidence、AWS credentials、resolved operator input、ready operator execution runbook が揃わなければ ready にはしない。
 - `npm run aws:dev-uat:final-readiness:fixture:check` は sample evidence による構造確認だけを行う。実 AWS dev/UAT 完了の根拠にはしない。
 - `npm run aws:dev-uat:operator-handoff:check` は operator handoff artifact を生成するだけで、release 作成、deploy、migration、publish、E2E、負荷試験、Bedrock Evaluations、signoff は実行しない。承認必須 action は pending のまま残す。
 - `npm run aws:dev-uat:operator-handoff:fixture:check` は handoff 構造確認だけを行う。実 AWS dev/UAT 完了の根拠にはしない。

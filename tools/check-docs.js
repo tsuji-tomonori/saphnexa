@@ -126,6 +126,9 @@ for (const phrase of [
   "resolved operator input",
   "operator execution runbook",
   "requires_resolved_operator_input",
+  "ready operator execution runbook",
+  "missing_operator_runbook",
+  "invalid_operator_runbook",
   "missing_operator_input",
   "invalid_operator_input"
 ]) {

@@ -5,6 +5,8 @@ import { buildAwsDevUatRawCapturePlan, rawCapturePlanOutputPath } from "./aws-de
 import { buildAwsDevUatExecutionBridge, expectedAwsDevUatFinalCommandOrder } from "./aws-dev-uat-execution-bridge.js";
 import { awsDevUatOperatorInputPath } from "./aws-dev-uat-operator-input.js";
 import { validateAwsDevUatOperatorInput } from "./check-aws-dev-uat-operator-input.js";
+import { awsDevUatOperatorExecutionRunbookPath } from "./aws-dev-uat-operator-execution-runbook.js";
+import { validateAwsDevUatOperatorExecutionRunbook } from "./check-aws-dev-uat-operator-execution-runbook.js";
 import { currentGitCommit } from "./git-context.js";
 import { currentJstTimestamp, readJson } from "./lib.js";
 
@@ -26,6 +28,7 @@ export function buildAwsDevUatFinalReadiness(options = {}) {
   const validationEvidencePath = options.validationEvidencePath || plan.modes.validation.evidence_output_path;
   const evidenceBundleManifestPath = options.evidenceBundleManifestPath || awsDevUatEvidenceBundleManifestPath;
   const operatorInputPath = options.operatorInputPath || awsDevUatOperatorInputPath;
+  const operatorRunbookPath = options.operatorRunbookPath || awsDevUatOperatorExecutionRunbookPath;
 
   const stages = [
     modeStage("preflight", plan.modes.preflight, {
@@ -39,6 +42,7 @@ export function buildAwsDevUatFinalReadiness(options = {}) {
   ];
   const bridgeState = fileState("execution-bridge", bridgePath, true);
   const operatorInput = operatorInputState(operatorInputPath);
+  const operatorRunbook = operatorRunbookState(operatorRunbookPath);
   const bundleState = fileState("evidence-bundle", evidenceBundleManifestPath, true);
   const blockers = [];
   const nextCommands = [];
@@ -61,6 +65,13 @@ export function buildAwsDevUatFinalReadiness(options = {}) {
     blockers.push("invalid_operator_input");
     nextCommands.push(`npm run aws:dev-uat:operator-input:check -- --input ${operatorInputPath} --require-resolved`);
   }
+  if (!operatorRunbook.exists) {
+    blockers.push("missing_operator_runbook");
+    nextCommands.push(`npm run aws:dev-uat:operator-runbook:check -- --input ${operatorInputPath} --require-resolved`);
+  } else if (!operatorRunbook.ready) {
+    blockers.push("invalid_operator_runbook");
+    nextCommands.push(`npm run aws:dev-uat:operator-runbook:check -- --input ${operatorInputPath} --require-resolved`);
+  }
   if (!bundleState.exists) {
     blockers.push("missing_evidence_bundle_manifest");
     nextCommands.push(
@@ -80,6 +91,7 @@ export function buildAwsDevUatFinalReadiness(options = {}) {
     raw_capture_plan: fileState("raw-capture-plan", rawCapturePlanPath, true),
     execution_bridge: bridgeState,
     operator_input: operatorInput,
+    operator_execution_runbook: operatorRunbook,
     aws_identity: awsIdentity,
     command_order: {
       final_gates: expectedAwsDevUatFinalCommandOrder(),
@@ -90,11 +102,44 @@ export function buildAwsDevUatFinalReadiness(options = {}) {
     evidence_bundle_manifest: bundleState,
     blockers: unique(blockers),
     next_commands: unique(nextCommands),
-    note: "This readiness manifest does not deploy, migrate, publish, run E2E, run load tests, or invoke Bedrock. It only records whether captured AWS evidence and resolved operator input are ready for final gates and bundling."
+    note: "This readiness manifest does not deploy, migrate, publish, run E2E, run load tests, or invoke Bedrock. It only records whether captured AWS evidence, resolved operator input, and ready operator execution runbook are ready for final gates and bundling."
   };
 
   writeJson(outputPath, manifest);
   return manifest;
+}
+
+function operatorRunbookState(path) {
+  const state = fileState("operator-execution-runbook", path, true);
+  if (!state.exists) return state;
+
+  let runbook;
+  try {
+    runbook = readJson(path);
+  } catch (error) {
+    return { ...state, parse_error: error.message, ready: false };
+  }
+
+  try {
+    validateAwsDevUatOperatorExecutionRunbook(runbook, { requireResolved: true });
+  } catch (error) {
+    return {
+      ...state,
+      schema_version: runbook.schema_version || null,
+      runbook_status: runbook.runbook_status || null,
+      validation_error: error.message,
+      ready: false
+    };
+  }
+
+  return {
+    ...state,
+    schema_version: runbook.schema_version,
+    runbook_status: runbook.runbook_status,
+    ready_for_external_execution: runbook.ready_for_external_execution,
+    phase_order: runbook.phase_order,
+    ready: true
+  };
 }
 
 function operatorInputState(path) {
