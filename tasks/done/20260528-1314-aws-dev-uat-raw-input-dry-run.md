@@ -1,6 +1,6 @@
 # AWS dev/UAT raw input dry-run checker
 
-- 状態: doing
+- 状態: done
 - タスク種別: 機能追加
 - 対象ブランチ: `codex/aws-dev-uat-preflight`
 - 対象PR: #2
