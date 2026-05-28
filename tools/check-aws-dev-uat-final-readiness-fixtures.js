@@ -191,6 +191,48 @@ try {
     allowFixtureText: true
   });
 
+  const invalidBundlePath = join(tmpRoot, "invalid", "aws_dev_uat_evidence_bundle_manifest.json");
+  writeText(invalidBundlePath, `${JSON.stringify({ ...readJson(bundlePath), schema_version: "invalid.v1" }, null, 2)}\n`);
+  const invalidBundle = buildAwsDevUatFinalReadiness({
+    outputPath: join(tmpRoot, "invalid-bundle-readiness.json"),
+    rawCapturePlanPath: planPath,
+    rawCapturePlan: plan,
+    executionBridgePath: bridgePath,
+    executionBridge: readJson(bridgePath),
+    awsIdentity: authenticatedIdentity(),
+    operatorInputPath,
+    operatorRunbookPath,
+    preflightRawInputPath,
+    validationRawInputPath,
+    preflightEvidencePath,
+    validationEvidencePath,
+    evidenceBundleManifestPath: invalidBundlePath
+  });
+  validateAwsDevUatFinalReadiness(invalidBundle);
+  assert(invalidBundle.blockers.includes("invalid_evidence_bundle_manifest"), "invalid bundle fixture must block readiness");
+  assert(invalidBundle.evidence_bundle_manifest.required_artifacts_present === true, "invalid bundle fixture must still expose coverage state");
+
+  const staleBundlePath = join(tmpRoot, "stale", "aws_dev_uat_evidence_bundle_manifest.json");
+  writeText(staleBundlePath, `${JSON.stringify({ ...readJson(bundlePath), git_commit_sha: "0".repeat(40) }, null, 2)}\n`);
+  const staleBundle = buildAwsDevUatFinalReadiness({
+    outputPath: join(tmpRoot, "stale-bundle-readiness.json"),
+    rawCapturePlanPath: planPath,
+    rawCapturePlan: plan,
+    executionBridgePath: bridgePath,
+    executionBridge: readJson(bridgePath),
+    awsIdentity: authenticatedIdentity(),
+    operatorInputPath,
+    operatorRunbookPath,
+    preflightRawInputPath,
+    validationRawInputPath,
+    preflightEvidencePath,
+    validationEvidencePath,
+    evidenceBundleManifestPath: staleBundlePath
+  });
+  validateAwsDevUatFinalReadiness(staleBundle);
+  assert(staleBundle.blockers.includes("stale_evidence_bundle_manifest"), "stale bundle fixture must block readiness");
+  assert(!staleBundle.blockers.includes("invalid_evidence_bundle_manifest"), "stale bundle fixture must not be invalid when coverage is complete");
+
   const ready = buildAwsDevUatFinalReadiness({
     outputPath: join(tmpRoot, "ready-readiness.json"),
     rawCapturePlanPath: planPath,
@@ -210,6 +252,9 @@ try {
   assert(ready.ready === true, "ready fixture must be ready");
   assert(ready.operator_input.ready === true, "ready fixture must include resolved operator input");
   assert(ready.operator_execution_runbook.ready === true, "ready fixture must include ready operator runbook");
+  assert(ready.evidence_bundle_manifest.ready === true, "ready fixture must include ready evidence bundle");
+  assert(ready.evidence_bundle_manifest.current_git_commit === true, "ready fixture must include current evidence bundle");
+  assert(ready.evidence_bundle_manifest.required_artifacts_present === true, "ready fixture must include bundle artifact coverage");
   assert(ready.blockers.length === 0, "ready fixture must not have blockers");
   assert(ready.next_commands.length === 0, "ready fixture must not have next commands");
 

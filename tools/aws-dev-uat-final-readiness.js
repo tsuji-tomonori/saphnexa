@@ -12,6 +12,14 @@ import { currentJstTimestamp, readJson } from "./lib.js";
 
 export const awsDevUatFinalReadinessPath = "dist/acceptance/aws_dev_uat_final_readiness.json";
 export const awsDevUatEvidenceBundleManifestPath = "dist/acceptance/aws_dev_uat_evidence_bundle_manifest.json";
+const evidenceBundleSchemaVersion = "saphnexa-aws-dev-uat-evidence-bundle.v1";
+const requiredEvidenceBundleArtifacts = [
+  { kind: "raw-input", mode: "preflight" },
+  { kind: "raw-input", mode: "validation" },
+  { kind: "final-evidence", mode: "preflight" },
+  { kind: "final-evidence", mode: "validation" },
+  { kind: "execution-bridge", mode: "all" }
+];
 
 export function buildAwsDevUatFinalReadiness(options = {}) {
   const outputPath = options.outputPath || awsDevUatFinalReadinessPath;
@@ -43,7 +51,7 @@ export function buildAwsDevUatFinalReadiness(options = {}) {
   const bridgeState = fileState("execution-bridge", bridgePath, true);
   const operatorInput = operatorInputState(operatorInputPath);
   const operatorRunbook = operatorRunbookState(operatorRunbookPath);
-  const bundleState = fileState("evidence-bundle", evidenceBundleManifestPath, true);
+  const bundleState = evidenceBundleState(evidenceBundleManifestPath);
   const blockers = [];
   const nextCommands = [];
 
@@ -84,6 +92,14 @@ export function buildAwsDevUatFinalReadiness(options = {}) {
   }
   if (!bundleState.exists) {
     blockers.push("missing_evidence_bundle_manifest");
+    nextCommands.push(
+      `npm run aws:dev-uat:evidence-bundle:check -- --preflight-raw-input ${preflightRawInputPath} --validation-raw-input ${validationRawInputPath} --preflight-evidence ${preflightEvidencePath} --validation-evidence ${validationEvidencePath} --execution-bridge ${bridgePath} --output ${evidenceBundleManifestPath}`
+    );
+  } else if (!bundleState.ready) {
+    if (bundleState.current_git_commit === false) blockers.push("stale_evidence_bundle_manifest");
+    if (bundleState.current_git_commit !== false || bundleState.invalid_content) {
+      blockers.push("invalid_evidence_bundle_manifest");
+    }
     nextCommands.push(
       `npm run aws:dev-uat:evidence-bundle:check -- --preflight-raw-input ${preflightRawInputPath} --validation-raw-input ${validationRawInputPath} --preflight-evidence ${preflightEvidencePath} --validation-evidence ${validationEvidencePath} --execution-bridge ${bridgePath} --output ${evidenceBundleManifestPath}`
     );
@@ -248,6 +264,66 @@ function evidenceState(mode, path) {
     schema_version: evidence.schema_version,
     current_git_commit: evidence.source?.git_commit_sha === currentGitCommit(),
     ready: evidence.evidence_class === "aws-captured" && evidence.source?.git_commit_sha === currentGitCommit()
+  };
+}
+
+function evidenceBundleState(path) {
+  const state = fileState("evidence-bundle", path, true);
+  if (!state.exists) {
+    return {
+      ...state,
+      artifact_count: 0,
+      required_artifacts: requiredEvidenceBundleArtifacts.map((item) => ({ ...item, present: false })),
+      required_artifacts_present: false
+    };
+  }
+
+  let bundle;
+  try {
+    bundle = readJson(path);
+  } catch (error) {
+    return {
+      ...state,
+      parse_error: error.message,
+      current_git_commit: null,
+      artifact_count: 0,
+      artifact_count_matches: false,
+      required_artifacts: requiredEvidenceBundleArtifacts.map((item) => ({ ...item, present: false })),
+      required_artifacts_present: false,
+      invalid_content: true,
+      ready: false
+    };
+  }
+
+  const artifacts = Array.isArray(bundle.artifacts) ? bundle.artifacts : [];
+  const requiredArtifacts = requiredEvidenceBundleArtifacts.map((required) => ({
+    ...required,
+    present: artifacts.some((artifact) => artifact.kind === required.kind && artifact.mode === required.mode)
+  }));
+  const artifactCountMatches = Number.isInteger(bundle.artifact_count) && bundle.artifact_count === artifacts.length;
+  const requiredArtifactsPresent = requiredArtifacts.every((item) => item.present);
+  const currentGit = bundle.git_commit_sha === currentGitCommit();
+  const invalidContent =
+    bundle.schema_version !== evidenceBundleSchemaVersion ||
+    bundle.status !== "checked" ||
+    bundle.evidence_class !== "aws-captured" ||
+    !artifactCountMatches ||
+    artifacts.length === 0 ||
+    !requiredArtifactsPresent;
+
+  return {
+    ...state,
+    schema_version: bundle.schema_version || null,
+    bundle_status: bundle.status || null,
+    evidence_class: bundle.evidence_class || null,
+    git_commit_sha: bundle.git_commit_sha || null,
+    current_git_commit: currentGit,
+    artifact_count: Number.isInteger(bundle.artifact_count) ? bundle.artifact_count : null,
+    artifact_count_matches: artifactCountMatches,
+    required_artifacts: requiredArtifacts,
+    required_artifacts_present: requiredArtifactsPresent,
+    invalid_content: invalidContent,
+    ready: !invalidContent && currentGit
   };
 }
 

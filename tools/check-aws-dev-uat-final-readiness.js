@@ -48,7 +48,7 @@ export function validateAwsDevUatFinalReadiness(manifest, options = {}) {
   assert(manifest.stages.some((stage) => stage.mode === "preflight"), "preflight stage missing");
   assert(manifest.stages.some((stage) => stage.mode === "validation"), "validation stage missing");
   for (const stage of manifest.stages) validateStage(stage);
-  assert(manifest.evidence_bundle_manifest.path.endsWith("aws_dev_uat_evidence_bundle_manifest.json"), "bundle manifest path mismatch");
+  validateEvidenceBundleManifestState(manifest.evidence_bundle_manifest);
   assert(Array.isArray(manifest.blockers), "final readiness blockers must be an array");
   assert(Array.isArray(manifest.next_commands), "final readiness next_commands must be an array");
   if (manifest.ready) {
@@ -56,6 +56,10 @@ export function validateAwsDevUatFinalReadiness(manifest, options = {}) {
     assert(manifest.operator_input.current_git_commit === true, "ready final readiness must have current operator input");
     assert(manifest.operator_execution_runbook.ready === true, "ready final readiness must have ready operator execution runbook");
     assert(manifest.operator_execution_runbook.current_git_commit === true, "ready final readiness must have current operator execution runbook");
+    assert(manifest.evidence_bundle_manifest.ready === true, "ready final readiness must have ready evidence bundle manifest");
+    assert(manifest.evidence_bundle_manifest.current_git_commit === true, "ready final readiness must have current evidence bundle manifest");
+    assert(manifest.evidence_bundle_manifest.required_artifacts_present === true, "ready final readiness must have bundle artifact coverage");
+    assert(manifest.evidence_bundle_manifest.artifact_count_matches === true, "ready final readiness must have matching bundle artifact count");
     assert(manifest.blockers.length === 0, "ready final readiness must not have blockers");
     assert(manifest.next_commands.length === 0, "ready final readiness must not have next commands");
   } else {
@@ -86,6 +90,36 @@ function validateStage(stage) {
   }
   if (stage.final_evidence.exists) {
     assert(stage.final_evidence.evidence_class === "aws-captured", `${stage.mode} final evidence must be aws-captured`);
+  }
+}
+
+function validateEvidenceBundleManifestState(state) {
+  assert(state.kind === "evidence-bundle", "bundle manifest kind mismatch");
+  assert(state.path.endsWith("aws_dev_uat_evidence_bundle_manifest.json"), "bundle manifest path mismatch");
+  assert(state.exists === existsSync(state.path), "bundle manifest existence mismatch");
+  assert(typeof state.ready === "boolean", "bundle manifest ready flag is required");
+  assert(Array.isArray(state.required_artifacts), "bundle manifest required artifacts must be an array");
+  assert(typeof state.required_artifacts_present === "boolean", "bundle manifest artifact coverage flag is required");
+  if (!state.exists) return;
+  assert(typeof state.sha256 === "string" && state.sha256.length === 64, "bundle manifest sha256 is required");
+  assert(
+    state.schema_version === "saphnexa-aws-dev-uat-evidence-bundle.v1" || state.parse_error || state.invalid_content === true,
+    "bundle manifest schema state mismatch"
+  );
+  assert(["checked", null].includes(state.bundle_status) || state.invalid_content === true, "bundle manifest status state mismatch");
+  assert(["aws-captured", null].includes(state.evidence_class) || state.invalid_content === true, "bundle manifest evidence class state mismatch");
+  assert(typeof state.artifact_count_matches === "boolean", "bundle manifest artifact count match flag is required");
+  for (const required of [
+    ["raw-input", "preflight"],
+    ["raw-input", "validation"],
+    ["final-evidence", "preflight"],
+    ["final-evidence", "validation"],
+    ["execution-bridge", "all"]
+  ]) {
+    assert(
+      state.required_artifacts.some((item) => item.kind === required[0] && item.mode === required[1] && typeof item.present === "boolean"),
+      `bundle manifest required artifact missing: ${required.join("/")}`
+    );
   }
 }
 
