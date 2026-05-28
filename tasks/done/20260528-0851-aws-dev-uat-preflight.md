@@ -78,6 +78,12 @@ AWS dev/UAT の E2E・性能・RAG 品質検証を実行する前に、1-6 の�
 - 実 AWS 環境と認証情報がないため、今回の preflight は証跡入力の検証までで、deploy や E2E の実行完了は証明しない。
 - AWS サービスの CloudFormation output 名や実運用の artifact URL 命名が今後変わる場合、preflight schema の更新が必要になる。
 
+## PR
+
+- https://github.com/tsuji-tomonori/saphnexa/pull/2
+- 受け入れ条件コメント: https://github.com/tsuji-tomonori/saphnexa/pull/2#issuecomment-4559676946
+- セルフレビューコメント: https://github.com/tsuji-tomonori/saphnexa/pull/2#issuecomment-4559677444
+
 ## 状態
 
-in_progress
+done
