@@ -1,0 +1,51 @@
+{
+  "environment": "uat",
+  "captured_at": "2026-05-28T11:55:00+09:00",
+  "aws_identity": {
+    "AccountParts": ["123456", "789012"]
+  },
+  "source": {
+    "git_tag": "v0.17.0-uat.20260528",
+    "github_release_url": "https://github.com/tsuji-tomonori/saphnexa/releases/tag/v0.17.0-uat.20260528"
+  },
+  "cloudformation": {
+    "StackName": "saphnexa-uat",
+    "stack_uuid": "aaaaaaaa-bbbb-cccc-dddd-eeeeeeeeeeee",
+    "StackStatus": "UPDATE_COMPLETE",
+    "Outputs": [
+      { "OutputKey": "ApiEndpoint", "OutputValue": "https://api.uat.saphnexa.awsapps.com" },
+      { "OutputKey": "ToolsApiEndpoint", "OutputValue": "https://tools.uat.saphnexa.awsapps.com" },
+      { "OutputKey": "CloudFrontDistributionDomain", "OutputValue": "d3saphnexauat.cloudfront.net" },
+      { "OutputKey": "UserPoolId", "OutputValue": "ap-northeast-1_UatAbCd12" },
+      { "OutputKey": "UserPoolClientId", "OutputValue": "7uatclientid234567890" },
+      { "OutputKey": "AppSyncEventApiHttpEndpoint", "OutputValue": "https://events.uat.saphnexa.awsapps.com/event" },
+      { "OutputKey": "AppSyncEventApiRealtimeEndpoint", "OutputValue": "wss://events.uat.saphnexa.awsapps.com/event/realtime" },
+      { "OutputKey": "DsqlEndpoint", "OutputValue": "saphnexa-uat-dsql.cluster-abcd1234efgh.ap-northeast-1.dsql.amazonaws.com" },
+      { "OutputKey": "RawDocumentsBucketName", "OutputValue": "saphnexa-uat-raw-documents" },
+      { "OutputKey": "PublishedArtifactsBucketName", "OutputValue": "saphnexa-uat-published-artifacts" },
+      { "OutputKey": "S3VectorBucketName", "OutputValue": "saphnexa-uat-vectors" },
+      { "OutputKey": "S3VectorIndexName", "OutputValue": "saphnexa-uat-documents" },
+      { "OutputKey": "BedrockKnowledgeBaseId", "OutputValue": "KBUT123456" },
+      { "OutputKey": "AgentCoreRuntimeName", "OutputValue": "SaphnexaUatAgent-abcdef123456" },
+      { "OutputKey": "DocusaurusLatestUrl", "OutputValue": "https://d3saphnexauat.cloudfront.net/admin/docs/latest/" },
+      { "OutputKey": "DocusaurusVersionUrl", "OutputValue": "https://d3saphnexauat.cloudfront.net/admin/docs/versions/v0.17/" },
+      { "OutputKey": "AllureLatestUrl", "OutputValue": "https://d3saphnexauat.cloudfront.net/admin/test-reports/allure/latest/" }
+    ]
+  },
+  "dsql_flyway": {
+    "cluster_identifier": "saphnexa-uat-dsql",
+    "latest_version": "V001",
+    "checksum_status": "matched"
+  },
+  "hono_openapi": {
+    "route_count": 38,
+    "zod_validation_enabled": true
+  },
+  "edge_identity_realtime": {
+    "ws_ticket_authorizer_enabled": true
+  },
+  "rag_runtime": {
+    "tools_gateway_authorized": true,
+    "acl_precheck_enabled": true
+  }
+}

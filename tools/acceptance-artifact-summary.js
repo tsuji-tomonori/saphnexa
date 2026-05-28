@@ -78,7 +78,7 @@ export function buildAcceptanceArtifactSummary({ gitCommit, finalReadinessReady,
       title: "AWS dev/UAT E2E, performance, and RAG quality validation",
       acceptance_ids: ["AC-098", "AC-123", "AC-130", "AC-131", "AC-132", "AC-133"],
       ...externalArtifact("pending_external", ["aws-dev-uat-validation"]),
-      evidence: ["dist/acceptance/aws_dev_uat_execution_bridge.json", "dist/acceptance/aws_dev_uat_validation.json", "npm run test:e2e:aws", "npm run perf:aws", "npm run rag:quality:aws"],
+      evidence: ["dist/acceptance/aws_dev_uat_execution_bridge.json", "dist/acceptance/aws_dev_uat_preflight.json", "dist/acceptance/aws_dev_uat_validation.json", "npm run test:e2e:aws", "npm run perf:aws", "npm run rag:quality:aws"],
       final_required: true
     }),
     artifact({

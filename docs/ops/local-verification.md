@@ -52,10 +52,13 @@ npm run acceptance:final:check
 npm run acceptance:package:build
 npm run acceptance:package:check
 npm run aws:dev-uat:preflight
+npm run aws:dev-uat:preflight:build -- --input <raw-preflight-input.json>
 npm run aws:dev-uat:execution-bridge:check
 npm run aws:dev-uat:execution-bridge:probe
+npm run aws:dev-uat:validation:build -- --input <raw-validation-input.json>
 npm run aws:dev-uat:validation:check
 npm run aws:dev-uat:validation:fixture:check
+npm run aws:dev-uat:evidence:fixture:check
 npm test
 git diff --check
 ```
@@ -104,9 +107,12 @@ git diff --check
 - `npm run acceptance:final:check` が `dist/acceptance/final_readiness.json` を再生成してから検査し、release/AWS/publish/checklist 未達がある限り ready にならないこと。
 - `dist/acceptance/` に検収 package draft を生成し、未実施 AWS/release 項目を `PENDING_AWS` として残すこと。
 - `npm run aws:dev-uat:preflight` が AWS dev/UAT 証跡の fixture 構造を検査し、実証跡では `npm run aws:dev-uat:preflight:final` が必要であること。
+- `npm run aws:dev-uat:preflight:build -- --input <raw-preflight-input.json>` が実 AWS raw capture input から `dist/acceptance/aws_dev_uat_preflight.json` を生成すること。
 - `npm run aws:dev-uat:execution-bridge:check` が `dist/acceptance/aws_dev_uat_execution_bridge.json` を生成し、final evidence path、AWS identity probe command、final gate command order、必要 input、証跡 mapping を検査すること。
 - `npm run aws:dev-uat:execution-bridge:probe` が AWS STS の read-only probe と final evidence file の有無を記録し、credentials や `aws-captured` 証跡が足りない場合は `waiting_for_external_execution` として残すこと。
+- `npm run aws:dev-uat:validation:build -- --input <raw-validation-input.json>` が実 AWS E2E・性能・RAG品質 raw result から `dist/acceptance/aws_dev_uat_validation.json` を生成すること。
 - `npm run aws:dev-uat:validation:check` が E2E・性能・RAG品質結果の fixture 構造と閾値を検査し、`npm run aws:dev-uat:validation:fixture:check` が fixture/negative path を検査し、実証跡では `npm run test:e2e:aws`、`npm run perf:aws`、`npm run rag:quality:aws`、`npm run aws:dev-uat:validation:final` が必要であること。
+- `npm run aws:dev-uat:evidence:fixture:check` が sample raw input を一時ディレクトリへ変換し、既存 final checker で builder output を検査すること。
 - GitHub issue tracker snapshot に基づく Blocker/Critical open defect 0 件の defect list draft。最終検収では `gh issue list --state open --json number,title,labels,state` による defect-snapshot-refresh が必要であり、ローカル snapshot だけでは完了扱いにしないこと。
 
 ## ローカルでは完了扱いにしないこと
@@ -125,6 +131,7 @@ git diff --check
 - CloudFront Function、WAF、IAM policy、KMS key policy、SQS/DLQ、AppSync Events、cdk-nag の実リソース/実行結果確認。
 - 実 S3 の offline artifact inventory、実 parser/KB/S3 Vectors ingestion、実バックアップからの restore drill。
 - `npm run aws:dev-uat:preflight` は fixture の構造確認だけを行う。実 AWS dev/UAT 証跡は `dist/acceptance/aws_dev_uat_preflight.json` を `evidence_class: aws-captured` で作成し、`npm run aws:dev-uat:preflight:final` を通す必要がある。
+- `npm run aws:dev-uat:evidence:fixture:check` は builder の構造確認だけを行う。sample raw input は最終検収や AWS dev/UAT 実行完了の根拠にしない。
 - `npm run aws:dev-uat:execution-bridge:probe` は AWS credentials と final evidence file の有無を記録するだけであり、deploy、migration、publish、load test、Bedrock Evaluations は実行しない。
 - `npm run aws:dev-uat:validation:check` は fixture の構造確認だけを行う。実 AWS dev/UAT E2E・性能・RAG品質証跡は `dist/acceptance/aws_dev_uat_validation.json` を `evidence_class: aws-captured` で作成し、final suite gate を通す必要がある。
 - Git tag、GitHub release、検収用 `evidence_manifest.json` の最終確定。

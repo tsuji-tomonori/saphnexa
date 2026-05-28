@@ -75,7 +75,9 @@ export function buildExternalAcceptanceActionPlan(outputPath = externalActionPla
       acceptance_ids: ["AC-098", "AC-123", "AC-130", "AC-131", "AC-132", "AC-133", "AC-150", "AC-151", "AC-152"],
       candidate_commands: [
         "npm run aws:dev-uat:execution-bridge:probe",
+        "npm run aws:dev-uat:preflight:build -- --input <raw-preflight-input.json>",
         "npm run aws:dev-uat:preflight:final",
+        "npm run aws:dev-uat:validation:build -- --input <raw-validation-input.json>",
         "npm run test:e2e:aws",
         "npm run perf:aws",
         "npm run rag:quality:aws",
@@ -84,6 +86,7 @@ export function buildExternalAcceptanceActionPlan(outputPath = externalActionPla
       required_before_run: ["AWS deploy/publish 完了", "テストユーザー/管理者ユーザー準備", "golden dataset 準備", "負荷試験 window 承認"],
       evidence_outputs: [
         "dist/acceptance/aws_dev_uat_execution_bridge.json",
+        "dist/acceptance/aws_dev_uat_preflight.json",
         "dist/acceptance/aws_dev_uat_validation.json",
         "Allure E2E run URL",
         "performance report URL",
