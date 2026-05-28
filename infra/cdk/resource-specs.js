@@ -2,10 +2,14 @@ export const cdkConstructResourceSpecs = [
   constructSpec("EdgeStaticConstruct", [
     resource("CloudFrontDistribution", "AWS::CloudFront::Distribution"),
     resource("SpaBucket", "AWS::S3::Bucket"),
+    resource("SpaBucketPolicy", "AWS::S3::BucketPolicy"),
     resource("AdminArtifactsBucket", "AWS::S3::Bucket"),
     resource("AdminArtifactsBucketPolicy", "AWS::S3::BucketPolicy"),
     resource("CloudFrontViewerRouter", "AWS::CloudFront::Function"),
-    resource("CloudFrontSignedCookieFunction", "AWS::CloudFront::Function"),
+    resource("CloudFrontApiVersionRewriteFunction", "AWS::CloudFront::Function"),
+    resource("CloudFrontAdminArtifactRewriteFunction", "AWS::CloudFront::Function"),
+    resource("AdminArtifactsPublicKey", "AWS::CloudFront::PublicKey"),
+    resource("AdminArtifactsKeyGroup", "AWS::CloudFront::KeyGroup"),
     resource("SpaOriginAccessControl", "AWS::CloudFront::OriginAccessControl"),
     resource("AdminOriginAccessControl", "AWS::CloudFront::OriginAccessControl"),
     resource("WebAcl", "AWS::WAFv2::WebACL")
@@ -19,6 +23,7 @@ export const cdkConstructResourceSpecs = [
   constructSpec("IdentityConstruct", [
     resource("UserPool", "AWS::Cognito::UserPool"),
     resource("UserPoolClient", "AWS::Cognito::UserPoolClient"),
+    resource("UserPoolDomain", "AWS::Cognito::UserPoolDomain"),
     resource("AdminGroup", "AWS::Cognito::UserPoolGroup"),
     resource("GeneralUserGroup", "AWS::Cognito::UserPoolGroup"),
     resource("GitHubOidcProvider", "AWS::IAM::OIDCProvider")
@@ -32,7 +37,7 @@ export const cdkConstructResourceSpecs = [
   ], ["ApiEndpoint", "ToolsApiEndpoint", "ApiLambdaArn", "ToolsLambdaArn"]),
   constructSpec("RealtimeConstruct", [
     resource("EventApi", "AWS::AppSync::Api"),
-    resource("UserChannelNamespace", "AWS::AppSync::ChannelNamespace"),
+    resource("ChatChannelNamespace", "AWS::AppSync::ChannelNamespace"),
     resource("AdminChannelNamespace", "AWS::AppSync::ChannelNamespace"),
     resource("SubscribeAuthorizerLambda", "AWS::Lambda::Function"),
     resource("PublishHandlerLambda", "AWS::Lambda::Function")

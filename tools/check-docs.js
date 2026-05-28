@@ -72,6 +72,7 @@ for (const command of [
   "npm run aws:dev-uat:preflight",
   "npm run cfn:inventory:build",
   "npm run cfn:inventory:check",
+  "npm run edge:identity:realtime:check",
   "npm run cfn:inventory:normalize:fixture:check"
 ]) {
   assert(localVerification.includes(command), `local verification docs missing ${command}`);

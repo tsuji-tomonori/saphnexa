@@ -1,4 +1,5 @@
 import { specByConstructName } from "../../cdk/resource-specs.js";
+import { edgeIdentityRealtimeBindings } from "../../cdk/edge-identity-realtime-bindings.js";
 
 const spec = specByConstructName("EdgeStaticConstruct");
 
@@ -10,6 +11,7 @@ export const EdgeStaticConstruct = {
   outputs: ["distributionId", "distributionDomainName", "spaBucketArn", "adminArtifactsBucketArn", "signedCookieKeyGroupId"],
   cfnOutputs: spec.outputs,
   edgeRoutingIntent: {
+    bindingSource: edgeIdentityRealtimeBindings,
     singleEntryOrigin: "cloudfront",
     originAccess: "oac-only",
     viewerRequestFunction: "saphnexa-viewer-router",

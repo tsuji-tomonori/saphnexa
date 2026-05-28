@@ -27,7 +27,10 @@ for (const spec of cdkConstructResourceSpecs) {
 for (const type of [
   "AWS::DSQL::Cluster",
   "AWS::CloudFront::Distribution",
+  "AWS::CloudFront::PublicKey",
+  "AWS::CloudFront::KeyGroup",
   "AWS::Cognito::UserPool",
+  "AWS::Cognito::UserPoolDomain",
   "AWS::AppSync::Api",
   "AWS::AppSync::ChannelNamespace",
   "AWS::S3Vectors::VectorBucket",

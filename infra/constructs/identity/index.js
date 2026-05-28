@@ -1,4 +1,5 @@
 import { specByConstructName } from "../../cdk/resource-specs.js";
+import { edgeIdentityRealtimeBindings } from "../../cdk/edge-identity-realtime-bindings.js";
 
 const spec = specByConstructName("IdentityConstruct");
 
@@ -8,5 +9,6 @@ export const IdentityConstruct = {
   cfnResourceTypes: spec.resources.map((item) => item.type),
   cfnResources: spec.resources,
   outputs: ["userPoolId", "clientId", "issuer", "adminGroupName"],
-  cfnOutputs: spec.outputs
+  cfnOutputs: spec.outputs,
+  cognitoBindingIntent: edgeIdentityRealtimeBindings.cognito
 };

@@ -4,5 +4,7 @@ export const routes = [
   { path: "/admin", app: "admin", role: "admin" },
   { path: "/admin/docs/latest/", app: "admin-artifact", role: "admin" },
   { path: "/admin/test-reports/allure/latest/", app: "admin-artifact", role: "admin" },
+  { path: "/auth/callback", app: "auth-callback", role: "authenticated" },
+  { path: "/auth/logout", app: "auth-logout", role: "authenticated" },
   { path: "/event/realtime", app: "realtime", role: "ticket" }
 ];

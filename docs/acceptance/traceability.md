@@ -26,20 +26,20 @@
 | AC-017 | local_verified | `npm run admin:workflow:check` で document registration 5件、raw URI、parsed prefix、metadata JSON、ingestion job を検査。AWS/S3 inventory は未検証。 |
 | AC-018 | local_verified | `npm run admin:workflow:check` で document version activation の新 active/旧 archived を検査。 |
 | AC-019 | local_verified | `npm run admin:workflow:check` で evaluation run 3件、retrieval/generation/end-to-end metrics、artifact prefix を検査。AWS 評価 report は未実施。 |
-| AC-020 | local_verified | `npm run artifacts:check` で local API の admin artifact 一覧/アクセス cookie が admin のみ許可、一般/未認証は拒否されることを検査。CloudFront Cookie 実公開は未実施。 |
+| AC-020 | local_verified | `npm run artifacts:check` で local API の admin artifact 一覧/アクセス cookie が admin のみ許可、一般/未認証は拒否されることを検査。`npm run edge:identity:realtime:check` で CloudFront KeyGroup trusted behavior を検査。CloudFront Cookie 実公開は未実施。 |
 | AC-021 | local_verified | `dist/admin/test-reports/allure/latest/` と local API admin artifact policy を `npm run artifacts:check` で検査。Allure/CloudFront 実公開は未実施。 |
 | AC-030 | local_verified | `packages/api-contract/src/routes.js` 38 routes and `tools/check-contracts.js`. |
 | AC-031 | local_verified | `packages/tool-contract/src/tools.js` 6 tools and audit table metadata. |
 | AC-032 | local_verified | `errorResponseSchema` and local API error response shape. |
 | AC-033 | local_verified | state-changing route metadata has `csrfRequired`; `apps/api/src/local-api.js` の runtime guard と `tests/integration-local.test.js` で token 欠落/不一致 403 を検証。 |
 | AC-034 | local_verified | `tools/scan-bundle-domains.js` scans web/API client source. |
-| AC-035 | local_verified | `infra/constructs/edge-static` の CloudFront Function routing intent と `npm run edge:security:check` で viewer/internal path metadata を検査。実 CloudFront Function は未実装。 |
+| AC-035 | local_verified | `infra/cdk/saphnexa-stack.ts` の CloudFront Function source と `npm run edge:identity:realtime:check` で `/api/*`、`/auth/*` の versioned API rewrite を検査。実 CloudFront deploy / function test は未実施。 |
 | AC-036 | local_verified | `apps/web/src/routes.ts` と `npm run edge:security:check` で `/` rewrite、`/chat`、`/admin`、admin artifact path の single-entry route intent を検査。 |
 | AC-040 | local_verified | local API returns 401/403 for missing/unauthorized actor paths in tests. |
 | AC-041 | local_verified | admin APIs reject general user in local integration. |
 | AC-042 | local_verified | non-participant chat event/detail access is rejected. |
 | AC-043 | local_verified | fixture RAG records ACL denied count before Evidence. |
-| AC-044 | local_verified | `infra/constructs/realtime` の channel policy intent と local ws-ticket の TTL/single-use/user scope を `npm run edge:security:check` で検査。実 AppSync Events は未実施。 |
+| AC-044 | local_verified | `infra/cdk/saphnexa-stack.ts` の AppSync Events `chat` / `admin` namespace と local ws-ticket の TTL/single-use/user scope を `npm run edge:identity:realtime:check` / `npm run edge:security:check` で検査。実 AppSync Events deploy / logs は未実施。 |
 | AC-045 | local_verified | local ws-ticket の期限切れ/再利用/他ユーザー利用拒否を `tests/integration-local.test.js` で検証。実 AppSync Events は未実施。 |
 | AC-046 | local_verified | `npm run security:scan` と `npm run scan:bundle-domains` で source の secret/domain token を検査。CloudWatch/S3 sampling は未実施。 |
 | AC-047 | local_verified | `infra/aspects/security-baseline.js` と EdgeStaticConstruct の `wafAttached` intent を `npm run edge:security:check` で検査。実 WAF ACL は未確認。 |
@@ -68,7 +68,7 @@
 | AC-082 | local_verified | DataConstruct の KMS rotation / SSE-KMS / service principal / public access deny intent を `npm run edge:security:check` で検査。実 KMS policy は未確認。 |
 | AC-083 | local_verified | `infra/aspects/security-baseline.js` の S3/WAF/IAM/cdk-nag/SQS/log retention baseline を `npm run edge:security:check` と `npm run security:scan` で検査。実 AWS Security Hub 等は未実施。 |
 | AC-084 | local_verified | local raw/parsed prefix と OpenSearch 非依存を `npm run storage:check` で検査。S3 inventory は未実施。 |
-| AC-085 | local_verified | EdgeStaticConstruct と `apps/web/src/routes.ts` の single-entry route/path intent を `npm run edge:security:check` で検査。実 CloudFront deploy は未実施。 |
+| AC-085 | local_verified | EdgeStaticConstruct、`infra/cdk/edge-identity-realtime-bindings.js`、`apps/web/src/routes.ts` の single-entry route/path binding を `npm run edge:identity:realtime:check` / `npm run edge:security:check` で検査。実 CloudFront deploy は未実施。 |
 | AC-086 | local_verified | RagProcessingConstruct の queues/DLQs/maxReceiveCount/visibilityTimeout intent を `npm run edge:security:check` で検査。実 SQS/DLQ は未確認。 |
 | AC-087 | local_verified | `npm run admin-artifacts:build` で `dist/admin/docs/latest/` と `dist/admin/docs/versions/v0.16/` を生成し、runbooks/ADR/trace を manifest に含める。Docusaurus/CloudFront/S3 publish は未実施。 |
 | AC-088 | local_verified | `npm run admin-artifacts:build` で `dist/admin/test-reports/allure/latest/` の Allure 互換 local report を生成し、`npm run artifacts:check` で manifest/source/checksum を検査。Allure CLI/CloudFront/S3 publish は未実施。 |

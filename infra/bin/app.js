@@ -14,6 +14,7 @@ export function synthLocalInventory(env = "dev") {
       outputs: item.outputs,
       cfnOutputs: item.cfnOutputs || [],
       edgeRoutingIntent: item.edgeRoutingIntent || null,
+      cognitoBindingIntent: item.cognitoBindingIntent || null,
       channelPolicyIntent: item.channelPolicyIntent || null,
       kmsPolicyIntent: item.kmsPolicyIntent || null,
       queuePolicyIntent: item.queuePolicyIntent || null,

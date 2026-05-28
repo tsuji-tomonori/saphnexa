@@ -5,19 +5,45 @@ export interface SaphnexaConstructProps {
   readonly envName: "dev" | "uat" | "prod";
 }
 
+interface EdgeStaticConstructProps extends SaphnexaConstructProps {
+  readonly apiEndpoint: string;
+  readonly appSyncEventRealtimeEndpoint: string;
+  readonly adminArtifactsPublicKeyPem: string;
+}
+
+interface IdentityConstructProps extends SaphnexaConstructProps {
+  readonly viewerBaseUrl: string;
+}
+
 export class SaphnexaStack extends cdk.Stack {
   constructor(scope: Construct, id: string, props: cdk.StackProps & SaphnexaConstructProps) {
     super(scope, id, props);
 
-    const edge = new EdgeStaticConstruct(this, "EdgeStatic", props);
-    const identity = new IdentityConstruct(this, "Identity", props);
+    const adminArtifactsPublicKeyPem = new cdk.CfnParameter(this, "AdminArtifactsPublicKeyPem", {
+      Type: "String",
+      NoEcho: true,
+      Description: "CloudFront signed cookie public key PEM for admin artifacts."
+    });
     const api = new ApiConstruct(this, "Api", props);
     const realtime = new RealtimeConstruct(this, "Realtime", props);
     const data = new DataConstruct(this, "Data", props);
     const rag = new RagProcessingConstruct(this, "RagProcessing", props);
     const observability = new ObservabilityCicdConstruct(this, "ObservabilityCicd", props);
+    const edge = new EdgeStaticConstruct(this, "EdgeStatic", {
+      ...props,
+      apiEndpoint: api.apiEndpoint,
+      appSyncEventRealtimeEndpoint: realtime.realtimeEndpoint,
+      adminArtifactsPublicKeyPem: adminArtifactsPublicKeyPem.valueAsString
+    });
+    const identity = new IdentityConstruct(this, "Identity", {
+      ...props,
+      viewerBaseUrl: cdk.Fn.join("", ["https://", edge.distributionDomainName])
+    });
 
     output(this, "DistributionDomainName", edge.distributionDomainName);
+    output(this, "CloudFrontDistributionDomain", edge.distributionDomainName);
+    output(this, "AdminArtifactsBucketArn", edge.adminArtifactsBucketArn);
+    output(this, "SignedCookieKeyGroupId", edge.signedCookieKeyGroupId);
     output(this, "ApiEndpoint", api.apiEndpoint);
     output(this, "ToolsApiEndpoint", api.toolsApiEndpoint);
     output(this, "UserPoolId", identity.userPoolId);
@@ -37,31 +63,59 @@ export class SaphnexaStack extends cdk.Stack {
 
 export class EdgeStaticConstruct extends Construct {
   readonly distributionDomainName = cdk.Fn.getAtt("CloudFrontDistribution", "DomainName").toString();
+  readonly adminArtifactsBucketArn = cdk.Fn.getAtt("AdminArtifactsBucket", "Arn").toString();
+  readonly signedCookieKeyGroupId = cdk.Fn.ref("AdminArtifactsKeyGroup");
   readonly docusaurusLatestUrl: string;
   readonly allureLatestUrl: string;
 
-  constructor(scope: Construct, id: string, props: SaphnexaConstructProps) {
+  constructor(scope: Construct, id: string, props: EdgeStaticConstructProps) {
     super(scope, id);
     const adminBucket = cfn(this, "AdminArtifactsBucket", "AWS::S3::Bucket", {
       BucketEncryption: sseKmsEncryption(),
       PublicAccessBlockConfiguration: blockPublicAccess(),
       VersioningConfiguration: { Status: "Enabled" }
     });
-    cfn(this, "SpaBucket", "AWS::S3::Bucket", {
+    const spaBucket = cfn(this, "SpaBucket", "AWS::S3::Bucket", {
       BucketEncryption: sseKmsEncryption(),
-      PublicAccessBlockConfiguration: blockPublicAccess()
+      PublicAccessBlockConfiguration: blockPublicAccess(),
+      VersioningConfiguration: { Status: "Enabled" }
+    });
+    cfn(this, "SpaBucketPolicy", "AWS::S3::BucketPolicy", {
+      Bucket: cdk.Fn.ref(spaBucket.logicalId),
+      PolicyDocument: cloudFrontOnlyBucketPolicy(cdk.Fn.ref(spaBucket.logicalId), cdk.Fn.sub("arn:${AWS::Partition}:cloudfront::${AWS::AccountId}:distribution/${CloudFrontDistribution}"))
     });
     cfn(this, "AdminArtifactsBucketPolicy", "AWS::S3::BucketPolicy", {
       Bucket: cdk.Fn.ref(adminBucket.logicalId),
-      PolicyDocument: denyPublicBucketPolicy(cdk.Fn.ref(adminBucket.logicalId))
+      PolicyDocument: cloudFrontOnlyBucketPolicy(cdk.Fn.ref(adminBucket.logicalId), cdk.Fn.sub("arn:${AWS::Partition}:cloudfront::${AWS::AccountId}:distribution/${CloudFrontDistribution}"))
     });
     cfn(this, "SpaOriginAccessControl", "AWS::CloudFront::OriginAccessControl", originAccessControl("spa"));
     cfn(this, "AdminOriginAccessControl", "AWS::CloudFront::OriginAccessControl", originAccessControl("admin-artifacts"));
-    cfn(this, "CloudFrontViewerRouter", "AWS::CloudFront::Function", cloudFrontFunction(`${props.envName}-viewer-router`));
-    cfn(this, "CloudFrontSignedCookieFunction", "AWS::CloudFront::Function", cloudFrontFunction(`${props.envName}-signed-cookie`));
+    cfn(this, "CloudFrontViewerRouter", "AWS::CloudFront::Function", cloudFrontFunction(`${props.envName}-viewer-router`, viewerRouterFunctionCode()));
+    cfn(this, "CloudFrontApiVersionRewriteFunction", "AWS::CloudFront::Function", cloudFrontFunction(`${props.envName}-api-version-rewrite`, apiVersionRewriteFunctionCode()));
+    cfn(this, "CloudFrontAdminArtifactRewriteFunction", "AWS::CloudFront::Function", cloudFrontFunction(`${props.envName}-admin-artifact-rewrite`, adminArtifactRewriteFunctionCode()));
+    cfn(this, "AdminArtifactsPublicKey", "AWS::CloudFront::PublicKey", {
+      PublicKeyConfig: {
+        CallerReference: cdk.Fn.sub("${AWS::StackName}-admin-artifacts-public-key"),
+        Name: `saphnexa-${props.envName}-admin-artifacts`,
+        EncodedKey: props.adminArtifactsPublicKeyPem,
+        Comment: "Signed cookie public key for admin-only Docusaurus and Allure artifacts."
+      }
+    });
+    cfn(this, "AdminArtifactsKeyGroup", "AWS::CloudFront::KeyGroup", {
+      KeyGroupConfig: {
+        Name: `saphnexa-${props.envName}-admin-artifacts`,
+        Items: [cdk.Fn.ref("AdminArtifactsPublicKey")],
+        Comment: "Trusted key group for admin-only Docusaurus and Allure artifacts."
+      }
+    });
     cfn(this, "WebAcl", "AWS::WAFv2::WebACL", {
       Scope: "CLOUDFRONT",
       DefaultAction: { Allow: {} },
+      Rules: [
+        managedRule("AWSManagedRulesCommonRuleSet", 10),
+        managedRule("AWSManagedRulesKnownBadInputsRuleSet", 20),
+        rateLimitRule("EdgeRateLimit", 30, 2000)
+      ],
       VisibilityConfig: visibilityConfig("saphnexa-web-acl")
     });
     cfn(this, "CloudFrontDistribution", "AWS::CloudFront::Distribution", {
@@ -69,12 +123,29 @@ export class EdgeStaticConstruct extends Construct {
         Enabled: true,
         DefaultRootObject: "index.html",
         Comment: `saphnexa-${props.envName}`,
-        Origins: [],
-        DefaultCacheBehavior: { ViewerProtocolPolicy: "redirect-to-https", TargetOriginId: "spa" }
+        HttpVersion: "http2and3",
+        Origins: [
+          s3Origin("spa-origin", cdk.Fn.getAtt("SpaBucket", "RegionalDomainName").toString(), cdk.Fn.getAtt("SpaOriginAccessControl", "Id").toString()),
+          s3Origin("admin-artifacts-origin", cdk.Fn.getAtt("AdminArtifactsBucket", "RegionalDomainName").toString(), cdk.Fn.getAtt("AdminOriginAccessControl", "Id").toString()),
+          httpOrigin("api-origin", domainNameFromUrl(props.apiEndpoint)),
+          httpOrigin("appsync-events-origin", props.appSyncEventRealtimeEndpoint)
+        ],
+        DefaultCacheBehavior: spaBehavior("spa-origin", "CloudFrontViewerRouter"),
+        CacheBehaviors: [
+          apiBehavior("/api/*", "api-origin", "CloudFrontApiVersionRewriteFunction"),
+          apiBehavior("/auth/*", "api-origin", "CloudFrontApiVersionRewriteFunction"),
+          apiBehavior("/event/realtime*", "appsync-events-origin"),
+          adminArtifactBehavior("/admin/docs/*", "admin-artifacts-origin", "CloudFrontAdminArtifactRewriteFunction"),
+          adminArtifactBehavior("/admin/test-reports/*", "admin-artifacts-origin", "CloudFrontAdminArtifactRewriteFunction"),
+          adminArtifactBehavior("/admin/evaluation-reports/*", "admin-artifacts-origin", "CloudFrontAdminArtifactRewriteFunction"),
+          spaBehavior("spa-origin", "CloudFrontViewerRouter", "/chat/*"),
+          spaBehavior("spa-origin", "CloudFrontViewerRouter", "/admin/*")
+        ],
+        WebACLId: cdk.Fn.getAtt("WebAcl", "Arn")
       }
     });
-    this.docusaurusLatestUrl = `https://${this.distributionDomainName}/admin/docs/latest/`;
-    this.allureLatestUrl = `https://${this.distributionDomainName}/admin/test-reports/allure/latest/`;
+    this.docusaurusLatestUrl = cdk.Fn.join("", ["https://", this.distributionDomainName, "/admin/docs/latest/"]);
+    this.allureLatestUrl = cdk.Fn.join("", ["https://", this.distributionDomainName, "/admin/test-reports/allure/latest/"]);
   }
 }
 
@@ -82,17 +153,29 @@ export class IdentityConstruct extends Construct {
   readonly userPoolId = cdk.Fn.ref("UserPool");
   readonly userPoolClientId = cdk.Fn.ref("UserPoolClient");
 
-  constructor(scope: Construct, id: string, props: SaphnexaConstructProps) {
+  constructor(scope: Construct, id: string, props: IdentityConstructProps) {
     super(scope, id);
     cfn(this, "UserPool", "AWS::Cognito::UserPool", {
       UserPoolName: `saphnexa-${props.envName}`,
       AdminCreateUserConfig: { AllowAdminCreateUserOnly: true },
+      MfaConfiguration: "OPTIONAL",
+      UserPoolAddOns: { AdvancedSecurityMode: "ENFORCED" },
       Schema: [{ Name: "email", Required: true, Mutable: true }]
     });
     cfn(this, "UserPoolClient", "AWS::Cognito::UserPoolClient", {
       UserPoolId: this.userPoolId,
-      GenerateSecret: false,
-      ExplicitAuthFlows: ["ALLOW_USER_SRP_AUTH", "ALLOW_REFRESH_TOKEN_AUTH"]
+      GenerateSecret: true,
+      AllowedOAuthFlowsUserPoolClient: true,
+      AllowedOAuthFlows: ["code"],
+      AllowedOAuthScopes: ["openid", "email", "profile"],
+      CallbackURLs: [cdk.Fn.join("", [props.viewerBaseUrl, "/auth/callback"])],
+      LogoutURLs: [cdk.Fn.join("", [props.viewerBaseUrl, "/auth/logout"])],
+      SupportedIdentityProviders: ["COGNITO"],
+      ExplicitAuthFlows: ["ALLOW_REFRESH_TOKEN_AUTH"]
+    });
+    cfn(this, "UserPoolDomain", "AWS::Cognito::UserPoolDomain", {
+      Domain: cdk.Fn.sub("saphnexa-${AWS::AccountId}-${AWS::Region}-${EnvName}", { EnvName: props.envName }),
+      UserPoolId: this.userPoolId
     });
     cfn(this, "AdminGroup", "AWS::Cognito::UserPoolGroup", { GroupName: "admin", UserPoolId: this.userPoolId });
     cfn(this, "GeneralUserGroup", "AWS::Cognito::UserPoolGroup", { GroupName: "general_user", UserPoolId: this.userPoolId });
@@ -107,7 +190,7 @@ export class ApiConstruct extends Construct {
   readonly apiEndpoint = cdk.Fn.getAtt("HttpApi", "ApiEndpoint").toString();
   readonly toolsApiEndpoint = cdk.Fn.getAtt("ToolsHttpApi", "ApiEndpoint").toString();
 
-  constructor(scope: Construct, id: string) {
+  constructor(scope: Construct, id: string, _props?: SaphnexaConstructProps) {
     super(scope, id);
     cfn(this, "HttpApi", "AWS::ApiGatewayV2::Api", { Name: "saphnexa-api", ProtocolType: "HTTP" });
     cfn(this, "ToolsHttpApi", "AWS::ApiGatewayV2::Api", { Name: "saphnexa-tools-api", ProtocolType: "HTTP" });
@@ -121,7 +204,7 @@ export class RealtimeConstruct extends Construct {
   readonly httpEndpoint = cdk.Fn.getAtt("EventApi", "Dns.Http").toString();
   readonly realtimeEndpoint = cdk.Fn.getAtt("EventApi", "Dns.Realtime").toString();
 
-  constructor(scope: Construct, id: string) {
+  constructor(scope: Construct, id: string, _props?: SaphnexaConstructProps) {
     super(scope, id);
     cfn(this, "EventApi", "AWS::AppSync::Api", {
       Name: "saphnexa-events",
@@ -132,9 +215,9 @@ export class RealtimeConstruct extends Construct {
         DefaultSubscribeAuthModes: [{ AuthType: "AWS_LAMBDA" }]
       }
     });
-    cfn(this, "UserChannelNamespace", "AWS::AppSync::ChannelNamespace", {
+    cfn(this, "ChatChannelNamespace", "AWS::AppSync::ChannelNamespace", {
       ApiId: cdk.Fn.getAtt("EventApi", "ApiId"),
-      Name: "users",
+      Name: "chat",
       SubscribeAuthModes: [{ AuthType: "AWS_LAMBDA" }],
       PublishAuthModes: [{ AuthType: "AWS_IAM" }]
     });
@@ -220,7 +303,7 @@ export class RagProcessingConstruct extends Construct {
 export class ObservabilityCicdConstruct extends Construct {
   readonly deployRoleArn = cdk.Fn.getAtt("DeployRole", "Arn").toString();
 
-  constructor(scope: Construct, id: string) {
+  constructor(scope: Construct, id: string, _props?: SaphnexaConstructProps) {
     super(scope, id);
     cfn(this, "DeployRole", "AWS::IAM::Role", { AssumeRolePolicyDocument: { Version: "2012-10-17", Statement: [] } });
     cfn(this, "EventBus", "AWS::Events::EventBus", { Name: "saphnexa-events" });
@@ -261,10 +344,27 @@ function blockPublicAccess() {
   return { BlockPublicAcls: true, BlockPublicPolicy: true, IgnorePublicAcls: true, RestrictPublicBuckets: true };
 }
 
-function denyPublicBucketPolicy(bucketName: string) {
+function cloudFrontOnlyBucketPolicy(bucketName: string, distributionArn: string) {
   return {
     Version: "2012-10-17",
-    Statement: [{ Effect: "Deny", Principal: "*", Action: "s3:*", Resource: [`arn:aws:s3:::${bucketName}`, `arn:aws:s3:::${bucketName}/*`], Condition: { Bool: { "aws:SecureTransport": false } } }]
+    Statement: [
+      {
+        Sid: "AllowCloudFrontServicePrincipalReadOnly",
+        Effect: "Allow",
+        Principal: { Service: "cloudfront.amazonaws.com" },
+        Action: "s3:GetObject",
+        Resource: [`arn:aws:s3:::${bucketName}/*`],
+        Condition: { StringEquals: { "AWS:SourceArn": distributionArn } }
+      },
+      {
+        Sid: "DenyInsecureTransport",
+        Effect: "Deny",
+        Principal: "*",
+        Action: "s3:*",
+        Resource: [`arn:aws:s3:::${bucketName}`, `arn:aws:s3:::${bucketName}/*`],
+        Condition: { Bool: { "aws:SecureTransport": false } }
+      }
+    ]
   };
 }
 
@@ -272,10 +372,153 @@ function originAccessControl(name: string) {
   return { OriginAccessControlConfig: { Name: `saphnexa-${name}`, OriginAccessControlOriginType: "s3", SigningBehavior: "always", SigningProtocol: "sigv4" } };
 }
 
-function cloudFrontFunction(name: string) {
-  return { Name: `saphnexa-${name}`, AutoPublish: true, FunctionCode: "function handler(event) { return event.request; }", FunctionConfig: { Runtime: "cloudfront-js-2.0", Comment: name } };
+function cloudFrontFunction(name: string, code: string) {
+  return { Name: `saphnexa-${name}`, AutoPublish: true, FunctionCode: code, FunctionConfig: { Runtime: "cloudfront-js-2.0", Comment: name } };
 }
 
 function visibilityConfig(name: string) {
   return { CloudWatchMetricsEnabled: true, MetricName: name, SampledRequestsEnabled: true };
+}
+
+function s3Origin(id: string, domainName: string, originAccessControlId: string) {
+  return { Id: id, DomainName: domainName, OriginAccessControlId: originAccessControlId, S3OriginConfig: { OriginAccessIdentity: "" } };
+}
+
+function httpOrigin(id: string, domainName: string) {
+  return {
+    Id: id,
+    DomainName: domainName,
+    CustomOriginConfig: {
+      OriginProtocolPolicy: "https-only",
+      OriginSSLProtocols: ["TLSv1.2"],
+      HTTPPort: 80,
+      HTTPSPort: 443
+    }
+  };
+}
+
+function domainNameFromUrl(value: string) {
+  return cdk.Fn.select(2, cdk.Fn.split("/", value));
+}
+
+function spaBehavior(targetOriginId: string, functionLogicalId: string, pathPattern?: string) {
+  return cacheBehavior(targetOriginId, {
+    PathPattern: pathPattern,
+    FunctionAssociations: [viewerRequestFunctionAssociation(functionLogicalId)],
+    Compress: true,
+    AllowedMethods: ["GET", "HEAD", "OPTIONS"],
+    CachedMethods: ["GET", "HEAD", "OPTIONS"],
+    CachePolicyId: managedCachePolicy("CachingOptimized")
+  });
+}
+
+function apiBehavior(pathPattern: string, targetOriginId: string, functionLogicalId?: string) {
+  return cacheBehavior(targetOriginId, {
+    PathPattern: pathPattern,
+    FunctionAssociations: functionLogicalId ? [viewerRequestFunctionAssociation(functionLogicalId)] : [],
+    AllowedMethods: ["GET", "HEAD", "OPTIONS", "PUT", "PATCH", "POST", "DELETE"],
+    CachedMethods: ["GET", "HEAD", "OPTIONS"],
+    CachePolicyId: managedCachePolicy("CachingDisabled"),
+    OriginRequestPolicyId: managedOriginRequestPolicy("AllViewerExceptHostHeader")
+  });
+}
+
+function adminArtifactBehavior(pathPattern: string, targetOriginId: string, functionLogicalId: string) {
+  return cacheBehavior(targetOriginId, {
+    PathPattern: pathPattern,
+    FunctionAssociations: [viewerRequestFunctionAssociation(functionLogicalId)],
+    TrustedKeyGroups: [cdk.Fn.ref("AdminArtifactsKeyGroup")],
+    Compress: true,
+    AllowedMethods: ["GET", "HEAD", "OPTIONS"],
+    CachedMethods: ["GET", "HEAD", "OPTIONS"],
+    CachePolicyId: managedCachePolicy("CachingOptimized")
+  });
+}
+
+function cacheBehavior(targetOriginId: string, overrides: Record<string, unknown>) {
+  return {
+    TargetOriginId: targetOriginId,
+    ViewerProtocolPolicy: "redirect-to-https",
+    ...Object.fromEntries(Object.entries(overrides).filter(([, value]) => value !== undefined))
+  };
+}
+
+function viewerRequestFunctionAssociation(functionLogicalId: string) {
+  return { EventType: "viewer-request", FunctionARN: cdk.Fn.getAtt(functionLogicalId, "FunctionMetadata.FunctionARN") };
+}
+
+function managedCachePolicy(name: "CachingDisabled" | "CachingOptimized") {
+  const ids = {
+    CachingDisabled: "4135ea2d-6df8-44a3-9df3-4b5a84be39ad",
+    CachingOptimized: "658327ea-f89d-4fab-a63d-7e88639e58f6"
+  };
+  return ids[name];
+}
+
+function managedOriginRequestPolicy(name: "AllViewerExceptHostHeader") {
+  const ids = { AllViewerExceptHostHeader: "b689b0a8-53d0-40ab-baf2-68738e2966ac" };
+  return ids[name];
+}
+
+function managedRule(name: string, priority: number) {
+  return {
+    Name: name,
+    Priority: priority,
+    OverrideAction: { None: {} },
+    Statement: { ManagedRuleGroupStatement: { VendorName: "AWS", Name: name } },
+    VisibilityConfig: visibilityConfig(name)
+  };
+}
+
+function rateLimitRule(name: string, priority: number, limit: number) {
+  return {
+    Name: name,
+    Priority: priority,
+    Action: { Block: {} },
+    Statement: { RateBasedStatement: { Limit: limit, AggregateKeyType: "IP" } },
+    VisibilityConfig: visibilityConfig(name)
+  };
+}
+
+function viewerRouterFunctionCode() {
+  return `function handler(event) {
+  var request = event.request;
+  var uri = request.uri;
+  if (uri === "/") {
+    request.uri = "/chat/index.html";
+  } else if (uri === "/chat" || uri.indexOf("/chat/") === 0) {
+    request.uri = "/chat/index.html";
+  } else if (uri === "/admin" || uri.indexOf("/admin/") === 0) {
+    request.uri = "/admin/index.html";
+  }
+  return request;
+}`;
+}
+
+function apiVersionRewriteFunctionCode() {
+  return `function handler(event) {
+  var request = event.request;
+  if (request.uri.indexOf("/api/") === 0) {
+    request.uri = request.uri.replace("/api/", "/v1/");
+  } else if (request.uri.indexOf("/auth/") === 0) {
+    request.uri = request.uri.replace("/auth/", "/v1/auth/");
+  }
+  return request;
+}`;
+}
+
+function adminArtifactRewriteFunctionCode() {
+  return `function handler(event) {
+  var request = event.request;
+  if (request.uri.indexOf("/admin/docs/latest/") === 0) {
+    request.uri = request.uri.replace("/admin/docs/latest/", "/docs-site/latest/");
+  } else if (request.uri.indexOf("/admin/docs/versions/") === 0) {
+    request.uri = request.uri.replace("/admin/docs/versions/", "/docs-site/releases/");
+  } else if (request.uri.indexOf("/admin/test-reports/allure/") === 0) {
+    request.uri = request.uri.replace("/admin/test-reports/allure/", "/test-reports/allure/");
+  } else if (request.uri.indexOf("/admin/evaluation-reports/") === 0) {
+    request.uri = request.uri.replace("/admin/evaluation-reports/", "/reports/evaluations/");
+  }
+  return request;
+}`;
 }

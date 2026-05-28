@@ -18,6 +18,8 @@ assert(inventory.intent_catalog.RagProcessingConstruct.queuePolicyIntent.deadLet
 assert(inventory.intent_catalog.ObservabilityCicdConstruct.iamReviewIntent.cdkNagEnabled === true, "cdk-nag intent missing");
 assert(inventory.intent_catalog.DataConstruct.cfnResourceTypes.includes("AWS::DSQL::Cluster"), "DSQL cluster resource type missing");
 assert(inventory.intent_catalog.DataConstruct.cfnResourceTypes.includes("AWS::S3Vectors::Index"), "S3 Vectors index resource type missing");
+assert(inventory.intent_catalog.EdgeStaticConstruct.cfnResourceTypes.includes("AWS::CloudFront::KeyGroup"), "CloudFront key group resource type missing");
+assert(inventory.intent_catalog.IdentityConstruct.cfnResourceTypes.includes("AWS::Cognito::UserPoolDomain"), "Cognito user pool domain resource type missing");
 assert(inventory.intent_catalog.RealtimeConstruct.cfnResourceTypes.includes("AWS::AppSync::Api"), "AppSync Events API resource type missing");
 assert(inventory.intent_catalog.RealtimeConstruct.cfnResourceTypes.includes("AWS::AppSync::ChannelNamespace"), "AppSync Events channel namespace resource type missing");
 assert(inventory.intent_catalog.RagProcessingConstruct.cfnResourceTypes.includes("AWS::Bedrock::KnowledgeBase"), "Bedrock KB resource type missing");

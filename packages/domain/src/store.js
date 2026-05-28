@@ -442,7 +442,7 @@ export function createLocalStore() {
       tenant_id: actor.tenant_id,
       ticket_id,
       user_id: actor.user_id,
-      channel_scope_json: { channels: [`/users/${actor.user_id}/chat/*`] },
+      channel_scope_json: { channels: [`/${actor.user_id}/chat/*`] },
       status: statuses.ACTIVE,
       issued_at_ms: now_ms,
       expires_at_ms: now_ms + 60000,

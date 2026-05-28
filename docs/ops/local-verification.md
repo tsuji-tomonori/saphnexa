@@ -14,6 +14,7 @@ npm run scan:bundle-domains
 npm run cdk:constructs:check
 npm run cfn:inventory:build
 npm run cfn:inventory:check
+npm run edge:identity:realtime:check
 npm run cfn:inventory:normalize:fixture:check
 npm run admin-artifacts:build
 npm run artifacts:check
@@ -58,6 +59,7 @@ git diff --check
 - 公開 API 38 件と Tools API 6 件の contract metadata。
 - Hono/Zod/OpenAPI 実装 entrypoint が 38 route と `/openapi.json` を route contract から生成し、CSRF/role/Zod validation metadata を保持すること。
 - CDK 実 Construct source が 7 Construct class を持ち、DSQL、CloudFront、Cognito、AppSync Events、S3 Vectors、Bedrock KB、AgentCore、admin artifacts 公開基盤の CloudFormation resource type inventory と同期していること。
+- CloudFront / Cognito / AppSync Events binding source が、SPA/API/AppSync/admin artifacts origin、`/api/*` と `/auth/*` の versioned API rewrite、Cognito OAuth code flow、AppSync Events `chat` / `admin` namespace、admin artifacts signed cookie KeyGroup と同期していること。
 - chat が独立リソースであり、owner/viewer によって操作権限が変わること。
 - 質問送信が `message_id` / `run_id` を即時生成し、event detail を REST で取得できること。
 - RAG が Tools API 境界を通り、ACL check 後の Evidence だけで citation を作ること。
