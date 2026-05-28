@@ -39,6 +39,19 @@ assert(awsDeployPublish.candidate_commands.includes("aws s3 sync dist/admin/test
 assert(!awsDeployPublish.candidate_commands.includes("aws s3 sync dist/admin/docs/ s3://<admin-artifacts-bucket>/docs/"), "docs publish command must not use legacy docs/ prefix");
 const cloudFormationCapture = plan.actions.find((action) => action.id === "cloudformation-capture");
 assert(cloudFormationCapture.candidate_commands.includes("CFN_CAPTURED_AT=<capture-iso-timestamp> npm run cfn:inventory:normalize"), "CloudFormation capture action must include final inventory normalizer command");
+const awsDevUatValidation = plan.actions.find((action) => action.id === "aws-dev-uat-validation");
+assert(awsDevUatValidation.acceptance_ids.includes("AC-098"), "AWS dev/UAT validation action must cover RAG quality");
+assert(awsDevUatValidation.acceptance_ids.includes("AC-123"), "AWS dev/UAT validation action must cover E2E");
+for (const command of [
+  "npm run aws:dev-uat:preflight:final",
+  "npm run test:e2e:aws",
+  "npm run perf:aws",
+  "npm run rag:quality:aws",
+  "npm run aws:dev-uat:validation:final"
+]) {
+  assert(awsDevUatValidation.candidate_commands.includes(command), `AWS dev/UAT validation action missing ${command}`);
+}
+assert(awsDevUatValidation.evidence_outputs.includes("dist/acceptance/aws_dev_uat_validation.json"), "AWS dev/UAT validation action must output validation evidence");
 const defectSnapshotRefresh = plan.actions.find((action) => action.id === "defect-snapshot-refresh");
 assert(defectSnapshotRefresh.acceptance_ids.includes("AC-153"), "defect snapshot refresh action must cover AC-153");
 assert(defectSnapshotRefresh.candidate_commands.includes("gh issue list --state open --json number,title,labels,state"), "defect snapshot refresh action must include GitHub issue list command");

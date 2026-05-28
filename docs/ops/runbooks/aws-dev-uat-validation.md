@@ -5,6 +5,7 @@
 AWS dev/UAT で E2E、性能、RAG 品質検証を開始する前に、Saphnexa の実接続成果物が揃っていることを確認する。
 
 この runbook は、local fixture の pass を最終検収 evidence として扱わない。最終検証では、実 AWS から取得した値を `dist/acceptance/aws_dev_uat_preflight.json` に記録し、`npm run aws:dev-uat:preflight:final` を通す。
+E2E、性能、RAG 品質検証の実行結果は `dist/acceptance/aws_dev_uat_validation.json` に記録し、`npm run aws:dev-uat:validation:final` と各 suite gate を通す。
 
 ## 前提
 
@@ -25,6 +26,7 @@ dist/acceptance/aws_dev_uat_preflight.json
 
 ```text
 docs/acceptance/evidence/aws_dev_uat_preflight.example.json
+docs/acceptance/evidence/aws_dev_uat_validation.example.json
 ```
 
 `evidence_class` の扱い:
@@ -44,6 +46,9 @@ docs/acceptance/evidence/aws_dev_uat_preflight.example.json
 | CloudFront / Cognito / AppSync Events | CloudFront URL、Cognito user pool/client、AppSync Events HTTP/WebSocket endpoint、ws-ticket authorizer |
 | Bedrock KB / S3 Vectors / AgentCore | Knowledge Base ID、S3 vector bucket/index、AgentCore Runtime ARN、Tools Gateway authorization、ACL precheck |
 | Docusaurus / Allure | CloudFront 配下の `/admin/docs/latest/`、version docs、`/admin/test-reports/allure/latest/` |
+| E2E | 主要 E2E 6 flow、Allure run URL、CloudFront access log |
+| 性能 | 非AI API p95、error rate、質問開始 p95、RAG 初回通知 p95、最終回答 p95、timeout rate |
+| RAG 品質 | golden dataset、Bedrock Evaluations job、recall@10、citation precision、groundedness、refusal accuracy、unsupported claim rate |
 
 ## 手順
 
@@ -57,6 +62,15 @@ npm run aws:dev-uat:preflight:final
 ```
 
 5. pass 後に AWS dev/UAT E2E、性能、RAG 品質検証へ進む。
+6. 実 AWS dev/UAT で主要 E2E、負荷試験、RAG 品質評価を実行し、`dist/acceptance/aws_dev_uat_validation.json` を `evidence_class: aws-captured` で作成する。
+7. 次を実行する。
+
+```bash
+npm run test:e2e:aws
+npm run perf:aws
+npm run rag:quality:aws
+npm run aws:dev-uat:validation:final
+```
 
 ## 検証
 
@@ -66,15 +80,20 @@ npm run aws:dev-uat:preflight:final
 
 ```bash
 npm run aws:dev-uat:preflight
+npm run aws:dev-uat:validation:check
+npm run aws:dev-uat:validation:fixture:check
 ```
 
 この command は `docs/acceptance/evidence/aws_dev_uat_preflight.example.json` を検査する。`fixture` 証跡なので最終検収や AWS dev/UAT 実行完了の根拠にはしない。
+`npm run aws:dev-uat:validation:check` も `docs/acceptance/evidence/aws_dev_uat_validation.example.json` だけを検査する。`npm run aws:dev-uat:validation:fixture:check` は fixture の positive path と、final 指定・E2E失敗・性能閾値超過・RAG品質閾値超過の negative path を検査する。
 
 ## fail 時の扱い
 
 - placeholder、pending、localhost、private IP、`.local`、`.test`、`.internal` が含まれる場合は fail。
 - `evidence_class: fixture` のまま `npm run aws:dev-uat:preflight:final` を実行した場合は fail。
+- `evidence_class: fixture` のまま `npm run test:e2e:aws`、`npm run perf:aws`、`npm run rag:quality:aws`、`npm run aws:dev-uat:validation:final` を実行した場合は fail。
 - いずれかの領域の `status` が期待値ではない場合は fail。
+- E2E pass 100%、非AI API p95 <= 800ms、error rate < 1%、質問開始 p95 <= 2s、RAG 初回通知 p95 <= 5s、最終回答 p95 <= 60s、timeout rate < 2%、RAG 品質閾値を満たさない場合は fail。
 - fail した状態では、AWS dev/UAT E2E・性能・RAG 品質検証を完了扱いにしない。
 
 ## 関連コマンド
@@ -82,6 +101,12 @@ npm run aws:dev-uat:preflight
 ```bash
 npm run aws:dev-uat:preflight
 npm run aws:dev-uat:preflight:final
+npm run aws:dev-uat:validation:check
+npm run aws:dev-uat:validation:fixture:check
+npm run aws:dev-uat:validation:final
+npm run test:e2e:aws
+npm run perf:aws
+npm run rag:quality:aws
 npm run acceptance:external-actions:check
 npm run acceptance:final:check
 ```

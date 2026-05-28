@@ -68,7 +68,9 @@ for (const command of [
   "npm run acceptance:final:build",
   "npm run acceptance:final:check",
   "npm run acceptance:package:build",
-  "npm run acceptance:package:check"
+  "npm run acceptance:package:check",
+  "npm run aws:dev-uat:validation:check",
+  "npm run aws:dev-uat:validation:fixture:check"
 ]) {
   assert(workflow.includes(command), `workflow missing command: ${command}`);
 }

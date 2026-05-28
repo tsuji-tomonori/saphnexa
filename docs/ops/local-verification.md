@@ -52,6 +52,8 @@ npm run acceptance:final:check
 npm run acceptance:package:build
 npm run acceptance:package:check
 npm run aws:dev-uat:preflight
+npm run aws:dev-uat:validation:check
+npm run aws:dev-uat:validation:fixture:check
 npm test
 git diff --check
 ```
@@ -92,7 +94,7 @@ git diff --check
 - chunk/reference/BM25F/parser を含む offline artifact inventory のローカル manifest。
 - in-memory domain state の restore drill report、RTO/RPO threshold、snapshot/restored checksum。
 - `docs/acceptance/source/acceptance_catalog.json` が検収 checklist v1.0 の 102 行、P0/P1/P2 件数、traceability 全 ID と同期していること。
-- `npm run acceptance:external-actions:check` が `dist/acceptance/external_action_plan.json` を再生成してから検査し、Git tag/release、AWS deploy/publish、CloudFormation capture、defect-snapshot-refresh、final checklist signoff の各 action が pending かつ確認必須のまま残ること。
+- `npm run acceptance:external-actions:check` が `dist/acceptance/external_action_plan.json` を再生成してから検査し、Git tag/release、AWS deploy/publish、AWS dev/UAT validation、CloudFormation capture、defect-snapshot-refresh、final checklist signoff の各 action が pending かつ確認必須のまま残ること。
 - final acceptance checklist builder が source catalog の列、ID 順、全 AC 行を保って `結果=PASS` の CSV を生成する fixture。
 - final evidence manifest builder が current Git commit、package version、CloudFormation inventory、Git release/artifact input を組み合わせて final candidate ready path を検査する fixture。
 - final evidence candidate が未配置なら `not_ready` として記録し、配置済みの場合は実 Git tag/release/AWS/公開 URL/checklist を検査すること。
@@ -100,6 +102,7 @@ git diff --check
 - `npm run acceptance:final:check` が `dist/acceptance/final_readiness.json` を再生成してから検査し、release/AWS/publish/checklist 未達がある限り ready にならないこと。
 - `dist/acceptance/` に検収 package draft を生成し、未実施 AWS/release 項目を `PENDING_AWS` として残すこと。
 - `npm run aws:dev-uat:preflight` が AWS dev/UAT 証跡の fixture 構造を検査し、実証跡では `npm run aws:dev-uat:preflight:final` が必要であること。
+- `npm run aws:dev-uat:validation:check` が E2E・性能・RAG品質結果の fixture 構造と閾値を検査し、`npm run aws:dev-uat:validation:fixture:check` が fixture/negative path を検査し、実証跡では `npm run test:e2e:aws`、`npm run perf:aws`、`npm run rag:quality:aws`、`npm run aws:dev-uat:validation:final` が必要であること。
 - GitHub issue tracker snapshot に基づく Blocker/Critical open defect 0 件の defect list draft。最終検収では `gh issue list --state open --json number,title,labels,state` による defect-snapshot-refresh が必要であり、ローカル snapshot だけでは完了扱いにしないこと。
 
 ## ローカルでは完了扱いにしないこと
@@ -118,7 +121,8 @@ git diff --check
 - CloudFront Function、WAF、IAM policy、KMS key policy、SQS/DLQ、AppSync Events、cdk-nag の実リソース/実行結果確認。
 - 実 S3 の offline artifact inventory、実 parser/KB/S3 Vectors ingestion、実バックアップからの restore drill。
 - `npm run aws:dev-uat:preflight` は fixture の構造確認だけを行う。実 AWS dev/UAT 証跡は `dist/acceptance/aws_dev_uat_preflight.json` を `evidence_class: aws-captured` で作成し、`npm run aws:dev-uat:preflight:final` を通す必要がある。
+- `npm run aws:dev-uat:validation:check` は fixture の構造確認だけを行う。実 AWS dev/UAT E2E・性能・RAG品質証跡は `dist/acceptance/aws_dev_uat_validation.json` を `evidence_class: aws-captured` で作成し、final suite gate を通す必要がある。
 - Git tag、GitHub release、検収用 `evidence_manifest.json` の最終確定。
-- 外部 action plan に記載された release、deploy、publish、CloudFormation capture、defect snapshot refresh、final evidence 作成、signoff の実行。
+- 外部 action plan に記載された release、deploy、publish、AWS dev/UAT validation、CloudFormation capture、defect snapshot refresh、final evidence 作成、signoff の実行。
 - 検収 checklist の最終署名、AWS account id、CloudFormation stack id、公開済み docs/Allure URL の確定。
 - P0/P1/P2 全行の最終 PASS 判定。

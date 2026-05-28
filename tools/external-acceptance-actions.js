@@ -8,6 +8,7 @@ const requiredActionIds = [
   "release-tag",
   "github-release",
   "aws-deploy-publish",
+  "aws-dev-uat-validation",
   "cloudformation-capture",
   "defect-snapshot-refresh",
   "final-evidence-candidate",
@@ -67,6 +68,26 @@ export function buildExternalAcceptanceActionPlan(outputPath = externalActionPla
       ],
       required_before_run: ["AWS deploy 完了", "CloudFormation stack name 確定"],
       evidence_outputs: ["docs/acceptance/cloudformation/cloudformation_inventory.uat.json"]
+    }),
+    action({
+      id: "aws-dev-uat-validation",
+      title: "AWS dev/UAT で E2E・性能・RAG品質検証を実行し結果証跡を検査する",
+      acceptance_ids: ["AC-098", "AC-123", "AC-130", "AC-131", "AC-132", "AC-133", "AC-150", "AC-151", "AC-152"],
+      candidate_commands: [
+        "npm run aws:dev-uat:preflight:final",
+        "npm run test:e2e:aws",
+        "npm run perf:aws",
+        "npm run rag:quality:aws",
+        "npm run aws:dev-uat:validation:final"
+      ],
+      required_before_run: ["AWS deploy/publish 完了", "テストユーザー/管理者ユーザー準備", "golden dataset 準備", "負荷試験 window 承認"],
+      evidence_outputs: [
+        "dist/acceptance/aws_dev_uat_validation.json",
+        "Allure E2E run URL",
+        "performance report URL",
+        "RAG quality evaluation report URL",
+        "CloudWatch/AppSync/CloudFront logs"
+      ]
     }),
     action({
       id: "defect-snapshot-refresh",

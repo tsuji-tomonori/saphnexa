@@ -47,6 +47,8 @@ const suites = [
   suite("acceptance-final-check", "npm run acceptance:final:check"),
   suite("acceptance-package-build", "npm run acceptance:package:build"),
   suite("acceptance-package-check", "npm run acceptance:package:check"),
+  suite("aws-dev-uat-validation", "npm run aws:dev-uat:validation:check"),
+  suite("aws-dev-uat-validation-fixtures", "npm run aws:dev-uat:validation:fixture:check"),
   suite("admin-artifacts-publish-binding", "npm run admin-artifacts:publish:check"),
   suite("admin-artifacts", "npm run artifacts:check")
 ];

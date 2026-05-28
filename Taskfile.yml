@@ -198,6 +198,18 @@ tasks:
     desc: Verify final AWS-captured dev/UAT evidence contract before real validation runs
     cmds:
       - npm run aws:dev-uat:preflight:final
+  aws:dev-uat:validation:check:
+    desc: Verify AWS dev/UAT E2E, performance, and RAG quality validation evidence fixture
+    cmds:
+      - npm run aws:dev-uat:validation:check
+  aws:dev-uat:validation:fixture:check:
+    desc: Verify AWS dev/UAT validation fixture positive and negative branches
+    cmds:
+      - npm run aws:dev-uat:validation:fixture:check
+  aws:dev-uat:validation:final:
+    desc: Verify final AWS dev/UAT E2E, performance, and RAG quality validation evidence
+    cmds:
+      - npm run aws:dev-uat:validation:final
   admin-artifacts:build:
     desc: Build local admin docs and test report artifacts
     cmds:

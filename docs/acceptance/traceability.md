@@ -80,7 +80,7 @@
 | AC-095 | local_verified | `npm run rag:quality:check` で reference expansion golden 10件中10件成功を検査。実 reference_edges/KB 評価は未実施。 |
 | AC-096 | local_verified | citation format and event detail tested locally. |
 | AC-097 | local_verified | evaluation metrics categories in local source and `tests/e2e-local.test.js` local path. AWS 評価 report は未実施。 |
-| AC-098 | local_verified | `npm run rag:quality:check` で `dist/reports/rag-quality-local.json` を生成し、recall@10/citation precision/groundedness/refusal accuracy/unsupported claim rate の local thresholds を検査。`npm run rag:aws-binding:check` で Bedrock KB / S3 Vectors / AgentCore binding source を検査。Bedrock Evaluations/実KB report は未実施。 |
+| AC-098 | local_verified | `npm run rag:quality:check` で local thresholds を検査し、`npm run rag:aws-binding:check` で Bedrock KB / S3 Vectors / AgentCore binding source を検査。`npm run aws:dev-uat:validation:check` で AWS RAG品質 evidence contract と recall@10/citation precision/groundedness/refusal accuracy/unsupported claim rate 閾値を fixture 検査。Bedrock Evaluations/実KB report は未実施。 |
 | AC-099 | local_verified | `npm run rag:security:check` で prompt injection attack 20件中 policy violation 0件、tool invocation 0件を検査。実 AgentCore trace は未実施。 |
 | AC-100 | local_verified | `npm run offline-artifacts:check` で raw/parsed/chunk/reference/BM25F/parser artifact inventory を生成・検査。`npm run rag:aws-binding:check` で S3 Vectors index dimension / metadata field binding を検査。PDF/KB/S3 Vectors 実行は未実施。 |
 | AC-101 | local_verified | document metadata 必須 field と raw prefix を `tests/integration-local.test.js` / `npm run storage:check` で検査。Retrieve metadata 実体は未実施。 |
@@ -95,14 +95,14 @@
 | AC-120 | local_verified | `.github/workflows/ci.yml` に 14 jobs を追加し `npm run ci:check` で workflow shape を検査。PR #1 の GitHub Actions `Saphnexa CI` で lint/typecheck/unit/integration/e2e/cdk synth/cdk diff/security scan/license scan/admin artifacts/quality gates/db observability/admin offline restore/contract generation diff が pass。 |
 | AC-121 | local_verified | `npm run coverage:check` で Node test coverage line >=80% / branch >=70% と test pass 100% を検査。Allure unit artifact への publish は未実施。 |
 | AC-122 | local_verified | `npm run test:integration:local`、`npm run rag:aws-binding:check`、`npm run verify` で local API/store/RAG/tools/admin artifact/edge intent と AWS binding source の統合 smoke を検査。AWS/DSQL/S3/AppSync/Tools 実結合は未実施。 |
-| AC-123 | local_verified | `tests/e2e-local.test.js` と `npm run web:flow:check` を CI 対象化し、local API/source gate の E2E smoke を検査。ブラウザ/CloudFront E2E は未実施。 |
+| AC-123 | local_verified | `tests/e2e-local.test.js` と `npm run web:flow:check` を CI 対象化し、local API/source gate の E2E smoke を検査。`npm run aws:dev-uat:validation:check` で AWS E2E 主要6 flow pass 100% evidence contract を fixture 検査。ブラウザ/CloudFront E2E は未実施。 |
 | AC-124 | local_verified | 基本設計 5.6.3 の 15 pairwise ケースを `packages/testing/src/pairwise.js` に catalog 化し、`npm run pairwise:check` で実行率/要因 coverage を検査。 |
 | AC-125 | local_verified | `npm run test:contract`, `npm run acceptance:check`, `npm run evidence:check` を contract-generation-diff job に追加。生成物 diff の本格化は後続。 |
 | AC-126 | local_verified | CI workflow に `admin-artifacts` job を追加し、`npm run admin-artifacts:build` / `npm run artifacts:check` / `npm run admin-artifacts:publish:check` を検査対象化。PR #1 の GitHub Actions 14 jobs は pass。Allure publish URL は未実施。 |
-| AC-130 | local_verified | `npm run perf:api:local` で認証済み local non-AI API p95 <= 800ms、error rate < 1% を検査。AWS load test/CloudWatch metrics は未実施。 |
-| AC-131 | local_verified | `npm run perf:local` で local 質問受付 p95 <= 2s を検査。AWS load test は未実施。 |
-| AC-132 | local_verified | `npm run rag:perf:local` で local RAG 初回通知 p95 <= 5s を検査。AppSync logs/E2E timing は未実施。 |
-| AC-133 | local_verified | `npm run rag:perf:local` で local RAG final answer p95 <= 60s、timeout rate < 2% を検査。AWS RAG load test は未実施。 |
+| AC-130 | local_verified | `npm run perf:api:local` で local non-AI API p95 <= 800ms、error rate < 1% を検査。`npm run aws:dev-uat:validation:check` で AWS load test evidence contract の同閾値を fixture 検査。AWS load test/CloudWatch metrics は未実施。 |
+| AC-131 | local_verified | `npm run perf:local` で local 質問受付 p95 <= 2s を検査。`npm run aws:dev-uat:validation:check` で AWS performance evidence contract の同閾値を fixture 検査。AWS load test は未実施。 |
+| AC-132 | local_verified | `npm run rag:perf:local` で local RAG 初回通知 p95 <= 5s を検査。`npm run aws:dev-uat:validation:check` で AWS E2E timing evidence contract の同閾値を fixture 検査。AppSync logs/E2E timing は未実施。 |
+| AC-133 | local_verified | `npm run rag:perf:local` で local RAG final answer p95 <= 60s、timeout rate < 2% を検査。`npm run aws:dev-uat:validation:check` で AWS RAG load evidence contract の同閾値を fixture 検査。AWS RAG load test は未実施。 |
 | AC-134 | local_verified | lightweight notification size guard. |
 | AC-135 | local_verified | `npm run failure:check` で retrieval / generation / worker notify の 3 failure injection が failed 状態、`chat.run.failed` event、retryable=true を残すことを検査。実 AgentCore/Lambda failure injection は未実施。 |
 | AC-140 | local_verified | `packages/model-catalog/src/cost-estimate.js` と `npm run cost:check` で 50 DAU/10質問日の local estimate <= 550 USD を検査。AWS Cost Explorer は未実施。 |
