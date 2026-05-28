@@ -49,6 +49,14 @@ try {
   assert(ready.ready_for_external_execution === true, "resolved runbook must be ready for external execution");
   assert(ready.phases.every((phase) => phase.requires_confirmation === true), "all ready phases must require confirmation");
   assert(ready.phases.flatMap((phase) => phase.commands).every((command) => command.resolved === true), "all ready commands must be resolved");
+  const validationCommands = ready.phases.find((phase) => phase.id === "validation_materialization").commands.map((command) => command.command);
+  assert(validationCommands.includes("npm run test:e2e:aws"), "ready runbook must include AWS E2E suite gate");
+  assert(validationCommands.includes("npm run perf:aws"), "ready runbook must include AWS performance suite gate");
+  assert(validationCommands.includes("npm run rag:quality:aws"), "ready runbook must include AWS RAG quality suite gate");
+  assert(
+    validationCommands.indexOf("npm run rag:quality:aws") < validationCommands.indexOf("npm run aws:dev-uat:validation:final"),
+    "ready runbook must run suite gates before validation final gate"
+  );
 
   const placeholder = structuredClone(ready);
   placeholder.phases.find((phase) => phase.id === "deploy_publish").commands[1].command = "aws s3 sync dist/admin/docs/latest/ s3://<bucket>/docs-site/latest/";

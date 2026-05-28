@@ -56,8 +56,15 @@ export function validateAwsDevUatOperatorExecutionRunbook(runbook, options = {})
   assertCommandIncludes(runbook, "preflight_materialization", "npm run aws:dev-uat:preflight-raw-input:build");
   assertCommandIncludes(runbook, "validation_capture", "aws bedrock get-evaluation-job");
   assertCommandIncludes(runbook, "validation_materialization", "npm run aws:dev-uat:validation-raw-input:build");
+  assertCommandIncludes(runbook, "validation_materialization", "npm run test:e2e:aws");
+  assertCommandIncludes(runbook, "validation_materialization", "npm run perf:aws");
+  assertCommandIncludes(runbook, "validation_materialization", "npm run rag:quality:aws");
   assertCommandIncludes(runbook, "final_gates", "npm run aws:dev-uat:final-readiness:check -- --probe-aws-identity --require-ready");
   assertCommandIncludes(runbook, "final_acceptance", "npm run acceptance:final-candidate:check");
+  assertCommandBefore(runbook, "validation_materialization", "aws:dev-uat:validation:build", "npm run test:e2e:aws");
+  assertCommandBefore(runbook, "validation_materialization", "npm run test:e2e:aws", "npm run perf:aws");
+  assertCommandBefore(runbook, "validation_materialization", "npm run perf:aws", "npm run rag:quality:aws");
+  assertCommandBefore(runbook, "validation_materialization", "npm run rag:quality:aws", "npm run aws:dev-uat:validation:final");
   assertCommandBefore(runbook, "final_gates", "aws:dev-uat:operator-input:check", "aws:dev-uat:evidence-bundle:check");
   assertCommandBefore(runbook, "final_gates", "aws:dev-uat:evidence-bundle:check", "aws:dev-uat:final-readiness:check");
 

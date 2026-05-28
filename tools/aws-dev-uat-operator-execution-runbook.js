@@ -253,13 +253,15 @@ function deployPublishCommands(input) {
 function materializationCommands(mode, modePlan, input, resolved) {
   const resolvedCommands = input.resolved_commands || {};
   const materialize = resolved ? resolvedCommands[`${mode}_materialize`] : modePlan.materialize_command;
-  return [
+  const commands = [
     command(`${mode}-materialize`, materialize, `${mode}_materialization`, resolved, false),
     command(`${mode}-raw-output-check`, resolvedCommandPath(modePlan.raw_output_check_command, input, mode, resolved), `${mode}_materialization`, resolved, false),
     command(`${mode}-raw-input-check`, resolvedCommandPath(modePlan.raw_input_check_command, input, mode, resolved), `${mode}_materialization`, resolved, false),
-    command(`${mode}-evidence-build`, resolvedCommandPath(modePlan.build_command, input, mode, resolved), `${mode}_materialization`, resolved, false),
-    command(`${mode}-final`, modePlan.final_command, `${mode}_materialization`, true, false)
+    command(`${mode}-evidence-build`, resolvedCommandPath(modePlan.build_command, input, mode, resolved), `${mode}_materialization`, resolved, false)
   ];
+  if (mode === "validation") commands.push(...validationSuiteGateCommands());
+  commands.push(command(`${mode}-final`, modePlan.final_command, `${mode}_materialization`, true, false));
+  return commands;
 }
 
 function finalGateCommands(input, resolved) {
@@ -268,6 +270,14 @@ function finalGateCommands(input, resolved) {
     command("resolved-operator-input-check", input.command_templates.resolved_operator_input_check, "final_gates", resolved, false),
     command("evidence-bundle-check", resolved ? resolvedCommands.evidence_bundle : input.command_templates.evidence_bundle, "final_gates", resolved, false),
     command("final-readiness-check", resolved ? resolvedCommands.final_readiness : input.command_templates.final_readiness, "final_gates", resolved, false)
+  ];
+}
+
+function validationSuiteGateCommands() {
+  return [
+    command("validation-e2e-suite-gate", "npm run test:e2e:aws", "validation_materialization", true, false),
+    command("validation-performance-suite-gate", "npm run perf:aws", "validation_materialization", true, false),
+    command("validation-rag-quality-suite-gate", "npm run rag:quality:aws", "validation_materialization", true, false)
   ];
 }
 

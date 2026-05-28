@@ -131,6 +131,8 @@ for (const phrase of [
   "operator execution runbook",
   "requires_resolved_operator_input",
   "ready operator execution runbook",
+  "validation suite gate command order",
+  "suite gate commands",
   "current git commit",
   "artifact coverage",
   "current readiness artifact path match",
