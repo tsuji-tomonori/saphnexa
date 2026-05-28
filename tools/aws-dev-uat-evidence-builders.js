@@ -9,6 +9,16 @@ export const validationEvidenceOutputPath = "dist/acceptance/aws_dev_uat_validat
 export function buildAwsDevUatPreflightEvidence(inputPath, outputPath = preflightEvidenceOutputPath) {
   assert(inputPath, "preflight evidence input path is required");
   const input = readJson(inputPath);
+  const captureProvenance = assertCaptureProvenance(input.capture_provenance, [
+    "aws-sts",
+    "cloudformation-describe-stacks",
+    "cloudformation-list-stack-resources",
+    "flyway-info",
+    "hono-openapi",
+    "edge-realtime",
+    "rag-runtime",
+    "published-artifacts"
+  ]);
   const outputs = stackOutputs(input.cloudformation);
   const accountId = accountIdFrom(input.aws?.account_id, input.aws?.account_id_parts, input.aws_identity?.Account, input.aws_identity?.AccountParts);
   const region = input.aws?.region || "ap-northeast-1";
@@ -78,7 +88,8 @@ export function buildAwsDevUatPreflightEvidence(inputPath, outputPath = prefligh
       performance_command: "npm run perf:aws",
       rag_quality_command: "npm run rag:quality:aws",
       requires_real_aws_execution: true
-    }
+    },
+    capture_provenance: captureProvenance
   };
 
   writeJson(outputPath, evidence);
@@ -88,6 +99,14 @@ export function buildAwsDevUatPreflightEvidence(inputPath, outputPath = prefligh
 export function buildAwsDevUatValidationEvidence(inputPath, outputPath = validationEvidenceOutputPath) {
   assert(inputPath, "validation evidence input path is required");
   const input = readJson(inputPath);
+  const captureProvenance = assertCaptureProvenance(input.capture_provenance, [
+    "e2e-allure",
+    "cloudfront-access-log",
+    "performance-report",
+    "cloudwatch-dashboard",
+    "rag-quality-report",
+    "bedrock-evaluation-job"
+  ]);
   const accountId = accountIdFrom(input.aws?.account_id, input.aws?.account_id_parts);
   const evidence = {
     schema_version: "saphnexa-aws-dev-uat-validation.v1",
@@ -115,7 +134,8 @@ export function buildAwsDevUatValidationEvidence(inputPath, outputPath = validat
       status: input.rag_quality?.status || "passed",
       command: "npm run rag:quality:aws",
       bedrock_evaluation_job_arn: input.rag_quality?.bedrock_evaluation_job_arn || arn("bedrock", "ap-northeast-1", accountId, `evaluation-job/${input.rag_quality?.evaluation_job_id}`)
-    }
+    },
+    capture_provenance: captureProvenance
   };
 
   writeJson(outputPath, evidence);
@@ -149,6 +169,24 @@ function accountIdFrom(...candidates) {
 
 function arn(service, region, accountId, resource) {
   return `arn:aws:${service}:${region}:${accountId}:${resource}`;
+}
+
+function assertCaptureProvenance(provenance, requiredIds) {
+  assert(provenance && typeof provenance === "object", "capture_provenance is required");
+  assert(provenance.source === "aws-dev-uat-raw-capture", "capture_provenance.source must be aws-dev-uat-raw-capture");
+  assert(/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\+09:00$/.test(provenance.captured_at || ""), "capture_provenance.captured_at must be JST timestamp");
+  assert(Array.isArray(provenance.commands), "capture_provenance.commands must be an array");
+  const commandsById = new Map(provenance.commands.map((item) => [item.id, item]));
+  for (const id of requiredIds) {
+    const item = commandsById.get(id);
+    assert(item, `capture_provenance.commands missing ${id}`);
+    assert(typeof item.command === "string" && item.command.trim().length > 0, `capture_provenance.commands.${id}.command is required`);
+    assert(!/(placeholder|todo|tbd|dummy|mock|localhost|127\.0\.0\.1|0\.0\.0\.0)/i.test(item.command), `capture_provenance.commands.${id}.command must not be placeholder/local text`);
+    assert(typeof item.output_ref === "string" && item.output_ref.trim().length > 0, `capture_provenance.commands.${id}.output_ref is required`);
+    assert(item.status === "captured", `capture_provenance.commands.${id}.status must be captured`);
+  }
+  assert(JSON.stringify(provenance.required_command_ids || []) === JSON.stringify(requiredIds), "capture_provenance.required_command_ids mismatch");
+  return provenance;
 }
 
 function writeJson(path, data) {

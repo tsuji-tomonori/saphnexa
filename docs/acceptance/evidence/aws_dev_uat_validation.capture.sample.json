@@ -8,6 +8,56 @@
   "aws": {
     "account_id_parts": ["123456", "789012"]
   },
+  "capture_provenance": {
+    "source": "aws-dev-uat-raw-capture",
+    "captured_at": "2026-05-28T12:09:00+09:00",
+    "required_command_ids": [
+      "e2e-allure",
+      "cloudfront-access-log",
+      "performance-report",
+      "cloudwatch-dashboard",
+      "rag-quality-report",
+      "bedrock-evaluation-job"
+    ],
+    "commands": [
+      {
+        "id": "e2e-allure",
+        "command": "npm run test:e2e:aws",
+        "output_ref": "raw/e2e-allure-run.json",
+        "status": "captured"
+      },
+      {
+        "id": "cloudfront-access-log",
+        "command": "aws s3 ls s3://saphnexa-uat-logs/cloudfront/e2e-20260528/ --region ap-northeast-1",
+        "output_ref": "raw/cloudfront-access-log-list.txt",
+        "status": "captured"
+      },
+      {
+        "id": "performance-report",
+        "command": "npm run perf:aws",
+        "output_ref": "raw/performance-report.json",
+        "status": "captured"
+      },
+      {
+        "id": "cloudwatch-dashboard",
+        "command": "aws cloudwatch get-dashboard --dashboard-name saphnexa-uat --region ap-northeast-1",
+        "output_ref": "raw/cloudwatch-dashboard.json",
+        "status": "captured"
+      },
+      {
+        "id": "rag-quality-report",
+        "command": "npm run rag:quality:aws",
+        "output_ref": "raw/rag-quality-report.json",
+        "status": "captured"
+      },
+      {
+        "id": "bedrock-evaluation-job",
+        "command": "aws bedrock get-evaluation-job --job-identifier rag-eval-20260528-uat --region ap-northeast-1",
+        "output_ref": "raw/bedrock-evaluation-job.json",
+        "status": "captured"
+      }
+    ]
+  },
   "e2e": {
     "scenario_count": 6,
     "passed_count": 6,

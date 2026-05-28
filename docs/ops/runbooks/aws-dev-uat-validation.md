@@ -54,6 +54,36 @@ docs/acceptance/evidence/aws_dev_uat_validation.capture.sample.json
 | 性能 | 非AI API p95、error rate、質問開始 p95、RAG 初回通知 p95、最終回答 p95、timeout rate |
 | RAG 品質 | golden dataset、Bedrock Evaluations job、recall@10、citation precision、groundedness、refusal accuracy、unsupported claim rate |
 
+## raw input provenance
+
+`npm run aws:dev-uat:preflight:build` と `npm run aws:dev-uat:validation:build` の raw input は `capture_provenance` を必須とする。`capture_provenance.source` は `aws-dev-uat-raw-capture`、`capture_provenance.captured_at` は JST timestamp、各 `commands[].status` は `captured` とする。
+
+preflight raw input では次の command ID をすべて含める。
+
+```text
+aws-sts
+cloudformation-describe-stacks
+cloudformation-list-stack-resources
+flyway-info
+hono-openapi
+edge-realtime
+rag-runtime
+published-artifacts
+```
+
+validation raw input では次の command ID をすべて含める。
+
+```text
+e2e-allure
+cloudfront-access-log
+performance-report
+cloudwatch-dashboard
+rag-quality-report
+bedrock-evaluation-job
+```
+
+`capture_provenance` は builder output の `capture_provenance` に引き継がれる。raw input に provenance がない場合は builder が fail し、final evidence を作成しない。
+
 ## 手順
 
 1. 実 AWS dev/UAT へ deploy / publish / migration を行う。

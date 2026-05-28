@@ -8,6 +8,70 @@
     "git_tag": "v0.17.0-uat.20260528",
     "github_release_url": "https://github.com/tsuji-tomonori/saphnexa/releases/tag/v0.17.0-uat.20260528"
   },
+  "capture_provenance": {
+    "source": "aws-dev-uat-raw-capture",
+    "captured_at": "2026-05-28T11:54:00+09:00",
+    "required_command_ids": [
+      "aws-sts",
+      "cloudformation-describe-stacks",
+      "cloudformation-list-stack-resources",
+      "flyway-info",
+      "hono-openapi",
+      "edge-realtime",
+      "rag-runtime",
+      "published-artifacts"
+    ],
+    "commands": [
+      {
+        "id": "aws-sts",
+        "command": "aws sts get-caller-identity --output json",
+        "output_ref": "raw/aws-sts-get-caller-identity.json",
+        "status": "captured"
+      },
+      {
+        "id": "cloudformation-describe-stacks",
+        "command": "aws cloudformation describe-stacks --stack-name saphnexa-uat --region ap-northeast-1 --output json",
+        "output_ref": "raw/cloudformation-describe-stacks.json",
+        "status": "captured"
+      },
+      {
+        "id": "cloudformation-list-stack-resources",
+        "command": "aws cloudformation list-stack-resources --stack-name saphnexa-uat --region ap-northeast-1 --output json",
+        "output_ref": "raw/cloudformation-list-stack-resources.json",
+        "status": "captured"
+      },
+      {
+        "id": "flyway-info",
+        "command": "flyway info -url=jdbc:postgresql://saphnexa-uat-dsql.cluster-abcd1234efgh.ap-northeast-1.dsql.amazonaws.com:5432/saphnexa",
+        "output_ref": "raw/flyway-info.json",
+        "status": "captured"
+      },
+      {
+        "id": "hono-openapi",
+        "command": "curl -fsS https://api.uat.saphnexa.awsapps.com/openapi.json",
+        "output_ref": "raw/openapi.json",
+        "status": "captured"
+      },
+      {
+        "id": "edge-realtime",
+        "command": "node tools/capture-edge-realtime-smoke.js --env uat",
+        "output_ref": "raw/edge-realtime-smoke.json",
+        "status": "captured"
+      },
+      {
+        "id": "rag-runtime",
+        "command": "node tools/capture-rag-runtime-smoke.js --env uat",
+        "output_ref": "raw/rag-runtime-smoke.json",
+        "status": "captured"
+      },
+      {
+        "id": "published-artifacts",
+        "command": "node tools/capture-admin-artifacts-smoke.js --env uat",
+        "output_ref": "raw/admin-artifacts-smoke.json",
+        "status": "captured"
+      }
+    ]
+  },
   "cloudformation": {
     "StackName": "saphnexa-uat",
     "stack_uuid": "aaaaaaaa-bbbb-cccc-dddd-eeeeeeeeeeee",
