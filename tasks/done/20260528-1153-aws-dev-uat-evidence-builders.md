@@ -1,6 +1,6 @@
 # AWS dev/UAT final evidence builder 追加
 
-状態: in_progress
+状態: done
 
 ## 背景
 
@@ -38,12 +38,12 @@ PR #2 では AWS dev/UAT の final evidence gate と execution bridge が追加�
 
 ## 受け入れ条件
 
-- [ ] raw input から `aws-captured` preflight evidence を生成でき、既存 final preflight checker を通る fixture check がある。
-- [ ] raw input から `aws-captured` validation evidence を生成でき、既存 final suite checker を通る fixture check がある。
-- [ ] builder は fixture/example/pending/localhost を final evidence に混入させない既存 checker と接続されている。
-- [ ] npm scripts / Taskfile / CI / runbook / local verification / external action plan が builder と同期している。
-- [ ] `git diff --check`、targeted checks、`npm run verify` が pass する。
-- [ ] PR に受け入れ条件確認とセルフレビューコメントを追加できる。
+- [x] raw input から `aws-captured` preflight evidence を生成でき、既存 final preflight checker を通る fixture check がある。
+- [x] raw input から `aws-captured` validation evidence を生成でき、既存 final suite checker を通る fixture check がある。
+- [x] builder は fixture/example/pending/localhost を final evidence に混入させない既存 checker と接続されている。
+- [x] npm scripts / Taskfile / CI / runbook / local verification / external action plan が builder と同期している。
+- [x] `git diff --check`、targeted checks、`npm run verify` が pass する。
+- [x] PR に受け入れ条件確認とセルフレビューコメントを追加できる。
 
 ## 検証計画
 
@@ -71,3 +71,13 @@ PR #2 では AWS dev/UAT の final evidence gate と execution bridge が追加�
 
 - 実 AWS credentials と raw 証跡がないため、builder の実入力はまだ fixture でしか検査できない。
 - final evidence の信頼性は、builder への raw input が実 AWS 由来であることに依存するため、runbook と PR コメントで境界を明記する。
+
+## 完了記録
+
+- 実装 commit: `6bb2257`
+- PR: https://github.com/tsuji-tomonori/saphnexa/pull/2
+- 受け入れ条件確認コメント: https://github.com/tsuji-tomonori/saphnexa/pull/2#issuecomment-4560497493
+- セルフレビューコメント: https://github.com/tsuji-tomonori/saphnexa/pull/2#issuecomment-4560500160
+- 作業レポート: `reports/working/20260528-1153-aws-dev-uat-evidence-builders.md`
+- 実行した検証: `npm run aws:dev-uat:evidence:fixture:check`, `npm run aws:dev-uat:preflight:build -- --input docs/acceptance/evidence/aws_dev_uat_preflight.capture.sample.json --output /tmp/saphnexa-aws-dev-uat-preflight.json`, `npm run aws:dev-uat:validation:build -- --input docs/acceptance/evidence/aws_dev_uat_validation.capture.sample.json --output /tmp/saphnexa-aws-dev-uat-validation.json`, final checker suite, `npm run ci:check`, `npm run docs:check`, `npm run acceptance:external-actions:check`, `npm run acceptance:package:check`, `git diff --check`, `npm run verify`
+- 未実施: 実 AWS deploy / migration / publish / E2E / 性能 / RAG品質評価。理由は AWS credentials と実 raw 証跡が未準備。
