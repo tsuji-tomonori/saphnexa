@@ -1,6 +1,6 @@
 # Operator handoff evidence inputs
 
-状態: do
+状態: done
 
 ## 背景
 
@@ -63,3 +63,20 @@ AWS dev/UAT operator handoff は release、AWS identity、operator input など�
 
 - required input map の追加は operator guidance の改善であり、実 AWS 実行や証跡生成の代替ではない。
 - 実 AWS credentials がないため、ready path は fixture による構造検査に留まる。
+
+## 完了メモ
+
+- 実装 commit: `d706681` (`✨ feat(acceptance): operator handoffにevidence input mapを追加`)
+- PR: https://github.com/tsuji-tomonori/saphnexa/pull/2
+- 受け入れ条件確認コメント: https://github.com/tsuji-tomonori/saphnexa/pull/2#issuecomment-4562061593
+- セルフレビューコメント: https://github.com/tsuji-tomonori/saphnexa/pull/2#issuecomment-4562061572
+- 作業レポート: `reports/working/20260528-1716-operator-handoff-evidence-inputs.md`
+
+## 完了時の検証
+
+- `npm run aws:dev-uat:operator-handoff:check`: pass
+- `npm run aws:dev-uat:operator-handoff:fixture:check`: pass
+- `npm run docs:check`: pass
+- `git diff --check`: pass
+- `npm run verify`: pass
+- `aws sts get-caller-identity --output json`: fail。理由: `Unable to locate credentials.`
