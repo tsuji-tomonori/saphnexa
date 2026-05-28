@@ -1,6 +1,6 @@
 # final readiness bundle artifact scope gate
 
-- 状態: do
+- 状態: done
 - タスク種別: 機能追加
 - ブランチ: `codex/aws-dev-uat-preflight`
 - PR: https://github.com/tsuji-tomonori/saphnexa/pull/2
@@ -59,6 +59,11 @@ final readiness が evidence bundle manifest 内の全 artifact を現在の raw
 ## 作業レポート
 
 - `reports/working/20260528-1810-final-readiness-bundle-artifact-scope.md`
+
+## PR コメント
+
+- 受け入れ条件確認: https://github.com/tsuji-tomonori/saphnexa/pull/2#issuecomment-4564219457
+- セルフレビュー: https://github.com/tsuji-tomonori/saphnexa/pull/2#issuecomment-4564222023
 
 ## PR レビュー観点
 
