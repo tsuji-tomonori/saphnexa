@@ -33,6 +33,9 @@ for (const action of plan.actions) {
 const awsDeployPublish = plan.actions.find((action) => action.id === "aws-deploy-publish");
 assert(awsDeployPublish.candidate_commands.includes("aws s3 sync dist/admin/docs/latest/ s3://<admin-artifacts-bucket>/docs-site/latest/"), "docs latest publish command must use design docs-site/latest prefix");
 assert(awsDeployPublish.candidate_commands.includes("aws s3 sync dist/admin/docs/versions/v0.16/ s3://<admin-artifacts-bucket>/docs-site/releases/v0.16/"), "docs version publish command must use design docs-site/releases/v0.16 prefix");
+assert(awsDeployPublish.candidate_commands.includes("aws s3 sync dist/admin/docs/versions/v0.17/ s3://<admin-artifacts-bucket>/docs-site/releases/v0.17/"), "docs version publish command must use design docs-site/releases/v0.17 prefix");
+assert(awsDeployPublish.candidate_commands.includes("aws s3 sync dist/admin/test-reports/allure/latest/ s3://<admin-artifacts-bucket>/test-reports/allure/latest/"), "Allure latest publish command must use test-reports/allure/latest prefix");
+assert(awsDeployPublish.candidate_commands.includes("aws s3 sync dist/admin/test-reports/allure/runs/<test_run_id>/ s3://<admin-artifacts-bucket>/test-reports/allure/runs/<test_run_id>/"), "Allure run publish command must use test-reports/allure/runs prefix");
 assert(!awsDeployPublish.candidate_commands.includes("aws s3 sync dist/admin/docs/ s3://<admin-artifacts-bucket>/docs/"), "docs publish command must not use legacy docs/ prefix");
 const cloudFormationCapture = plan.actions.find((action) => action.id === "cloudformation-capture");
 assert(cloudFormationCapture.candidate_commands.includes("CFN_CAPTURED_AT=<capture-iso-timestamp> npm run cfn:inventory:normalize"), "CloudFormation capture action must include final inventory normalizer command");

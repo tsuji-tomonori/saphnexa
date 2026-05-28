@@ -18,6 +18,7 @@ npm run edge:identity:realtime:check
 npm run cfn:inventory:normalize:fixture:check
 npm run admin-artifacts:build
 npm run artifacts:check
+npm run admin-artifacts:publish:check
 npm run coverage:check
 npm run ui:check
 npm run web:flow:check
@@ -67,8 +68,9 @@ git diff --check
 - React source が `/api/*` と `/auth/*` の相対 path だけを使うこと。
 - `dist/acceptance/cloudformation_inventory.draft.json` に CloudFormation inventory draft を生成し、実 AWS capture が必要なことを検査すること。
 - AWS CLI の `describe-stacks` / `list-stack-resources` raw JSON から final CloudFormation inventory 形式へ正規化する normalizer の fixture。
-- `dist/admin/docs/latest/` と `dist/admin/docs/versions/v0.16/` に docs artifact を生成できること。
-- `dist/admin/test-reports/allure/latest/` に Allure 互換のローカル検証 report artifact を生成できること。
+- `dist/admin/docs/latest/`、`dist/admin/docs/versions/v0.16/`、`dist/admin/docs/versions/v0.17/` に Docusaurus source と対応する docs artifact を生成できること。
+- `dist/admin/test-reports/allure/latest/` と `dist/admin/test-reports/allure/runs/local-latest/` に Allure 互換のローカル検証 report artifact を生成できること。
+- `npm run admin-artifacts:publish:check` で Docusaurus package/config、Allure latest/run/raw results prefix、CloudFront signed cookie 対象 path、S3 sync 候補が同期していること。
 - admin artifact manifest の checksum、viewer path、source と、local API の admin 限定アクセス policy。
 - Node test coverage が line 80% / branch 70% の threshold を満たすこと。
 - UI source が共通 UI package を経由し、直書き style と基本 a11y 欠落を増やしていないこと。
@@ -106,6 +108,7 @@ git diff --check
 - Hono runtime の実 Lambda adapter 起動、依存 install、Cognito authorizer、CSRF cookie integration、CloudFront 経由の実 HTTP request。
 - `aws-cdk-lib` / `constructs` install 後の実 `cdk synth`、CDK bootstrap、CDK deploy、CloudFormation change set 実行。
 - CDK deploy、CloudFormation outputs、S3 inventory、CloudWatch logs、CloudFront/S3/Docusaurus/Allure 公開 URL。
+- `aws s3 sync dist/admin/docs/versions/v0.17/ ...` と Allure run別 publish の実行結果。
 - CloudFormation `describe-stacks` / `list-stack-resources` の実取得と、AC-081 の最終 PASS 判定。
 - GitHub issue tracker の最終再取得と、AC-153 の最終 PASS 判定。
 - axe/Playwright の実 DOM accessibility report、Lighthouse CI、本番 bundler の analyzer report、AWS load test。

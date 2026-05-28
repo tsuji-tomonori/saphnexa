@@ -206,3 +206,7 @@ tasks:
     desc: Verify local admin artifact manifests and access policy
     cmds:
       - npm run artifacts:check
+  admin-artifacts:publish:check:
+    desc: Verify Docusaurus and Allure admin artifact publish bindings
+    cmds:
+      - npm run admin-artifacts:publish:check

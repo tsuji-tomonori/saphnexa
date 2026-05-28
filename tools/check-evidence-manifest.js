@@ -42,8 +42,8 @@ for (const key of ["unit_report_url", "integration_report_url", "e2e_report_url"
   assert(schema.properties.test_reports.properties[key].description.includes("localhost, private IP"), `schema ${key} description must reject private hosts`);
 }
 assert(schema.properties.docs_site.properties.latest_url.pattern === "^(https://.*/admin/docs/latest/|s3://.*/docs-site/latest/).*$", "schema docs latest URL pattern mismatch");
+assert(schema.properties.docs_site.properties.version_url.pattern === "^(https://.*/admin/docs/versions/v0\\.(16|17)/|s3://.*/docs-site/releases/v0\\.(16|17)/).*$", "schema docs version URL pattern mismatch");
 assert(schema.properties.docs_site.properties.latest_url.description.includes("localhost, private IP"), "schema docs latest URL description must reject private hosts");
-assert(schema.properties.docs_site.properties.version_url.pattern === "^(https://.*/admin/docs/versions/v0\\.16/|s3://.*/docs-site/releases/v0\\.16/).*$", "schema docs version URL pattern mismatch");
 assert(schema.properties.docs_site.properties.version_url.description.includes("localhost, private IP"), "schema docs version URL description must reject private hosts");
 assert(schema.properties.rag_evaluation.properties.report_url.pattern === "^(https://.*/admin/evaluation-reports/[^/]+/|s3://.*/reports/evaluations/[^/]+/).*$", "schema RAG evaluation report URL pattern mismatch");
 assert(schema.properties.rag_evaluation.properties.report_url.description.includes("localhost, private IP"), "schema RAG evaluation report URL description must reject private hosts");
@@ -99,7 +99,7 @@ for (const key of ["latest_url", "version_url"]) {
   assert(/example/.test(manifest.docs_site[key]), `example docs_site.${key} must be visibly non-final`);
 }
 assert(manifest.docs_site.latest_url.includes("/docs-site/latest/"), "example docs_site.latest_url must use design docs-site/latest prefix");
-assert(manifest.docs_site.version_url.includes("/docs-site/releases/v0.16/"), "example docs_site.version_url must use design docs-site/releases/v0.16 prefix");
+assert(manifest.docs_site.version_url.includes("/docs-site/releases/v0.17/"), "example docs_site.version_url must use design docs-site/releases/v0.17 prefix");
 assert(/example/.test(manifest.rag_evaluation.evaluation_run_id), "example rag evaluation id must be visibly non-final");
 assert(/example/.test(manifest.rag_evaluation.report_url), "example rag evaluation report must be visibly non-final");
 assert(manifest.rag_evaluation.report_url.includes(`/reports/evaluations/${manifest.rag_evaluation.evaluation_run_id}/`), "example rag evaluation report must use evaluation report path for evaluation_run_id");

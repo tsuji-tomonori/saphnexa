@@ -113,6 +113,7 @@ jobs:
           node-version: "22"
       - run: npm run admin-artifacts:build
       - run: npm run artifacts:check
+      - run: npm run admin-artifacts:publish:check
 
   quality-gates:
     name: quality gates
@@ -182,3 +183,4 @@ jobs:
       - run: npm run acceptance:package:check
       - run: npm run admin-artifacts:build
       - run: npm run artifacts:check
+      - run: npm run admin-artifacts:publish:check

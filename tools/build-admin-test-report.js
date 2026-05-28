@@ -1,9 +1,11 @@
 import { mkdirSync, rmSync, writeFileSync } from "node:fs";
 import { createHash } from "node:crypto";
 import { dirname, join } from "node:path";
+import { adminArtifactPublishBindings } from "../infra/cdk/admin-artifact-publish-bindings.js";
 import { currentJstTimestamp, readJson, readText } from "./lib.js";
 
 const outputRoot = "dist/admin/test-reports/allure/latest";
+const runOutputRoot = "dist/admin/test-reports/allure/runs/local-latest";
 const generatedAt = currentJstTimestamp();
 const packageJson = readJson("package.json");
 const workflow = readText(".github/workflows/ci.yml");
@@ -45,25 +47,44 @@ const suites = [
   suite("acceptance-final-check", "npm run acceptance:final:check"),
   suite("acceptance-package-build", "npm run acceptance:package:build"),
   suite("acceptance-package-check", "npm run acceptance:package:check"),
+  suite("admin-artifacts-publish-binding", "npm run admin-artifacts:publish:check"),
   suite("admin-artifacts", "npm run artifacts:check")
 ];
 
 rmSync(outputRoot, { recursive: true, force: true });
+rmSync(runOutputRoot, { recursive: true, force: true });
 
 const html = renderReport(suites);
 const indexPath = join(outputRoot, "index.html");
+const runIndexPath = join(runOutputRoot, "index.html");
 write(indexPath, html);
+write(runIndexPath, html);
 
 const manifest = {
   schema_version: "admin-test-report-artifact.v1",
   generated_by: "tools/build-admin-test-report.js",
+  generator: adminArtifactPublishBindings.allure.generator,
+  allure_generate_command: adminArtifactPublishBindings.allure.generateCommand,
+  local_artifact_command: adminArtifactPublishBindings.allure.localArtifactCommand,
   artifact_id: "admin-allure-latest",
   artifact_type: "allure_report",
   title: "Allure 互換ローカル検証レポート latest",
   viewer_path: "/admin/test-reports/allure/latest/",
+  s3_prefix: adminArtifactPublishBindings.allure.latest.s3_prefix,
+  origin_path_prefix: adminArtifactPublishBindings.allure.latest.origin_path_prefix,
+  latest_viewer_path: adminArtifactPublishBindings.allure.latest.viewer_path,
+  run_viewer_path_pattern: adminArtifactPublishBindings.allure.run.viewer_path,
+  run_s3_prefix_pattern: adminArtifactPublishBindings.allure.run.s3_prefix,
+  raw_results_s3_prefix_pattern: adminArtifactPublishBindings.allure.rawResults.s3_prefix_pattern,
+  raw_results_local_path_pattern: adminArtifactPublishBindings.allure.rawResults.local_path_pattern,
   index_path: indexPath,
+  run_index_path: runIndexPath,
+  publish_candidate_command: adminArtifactPublishBindings.allure.latest.publish_candidate_command,
+  run_publish_candidate_command: adminArtifactPublishBindings.allure.run.publish_candidate_command,
+  cloudfront_signed_cookie_required: adminArtifactPublishBindings.cloudFront.signedCookieRequired,
   status: "published-local",
-  source_files: ["package.json", ".github/workflows/ci.yml", "tests/contract.test.js", "tests/integration-local.test.js", "tests/e2e-local.test.js"],
+  final_publish_status: "pending_external",
+  source_files: ["package.json", ".github/workflows/ci.yml", "infra/cdk/admin-artifact-publish-bindings.js", "tests/contract.test.js", "tests/integration-local.test.js", "tests/e2e-local.test.js"],
   suites,
   checksum: `sha256:${sha256(html)}`,
   generated_at: generatedAt,
@@ -71,6 +92,7 @@ const manifest = {
 };
 
 write(join(outputRoot, "manifest.json"), `${JSON.stringify(manifest, null, 2)}\n`);
+write(join(runOutputRoot, "manifest.json"), `${JSON.stringify({ ...manifest, artifact_id: "admin-allure-run-local-latest", viewer_path: "/admin/test-reports/allure/runs/local-latest/", index_path: runIndexPath }, null, 2)}\n`);
 console.log(`admin test report artifact generated: ${outputRoot}`);
 
 function suite(name, command) {

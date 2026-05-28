@@ -49,7 +49,9 @@ export function buildExternalAcceptanceActionPlan(outputPath = externalActionPla
         "cdk deploy --context env=uat",
         "aws s3 sync dist/admin/docs/latest/ s3://<admin-artifacts-bucket>/docs-site/latest/",
         "aws s3 sync dist/admin/docs/versions/v0.16/ s3://<admin-artifacts-bucket>/docs-site/releases/v0.16/",
-        "aws s3 sync dist/admin/test-reports/allure/latest/ s3://<admin-artifacts-bucket>/test-reports/allure/latest/"
+        "aws s3 sync dist/admin/docs/versions/v0.17/ s3://<admin-artifacts-bucket>/docs-site/releases/v0.17/",
+        "aws s3 sync dist/admin/test-reports/allure/latest/ s3://<admin-artifacts-bucket>/test-reports/allure/latest/",
+        "aws s3 sync dist/admin/test-reports/allure/runs/<test_run_id>/ s3://<admin-artifacts-bucket>/test-reports/allure/runs/<test_run_id>/"
       ],
       required_before_run: ["AWS account/role 確認", "UAT deploy window 承認", "rollback 手順確認"],
       evidence_outputs: ["AWS account id", "CloudFormation stack id", "published docs URL", "published Allure URL"]

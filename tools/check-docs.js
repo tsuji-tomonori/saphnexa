@@ -36,6 +36,7 @@ const localVerification = readText("docs/ops/local-verification.md");
 for (const command of [
   "npm run admin-artifacts:build",
   "npm run artifacts:check",
+  "npm run admin-artifacts:publish:check",
   "npm run api:openapi:check",
   "npm run cdk:constructs:check",
   "npm run coverage:check",

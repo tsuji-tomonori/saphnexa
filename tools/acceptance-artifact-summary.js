@@ -69,7 +69,7 @@ export function buildAcceptanceArtifactSummary({ gitCommit, finalReadinessReady,
       title: "Docusaurus design documentation site",
       acceptance_ids: ["AC-002", "AC-020", "AC-087", "AC-143"],
       ...externalArtifact("local_ready", ["aws-deploy-publish"]),
-      evidence: ["dist/admin/docs/latest/", "dist/admin/docs/versions/v0.16/", "npm run admin-artifacts:build"],
+      evidence: ["dist/admin/docs/latest/", "dist/admin/docs/versions/v0.16/", "dist/admin/docs/versions/v0.17/", "npm run admin-artifacts:build", "npm run admin-artifacts:publish:check"],
       final_required: true
     }),
     artifact({

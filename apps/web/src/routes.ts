@@ -3,6 +3,7 @@ export const routes = [
   { path: "/chat", app: "chat", role: "general_user" },
   { path: "/admin", app: "admin", role: "admin" },
   { path: "/admin/docs/latest/", app: "admin-artifact", role: "admin" },
+  { path: "/admin/docs/versions/v0.17/", app: "admin-artifact", role: "admin" },
   { path: "/admin/test-reports/allure/latest/", app: "admin-artifact", role: "admin" },
   { path: "/auth/callback", app: "auth-callback", role: "authenticated" },
   { path: "/auth/logout", app: "auth-logout", role: "authenticated" },

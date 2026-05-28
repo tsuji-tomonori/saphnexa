@@ -154,8 +154,8 @@
         },
         "version_url": {
           "type": "string",
-          "description": "Final admin docs v0.16 URL. Use the CloudFront viewer path /admin/docs/versions/v0.16/ or the S3 origin prefix docs-site/releases/v0.16/. localhost, private IP, .internal, .local, and .test hosts are not final evidence.",
-          "pattern": "^(https://.*/admin/docs/versions/v0\\.16/|s3://.*/docs-site/releases/v0\\.16/).*$"
+          "description": "Final admin docs version URL. Use the CloudFront viewer path /admin/docs/versions/v0.16|v0.17/ or the S3 origin prefix docs-site/releases/v0.16|v0.17/. localhost, private IP, .internal, .local, and .test hosts are not final evidence.",
+          "pattern": "^(https://.*/admin/docs/versions/v0\\.(16|17)/|s3://.*/docs-site/releases/v0\\.(16|17)/).*$"
         }
       }
     },

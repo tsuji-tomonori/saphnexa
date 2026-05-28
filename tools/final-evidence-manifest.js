@@ -88,7 +88,7 @@ function validateInput(input) {
     assert(isArtifactUrl(input.docs_site?.[key]), `manifest input docs_site.${key} must be a final artifact URL`);
   }
   assert(isDocsLatestUrl(input.docs_site?.latest_url), "manifest input docs_site.latest_url must point to /admin/docs/latest/ or docs-site/latest/");
-  assert(isDocsVersionUrl(input.docs_site?.version_url), "manifest input docs_site.version_url must point to /admin/docs/versions/v0.16/ or docs-site/releases/v0.16/");
+  assert(isDocsVersionUrl(input.docs_site?.version_url), "manifest input docs_site.version_url must point to /admin/docs/versions/v0.16|v0.17/ or docs-site/releases/v0.16|v0.17/");
   assertFinalText(input.rag_evaluation?.evaluation_run_id, "manifest input rag_evaluation.evaluation_run_id");
   assertFinalText(input.rag_evaluation?.report_url, "manifest input rag_evaluation.report_url");
   assert(isArtifactUrl(input.rag_evaluation?.report_url), "manifest input rag_evaluation.report_url must be a final artifact URL");
@@ -154,7 +154,10 @@ function isDocsLatestUrl(value) {
 }
 
 function isDocsVersionUrl(value) {
-  return hasPathSuffix(value, "/admin/docs/versions/v0.16/") || hasPathSuffix(value, "/docs-site/releases/v0.16/");
+  return hasPathSuffix(value, "/admin/docs/versions/v0.16/") ||
+    hasPathSuffix(value, "/admin/docs/versions/v0.17/") ||
+    hasPathSuffix(value, "/docs-site/releases/v0.16/") ||
+    hasPathSuffix(value, "/docs-site/releases/v0.17/");
 }
 
 function isEvaluationReportUrl(value, evaluationRunId) {
