@@ -60,6 +60,10 @@ export function validateAwsDevUatFinalReadiness(manifest, options = {}) {
     assert(manifest.evidence_bundle_manifest.current_git_commit === true, "ready final readiness must have current evidence bundle manifest");
     assert(manifest.evidence_bundle_manifest.required_artifacts_present === true, "ready final readiness must have bundle artifact coverage");
     assert(manifest.evidence_bundle_manifest.artifact_count_matches === true, "ready final readiness must have matching bundle artifact count");
+    assert(
+      manifest.evidence_bundle_manifest.required_artifacts.every((item) => item.path_matches === true),
+      "ready final readiness must have bundle artifact paths matching current readiness inputs"
+    );
     assert(manifest.blockers.length === 0, "ready final readiness must not have blockers");
     assert(manifest.next_commands.length === 0, "ready final readiness must not have next commands");
   } else {
@@ -117,7 +121,15 @@ function validateEvidenceBundleManifestState(state) {
     ["execution-bridge", "all"]
   ]) {
     assert(
-      state.required_artifacts.some((item) => item.kind === required[0] && item.mode === required[1] && typeof item.present === "boolean"),
+      state.required_artifacts.some(
+        (item) =>
+          item.kind === required[0] &&
+          item.mode === required[1] &&
+          typeof item.present === "boolean" &&
+          typeof item.expected_path === "string" &&
+          Array.isArray(item.actual_paths) &&
+          typeof item.path_matches === "boolean"
+      ),
       `bundle manifest required artifact missing: ${required.join("/")}`
     );
   }

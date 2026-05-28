@@ -131,6 +131,8 @@ for (const phrase of [
   "ready operator execution runbook",
   "current git commit",
   "artifact coverage",
+  "current readiness artifact path match",
+  "mismatched evidence bundle artifact path",
   "invalid_evidence_bundle_manifest",
   "stale_evidence_bundle_manifest",
   "stale_operator_input",

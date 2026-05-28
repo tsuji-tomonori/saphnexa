@@ -13,13 +13,6 @@ import { currentJstTimestamp, readJson } from "./lib.js";
 export const awsDevUatFinalReadinessPath = "dist/acceptance/aws_dev_uat_final_readiness.json";
 export const awsDevUatEvidenceBundleManifestPath = "dist/acceptance/aws_dev_uat_evidence_bundle_manifest.json";
 const evidenceBundleSchemaVersion = "saphnexa-aws-dev-uat-evidence-bundle.v1";
-const requiredEvidenceBundleArtifacts = [
-  { kind: "raw-input", mode: "preflight" },
-  { kind: "raw-input", mode: "validation" },
-  { kind: "final-evidence", mode: "preflight" },
-  { kind: "final-evidence", mode: "validation" },
-  { kind: "execution-bridge", mode: "all" }
-];
 
 export function buildAwsDevUatFinalReadiness(options = {}) {
   const outputPath = options.outputPath || awsDevUatFinalReadinessPath;
@@ -51,7 +44,13 @@ export function buildAwsDevUatFinalReadiness(options = {}) {
   const bridgeState = fileState("execution-bridge", bridgePath, true);
   const operatorInput = operatorInputState(operatorInputPath);
   const operatorRunbook = operatorRunbookState(operatorRunbookPath);
-  const bundleState = evidenceBundleState(evidenceBundleManifestPath);
+  const bundleState = evidenceBundleState(evidenceBundleManifestPath, {
+    preflightRawInputPath,
+    validationRawInputPath,
+    preflightEvidencePath,
+    validationEvidencePath,
+    executionBridgePath: bridgePath
+  });
   const blockers = [];
   const nextCommands = [];
 
@@ -267,13 +266,14 @@ function evidenceState(mode, path) {
   };
 }
 
-function evidenceBundleState(path) {
+function evidenceBundleState(path, expectedPaths) {
   const state = fileState("evidence-bundle", path, true);
+  const requiredArtifacts = requiredEvidenceBundleArtifacts(expectedPaths);
   if (!state.exists) {
     return {
       ...state,
       artifact_count: 0,
-      required_artifacts: requiredEvidenceBundleArtifacts.map((item) => ({ ...item, present: false })),
+      required_artifacts: requiredArtifacts.map((item) => ({ ...item, present: false, actual_paths: [], path_matches: false })),
       required_artifacts_present: false
     };
   }
@@ -288,7 +288,7 @@ function evidenceBundleState(path) {
       current_git_commit: null,
       artifact_count: 0,
       artifact_count_matches: false,
-      required_artifacts: requiredEvidenceBundleArtifacts.map((item) => ({ ...item, present: false })),
+      required_artifacts: requiredArtifacts.map((item) => ({ ...item, present: false, actual_paths: [], path_matches: false })),
       required_artifacts_present: false,
       invalid_content: true,
       ready: false
@@ -296,12 +296,20 @@ function evidenceBundleState(path) {
   }
 
   const artifacts = Array.isArray(bundle.artifacts) ? bundle.artifacts : [];
-  const requiredArtifacts = requiredEvidenceBundleArtifacts.map((required) => ({
-    ...required,
-    present: artifacts.some((artifact) => artifact.kind === required.kind && artifact.mode === required.mode)
-  }));
+  const requiredArtifactStates = requiredArtifacts.map((required) => {
+    const matchingArtifacts = artifacts.filter((artifact) => artifact.kind === required.kind && artifact.mode === required.mode);
+    const expectedPath = resolve(required.expected_path);
+    const actualPaths = matchingArtifacts.map((artifact) => resolve(artifact.path || ""));
+    const pathMatches = actualPaths.includes(expectedPath);
+    return {
+      ...required,
+      present: matchingArtifacts.length > 0,
+      actual_paths: actualPaths,
+      path_matches: pathMatches
+    };
+  });
   const artifactCountMatches = Number.isInteger(bundle.artifact_count) && bundle.artifact_count === artifacts.length;
-  const requiredArtifactsPresent = requiredArtifacts.every((item) => item.present);
+  const requiredArtifactsPresent = requiredArtifactStates.every((item) => item.present && item.path_matches);
   const currentGit = bundle.git_commit_sha === currentGitCommit();
   const invalidContent =
     bundle.schema_version !== evidenceBundleSchemaVersion ||
@@ -320,11 +328,21 @@ function evidenceBundleState(path) {
     current_git_commit: currentGit,
     artifact_count: Number.isInteger(bundle.artifact_count) ? bundle.artifact_count : null,
     artifact_count_matches: artifactCountMatches,
-    required_artifacts: requiredArtifacts,
+    required_artifacts: requiredArtifactStates,
     required_artifacts_present: requiredArtifactsPresent,
     invalid_content: invalidContent,
     ready: !invalidContent && currentGit
   };
+}
+
+function requiredEvidenceBundleArtifacts(expectedPaths) {
+  return [
+    { kind: "raw-input", mode: "preflight", expected_path: resolve(expectedPaths.preflightRawInputPath) },
+    { kind: "raw-input", mode: "validation", expected_path: resolve(expectedPaths.validationRawInputPath) },
+    { kind: "final-evidence", mode: "preflight", expected_path: resolve(expectedPaths.preflightEvidencePath) },
+    { kind: "final-evidence", mode: "validation", expected_path: resolve(expectedPaths.validationEvidencePath) },
+    { kind: "execution-bridge", mode: "all", expected_path: resolve(expectedPaths.executionBridgePath) }
+  ];
 }
 
 function collectStageReadiness(stage, blockers, nextCommands) {
