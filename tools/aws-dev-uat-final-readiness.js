@@ -273,7 +273,7 @@ function evidenceBundleState(path, expectedPaths) {
     return {
       ...state,
       artifact_count: 0,
-      required_artifacts: requiredArtifacts.map((item) => ({ ...item, present: false, actual_paths: [], path_matches: false })),
+      required_artifacts: requiredArtifacts.map((item) => missingRequiredArtifactState(item)),
       required_artifacts_present: false
     };
   }
@@ -288,7 +288,7 @@ function evidenceBundleState(path, expectedPaths) {
       current_git_commit: null,
       artifact_count: 0,
       artifact_count_matches: false,
-      required_artifacts: requiredArtifacts.map((item) => ({ ...item, present: false, actual_paths: [], path_matches: false })),
+      required_artifacts: requiredArtifacts.map((item) => missingRequiredArtifactState(item)),
       required_artifacts_present: false,
       invalid_content: true,
       ready: false
@@ -300,16 +300,27 @@ function evidenceBundleState(path, expectedPaths) {
     const matchingArtifacts = artifacts.filter((artifact) => artifact.kind === required.kind && artifact.mode === required.mode);
     const expectedPath = resolve(required.expected_path);
     const actualPaths = matchingArtifacts.map((artifact) => resolve(artifact.path || ""));
-    const pathMatches = actualPaths.includes(expectedPath);
+    const matchedArtifact = matchingArtifacts.find((artifact) => resolve(artifact.path || "") === expectedPath) || null;
+    const currentMetadata = artifactFileMetadata(expectedPath);
+    const pathMatches = matchedArtifact !== null;
+    const sha256Matches = pathMatches && currentMetadata.exists && matchedArtifact.sha256 === currentMetadata.sha256;
+    const sizeBytesMatches = pathMatches && currentMetadata.exists && matchedArtifact.size_bytes === currentMetadata.size_bytes;
     return {
       ...required,
       present: matchingArtifacts.length > 0,
       actual_paths: actualPaths,
-      path_matches: pathMatches
+      path_matches: pathMatches,
+      expected_sha256: matchedArtifact?.sha256 || null,
+      actual_sha256: currentMetadata.sha256,
+      sha256_matches: sha256Matches,
+      expected_size_bytes: Number.isInteger(matchedArtifact?.size_bytes) ? matchedArtifact.size_bytes : null,
+      actual_size_bytes: currentMetadata.size_bytes,
+      size_bytes_matches: sizeBytesMatches,
+      metadata_matches: sha256Matches && sizeBytesMatches
     };
   });
   const artifactCountMatches = Number.isInteger(bundle.artifact_count) && bundle.artifact_count === artifacts.length;
-  const requiredArtifactsPresent = requiredArtifactStates.every((item) => item.present && item.path_matches);
+  const requiredArtifactsPresent = requiredArtifactStates.every((item) => item.present && item.path_matches && item.metadata_matches);
   const currentGit = bundle.git_commit_sha === currentGitCommit();
   const invalidContent =
     bundle.schema_version !== evidenceBundleSchemaVersion ||
@@ -343,6 +354,39 @@ function requiredEvidenceBundleArtifacts(expectedPaths) {
     { kind: "final-evidence", mode: "validation", expected_path: resolve(expectedPaths.validationEvidencePath) },
     { kind: "execution-bridge", mode: "all", expected_path: resolve(expectedPaths.executionBridgePath) }
   ];
+}
+
+function missingRequiredArtifactState(item) {
+  return {
+    ...item,
+    present: false,
+    actual_paths: [],
+    path_matches: false,
+    expected_sha256: null,
+    actual_sha256: null,
+    sha256_matches: false,
+    expected_size_bytes: null,
+    actual_size_bytes: null,
+    size_bytes_matches: false,
+    metadata_matches: false
+  };
+}
+
+function artifactFileMetadata(path) {
+  const absolutePath = resolve(path);
+  if (!existsSync(absolutePath)) {
+    return {
+      exists: false,
+      size_bytes: null,
+      sha256: null
+    };
+  }
+  const body = readFileSync(absolutePath);
+  return {
+    exists: true,
+    size_bytes: body.length,
+    sha256: createHash("sha256").update(body).digest("hex")
+  };
 }
 
 function collectStageReadiness(stage, blockers, nextCommands) {

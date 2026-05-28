@@ -64,6 +64,10 @@ export function validateAwsDevUatFinalReadiness(manifest, options = {}) {
       manifest.evidence_bundle_manifest.required_artifacts.every((item) => item.path_matches === true),
       "ready final readiness must have bundle artifact paths matching current readiness inputs"
     );
+    assert(
+      manifest.evidence_bundle_manifest.required_artifacts.every((item) => item.metadata_matches === true),
+      "ready final readiness must have bundle artifact metadata matching current files"
+    );
     assert(manifest.blockers.length === 0, "ready final readiness must not have blockers");
     assert(manifest.next_commands.length === 0, "ready final readiness must not have next commands");
   } else {
@@ -128,7 +132,10 @@ function validateEvidenceBundleManifestState(state) {
           typeof item.present === "boolean" &&
           typeof item.expected_path === "string" &&
           Array.isArray(item.actual_paths) &&
-          typeof item.path_matches === "boolean"
+          typeof item.path_matches === "boolean" &&
+          typeof item.sha256_matches === "boolean" &&
+          typeof item.size_bytes_matches === "boolean" &&
+          typeof item.metadata_matches === "boolean"
       ),
       `bundle manifest required artifact missing: ${required.join("/")}`
     );
