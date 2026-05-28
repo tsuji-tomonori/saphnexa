@@ -1,6 +1,6 @@
 # AWS operator execution runbook
 
-状態: do
+状態: done
 
 ## 背景
 
@@ -69,3 +69,11 @@ AWS dev/UAT の最終 gate は raw capture plan、operator input、materialized 
 
 - 実 AWS credentials がないため、ready path は fixture による構造検査に留まる。
 - runbook は手順と gate の明確化であり、AWS dev/UAT の実行証跡そのものの代替ではない。
+
+## 完了メモ
+
+- 実装 commit: `51bc089`
+- PR: https://github.com/tsuji-tomonori/saphnexa/pull/2
+- 受け入れ条件コメント: https://github.com/tsuji-tomonori/saphnexa/pull/2#issuecomment-4561687850
+- セルフレビューコメント: https://github.com/tsuji-tomonori/saphnexa/pull/2#issuecomment-4561687851
+- 作業レポート: `reports/working/20260528-1620-aws-operator-execution-runbook.md`
