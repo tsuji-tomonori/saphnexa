@@ -1,6 +1,6 @@
 # AWS dev/UAT validation command separation
 
-- 状態: doing
+- 状態: done
 - タスク種別: 修正
 - 対象ブランチ: `codex/aws-dev-uat-preflight`
 - 対象PR: #2
@@ -64,11 +64,17 @@ raw capture plan に「外部で実行して raw output を生成する command�
 
 ## 受け入れ条件
 
-- [ ] validation raw capture plan が `npm run test:e2e:aws`、`npm run perf:aws`、`npm run rag:quality:aws` を raw output 生成 command として直接使わない。
-- [ ] validation raw output capture helper が required env の missing failure と valid JSON output を検査できる。
-- [ ] final suite gate (`test:e2e:aws` / `perf:aws` / `rag:quality:aws`) は validation build 後に実行される順序になっている。
-- [ ] external action plan、runbook、local verification docs が新しい順序と制約を説明する。
-- [ ] `npm run verify`、CI workflow、Taskfile、docs check に fixture check が反映される。
+- [x] validation raw capture plan が `npm run test:e2e:aws`、`npm run perf:aws`、`npm run rag:quality:aws` を raw output 生成 command として直接使わない。
+- [x] validation raw output capture helper が required env の missing failure と valid JSON output を検査できる。
+- [x] final suite gate (`test:e2e:aws` / `perf:aws` / `rag:quality:aws`) は validation build 後に実行される順序になっている。
+- [x] external action plan、runbook、local verification docs が新しい順序と制約を説明する。
+- [x] `npm run verify`、CI workflow、Taskfile、docs check に fixture check が反映される。
+
+## 完了メモ
+
+- PR #2 に受け入れ条件確認コメントとセルフレビューコメントを投稿済み。
+- `npm run verify` と targeted checks は pass。
+- `aws sts get-caller-identity --output json` は AWS credentials 未設定で fail。実 AWS dev/UAT E2E・性能・RAG品質検証と実 evidence 作成は未実施。
 
 ## 検証計画
 
