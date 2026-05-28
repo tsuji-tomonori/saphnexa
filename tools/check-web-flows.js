@@ -7,7 +7,19 @@ import { assert, readText } from "./lib.js";
 const api = createLocalApi();
 const routesSource = readText("apps/web/src/routes.ts");
 const chatSource = readText("apps/web/src/chat/ChatApp.tsx");
+const chatPageSource = readText("apps/web/src/pages/ChatPage.tsx");
+const chatNavSource = readText("apps/web/src/features/chat/ChatSessionNav.tsx");
+const composerSource = readText("apps/web/src/features/chat/MessageComposer.tsx");
+const eventsPanelSource = readText("apps/web/src/features/chat/MessageEventsPanel.tsx");
 const adminSource = readText("apps/web/src/admin/AdminApp.tsx");
+const adminPageSource = readText("apps/web/src/pages/AdminDashboardPage.tsx");
+const adminActionsSource = readText("apps/web/src/features/admin/AdminActions.tsx");
+const artifactTableSource = readText("apps/web/src/features/admin/ArtifactTable.tsx");
+const assistantRuntimeSource = readText("apps/web/src/lib/assistantRuntime.ts");
+const meHookSource = readText("apps/web/src/hooks/useMe.ts");
+const chatSessionsHookSource = readText("apps/web/src/hooks/useChatSessions.ts");
+const artifactsHookSource = readText("apps/web/src/hooks/useAdminArtifacts.ts");
+const startEvaluationHookSource = readText("apps/web/src/hooks/useStartEvaluationRun.ts");
 
 const scenarios = [];
 scenario("route role metadata", () => {
@@ -25,21 +37,50 @@ scenario("route role metadata", () => {
 
 scenario("chat UI source contract", () => {
   for (const token of [
-    "/api/me",
-    "/api/chat-sessions",
-    "aria-label=\"チャット一覧\"",
-    "aria-label=\"質問\"",
-    "aria-label=\"イベント\"",
-    "role=\"status\"",
-    "チャットはありません",
-    "イベントはありません",
-    "disabled={!csrfToken || !question}",
-    "setEvents(detail.events)"
+    "QueryClientProvider",
+    "ChatPage"
   ]) {
     assert(chatSource.includes(token), `ChatApp missing token: ${token}`);
   }
-  assert(!/useState<Chat\[\]>\(\[[^\]]/.test(chatSource), "ChatApp must not seed fake chats");
-  assert(!/useState<EventRow\[\]>\(\[[^\]]/.test(chatSource), "ChatApp must not seed fake events");
+  for (const token of [
+    "useChatSessions",
+    "useMessageEvents",
+    "createSaphnexaAssistantAdapter",
+    "setMessageId(accepted.message_id)"
+  ]) {
+    assert(chatPageSource.includes(token), `ChatPage missing token: ${token}`);
+  }
+  assert(meHookSource.includes("/api/me"), "useMe hook must call /api/me");
+  assert(chatSessionsHookSource.includes("/api/chat-sessions"), "useChatSessions hook must call /api/chat-sessions");
+  for (const token of [
+    "aria-label=\"チャット一覧\"",
+    "role=\"status\"",
+    "チャットはありません"
+  ]) {
+    assert(chatNavSource.includes(token), `ChatSessionNav missing token: ${token}`);
+  }
+  for (const token of [
+    "aria-label=\"質問\"",
+    "disabled={!props.csrfToken || !props.question}"
+  ]) {
+    assert(composerSource.includes(token), `MessageComposer missing token: ${token}`);
+  }
+  for (const token of [
+    "aria-label=\"イベント\"",
+    "role=\"status\"",
+    "イベントはありません"
+  ]) {
+    assert(eventsPanelSource.includes(token), `MessageEventsPanel missing token: ${token}`);
+  }
+  for (const token of [
+    "@assistant-ui/react",
+    "/api/chat-sessions/",
+    "/messages"
+  ]) {
+    assert(assistantRuntimeSource.includes(token), `assistant runtime missing token: ${token}`);
+  }
+  assert(!/useState<Chat\[\]>\(\[[^\]]/.test(chatPageSource), "ChatPage must not seed fake chats");
+  assert(!/useState<EventRow\[\]>\(\[[^\]]/.test(chatPageSource), "ChatPage must not seed fake events");
 });
 
 scenario("chat local API flow", () => {
@@ -60,20 +101,38 @@ scenario("chat local API flow", () => {
 
 scenario("admin UI source contract", () => {
   for (const token of [
-    "/api/me",
-    "/api/admin/artifacts",
-    "/api/admin/evaluation-runs",
-    "aria-label=\"管理操作\"",
-    "aria-label=\"成果物\"",
-    "role=\"status\"",
-    "成果物はありません",
-    "disabled={!csrfToken}",
-    "setArtifacts(data.artifacts)",
-    "setJobStatus(response.evaluation_run.status)"
+    "AdminDashboardPage"
   ]) {
     assert(adminSource.includes(token), `AdminApp missing token: ${token}`);
   }
-  assert(!/useState<Artifact\[\]>\(\[[^\]]/.test(adminSource), "AdminApp must not seed fake artifacts");
+  for (const token of [
+    "useAdminArtifacts",
+    "aria-label=\"成果物\""
+  ]) {
+    assert(adminPageSource.includes(token), `AdminDashboardPage missing token: ${token}`);
+  }
+  assert(meHookSource.includes("/api/me"), "useMe hook must call /api/me");
+  assert(artifactsHookSource.includes("/api/admin/artifacts"), "useAdminArtifacts hook must call /api/admin/artifacts");
+  for (const token of [
+    "aria-label=\"管理操作\"",
+    "role=\"status\"",
+    "disabled={!props.csrfToken || !datasetId}",
+    "setJobStatus(response.evaluation_run.status)"
+  ]) {
+    assert(adminActionsSource.includes(token), `AdminActions missing token: ${token}`);
+  }
+  assert(startEvaluationHookSource.includes("/api/admin/evaluation-runs"), "useStartEvaluationRun hook must call /api/admin/evaluation-runs");
+  for (const token of [
+    "DataTable",
+    "Drawer",
+    "成果物はありません",
+    "href={artifact.viewer_path}",
+    "{artifact.title}"
+  ]) {
+    assert(artifactTableSource.includes(token), `ArtifactTable missing token: ${token}`);
+  }
+  assert(!adminActionsSource.includes("dataset-local-golden"), "Admin UI must not hard-code dataset ids");
+  assert(!/useState<Artifact\[\]>\(\[[^\]]/.test(adminPageSource), "AdminApp must not seed fake artifacts");
 });
 
 scenario("admin local API flow", () => {

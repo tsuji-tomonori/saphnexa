@@ -4,26 +4,56 @@ import { assert, readText } from "./lib.js";
 
 const checks = [];
 checkFile("ChatApp", "apps/web/src/chat/ChatApp.tsx", [
-  rule("main landmark", (body) => body.includes("<main className=\"sx-chat-shell\"")),
+  rule("query provider", (body) => body.includes("QueryClientProvider")),
+  rule("page wrapper", (body) => body.includes("<ChatPage />"))
+]);
+checkFile("ChatPage", "apps/web/src/pages/ChatPage.tsx", [
+  rule("main landmark", (body) => body.includes("className=\"sx-chat-shell\"")),
+  rule("assistant runtime adapter", (body) => body.includes("createSaphnexaAssistantAdapter"))
+]);
+checkFile("ChatSessionNav", "apps/web/src/features/chat/ChatSessionNav.tsx", [
   rule("labelled navigation", (body) => body.includes("<nav aria-label=\"チャット一覧\">")),
-  rule("question label", (body) => body.includes("aria-label=\"質問\"")),
-  rule("question disabled state", (body) => body.includes("disabled={!csrfToken || !question}")),
-  rule("event panel label", (body) => body.includes("aria-label=\"イベント\"")),
   rule("empty chat status", (body) => body.includes("<p role=\"status\">チャットはありません</p>")),
-  rule("empty event status", (body) => body.includes("<p role=\"status\">イベントはありません</p>")),
   rule("button type", (body) => !/<button(?![^>]*\stype=)/.test(body))
 ]);
+checkFile("MessageComposer", "apps/web/src/features/chat/MessageComposer.tsx", [
+  rule("question label", (body) => body.includes("aria-label=\"質問\"")),
+  rule("question disabled state", (body) => body.includes("disabled={!props.csrfToken || !props.question}")),
+  rule("button type", (body) => !/<button(?![^>]*\stype=)/.test(body))
+]);
+checkFile("MessageEventsPanel", "apps/web/src/features/chat/MessageEventsPanel.tsx", [
+  rule("event panel label", (body) => body.includes("aria-label=\"イベント\"")),
+  rule("empty event status", (body) => body.includes("<p role=\"status\">イベントはありません</p>"))
+]);
 checkFile("AdminApp", "apps/web/src/admin/AdminApp.tsx", [
-  rule("main landmark", (body) => body.includes("<main className=\"sx-admin-shell\"")),
+  rule("page wrapper", (body) => body.includes("<AdminDashboardPage />"))
+]);
+checkFile("AdminDashboardPage", "apps/web/src/pages/AdminDashboardPage.tsx", [
+  rule("main landmark", (body) => body.includes("className=\"sx-admin-shell\"")),
+  rule("artifact panel label", (body) => body.includes("aria-label=\"成果物\""))
+]);
+checkFile("AdminActions", "apps/web/src/features/admin/AdminActions.tsx", [
   rule("admin action label", (body) => body.includes("aria-label=\"管理操作\"")),
-  rule("artifact panel label", (body) => body.includes("aria-label=\"成果物\"")),
-  rule("evaluation disabled state", (body) => body.includes("disabled={!csrfToken}")),
-  rule("empty artifact status", (body) => body.includes("<p role=\"status\">成果物はありません</p>")),
-  rule("artifact links from API data", (body) => body.includes("href={artifact.viewer_path}") && body.includes("{artifact.title}"))
+  rule("evaluation disabled state", (body) => body.includes("disabled={!props.csrfToken || !datasetId}")),
+  rule("evaluation progress status", (body) => body.includes("<p role=\"status\">評価実行を開始しています</p>"))
+]);
+checkFile("ArtifactTable", "apps/web/src/features/admin/ArtifactTable.tsx", [
+  rule("empty artifact status", (body) => body.includes("成果物はありません")),
+  rule("artifact links from API data", (body) => body.includes("href={artifact.viewer_path}") && body.includes("{artifact.title}")),
+  rule("details drawer status", (body) => body.includes("<p role=\"status\">成果物を選択すると詳細を表示します</p>"))
 ]);
 checkFile("UI components", "packages/ui/src/components.tsx", [
+  rule("data table export", (body) => body.includes("export { DataTable }")),
+  rule("dialog export", (body) => body.includes("export { Dialog }")),
+  rule("drawer export", (body) => body.includes("export { Drawer }"))
+]);
+checkFile("UI atoms", "packages/ui/src/atoms/Button.tsx", [
   rule("button type default", (body) => body.includes("type={props.type || \"button\"}")),
+]);
+checkFile("UI panel", "packages/ui/src/organisms/Panel.tsx", [
   rule("panel labelled section", (body) => body.includes("<section") && body.includes("aria-label={props[\"aria-label\"]}")),
+]);
+checkFile("UI status", "packages/ui/src/molecules/StatusBadge.tsx", [
   rule("status accessible name", (body) => body.includes("aria-label={`状態: ${props.status}`}"))
 ]);
 

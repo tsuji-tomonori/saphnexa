@@ -98,6 +98,8 @@ git diff --check
 
 - 公開 API 38 件と Tools API 6 件の contract metadata。
 - Hono/Zod/OpenAPI 実装 entrypoint が 38 route と `/openapi.json` を route contract から生成し、CSRF/role/Zod validation metadata を保持すること。
+- `apps/api`、`apps/tools-api`、`apps/agent` が TypeScript entry を持ち、AgentCore Runtime 互換の `/ping` / `/invocations` contract を source-level で確認できること。
+- `apps/web` が React + Vite + TypeScript package として成立し、TanStack Query hook、assistant-ui runtime adapter 境界、Atomic Design UI package を通して chat/admin source gate を満たすこと。
 - CDK 実 Construct source が 7 Construct class を持ち、DSQL、CloudFront、Cognito、AppSync Events、S3 Vectors、Bedrock KB、AgentCore、admin artifacts 公開基盤の CloudFormation resource type inventory と同期していること。
 - CloudFront / Cognito / AppSync Events binding source が、SPA/API/AppSync/admin artifacts origin、`/api/*` と `/auth/*` の versioned API rewrite、Cognito OAuth code flow、AppSync Events `chat` / `admin` namespace、admin artifacts signed cookie KeyGroup と同期していること。
 - chat が独立リソースであり、owner/viewer によって操作権限が変わること。
@@ -181,6 +183,7 @@ git diff --check
 - axe/Playwright の実 DOM accessibility report、Lighthouse CI、本番 bundler の analyzer report、AWS load test。
 - 実ブラウザ操作による chat/admin E2E、CloudFront 経由のロール別導線確認。
 - Bedrock KB、S3 Vectors、AgentCore Runtime、Bedrock Evaluations を使った実 RAG 品質評価。
+- TypeScript framework 境界は local/source gate で確認する。`tsc` 実行、Vite production build、assistant-ui runtime の実ブラウザ streaming 挙動は、依存 install と実 runtime が揃った環境で別途確認する。
 - Aurora DSQL への Flyway 実適用、CloudWatch metrics/alarms、S3 lifecycle、DSQL retention settings の実リソース確認。
 - CloudFront Function、WAF、IAM policy、KMS key policy、SQS/DLQ、AppSync Events、cdk-nag の実リソース/実行結果確認。
 - 実 S3 の offline artifact inventory、実 parser/KB/S3 Vectors ingestion、実バックアップからの restore drill。
