@@ -29,6 +29,9 @@ export function validateAwsDevUatFinalReadiness(manifest, options = {}) {
   assert(manifest.raw_capture_plan.path.endsWith("aws_dev_uat_raw_capture_plan.json"), "raw capture plan path mismatch");
   assert(manifest.raw_capture_plan.exists === existsSync(manifest.raw_capture_plan.path), "raw capture plan existence mismatch");
   assert(manifest.execution_bridge.path.endsWith("aws_dev_uat_execution_bridge.json"), "execution bridge path mismatch");
+  assert(manifest.operator_input.kind === "operator-input", "operator input kind mismatch");
+  assert(manifest.operator_input.path.endsWith("aws_dev_uat_operator_input.json"), "operator input path mismatch");
+  assert(manifest.operator_input.exists === existsSync(manifest.operator_input.path), "operator input existence mismatch");
   assert(manifest.aws_identity.command === "aws sts get-caller-identity --output json", "AWS identity command mismatch");
   assert(Array.isArray(manifest.command_order.final_gates), "final gate command order is required");
   assert(manifest.command_order.final_gates.includes("npm run aws:dev-uat:preflight:final"), "preflight final gate missing");
@@ -43,6 +46,7 @@ export function validateAwsDevUatFinalReadiness(manifest, options = {}) {
   assert(Array.isArray(manifest.blockers), "final readiness blockers must be an array");
   assert(Array.isArray(manifest.next_commands), "final readiness next_commands must be an array");
   if (manifest.ready) {
+    assert(manifest.operator_input.ready === true, "ready final readiness must have resolved operator input");
     assert(manifest.blockers.length === 0, "ready final readiness must not have blockers");
     assert(manifest.next_commands.length === 0, "ready final readiness must not have next commands");
   } else {
@@ -50,6 +54,7 @@ export function validateAwsDevUatFinalReadiness(manifest, options = {}) {
     assert(manifest.next_commands.length > 0, "blocked final readiness must have next commands");
   }
   assert(manifest.note.includes("does not deploy"), "final readiness must state it does not deploy");
+  assert(manifest.note.includes("resolved operator input"), "final readiness must mention resolved operator input");
   if (options.requireReady) assert(manifest.ready === true, `AWS dev/UAT final readiness is blocked: ${manifest.blockers.join(", ")}`);
 
   if (manifest.raw_capture_plan.exists) readJson(manifest.raw_capture_plan.path);

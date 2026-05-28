@@ -120,7 +120,9 @@ for (const phrase of [
   "final readiness manifest",
   "operator handoff",
   "operator input",
-  "resolved operator input"
+  "resolved operator input",
+  "missing_operator_input",
+  "invalid_operator_input"
 ]) {
   assert(awsDevUatRunbook.includes(phrase) || localVerification.includes(phrase), `docs missing AWS dev/UAT materializer plan phrase: ${phrase}`);
 }

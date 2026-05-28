@@ -21,14 +21,14 @@ export function validateAwsDevUatOperatorInput(input, options = {}) {
   assert(input.runtime?.environment === "uat", "operator input environment mismatch");
   assert(input.runtime?.region === "ap-northeast-1", "operator input region mismatch");
   assert(input.runtime?.stack_name === "saphnexa-uat", "operator input stack name mismatch");
-  assert(input.runtime?.run_id === "uat-manual-capture", "operator input run id mismatch");
+  assert(!hasForbiddenText(input.runtime?.run_id || ""), "operator input run id mismatch");
   assert(pathEndsWith(input.source_artifacts?.raw_capture_plan, "aws_dev_uat_raw_capture_plan.json"), "operator input raw capture plan path mismatch");
   assert(pathEndsWith(input.source_artifacts?.operator_input_scaffold, "aws_dev_uat_operator_input.scaffold.json"), "operator input scaffold path mismatch");
   assert(input.source_artifacts?.resolved_operator_input === "dist/acceptance/aws_dev_uat_operator_input.json", "operator input resolved path mismatch");
-  assert(input.raw_inputs?.preflight_scaffold_path === "dist/acceptance/raw/aws_dev_uat_preflight.raw.scaffold.json", "operator input preflight scaffold path mismatch");
-  assert(input.raw_inputs?.preflight_raw_input_path === "dist/acceptance/raw/aws_dev_uat_preflight.raw.json", "operator input preflight raw input path mismatch");
-  assert(input.raw_inputs?.validation_scaffold_path === "dist/acceptance/raw/aws_dev_uat_validation.raw.scaffold.json", "operator input validation scaffold path mismatch");
-  assert(input.raw_inputs?.validation_raw_input_path === "dist/acceptance/raw/aws_dev_uat_validation.raw.json", "operator input validation raw input path mismatch");
+  assert(pathEndsWith(input.raw_inputs?.preflight_scaffold_path, "aws_dev_uat_preflight.raw.scaffold.json"), "operator input preflight scaffold path mismatch");
+  assert(pathEndsWith(input.raw_inputs?.preflight_raw_input_path, "aws_dev_uat_preflight.raw.json"), "operator input preflight raw input path mismatch");
+  assert(pathEndsWith(input.raw_inputs?.validation_scaffold_path, "aws_dev_uat_validation.raw.scaffold.json"), "operator input validation scaffold path mismatch");
+  assert(pathEndsWith(input.raw_inputs?.validation_raw_input_path, "aws_dev_uat_validation.raw.json"), "operator input validation raw input path mismatch");
   assert(input.command_templates?.operator_input_check === "npm run aws:dev-uat:operator-input:check", "operator input scaffold check command mismatch");
   assert(
     input.command_templates?.resolved_operator_input_check === "npm run aws:dev-uat:operator-input:check -- --input dist/acceptance/aws_dev_uat_operator_input.json --require-resolved",

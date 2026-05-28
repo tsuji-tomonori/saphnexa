@@ -3,6 +3,8 @@ import { createHash } from "node:crypto";
 import { dirname, resolve } from "node:path";
 import { buildAwsDevUatRawCapturePlan, rawCapturePlanOutputPath } from "./aws-dev-uat-raw-capture-plan.js";
 import { buildAwsDevUatExecutionBridge, expectedAwsDevUatFinalCommandOrder } from "./aws-dev-uat-execution-bridge.js";
+import { awsDevUatOperatorInputPath } from "./aws-dev-uat-operator-input.js";
+import { validateAwsDevUatOperatorInput } from "./check-aws-dev-uat-operator-input.js";
 import { currentGitCommit } from "./git-context.js";
 import { currentJstTimestamp, readJson } from "./lib.js";
 
@@ -23,6 +25,7 @@ export function buildAwsDevUatFinalReadiness(options = {}) {
   const preflightEvidencePath = options.preflightEvidencePath || plan.modes.preflight.evidence_output_path;
   const validationEvidencePath = options.validationEvidencePath || plan.modes.validation.evidence_output_path;
   const evidenceBundleManifestPath = options.evidenceBundleManifestPath || awsDevUatEvidenceBundleManifestPath;
+  const operatorInputPath = options.operatorInputPath || awsDevUatOperatorInputPath;
 
   const stages = [
     modeStage("preflight", plan.modes.preflight, {
@@ -35,6 +38,7 @@ export function buildAwsDevUatFinalReadiness(options = {}) {
     })
   ];
   const bridgeState = fileState("execution-bridge", bridgePath, true);
+  const operatorInput = operatorInputState(operatorInputPath);
   const bundleState = fileState("evidence-bundle", evidenceBundleManifestPath, true);
   const blockers = [];
   const nextCommands = [];
@@ -49,6 +53,13 @@ export function buildAwsDevUatFinalReadiness(options = {}) {
   if (!bridgeState.exists) {
     blockers.push("missing_execution_bridge");
     nextCommands.push("npm run aws:dev-uat:execution-bridge:check");
+  }
+  if (!operatorInput.exists) {
+    blockers.push("missing_operator_input");
+    nextCommands.push(`npm run aws:dev-uat:operator-input:check -- --input ${operatorInputPath} --require-resolved`);
+  } else if (!operatorInput.ready) {
+    blockers.push("invalid_operator_input");
+    nextCommands.push(`npm run aws:dev-uat:operator-input:check -- --input ${operatorInputPath} --require-resolved`);
   }
   if (!bundleState.exists) {
     blockers.push("missing_evidence_bundle_manifest");
@@ -68,6 +79,7 @@ export function buildAwsDevUatFinalReadiness(options = {}) {
     does_not_execute_commands: true,
     raw_capture_plan: fileState("raw-capture-plan", rawCapturePlanPath, true),
     execution_bridge: bridgeState,
+    operator_input: operatorInput,
     aws_identity: awsIdentity,
     command_order: {
       final_gates: expectedAwsDevUatFinalCommandOrder(),
@@ -78,11 +90,45 @@ export function buildAwsDevUatFinalReadiness(options = {}) {
     evidence_bundle_manifest: bundleState,
     blockers: unique(blockers),
     next_commands: unique(nextCommands),
-    note: "This readiness manifest does not deploy, migrate, publish, run E2E, run load tests, or invoke Bedrock. It only records whether captured AWS evidence is ready for final gates and bundling."
+    note: "This readiness manifest does not deploy, migrate, publish, run E2E, run load tests, or invoke Bedrock. It only records whether captured AWS evidence and resolved operator input are ready for final gates and bundling."
   };
 
   writeJson(outputPath, manifest);
   return manifest;
+}
+
+function operatorInputState(path) {
+  const state = fileState("operator-input", path, true);
+  if (!state.exists) return state;
+
+  let input;
+  try {
+    input = readJson(path);
+  } catch (error) {
+    return { ...state, parse_error: error.message, ready: false };
+  }
+
+  try {
+    validateAwsDevUatOperatorInput(input, { requireResolved: true });
+  } catch (error) {
+    return {
+      ...state,
+      schema_version: input.schema_version || null,
+      input_status: input.input_status || null,
+      validation_error: error.message,
+      ready: false
+    };
+  }
+
+  return {
+    ...state,
+    schema_version: input.schema_version,
+    input_status: input.input_status,
+    final_input: input.final_input,
+    release_git_tag: input.release?.git_tag || null,
+    aws_account_id_present: /^\d{12}$/.test(input.aws?.account_id || ""),
+    ready: true
+  };
 }
 
 function modeStage(mode, planMode, paths) {

@@ -3,6 +3,7 @@ import { tmpdir } from "node:os";
 import { dirname, join, resolve } from "node:path";
 import { buildAwsDevUatRawCapturePlan } from "./aws-dev-uat-raw-capture-plan.js";
 import { buildAwsDevUatFinalReadiness } from "./aws-dev-uat-final-readiness.js";
+import { buildAwsDevUatOperatorInputScaffold } from "./aws-dev-uat-operator-input.js";
 import { buildAwsDevUatPreflightEvidence, buildAwsDevUatValidationEvidence } from "./aws-dev-uat-evidence-builders.js";
 import { checkAwsDevUatEvidenceBundle } from "./aws-dev-uat-evidence-bundle.js";
 import { validateAwsDevUatFinalReadiness } from "./check-aws-dev-uat-final-readiness.js";
@@ -21,6 +22,7 @@ try {
     runId: "final-readiness-fixture"
   });
   const bridgePath = join(tmpRoot, "aws_dev_uat_execution_bridge.json");
+  const operatorInputPath = join(tmpRoot, "aws_dev_uat_operator_input.json");
   writeBridge(bridgePath, "not_probed");
 
   const blocked = buildAwsDevUatFinalReadiness({
@@ -29,6 +31,7 @@ try {
     rawCapturePlan: plan,
     executionBridgePath: bridgePath,
     executionBridge: readJson(bridgePath),
+    operatorInputPath,
     evidenceBundleManifestPath: join(tmpRoot, "missing", "aws_dev_uat_evidence_bundle_manifest.json")
   });
   validateAwsDevUatFinalReadiness(blocked);
@@ -36,7 +39,31 @@ try {
   assert(blocked.blockers.includes("aws_identity_not_probed"), "blocked fixture must include AWS identity blocker");
   assert(blocked.blockers.includes("missing_preflight_raw_input"), "blocked fixture must include preflight raw input blocker");
   assert(blocked.blockers.includes("missing_validation_raw_input"), "blocked fixture must include validation raw input blocker");
+  assert(blocked.blockers.includes("missing_operator_input"), "blocked fixture must include operator input blocker");
   assert(blocked.next_commands.includes("npm run aws:dev-uat:execution-bridge:probe"), "blocked fixture must suggest AWS identity probe");
+  assert(
+    blocked.next_commands.includes(`npm run aws:dev-uat:operator-input:check -- --input ${operatorInputPath} --require-resolved`),
+    "blocked fixture must suggest resolved operator input check"
+  );
+
+  const operatorInputScaffold = buildAwsDevUatOperatorInputScaffold({
+    outputPath: join(tmpRoot, "aws_dev_uat_operator_input.scaffold.json"),
+    rawCapturePlanPath: planPath,
+    rawCapturePlan: plan
+  });
+  writeText(operatorInputPath, `${JSON.stringify({ ...operatorInputScaffold, input_status: "requires_operator_values" }, null, 2)}\n`);
+  const invalidOperatorInput = buildAwsDevUatFinalReadiness({
+    outputPath: join(tmpRoot, "invalid-operator-input-readiness.json"),
+    rawCapturePlanPath: planPath,
+    rawCapturePlan: plan,
+    executionBridgePath: bridgePath,
+    executionBridge: readJson(bridgePath),
+    operatorInputPath,
+    evidenceBundleManifestPath: join(tmpRoot, "missing", "aws_dev_uat_evidence_bundle_manifest.json")
+  });
+  validateAwsDevUatFinalReadiness(invalidOperatorInput);
+  assert(invalidOperatorInput.blockers.includes("invalid_operator_input"), "invalid operator input fixture must block readiness");
+  writeText(operatorInputPath, `${JSON.stringify(resolvedOperatorInput(operatorInputScaffold), null, 2)}\n`);
 
   const preflightRawInputPath = plan.modes.preflight.raw_input_path;
   const validationRawInputPath = plan.modes.validation.raw_input_path;
@@ -65,6 +92,7 @@ try {
     executionBridgePath: bridgePath,
     executionBridge: readJson(bridgePath),
     awsIdentity: authenticatedIdentity(),
+    operatorInputPath,
     preflightRawInputPath,
     validationRawInputPath,
     preflightEvidencePath,
@@ -73,12 +101,67 @@ try {
   });
   validateAwsDevUatFinalReadiness(ready, { requireReady: true });
   assert(ready.ready === true, "ready fixture must be ready");
+  assert(ready.operator_input.ready === true, "ready fixture must include resolved operator input");
   assert(ready.blockers.length === 0, "ready fixture must not have blockers");
   assert(ready.next_commands.length === 0, "ready fixture must not have next commands");
 
   console.log("AWS dev/UAT final readiness fixture check passed");
 } finally {
   rmSync(tmpRoot, { recursive: true, force: true });
+}
+
+function resolvedOperatorInput(input) {
+  const copy = JSON.parse(JSON.stringify(input));
+  const gitTag = "v0.17.0";
+  const releaseUrl = "https://github.com/tsuji-tomonori/saphnexa/releases/tag/v0.17.0";
+  const bucket = `saphnexa-uat-${sampleAccountId}-artifacts`;
+  const testRunId = "uat-run-20260528-1556";
+  const capturedAt = "2026-05-28T15:56:00+09:00";
+  copy.input_status = "ready_for_aws_dev_uat_execution";
+  copy.final_input = true;
+  copy.operator = {
+    reviewer: "acceptance-operator",
+    approved_execution_window_jst: "2026-05-28T16:30:00+09:00"
+  };
+  copy.release = {
+    commit_sha: input.git_commit_sha,
+    git_tag: gitTag,
+    github_release_url: releaseUrl
+  };
+  copy.aws.account_id = sampleAccountId;
+  copy.publish = {
+    admin_artifacts_bucket: bucket,
+    docs_latest_s3_uri: `s3://${bucket}/docs-site/latest/`,
+    docs_v017_s3_uri: `s3://${bucket}/docs-site/releases/v0.17/`,
+    allure_latest_s3_uri: `s3://${bucket}/test-reports/allure/latest/`,
+    allure_run_s3_uri: `s3://${bucket}/test-reports/allure/runs/${testRunId}/`
+  };
+  copy.validation = {
+    test_run_id: testRunId,
+    golden_dataset_id: "golden-v0.17",
+    rag_evaluation_run_id: `rag-eval-${testRunId}`,
+    bedrock_evaluation_job_arn: `arn:aws:bedrock:ap-northeast-1:${sampleAccountId}:evaluation-job/rag-eval-${testRunId}`,
+    e2e_allure_run_url: `https://artifacts.uat.saphnexa.awsapps.com/test-reports/allure/runs/${testRunId}/`,
+    performance_report_url: `https://artifacts.uat.saphnexa.awsapps.com/performance/${testRunId}.json`,
+    rag_quality_report_url: `https://artifacts.uat.saphnexa.awsapps.com/rag-quality/${testRunId}.json`
+  };
+  copy.resolved_commands = {
+    resolved_operator_input_check: copy.command_templates.resolved_operator_input_check,
+    preflight_materialize: copy.command_templates.preflight_materialize
+      .replace("<capture-jst-timestamp>", capturedAt)
+      .replace("<release-tag>", gitTag)
+      .replace("<github-release-url>", releaseUrl),
+    validation_materialize: copy.command_templates.validation_materialize
+      .replace("<capture-jst-timestamp>", capturedAt)
+      .replace("<release-tag>", gitTag)
+      .replace("<github-release-url>", releaseUrl)
+      .replace("<aws-account-id>", sampleAccountId),
+    evidence_bundle: copy.command_templates.evidence_bundle
+      .replaceAll("<raw-preflight-input.json>", copy.raw_inputs.preflight_raw_input_path)
+      .replaceAll("<raw-validation-input.json>", copy.raw_inputs.validation_raw_input_path),
+    final_readiness: copy.command_templates.final_readiness
+  };
+  return copy;
 }
 
 function materializeInputWithOutputs(inputPath, targetInputPath) {
