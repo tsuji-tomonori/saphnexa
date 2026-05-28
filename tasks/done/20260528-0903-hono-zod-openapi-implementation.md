@@ -84,6 +84,12 @@
 - 依存 install は今回未実行のため、Hono runtime 起動は未検証。
 - 実 Lambda adapter、Cognito authorizer、CSRF cookie integration は後続で実装・検証が必要。
 
+## PR
+
+- https://github.com/tsuji-tomonori/saphnexa/pull/2
+- 受け入れ条件コメント: https://github.com/tsuji-tomonori/saphnexa/pull/2#issuecomment-4559717433
+- セルフレビューコメント: https://github.com/tsuji-tomonori/saphnexa/pull/2#issuecomment-4559718023
+
 ## 状態
 
-in_progress
+done
