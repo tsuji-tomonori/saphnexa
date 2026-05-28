@@ -98,6 +98,12 @@ Bedrock Knowledge Base、S3 Vectors、AgentCore Runtime / Gateway を、Tools AP
 
 - `reports/working/20260528-0952-bedrock-s3vectors-agentcore-binding.md`
 
+## PR
+
+- PR: https://github.com/tsuji-tomonori/saphnexa/pull/2
+- 受け入れ条件確認コメント: https://github.com/tsuji-tomonori/saphnexa/pull/2#issuecomment-4559924884
+- セルフレビューコメント: https://github.com/tsuji-tomonori/saphnexa/pull/2#issuecomment-4559927508
+
 ## PR レビュー観点
 
 - Bedrock KB / S3 Vectors / AgentCore の source 結合を進めつつ、実 AWS 実行を完了扱いにしていないこと。
@@ -112,4 +118,4 @@ Bedrock Knowledge Base、S3 Vectors、AgentCore Runtime / Gateway を、Tools AP
 
 ## 状態
 
-in_progress
+done
