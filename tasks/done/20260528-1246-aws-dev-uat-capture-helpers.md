@@ -1,6 +1,6 @@
 # AWS dev/UAT capture helper 実体追加
 
-状態: in_progress
+状態: done
 
 ## 背景
 
@@ -40,12 +40,12 @@ raw capture plan が参照する helper script を repo 内に実体化し、pla
 
 ## 受け入れ条件
 
-- [ ] raw capture plan が参照する 3 helper script が存在する。
-- [ ] helper script は必要な env がない場合に fail し、架空値や demo fallback を出さない。
-- [ ] raw capture plan checker が helper file existence を検査する。
-- [ ] docs が helper 前提と同期している。
-- [ ] `git diff --check`、targeted checks、`npm run verify` が pass する。
-- [ ] PR に受け入れ条件確認とセルフレビューコメントを追加できる。
+- [x] raw capture plan が参照する 3 helper script が存在する。
+- [x] helper script は必要な env がない場合に fail し、架空値や demo fallback を出さない。
+- [x] raw capture plan checker が helper file existence を検査する。
+- [x] docs が helper 前提と同期している。
+- [x] `git diff --check`、targeted checks、`npm run verify` が pass する。
+- [x] PR に受け入れ条件確認とセルフレビューコメントを追加できる。
 
 ## 検証計画
 
@@ -68,3 +68,26 @@ raw capture plan が参照する helper script を repo 内に実体化し、pla
 
 - helper は実環境 URL / ARN / ID を env で受け取って raw smoke を行うため、AWS credentials と実環境値がない状態では実行成功しない。
 - 実 AWS raw output の取得は引き続き未実施である。
+
+## 完了記録
+
+- PR: https://github.com/tsuji-tomonori/saphnexa/pull/2
+- 実装 commit: `d5ca542`
+- 受け入れ条件確認コメント: https://github.com/tsuji-tomonori/saphnexa/pull/2#issuecomment-4560711744
+- セルフレビューコメント: https://github.com/tsuji-tomonori/saphnexa/pull/2#issuecomment-4560713707
+- 作業レポート: `reports/working/20260528-1246-aws-dev-uat-capture-helpers.md`
+- 検証:
+  - `node tools/capture-edge-realtime-smoke.js --help`: pass
+  - `node tools/capture-rag-runtime-smoke.js --help`: pass
+  - `node tools/capture-admin-artifacts-smoke.js --help`: pass
+  - `npm run aws:dev-uat:capture-helpers:check`: pass
+  - `npm run aws:dev-uat:raw-capture-plan:check`: pass
+  - `npm run ci:check`: pass
+  - `npm run acceptance:external-actions:check`: pass
+  - `npm run docs:check`: pass
+  - `git diff --check`: pass
+  - `npm run verify`: pass
+- 未実施:
+  - 実 AWS dev/UAT deploy / migration / publish / E2E / 性能 / RAG品質評価は AWS credentials と実 raw output がないため未実施。
+  - helper の実 HTTP probe は実環境 URL / ARN / ID / signed cookie env が未設定のため未実施。
+  - `aws sts get-caller-identity --output json`: credentials 未設定で fail。
