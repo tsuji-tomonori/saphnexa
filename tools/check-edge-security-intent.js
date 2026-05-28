@@ -27,14 +27,14 @@ assert(routesSource.includes("rewrite: \"/chat/index.html\""), "root rewrite int
 const realtime = catalog.RealtimeConstruct.channelPolicyIntent;
 assert(realtime.ticketTtlSeconds === 60, "ws ticket TTL intent mismatch");
 assert(realtime.ticketSingleUse === true, "ws ticket single-use intent missing");
-assert(realtime.userScopedPattern === "/users/{user_id}/chat/*", "ws user channel scope intent missing");
+assert(realtime.userScopedPattern === "/{user_id}/chat/*", "ws user channel scope intent missing");
 assert(realtime.subscribeAuthorizer === "ws-ticket", "ws-ticket authorizer intent missing");
 const api = createLocalApi();
 const csrf = api.request("user-owner", "getMe").body.csrf_token;
 const ticket = api.request("user-owner", "issueWsTicket", { csrf_token: csrf, now_ms: 0 });
 assert(ticket.status === 201, "local ws ticket issue failed");
 assert(ticket.body.expires_in_seconds === realtime.ticketTtlSeconds, "local ws ticket TTL mismatch");
-assert(ticket.body.channels.every((channel) => channel.startsWith("/users/user-owner/chat/")), "local ws ticket scope mismatch");
+assert(ticket.body.channels.every((channel) => channel.startsWith("/user-owner/chat/")), "local ws ticket scope mismatch");
 assert(api.request("user-owner", "consumeWsTicket", { ticket_id: ticket.body.ticket, now_ms: 1000 }).status === 200, "local ws ticket consume failed");
 assert(api.request("user-owner", "consumeWsTicket", { ticket_id: ticket.body.ticket, now_ms: 2000 }).body.error_code === "WS_TICKET_REUSED", "local ws ticket must be single-use");
 

@@ -27,7 +27,7 @@
   },
   "docs_site": {
     "latest_url": "s3://example-admin-artifacts/docs-site/latest/",
-    "version_url": "s3://example-admin-artifacts/docs-site/releases/v0.16/"
+    "version_url": "s3://example-admin-artifacts/docs-site/releases/v0.17/"
   },
   "rag_evaluation": {
     "evaluation_run_id": "example-evaluation-run-id",

@@ -1,0 +1,6 @@
+{
+  "StackResourceSummaries": [
+    { "LogicalResourceId": "ApiFunction", "ResourceStatus": "UPDATE_COMPLETE" },
+    { "LogicalResourceId": "PublishedArtifactsBucket", "ResourceStatus": "UPDATE_COMPLETE" }
+  ]
+}

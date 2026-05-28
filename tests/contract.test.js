@@ -4,6 +4,7 @@ import { assertPublicApiContract, errorResponseSchema, publicApiRoutes } from ".
 import { assertToolContract, toolContracts } from "../packages/tool-contract/src/tools.js";
 import { requiredTables } from "../packages/db-schema/src/tables.js";
 import { saphnexaConstructs } from "../infra/stacks/saphnexa-app-stack.js";
+import { buildOpenApiDocument } from "../apps/api/src/openapi-document.js";
 
 test("public API contract covers the 38 designed routes", () => {
   assert.equal(assertPublicApiContract(), true);
@@ -32,4 +33,12 @@ test("schema catalog and construct inventory match the design counts", () => {
   assert.equal(requiredTables.includes("audit_events"), true);
   assert.equal(requiredTables.length, 38);
   assert.equal(saphnexaConstructs.length, 7);
+});
+
+test("OpenAPI document is generated from the public API route contract", () => {
+  const document = buildOpenApiDocument();
+  assert.equal(document.openapi, "3.1.0");
+  assert.equal(Object.values(document.paths).flatMap((pathItem) => Object.keys(pathItem)).length, publicApiRoutes.length);
+  assert.equal(document.paths["/v1/chat-sessions/{chat_id}/messages"].post.operationId, "submitQuestion");
+  assert.equal(document.paths["/v1/admin/artifacts/access-cookie"].post["x-saphnexa-csrf-required"], true);
 });

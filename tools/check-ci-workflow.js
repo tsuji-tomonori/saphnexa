@@ -37,6 +37,7 @@ for (const command of [
   "npm run license:scan",
   "npm run admin-artifacts:build",
   "npm run artifacts:check",
+  "npm run admin-artifacts:publish:check",
   "npm run coverage:check",
   "npm run ui:check",
   "npm run web:flow:check",
@@ -67,7 +68,29 @@ for (const command of [
   "npm run acceptance:final:build",
   "npm run acceptance:final:check",
   "npm run acceptance:package:build",
-  "npm run acceptance:package:check"
+  "npm run acceptance:package:check",
+  "npm run aws:dev-uat:execution-bridge:check",
+  "npm run aws:dev-uat:raw-capture-plan:check",
+  "npm run aws:dev-uat:raw-input-scaffold:check",
+  "npm run aws:dev-uat:operator-input:check",
+  "npm run aws:dev-uat:operator-input:fixture:check",
+  "npm run aws:dev-uat:operator-runbook:check",
+  "npm run aws:dev-uat:operator-runbook:fixture:check",
+  "npm run aws:dev-uat:raw-output:fixture:check",
+  "npm run aws:dev-uat:raw-input:fixture:check",
+  "npm run aws:dev-uat:evidence-bundle:fixture:check",
+  "npm run aws:dev-uat:capture-helpers:check",
+  "npm run aws:dev-uat:preflight-raw-input:fixture:check",
+  "npm run aws:dev-uat:validation-capture:fixture:check",
+  "npm run aws:dev-uat:validation-raw-input:fixture:check",
+  "npm run aws:dev-uat:materialized-flow:fixture:check",
+  "npm run aws:dev-uat:final-readiness:check",
+  "npm run aws:dev-uat:final-readiness:fixture:check",
+  "npm run aws:dev-uat:operator-handoff:check",
+  "npm run aws:dev-uat:operator-handoff:fixture:check",
+  "npm run aws:dev-uat:evidence:fixture:check",
+  "npm run aws:dev-uat:validation:check",
+  "npm run aws:dev-uat:validation:fixture:check"
 ]) {
   assert(workflow.includes(command), `workflow missing command: ${command}`);
 }

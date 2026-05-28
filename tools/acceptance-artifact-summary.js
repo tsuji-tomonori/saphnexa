@@ -11,6 +11,7 @@ export const requiredArtifactIds = [
   "db-migration",
   "allure-report",
   "docusaurus-docs",
+  "aws-dev-uat-validation",
   "ops-runbooks",
   "defect-list",
   "release",
@@ -69,7 +70,15 @@ export function buildAcceptanceArtifactSummary({ gitCommit, finalReadinessReady,
       title: "Docusaurus design documentation site",
       acceptance_ids: ["AC-002", "AC-020", "AC-087", "AC-143"],
       ...externalArtifact("local_ready", ["aws-deploy-publish"]),
-      evidence: ["dist/admin/docs/latest/", "dist/admin/docs/versions/v0.16/", "npm run admin-artifacts:build"],
+      evidence: ["dist/admin/docs/latest/", "dist/admin/docs/versions/v0.16/", "dist/admin/docs/versions/v0.17/", "npm run admin-artifacts:build", "npm run admin-artifacts:publish:check"],
+      final_required: true
+    }),
+    artifact({
+      id: "aws-dev-uat-validation",
+      title: "AWS dev/UAT E2E, performance, and RAG quality validation",
+      acceptance_ids: ["AC-098", "AC-123", "AC-130", "AC-131", "AC-132", "AC-133"],
+      ...externalArtifact("pending_external", ["aws-dev-uat-validation"]),
+      evidence: ["dist/acceptance/aws_dev_uat_execution_bridge.json", "dist/acceptance/aws_dev_uat_preflight.json", "dist/acceptance/aws_dev_uat_validation.json", "npm run test:e2e:aws", "npm run perf:aws", "npm run rag:quality:aws"],
       final_required: true
     }),
     artifact({

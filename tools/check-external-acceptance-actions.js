@@ -33,9 +33,163 @@ for (const action of plan.actions) {
 const awsDeployPublish = plan.actions.find((action) => action.id === "aws-deploy-publish");
 assert(awsDeployPublish.candidate_commands.includes("aws s3 sync dist/admin/docs/latest/ s3://<admin-artifacts-bucket>/docs-site/latest/"), "docs latest publish command must use design docs-site/latest prefix");
 assert(awsDeployPublish.candidate_commands.includes("aws s3 sync dist/admin/docs/versions/v0.16/ s3://<admin-artifacts-bucket>/docs-site/releases/v0.16/"), "docs version publish command must use design docs-site/releases/v0.16 prefix");
+assert(awsDeployPublish.candidate_commands.includes("aws s3 sync dist/admin/docs/versions/v0.17/ s3://<admin-artifacts-bucket>/docs-site/releases/v0.17/"), "docs version publish command must use design docs-site/releases/v0.17 prefix");
+assert(awsDeployPublish.candidate_commands.includes("aws s3 sync dist/admin/test-reports/allure/latest/ s3://<admin-artifacts-bucket>/test-reports/allure/latest/"), "Allure latest publish command must use test-reports/allure/latest prefix");
+assert(awsDeployPublish.candidate_commands.includes("aws s3 sync dist/admin/test-reports/allure/runs/<test_run_id>/ s3://<admin-artifacts-bucket>/test-reports/allure/runs/<test_run_id>/"), "Allure run publish command must use test-reports/allure/runs prefix");
 assert(!awsDeployPublish.candidate_commands.includes("aws s3 sync dist/admin/docs/ s3://<admin-artifacts-bucket>/docs/"), "docs publish command must not use legacy docs/ prefix");
 const cloudFormationCapture = plan.actions.find((action) => action.id === "cloudformation-capture");
 assert(cloudFormationCapture.candidate_commands.includes("CFN_CAPTURED_AT=<capture-iso-timestamp> npm run cfn:inventory:normalize"), "CloudFormation capture action must include final inventory normalizer command");
+const awsDevUatValidation = plan.actions.find((action) => action.id === "aws-dev-uat-validation");
+assert(awsDevUatValidation.acceptance_ids.includes("AC-098"), "AWS dev/UAT validation action must cover RAG quality");
+assert(awsDevUatValidation.acceptance_ids.includes("AC-123"), "AWS dev/UAT validation action must cover E2E");
+const e2eCaptureCommand = "node tools/capture-aws-dev-uat-e2e-result.js --env uat --run-id <run-id> > raw/e2e-allure-run.json";
+const perfCaptureCommand = "node tools/capture-aws-dev-uat-performance-result.js --env uat --run-id <run-id> > raw/performance-report.json";
+const ragCaptureCommand = "node tools/capture-aws-dev-uat-rag-quality-result.js --env uat --run-id <run-id> > raw/rag-quality-report.json";
+const preflightMaterializeCommand = "npm run aws:dev-uat:preflight-raw-input:build -- --scaffold dist/acceptance/raw/aws_dev_uat_preflight.raw.scaffold.json --output <raw-preflight-input.json> --captured-at <capture-jst-timestamp> --git-tag <release-tag> --github-release-url <github-release-url>";
+const validationMaterializeCommand = "npm run aws:dev-uat:validation-raw-input:build -- --scaffold dist/acceptance/raw/aws_dev_uat_validation.raw.scaffold.json --output <raw-validation-input.json> --captured-at <capture-jst-timestamp> --git-tag <release-tag> --github-release-url <github-release-url> --aws-account-id <aws-account-id>";
+const operatorInputCheckCommand = "npm run aws:dev-uat:operator-input:check";
+const resolvedOperatorInputCheckCommand = "npm run aws:dev-uat:operator-input:check -- --input dist/acceptance/aws_dev_uat_operator_input.json --require-resolved";
+const operatorRunbookCheckCommand = "npm run aws:dev-uat:operator-runbook:check -- --input dist/acceptance/aws_dev_uat_operator_input.json --require-resolved";
+for (const command of [
+  "npm run aws:dev-uat:execution-bridge:probe",
+  "npm run aws:dev-uat:raw-capture-plan:build",
+  "npm run aws:dev-uat:raw-capture-plan:check",
+  "npm run aws:dev-uat:raw-input-scaffold:build",
+  "npm run aws:dev-uat:raw-input-scaffold:check",
+  operatorInputCheckCommand,
+  resolvedOperatorInputCheckCommand,
+  operatorRunbookCheckCommand,
+  "npm run aws:dev-uat:capture-helpers:check",
+  preflightMaterializeCommand,
+  "npm run aws:dev-uat:raw-output:check -- preflight --input <raw-preflight-input.json>",
+  "npm run aws:dev-uat:raw-input:check -- preflight --input <raw-preflight-input.json>",
+  "npm run aws:dev-uat:preflight:build -- --input <raw-preflight-input.json>",
+  "npm run aws:dev-uat:preflight:final",
+  e2eCaptureCommand,
+  "aws s3 ls s3://saphnexa-uat-logs/cloudfront/<run-id>/ --region ap-northeast-1 > raw/cloudfront-access-log-list.txt",
+  perfCaptureCommand,
+  "aws cloudwatch get-dashboard --dashboard-name saphnexa-uat --region ap-northeast-1 > raw/cloudwatch-dashboard.json",
+  ragCaptureCommand,
+  "aws bedrock get-evaluation-job --job-identifier rag-eval-<run-id> --region ap-northeast-1 > raw/bedrock-evaluation-job.json",
+  validationMaterializeCommand,
+  "npm run aws:dev-uat:raw-output:check -- validation --input <raw-validation-input.json>",
+  "npm run aws:dev-uat:raw-input:check -- validation --input <raw-validation-input.json>",
+  "npm run aws:dev-uat:validation:build -- --input <raw-validation-input.json>",
+  "npm run test:e2e:aws",
+  "npm run perf:aws",
+  "npm run rag:quality:aws",
+  "npm run aws:dev-uat:validation:final",
+  "npm run aws:dev-uat:evidence-bundle:check -- --preflight-raw-input <raw-preflight-input.json> --validation-raw-input <raw-validation-input.json> --preflight-evidence dist/acceptance/aws_dev_uat_preflight.json --validation-evidence dist/acceptance/aws_dev_uat_validation.json --execution-bridge dist/acceptance/aws_dev_uat_execution_bridge.json --output dist/acceptance/aws_dev_uat_evidence_bundle_manifest.json",
+  "npm run aws:dev-uat:final-readiness:check -- --probe-aws-identity --require-ready"
+]) {
+  assert(awsDevUatValidation.candidate_commands.includes(command), `AWS dev/UAT validation action missing ${command}`);
+}
+assert(
+  awsDevUatValidation.candidate_commands.indexOf("npm run aws:dev-uat:raw-capture-plan:check") <
+    awsDevUatValidation.candidate_commands.indexOf("npm run aws:dev-uat:raw-input-scaffold:build"),
+  "AWS dev/UAT validation action must verify raw capture plan before building raw input scaffold"
+);
+assert(
+  awsDevUatValidation.candidate_commands.indexOf("npm run aws:dev-uat:raw-input-scaffold:check") <
+    awsDevUatValidation.candidate_commands.indexOf(operatorInputCheckCommand),
+  "AWS dev/UAT validation action must verify raw input scaffold before building operator input scaffold"
+);
+assert(
+  awsDevUatValidation.candidate_commands.indexOf(operatorInputCheckCommand) <
+    awsDevUatValidation.candidate_commands.indexOf(resolvedOperatorInputCheckCommand),
+  "AWS dev/UAT validation action must build operator input scaffold before requiring resolved operator input"
+);
+assert(
+  awsDevUatValidation.candidate_commands.indexOf(resolvedOperatorInputCheckCommand) <
+    awsDevUatValidation.candidate_commands.indexOf(operatorRunbookCheckCommand),
+  "AWS dev/UAT validation action must verify resolved operator input before checking operator runbook"
+);
+assert(
+  awsDevUatValidation.candidate_commands.indexOf(operatorRunbookCheckCommand) <
+    awsDevUatValidation.candidate_commands.indexOf(preflightMaterializeCommand),
+  "AWS dev/UAT validation action must verify operator runbook before materializing preflight raw input"
+);
+assert(
+  awsDevUatValidation.candidate_commands.indexOf(preflightMaterializeCommand) <
+    awsDevUatValidation.candidate_commands.indexOf("npm run aws:dev-uat:raw-output:check -- preflight --input <raw-preflight-input.json>"),
+  "AWS dev/UAT validation action must materialize preflight raw input before checking preflight raw outputs"
+);
+assert(
+  awsDevUatValidation.candidate_commands.indexOf("npm run aws:dev-uat:raw-output:check -- preflight --input <raw-preflight-input.json>") <
+    awsDevUatValidation.candidate_commands.indexOf("npm run aws:dev-uat:raw-input:check -- preflight --input <raw-preflight-input.json>"),
+  "AWS dev/UAT validation action must check preflight raw outputs before dry-running preflight raw input"
+);
+assert(
+  awsDevUatValidation.candidate_commands.indexOf("npm run aws:dev-uat:raw-input:check -- preflight --input <raw-preflight-input.json>") <
+    awsDevUatValidation.candidate_commands.indexOf("npm run aws:dev-uat:preflight:build -- --input <raw-preflight-input.json>"),
+  "AWS dev/UAT validation action must dry-run preflight raw input before building preflight evidence"
+);
+assert(
+  e2eCaptureCommand &&
+    awsDevUatValidation.candidate_commands.indexOf(e2eCaptureCommand) <
+    awsDevUatValidation.candidate_commands.indexOf("npm run aws:dev-uat:raw-output:check -- validation --input <raw-validation-input.json>"),
+  "AWS dev/UAT validation action must capture E2E result before checking validation raw outputs"
+);
+assert(
+  perfCaptureCommand &&
+    awsDevUatValidation.candidate_commands.indexOf(perfCaptureCommand) <
+    awsDevUatValidation.candidate_commands.indexOf("npm run aws:dev-uat:raw-output:check -- validation --input <raw-validation-input.json>"),
+  "AWS dev/UAT validation action must capture performance result before checking validation raw outputs"
+);
+assert(
+  ragCaptureCommand &&
+    awsDevUatValidation.candidate_commands.indexOf(ragCaptureCommand) <
+    awsDevUatValidation.candidate_commands.indexOf(validationMaterializeCommand),
+  "AWS dev/UAT validation action must capture RAG quality result before checking validation raw outputs"
+);
+assert(
+  awsDevUatValidation.candidate_commands.indexOf(validationMaterializeCommand) <
+    awsDevUatValidation.candidate_commands.indexOf("npm run aws:dev-uat:raw-output:check -- validation --input <raw-validation-input.json>"),
+  "AWS dev/UAT validation action must materialize validation raw input before checking validation raw outputs"
+);
+assert(
+  awsDevUatValidation.candidate_commands.indexOf("npm run aws:dev-uat:raw-output:check -- validation --input <raw-validation-input.json>") <
+    awsDevUatValidation.candidate_commands.indexOf("npm run aws:dev-uat:raw-input:check -- validation --input <raw-validation-input.json>"),
+  "AWS dev/UAT validation action must check validation raw outputs before dry-running validation raw input"
+);
+assert(
+  awsDevUatValidation.candidate_commands.indexOf("npm run aws:dev-uat:raw-input:check -- validation --input <raw-validation-input.json>") <
+    awsDevUatValidation.candidate_commands.indexOf("npm run aws:dev-uat:validation:build -- --input <raw-validation-input.json>"),
+  "AWS dev/UAT validation action must dry-run validation raw input before building validation evidence"
+);
+for (const command of ["npm run test:e2e:aws", "npm run perf:aws", "npm run rag:quality:aws"]) {
+  assert(
+    awsDevUatValidation.candidate_commands.indexOf("npm run aws:dev-uat:validation:build -- --input <raw-validation-input.json>") <
+      awsDevUatValidation.candidate_commands.indexOf(command),
+    `${command} must run after validation evidence build`
+  );
+}
+assert(
+  awsDevUatValidation.candidate_commands.indexOf("npm run aws:dev-uat:validation:final") <
+    awsDevUatValidation.candidate_commands.indexOf("npm run aws:dev-uat:evidence-bundle:check -- --preflight-raw-input <raw-preflight-input.json> --validation-raw-input <raw-validation-input.json> --preflight-evidence dist/acceptance/aws_dev_uat_preflight.json --validation-evidence dist/acceptance/aws_dev_uat_validation.json --execution-bridge dist/acceptance/aws_dev_uat_execution_bridge.json --output dist/acceptance/aws_dev_uat_evidence_bundle_manifest.json"),
+  "AWS dev/UAT validation action must check evidence bundle after validation final gate"
+);
+assert(
+  awsDevUatValidation.candidate_commands.indexOf("npm run aws:dev-uat:evidence-bundle:check -- --preflight-raw-input <raw-preflight-input.json> --validation-raw-input <raw-validation-input.json> --preflight-evidence dist/acceptance/aws_dev_uat_preflight.json --validation-evidence dist/acceptance/aws_dev_uat_validation.json --execution-bridge dist/acceptance/aws_dev_uat_execution_bridge.json --output dist/acceptance/aws_dev_uat_evidence_bundle_manifest.json") <
+    awsDevUatValidation.candidate_commands.indexOf("npm run aws:dev-uat:final-readiness:check -- --probe-aws-identity --require-ready"),
+  "AWS dev/UAT validation action must check final readiness after evidence bundle"
+);
+assert(
+  awsDevUatValidation.candidate_commands.indexOf("npm run aws:dev-uat:capture-helpers:check") <
+    awsDevUatValidation.candidate_commands.indexOf("npm run aws:dev-uat:preflight:build -- --input <raw-preflight-input.json>"),
+  "AWS dev/UAT validation action must verify capture helpers before building preflight evidence"
+);
+assert(awsDevUatValidation.evidence_outputs.includes("dist/acceptance/aws_dev_uat_execution_bridge.json"), "AWS dev/UAT validation action must output execution bridge snapshot");
+assert(awsDevUatValidation.evidence_outputs.includes("dist/acceptance/aws_dev_uat_raw_capture_plan.json"), "AWS dev/UAT validation action must output raw capture plan");
+assert(awsDevUatValidation.evidence_outputs.includes("dist/acceptance/aws_dev_uat_operator_input.scaffold.json"), "AWS dev/UAT validation action must output operator input scaffold");
+assert(awsDevUatValidation.evidence_outputs.includes("dist/acceptance/aws_dev_uat_operator_input.json"), "AWS dev/UAT validation action must output resolved operator input");
+assert(awsDevUatValidation.evidence_outputs.includes("dist/acceptance/aws_dev_uat_operator_execution_runbook.json"), "AWS dev/UAT validation action must output operator execution runbook");
+assert(awsDevUatValidation.evidence_outputs.includes("dist/acceptance/raw/aws_dev_uat_preflight.raw.scaffold.json"), "AWS dev/UAT validation action must output preflight raw input scaffold");
+assert(awsDevUatValidation.evidence_outputs.includes("dist/acceptance/raw/aws_dev_uat_validation.raw.scaffold.json"), "AWS dev/UAT validation action must output validation raw input scaffold");
+assert(awsDevUatValidation.evidence_outputs.includes("dist/acceptance/aws_dev_uat_preflight.json"), "AWS dev/UAT validation action must output preflight evidence");
+assert(awsDevUatValidation.evidence_outputs.includes("dist/acceptance/aws_dev_uat_validation.json"), "AWS dev/UAT validation action must output validation evidence");
+assert(awsDevUatValidation.evidence_outputs.includes("dist/acceptance/aws_dev_uat_evidence_bundle_manifest.json"), "AWS dev/UAT validation action must output evidence bundle manifest");
+assert(awsDevUatValidation.evidence_outputs.includes("dist/acceptance/aws_dev_uat_final_readiness.json"), "AWS dev/UAT validation action must output final readiness manifest");
 const defectSnapshotRefresh = plan.actions.find((action) => action.id === "defect-snapshot-refresh");
 assert(defectSnapshotRefresh.acceptance_ids.includes("AC-153"), "defect snapshot refresh action must cover AC-153");
 assert(defectSnapshotRefresh.candidate_commands.includes("gh issue list --state open --json number,title,labels,state"), "defect snapshot refresh action must include GitHub issue list command");

@@ -140,7 +140,7 @@ assert(artifactSummary.final_readiness_ready === finalReady, "artifact summary f
 assert(artifactSummary.external_action_plan_path === "dist/acceptance/external_action_plan.json", "artifact summary external action path mismatch");
 assert(JSON.stringify(artifactSummary.external_actions_pending) === JSON.stringify(manifest.final_readiness.external_actions_pending), "artifact summary external pending actions mismatch");
 
-for (const id of ["source", "cdk-synth", "cloudformation-outputs", "db-migration", "allure-report", "docusaurus-docs", "ops-runbooks", "defect-list", "release", "final-checklist"]) {
+for (const id of ["source", "cdk-synth", "cloudformation-outputs", "db-migration", "allure-report", "docusaurus-docs", "aws-dev-uat-validation", "ops-runbooks", "defect-list", "release", "final-checklist"]) {
   assert(artifactSummary.artifacts.some((item) => item.id === id), `artifact summary missing ${id}`);
 }
 for (const item of artifactSummary.artifacts) {

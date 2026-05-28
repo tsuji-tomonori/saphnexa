@@ -122,7 +122,7 @@ function validateManifest(path, checks, errors, options = {}) {
     check(isArtifactUrl(manifest.docs_site?.[key]), `manifest.docs_site.${key}`, checks, errors, "must be a final http(s) or s3 URL");
   }
   check(isDocsLatestUrl(manifest.docs_site?.latest_url), "manifest.docs_site.latest_url_admin_docs_path", checks, errors, "must point to /admin/docs/latest/ or docs-site/latest/");
-  check(isDocsVersionUrl(manifest.docs_site?.version_url), "manifest.docs_site.version_url_admin_docs_path", checks, errors, "must point to /admin/docs/versions/v0.16/ or docs-site/releases/v0.16/");
+  check(isDocsVersionUrl(manifest.docs_site?.version_url), "manifest.docs_site.version_url_admin_docs_path", checks, errors, "must point to /admin/docs/versions/v0.16|v0.17/ or docs-site/releases/v0.16|v0.17/");
   check(isFinalText(manifest.rag_evaluation?.evaluation_run_id), "manifest.rag_evaluation.evaluation_run_id", checks, errors, "must include final evaluation run id");
   check(isArtifactUrl(manifest.rag_evaluation?.report_url), "manifest.rag_evaluation.report_url", checks, errors, "must be a final report URL");
   check(isEvaluationReportUrl(manifest.rag_evaluation?.report_url, manifest.rag_evaluation?.evaluation_run_id), "manifest.rag_evaluation.report_url_evaluation_run", checks, errors, "must point to the evaluation report path for evaluation_run_id");
@@ -437,7 +437,10 @@ function isDocsLatestUrl(value) {
 }
 
 function isDocsVersionUrl(value) {
-  return hasPathSuffix(value, "/admin/docs/versions/v0.16/") || hasPathSuffix(value, "/docs-site/releases/v0.16/");
+  return hasPathSuffix(value, "/admin/docs/versions/v0.16/") ||
+    hasPathSuffix(value, "/admin/docs/versions/v0.17/") ||
+    hasPathSuffix(value, "/docs-site/releases/v0.16/") ||
+    hasPathSuffix(value, "/docs-site/releases/v0.17/");
 }
 
 function isEvaluationReportUrl(value, evaluationRunId) {

@@ -78,7 +78,7 @@ const manifest = {
   },
   docs_site: {
     latest_url: "dist/admin/docs/latest/",
-    version_url: "dist/admin/docs/versions/v0.16/"
+    version_url: "dist/admin/docs/versions/v0.17/"
   },
   rag_evaluation: {
     evaluation_run_id: "local-rag-quality-report",

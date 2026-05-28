@@ -1,0 +1,14 @@
+{
+  "schema_version": "saphnexa-rag-runtime-smoke.raw.v1",
+  "environment": "uat",
+  "run_id": "uat-manual-capture",
+  "status": "captured",
+  "bedrock_knowledge_base_id": "KBUT123456",
+  "s3_vector_bucket_name": "saphnexa-uat-vectors",
+  "s3_vector_index_name": "saphnexa-uat-documents",
+  "agentcore_runtime_arn": "arn:aws:bedrock-agentcore:ap-northeast-1:sample-account:runtime/SaphnexaUatAgent-abcdef123456",
+  "tools_api_url": "https://tools.uat.saphnexa.awsapps.com",
+  "tools_api_probe": { "ok": true, "status": 200 },
+  "tools_gateway_authorized_expected": true,
+  "acl_precheck_expected": true
+}

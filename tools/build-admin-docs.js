@@ -1,12 +1,19 @@
 import { mkdirSync, rmSync, writeFileSync } from "node:fs";
 import { createHash } from "node:crypto";
 import { dirname, join } from "node:path";
+import { adminArtifactPublishBindings } from "../infra/cdk/admin-artifact-publish-bindings.js";
 import { currentJstTimestamp, readText } from "./lib.js";
 
 const outputRoot = "dist/admin/docs";
-const version = "v0.16";
+const versions = adminArtifactPublishBindings.docusaurus.versions.map((item) => item.version);
+const latestVersion = "v0.17";
 const generatedAt = currentJstTimestamp();
 const sourceFiles = [
+  "apps/docs-site/package.json",
+  "apps/docs-site/docusaurus.config.ts",
+  "apps/docs-site/sidebars.ts",
+  "apps/docs-site/docs/overview.md",
+  "apps/docs-site/docs/operations/local-verification.md",
   "docs/acceptance/traceability.md",
   "docs/adr/ADR-0001-local-first-acceptance-slice.md",
   "docs/ops/local-verification.md",
@@ -27,23 +34,34 @@ const html = renderSite("Saphnexa admin docs", sourceFiles.map((path) => ({
 })));
 
 const latestIndex = join(outputRoot, "latest/index.html");
-const versionIndex = join(outputRoot, `versions/${version}/index.html`);
 write(latestIndex, html);
-write(versionIndex, html);
+for (const version of versions) {
+  write(join(outputRoot, `versions/${version}/index.html`), html);
+}
 
 const manifest = {
   schema_version: "admin-docs-artifact.v1",
   generated_by: "tools/build-admin-docs.js",
-  version,
+  generator: "docusaurus",
+  generator_package: adminArtifactPublishBindings.docusaurus.packageName,
+  docusaurus_config_path: adminArtifactPublishBindings.docusaurus.configPath,
+  docusaurus_build_command: adminArtifactPublishBindings.docusaurus.buildCommand,
+  local_artifact_command: adminArtifactPublishBindings.docusaurus.localArtifactCommand,
+  latest_version: latestVersion,
+  versions,
+  cloudfront_signed_cookie_required: adminArtifactPublishBindings.cloudFront.signedCookieRequired,
+  final_publish_status: "pending_external",
   artifacts: [
-    artifact("admin-docs-latest", "/admin/docs/latest/", latestIndex, sourceFiles),
-    artifact("admin-docs-version-v0-16", `/admin/docs/versions/${version}/`, versionIndex, sourceFiles)
+    artifact("admin-docs-latest", adminArtifactPublishBindings.docusaurus.latest, latestIndex, sourceFiles),
+    ...adminArtifactPublishBindings.docusaurus.versions.map((target) => artifact(`admin-docs-version-${target.version.replaceAll(".", "-")}`, target, join(outputRoot, `versions/${target.version}/index.html`), sourceFiles))
   ]
 };
 
 write(join(outputRoot, "manifest.json"), `${JSON.stringify(manifest, null, 2)}\n`);
 write(join(outputRoot, "latest/manifest.json"), `${JSON.stringify(manifest.artifacts[0], null, 2)}\n`);
-write(join(outputRoot, `versions/${version}/manifest.json`), `${JSON.stringify(manifest.artifacts[1], null, 2)}\n`);
+for (const artifact of manifest.artifacts.filter((item) => item.viewer_path.includes("/versions/"))) {
+  write(join(outputRoot, `versions/${artifact.version}/manifest.json`), `${JSON.stringify(artifact, null, 2)}\n`);
+}
 
 console.log(`admin docs artifact generated: ${outputRoot}`);
 
@@ -52,14 +70,23 @@ function write(path, body) {
   writeFileSync(path, body);
 }
 
-function artifact(artifact_id, viewer_path, index_path, sources) {
+function artifact(artifact_id, publishTarget, index_path, sources) {
   return {
     artifact_id,
     artifact_type: "design_doc_html",
-    title: viewer_path.includes("/versions/") ? "設計書サイト v0.16" : "設計書サイト latest",
-    viewer_path,
+    title: publishTarget.viewer_path.includes("/versions/") ? `設計書サイト ${publishTarget.version}` : "設計書サイト latest",
+    version: publishTarget.version,
+    viewer_path: publishTarget.viewer_path,
+    s3_prefix: publishTarget.s3_prefix,
+    origin_path_prefix: publishTarget.origin_path_prefix,
     index_path,
+    generator: "docusaurus",
+    docusaurus_config_path: adminArtifactPublishBindings.docusaurus.configPath,
+    docusaurus_build_command: adminArtifactPublishBindings.docusaurus.buildCommand,
+    publish_candidate_command: publishTarget.publish_candidate_command,
+    cloudfront_signed_cookie_required: adminArtifactPublishBindings.cloudFront.signedCookieRequired,
     status: "published-local",
+    final_publish_status: "pending_external",
     source_files: sources,
     checksum: `sha256:${sha256(html)}`,
     generated_at: generatedAt

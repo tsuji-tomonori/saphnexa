@@ -1,6 +1,6 @@
 import { assert, listFiles, readJson, readText } from "./lib.js";
 
-const packageFiles = listFiles(["apps", "packages"], (path) => path.endsWith("package.json"));
+const packageFiles = listFiles(["apps", "infra", "packages"], (path) => path.endsWith("package.json"));
 for (const file of packageFiles) {
   const pkg = readJson(file);
   assert(pkg.name?.startsWith("@saphnexa/") || pkg.name === "saphnexa", `${file} has invalid package name`);

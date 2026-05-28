@@ -14,6 +14,10 @@ tasks:
     desc: Verify API and Tools API contract metadata
     cmds:
       - npm run test:contract
+  api:openapi:check:
+    desc: Verify Hono/Zod/OpenAPI route implementation metadata
+    cmds:
+      - npm run api:openapi:check
   integration:local:
     desc: Run local integration checks for the first vertical slice
     cmds:
@@ -26,6 +30,10 @@ tasks:
     desc: Verify GitHub Actions workflow shape locally
     cmds:
       - npm run ci:check
+  cdk:constructs:check:
+    desc: Verify real CDK Construct source and CloudFormation resource type inventory
+    cmds:
+      - npm run cdk:constructs:check
   cfn:inventory:build:
     desc: Build draft CloudFormation inventory evidence locally
     cmds:
@@ -34,6 +42,10 @@ tasks:
     desc: Verify draft CloudFormation inventory evidence locally
     cmds:
       - npm run cfn:inventory:check
+  edge:identity:realtime:check:
+    desc: Verify CloudFront, Cognito, and AppSync Events binding source locally
+    cmds:
+      - npm run edge:identity:realtime:check
   edge:security:check:
     desc: Verify local edge, realtime, IAM, KMS, and queue security intent
     cmds:
@@ -126,6 +138,10 @@ tasks:
     desc: Verify local prompt injection attack catalog
     cmds:
       - npm run rag:security:check
+  rag:aws-binding:check:
+    desc: Verify Bedrock KB, S3 Vectors, AgentCore, Tools API, and ACL binding source locally
+    cmds:
+      - npm run rag:aws-binding:check
   rag:perf:local:
     desc: Verify local RAG first notification and final answer timing gates
     cmds:
@@ -174,6 +190,134 @@ tasks:
     desc: Verify local storage prefix and metadata invariants
     cmds:
       - npm run storage:check
+  aws:dev-uat:preflight:
+    desc: Verify AWS dev/UAT evidence contract before E2E, performance, and RAG quality runs
+    cmds:
+      - npm run aws:dev-uat:preflight
+  aws:dev-uat:preflight:build:
+    desc: Build final AWS dev/UAT preflight evidence from raw captured input
+    cmds:
+      - npm run aws:dev-uat:preflight:build
+  aws:dev-uat:preflight:final:
+    desc: Verify final AWS-captured dev/UAT evidence contract before real validation runs
+    cmds:
+      - npm run aws:dev-uat:preflight:final
+  aws:dev-uat:execution-bridge:check:
+    desc: Build and verify the AWS dev/UAT final evidence execution bridge
+    cmds:
+      - npm run aws:dev-uat:execution-bridge:check
+  aws:dev-uat:execution-bridge:probe:
+    desc: Probe local AWS credentials and final evidence readiness without changing AWS state
+    cmds:
+      - npm run aws:dev-uat:execution-bridge:probe
+  aws:dev-uat:raw-capture-plan:build:
+    desc: Build the AWS dev/UAT raw capture command and output reference plan
+    cmds:
+      - npm run aws:dev-uat:raw-capture-plan:build
+  aws:dev-uat:raw-capture-plan:check:
+    desc: Build and verify the AWS dev/UAT raw capture plan without changing AWS state
+    cmds:
+      - npm run aws:dev-uat:raw-capture-plan:check
+  aws:dev-uat:raw-input-scaffold:build:
+    desc: Build AWS dev/UAT raw input scaffolds from the raw capture plan
+    cmds:
+      - npm run aws:dev-uat:raw-input-scaffold:build
+  aws:dev-uat:raw-input-scaffold:check:
+    desc: Build and verify AWS dev/UAT raw input scaffolds without changing AWS state
+    cmds:
+      - npm run aws:dev-uat:raw-input-scaffold:check
+  aws:dev-uat:operator-input:build:
+    desc: Build the AWS dev/UAT operator input scaffold
+    cmds:
+      - npm run aws:dev-uat:operator-input:build
+  aws:dev-uat:operator-input:check:
+    desc: Build and verify the AWS dev/UAT operator input scaffold without changing AWS state
+    cmds:
+      - npm run aws:dev-uat:operator-input:check
+  aws:dev-uat:operator-input:fixture:check:
+    desc: Verify AWS dev/UAT resolved operator input fixture branches
+    cmds:
+      - npm run aws:dev-uat:operator-input:fixture:check
+  aws:dev-uat:operator-runbook:build:
+    desc: Build the AWS dev/UAT operator execution runbook
+    cmds:
+      - npm run aws:dev-uat:operator-runbook:build
+  aws:dev-uat:operator-runbook:check:
+    desc: Build and verify the AWS dev/UAT operator execution runbook
+    cmds:
+      - npm run aws:dev-uat:operator-runbook:check
+  aws:dev-uat:operator-runbook:fixture:check:
+    desc: Verify AWS dev/UAT operator execution runbook ready and blocked branches
+    cmds:
+      - npm run aws:dev-uat:operator-runbook:fixture:check
+  aws:dev-uat:raw-output:fixture:check:
+    desc: Verify AWS dev/UAT raw output files for sample captured inputs
+    cmds:
+      - npm run aws:dev-uat:raw-output:fixture:check
+  aws:dev-uat:raw-input:fixture:check:
+    desc: Dry-run AWS dev/UAT raw input samples and reject unfinished scaffolds
+    cmds:
+      - npm run aws:dev-uat:raw-input:fixture:check
+  aws:dev-uat:capture-helpers:check:
+    desc: Verify AWS dev/UAT raw capture helper entrypoints and missing-env failures
+    cmds:
+      - npm run aws:dev-uat:capture-helpers:check
+  aws:dev-uat:preflight-raw-input:fixture:check:
+    desc: Verify AWS dev/UAT preflight raw input materializer
+    cmds:
+      - npm run aws:dev-uat:preflight-raw-input:fixture:check
+  aws:dev-uat:validation-capture:fixture:check:
+    desc: Verify AWS dev/UAT validation result capture helpers and threshold failures
+    cmds:
+      - npm run aws:dev-uat:validation-capture:fixture:check
+  aws:dev-uat:validation-raw-input:fixture:check:
+    desc: Verify AWS dev/UAT validation raw input materializer
+    cmds:
+      - npm run aws:dev-uat:validation-raw-input:fixture:check
+  aws:dev-uat:materialized-flow:fixture:check:
+    desc: Verify AWS dev/UAT materialized raw input to evidence bundle flow
+    cmds:
+      - npm run aws:dev-uat:materialized-flow:fixture:check
+  aws:dev-uat:final-readiness:check:
+    desc: Build and verify AWS dev/UAT final readiness manifest without changing AWS state
+    cmds:
+      - npm run aws:dev-uat:final-readiness:check
+  aws:dev-uat:final-readiness:fixture:check:
+    desc: Verify AWS dev/UAT final readiness manifest fixture branches
+    cmds:
+      - npm run aws:dev-uat:final-readiness:fixture:check
+  aws:dev-uat:operator-handoff:check:
+    desc: Build and verify the AWS dev/UAT operator handoff artifact
+    cmds:
+      - npm run aws:dev-uat:operator-handoff:check
+  aws:dev-uat:operator-handoff:fixture:check:
+    desc: Verify AWS dev/UAT operator handoff fixture branches
+    cmds:
+      - npm run aws:dev-uat:operator-handoff:fixture:check
+  aws:dev-uat:evidence-bundle:fixture:check:
+    desc: Verify AWS dev/UAT evidence bundle manifest fixture
+    cmds:
+      - npm run aws:dev-uat:evidence-bundle:fixture:check
+  aws:dev-uat:validation:check:
+    desc: Verify AWS dev/UAT E2E, performance, and RAG quality validation evidence fixture
+    cmds:
+      - npm run aws:dev-uat:validation:check
+  aws:dev-uat:validation:build:
+    desc: Build final AWS dev/UAT validation evidence from raw captured input
+    cmds:
+      - npm run aws:dev-uat:validation:build
+  aws:dev-uat:validation:fixture:check:
+    desc: Verify AWS dev/UAT validation fixture positive and negative branches
+    cmds:
+      - npm run aws:dev-uat:validation:fixture:check
+  aws:dev-uat:evidence:fixture:check:
+    desc: Verify AWS dev/UAT evidence builders with captured-input samples
+    cmds:
+      - npm run aws:dev-uat:evidence:fixture:check
+  aws:dev-uat:validation:final:
+    desc: Verify final AWS dev/UAT E2E, performance, and RAG quality validation evidence
+    cmds:
+      - npm run aws:dev-uat:validation:final
   admin-artifacts:build:
     desc: Build local admin docs and test report artifacts
     cmds:
@@ -182,3 +326,7 @@ tasks:
     desc: Verify local admin artifact manifests and access policy
     cmds:
       - npm run artifacts:check
+  admin-artifacts:publish:check:
+    desc: Verify Docusaurus and Allure admin artifact publish bindings
+    cmds:
+      - npm run admin-artifacts:publish:check

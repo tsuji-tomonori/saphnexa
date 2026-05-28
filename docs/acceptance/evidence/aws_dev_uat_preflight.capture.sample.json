@@ -1,0 +1,115 @@
+{
+  "environment": "uat",
+  "captured_at": "2026-05-28T11:55:00+09:00",
+  "aws_identity": {
+    "AccountParts": ["123456", "789012"]
+  },
+  "source": {
+    "git_tag": "v0.17.0-uat.20260528",
+    "github_release_url": "https://github.com/tsuji-tomonori/saphnexa/releases/tag/v0.17.0-uat.20260528"
+  },
+  "capture_provenance": {
+    "source": "aws-dev-uat-raw-capture",
+    "captured_at": "2026-05-28T11:54:00+09:00",
+    "required_command_ids": [
+      "aws-sts",
+      "cloudformation-describe-stacks",
+      "cloudformation-list-stack-resources",
+      "flyway-info",
+      "hono-openapi",
+      "edge-realtime",
+      "rag-runtime",
+      "published-artifacts"
+    ],
+    "commands": [
+      {
+        "id": "aws-sts",
+        "command": "aws sts get-caller-identity --output json",
+        "output_ref": "raw/aws-sts-get-caller-identity.json",
+        "status": "captured"
+      },
+      {
+        "id": "cloudformation-describe-stacks",
+        "command": "aws cloudformation describe-stacks --stack-name saphnexa-uat --region ap-northeast-1 --output json",
+        "output_ref": "raw/cloudformation-describe-stacks.json",
+        "status": "captured"
+      },
+      {
+        "id": "cloudformation-list-stack-resources",
+        "command": "aws cloudformation list-stack-resources --stack-name saphnexa-uat --region ap-northeast-1 --output json",
+        "output_ref": "raw/cloudformation-list-stack-resources.json",
+        "status": "captured"
+      },
+      {
+        "id": "flyway-info",
+        "command": "flyway info -url=jdbc:postgresql://saphnexa-uat-dsql.cluster-abcd1234efgh.ap-northeast-1.dsql.amazonaws.com:5432/saphnexa",
+        "output_ref": "raw/flyway-info.json",
+        "status": "captured"
+      },
+      {
+        "id": "hono-openapi",
+        "command": "curl -fsS https://api.uat.saphnexa.awsapps.com/openapi.json",
+        "output_ref": "raw/openapi.json",
+        "status": "captured"
+      },
+      {
+        "id": "edge-realtime",
+        "command": "node tools/capture-edge-realtime-smoke.js --env uat",
+        "output_ref": "raw/edge-realtime-smoke.json",
+        "status": "captured"
+      },
+      {
+        "id": "rag-runtime",
+        "command": "node tools/capture-rag-runtime-smoke.js --env uat",
+        "output_ref": "raw/rag-runtime-smoke.json",
+        "status": "captured"
+      },
+      {
+        "id": "published-artifacts",
+        "command": "node tools/capture-admin-artifacts-smoke.js --env uat",
+        "output_ref": "raw/admin-artifacts-smoke.json",
+        "status": "captured"
+      }
+    ]
+  },
+  "cloudformation": {
+    "StackName": "saphnexa-uat",
+    "stack_uuid": "aaaaaaaa-bbbb-cccc-dddd-eeeeeeeeeeee",
+    "StackStatus": "UPDATE_COMPLETE",
+    "Outputs": [
+      { "OutputKey": "ApiEndpoint", "OutputValue": "https://api.uat.saphnexa.awsapps.com" },
+      { "OutputKey": "ToolsApiEndpoint", "OutputValue": "https://tools.uat.saphnexa.awsapps.com" },
+      { "OutputKey": "CloudFrontDistributionDomain", "OutputValue": "d3saphnexauat.cloudfront.net" },
+      { "OutputKey": "UserPoolId", "OutputValue": "ap-northeast-1_UatAbCd12" },
+      { "OutputKey": "UserPoolClientId", "OutputValue": "7uatclientid234567890" },
+      { "OutputKey": "AppSyncEventApiHttpEndpoint", "OutputValue": "https://events.uat.saphnexa.awsapps.com/event" },
+      { "OutputKey": "AppSyncEventApiRealtimeEndpoint", "OutputValue": "wss://events.uat.saphnexa.awsapps.com/event/realtime" },
+      { "OutputKey": "DsqlEndpoint", "OutputValue": "saphnexa-uat-dsql.cluster-abcd1234efgh.ap-northeast-1.dsql.amazonaws.com" },
+      { "OutputKey": "RawDocumentsBucketName", "OutputValue": "saphnexa-uat-raw-documents" },
+      { "OutputKey": "PublishedArtifactsBucketName", "OutputValue": "saphnexa-uat-published-artifacts" },
+      { "OutputKey": "S3VectorBucketName", "OutputValue": "saphnexa-uat-vectors" },
+      { "OutputKey": "S3VectorIndexName", "OutputValue": "saphnexa-uat-documents" },
+      { "OutputKey": "BedrockKnowledgeBaseId", "OutputValue": "KBUT123456" },
+      { "OutputKey": "AgentCoreRuntimeName", "OutputValue": "SaphnexaUatAgent-abcdef123456" },
+      { "OutputKey": "DocusaurusLatestUrl", "OutputValue": "https://d3saphnexauat.cloudfront.net/admin/docs/latest/" },
+      { "OutputKey": "DocusaurusVersionUrl", "OutputValue": "https://d3saphnexauat.cloudfront.net/admin/docs/versions/v0.17/" },
+      { "OutputKey": "AllureLatestUrl", "OutputValue": "https://d3saphnexauat.cloudfront.net/admin/test-reports/allure/latest/" }
+    ]
+  },
+  "dsql_flyway": {
+    "cluster_identifier": "saphnexa-uat-dsql",
+    "latest_version": "V001",
+    "checksum_status": "matched"
+  },
+  "hono_openapi": {
+    "route_count": 38,
+    "zod_validation_enabled": true
+  },
+  "edge_identity_realtime": {
+    "ws_ticket_authorizer_enabled": true
+  },
+  "rag_runtime": {
+    "tools_gateway_authorized": true,
+    "acl_precheck_enabled": true
+  }
+}

@@ -113,6 +113,7 @@ jobs:
           node-version: "22"
       - run: npm run admin-artifacts:build
       - run: npm run artifacts:check
+      - run: npm run admin-artifacts:publish:check
 
   quality-gates:
     name: quality gates
@@ -180,5 +181,28 @@ jobs:
       - run: npm run acceptance:final:check
       - run: npm run acceptance:package:build
       - run: npm run acceptance:package:check
+      - run: npm run aws:dev-uat:execution-bridge:check
+      - run: npm run aws:dev-uat:raw-capture-plan:check
+      - run: npm run aws:dev-uat:raw-input-scaffold:check
+      - run: npm run aws:dev-uat:operator-input:check
+      - run: npm run aws:dev-uat:operator-input:fixture:check
+      - run: npm run aws:dev-uat:operator-runbook:check
+      - run: npm run aws:dev-uat:operator-runbook:fixture:check
+      - run: npm run aws:dev-uat:raw-output:fixture:check
+      - run: npm run aws:dev-uat:raw-input:fixture:check
+      - run: npm run aws:dev-uat:evidence-bundle:fixture:check
+      - run: npm run aws:dev-uat:capture-helpers:check
+      - run: npm run aws:dev-uat:preflight-raw-input:fixture:check
+      - run: npm run aws:dev-uat:validation-capture:fixture:check
+      - run: npm run aws:dev-uat:validation-raw-input:fixture:check
+      - run: npm run aws:dev-uat:materialized-flow:fixture:check
+      - run: npm run aws:dev-uat:final-readiness:check
+      - run: npm run aws:dev-uat:final-readiness:fixture:check
+      - run: npm run aws:dev-uat:operator-handoff:check
+      - run: npm run aws:dev-uat:operator-handoff:fixture:check
+      - run: npm run aws:dev-uat:evidence:fixture:check
+      - run: npm run aws:dev-uat:validation:check
+      - run: npm run aws:dev-uat:validation:fixture:check
       - run: npm run admin-artifacts:build
       - run: npm run artifacts:check
+      - run: npm run admin-artifacts:publish:check

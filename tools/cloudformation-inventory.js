@@ -2,6 +2,7 @@ import { createHash } from "node:crypto";
 import { mkdirSync, writeFileSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { synthLocalInventory } from "../infra/bin/app.js";
+import { cdkRequiredResourceTypes } from "../infra/cdk/resource-specs.js";
 import { currentJstTimestamp } from "./lib.js";
 
 export const cloudFormationInventoryPath = "dist/acceptance/cloudformation_inventory.draft.json";
@@ -10,15 +11,29 @@ export const expectedMajorResourceTypes = [
   "AWS::CloudFront::Distribution",
   "AWS::CloudFront::Function",
   "AWS::CloudFront::OriginAccessControl",
+  "AWS::CloudFront::PublicKey",
+  "AWS::CloudFront::KeyGroup",
   "AWS::WAFv2::WebACL",
   "AWS::S3::Bucket",
   "AWS::S3::BucketPolicy",
+  "AWS::S3Vectors::VectorBucket",
+  "AWS::S3Vectors::Index",
   "AWS::KMS::Key",
+  "AWS::DSQL::Cluster",
   "AWS::Cognito::UserPool",
   "AWS::Cognito::UserPoolClient",
+  "AWS::Cognito::UserPoolDomain",
+  "AWS::Cognito::UserPoolGroup",
   "AWS::ApiGatewayV2::Api",
   "AWS::Lambda::Function",
   "AWS::AppSync::Api",
+  "AWS::AppSync::ChannelNamespace",
+  "AWS::Bedrock::KnowledgeBase",
+  "AWS::Bedrock::DataSource",
+  "AWS::BedrockAgentCore::Runtime",
+  "AWS::BedrockAgentCore::Gateway",
+  "AWS::BedrockAgentCore::GatewayTarget",
+  "AWS::IAM::Role",
   "AWS::SQS::Queue",
   "AWS::Logs::LogGroup",
   "AWS::CloudWatch::Alarm",
@@ -27,17 +42,31 @@ export const expectedMajorResourceTypes = [
 
 export const expectedMajorResourceTypeMinimumCounts = {
   "AWS::CloudFront::Distribution": 1,
-  "AWS::CloudFront::Function": 2,
+  "AWS::CloudFront::Function": 3,
   "AWS::CloudFront::OriginAccessControl": 2,
+  "AWS::CloudFront::PublicKey": 1,
+  "AWS::CloudFront::KeyGroup": 1,
   "AWS::WAFv2::WebACL": 1,
   "AWS::S3::Bucket": 6,
   "AWS::S3::BucketPolicy": 2,
+  "AWS::S3Vectors::VectorBucket": 1,
+  "AWS::S3Vectors::Index": 1,
   "AWS::KMS::Key": 1,
+  "AWS::DSQL::Cluster": 1,
   "AWS::Cognito::UserPool": 1,
   "AWS::Cognito::UserPoolClient": 1,
+  "AWS::Cognito::UserPoolDomain": 1,
+  "AWS::Cognito::UserPoolGroup": 2,
   "AWS::ApiGatewayV2::Api": 2,
   "AWS::Lambda::Function": 11,
   "AWS::AppSync::Api": 1,
+  "AWS::AppSync::ChannelNamespace": 2,
+  "AWS::Bedrock::KnowledgeBase": 1,
+  "AWS::Bedrock::DataSource": 1,
+  "AWS::BedrockAgentCore::Runtime": 1,
+  "AWS::BedrockAgentCore::Gateway": 1,
+  "AWS::BedrockAgentCore::GatewayTarget": 1,
+  "AWS::IAM::Role": 4,
   "AWS::SQS::Queue": 8,
   "AWS::Logs::LogGroup": 1,
   "AWS::CloudWatch::Alarm": 14,
@@ -60,8 +89,12 @@ export function buildCloudFormationInventoryDraft(outputPath = cloudFormationInv
   const constructs = Object.entries(localInventory.intent_catalog).map(([name, catalog]) => ({
     name,
     resources: catalog.resources,
+    cfn_resource_types: catalog.cfnResourceTypes,
+    cfn_resources: catalog.cfnResources,
     outputs: catalog.outputs,
+    cfn_outputs: catalog.cfnOutputs,
     resource_count: catalog.resources.length,
+    cfn_resource_count: catalog.cfnResources.length,
     output_count: catalog.outputs.length
   }));
 
@@ -80,7 +113,10 @@ export function buildCloudFormationInventoryDraft(outputPath = cloudFormationInv
       construct_count: localInventory.construct_count,
       constructs,
       expected_resource_symbols: constructs.flatMap((item) => item.resources),
+      required_cfn_resource_types: cdkRequiredResourceTypes,
+      expected_cfn_resources: constructs.flatMap((item) => item.cfn_resources),
       expected_output_symbols: constructs.flatMap((item) => item.outputs),
+      expected_cfn_output_keys: constructs.flatMap((item) => item.cfn_outputs),
       checksum: `sha256:${sha256(JSON.stringify(localInventory))}`
     },
     expected_major_resource_types: expectedMajorResourceTypes,

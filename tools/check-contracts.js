@@ -3,6 +3,7 @@ import { assertPublicApiContract, errorResponseSchema, publicApiRoutes } from ".
 import { assertToolContract, toolContracts } from "../packages/tool-contract/src/tools.js";
 import { requiredTables } from "../packages/db-schema/src/tables.js";
 import { saphnexaConstructs } from "../infra/stacks/saphnexa-app-stack.js";
+import { buildOpenApiDocument } from "../apps/api/src/openapi-document.js";
 
 assertPublicApiContract();
 assertToolContract();
@@ -25,6 +26,11 @@ if (saphnexaConstructs.length !== 7) {
 const adminRoutes = publicApiRoutes.filter((route) => route.viewerPath.startsWith("/api/admin/"));
 if (adminRoutes.some((route) => route.roles.join(",") !== "admin")) {
   throw new Error("admin routes must be admin-only");
+}
+
+const openApiDocument = buildOpenApiDocument();
+if (Object.values(openApiDocument.paths).flatMap((pathItem) => Object.keys(pathItem)).length !== publicApiRoutes.length) {
+  throw new Error("OpenAPI document route count must match public API routes");
 }
 
 const auditedTools = toolContracts.filter((tool) => tool.auditTable === "tool_invocations");

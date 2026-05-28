@@ -7,6 +7,8 @@ assert(inventory.construct_count === 7, "CDK inventory must contain 7 constructs
 for (const construct of ["EdgeStaticConstruct", "IdentityConstruct", "ApiConstruct", "RealtimeConstruct", "DataConstruct", "RagProcessingConstruct", "ObservabilityCicdConstruct"]) {
   assert(inventory.constructs.includes(construct), `missing construct ${construct}`);
   assert(inventory.intent_catalog[construct].resources.length > 0, `missing resources for ${construct}`);
+  assert(inventory.intent_catalog[construct].cfnResources.length > 0, `missing cfn resources for ${construct}`);
+  assert(inventory.intent_catalog[construct].cfnResourceTypes.length > 0, `missing cfn resource types for ${construct}`);
   assert(inventory.intent_catalog[construct].outputs.length > 0, `missing outputs for ${construct}`);
 }
 assert(inventory.intent_catalog.EdgeStaticConstruct.edgeRoutingIntent.viewerRequestFunction, "edge routing intent missing");
@@ -14,5 +16,15 @@ assert(inventory.intent_catalog.RealtimeConstruct.channelPolicyIntent.subscribeA
 assert(inventory.intent_catalog.DataConstruct.kmsPolicyIntent.bucketEncryption === "SSE-KMS", "KMS intent missing");
 assert(inventory.intent_catalog.RagProcessingConstruct.queuePolicyIntent.deadLetterQueues.length > 0, "DLQ intent missing");
 assert(inventory.intent_catalog.ObservabilityCicdConstruct.iamReviewIntent.cdkNagEnabled === true, "cdk-nag intent missing");
+assert(inventory.intent_catalog.DataConstruct.cfnResourceTypes.includes("AWS::DSQL::Cluster"), "DSQL cluster resource type missing");
+assert(inventory.intent_catalog.DataConstruct.cfnResourceTypes.includes("AWS::S3Vectors::Index"), "S3 Vectors index resource type missing");
+assert(inventory.intent_catalog.EdgeStaticConstruct.cfnResourceTypes.includes("AWS::CloudFront::KeyGroup"), "CloudFront key group resource type missing");
+assert(inventory.intent_catalog.IdentityConstruct.cfnResourceTypes.includes("AWS::Cognito::UserPoolDomain"), "Cognito user pool domain resource type missing");
+assert(inventory.intent_catalog.RealtimeConstruct.cfnResourceTypes.includes("AWS::AppSync::Api"), "AppSync Events API resource type missing");
+assert(inventory.intent_catalog.RealtimeConstruct.cfnResourceTypes.includes("AWS::AppSync::ChannelNamespace"), "AppSync Events channel namespace resource type missing");
+assert(inventory.intent_catalog.RagProcessingConstruct.cfnResourceTypes.includes("AWS::Bedrock::KnowledgeBase"), "Bedrock KB resource type missing");
+assert(inventory.intent_catalog.RagProcessingConstruct.cfnResourceTypes.includes("AWS::BedrockAgentCore::Runtime"), "AgentCore runtime resource type missing");
+assert(inventory.intent_catalog.RagProcessingConstruct.cfnResourceTypes.includes("AWS::BedrockAgentCore::GatewayTarget"), "AgentCore gateway target resource type missing");
+assert(inventory.intent_catalog.RagProcessingConstruct.ragRuntimeIntent.agentCore.aclPrecheckEnabled === true, "AgentCore ACL precheck binding missing");
 
 console.log("local CDK synth inventory check passed");

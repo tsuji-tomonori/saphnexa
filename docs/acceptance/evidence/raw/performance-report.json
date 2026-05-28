@@ -1,0 +1,15 @@
+{
+  "schema_version": "saphnexa-aws-dev-uat-performance-result.raw.v1",
+  "environment": "uat",
+  "run_id": "e2e-20260528",
+  "status": "captured",
+  "load_profile": "50 dau / 10 questions per user per day",
+  "non_ai_api_p95_ms": 742,
+  "error_rate": 0.002,
+  "question_start_p95_ms": 1500,
+  "rag_first_notice_p95_ms": 3100,
+  "final_answer_p95_ms": 42000,
+  "timeout_rate": 0.01,
+  "report_url": "https://d3saphnexauat.cloudfront.net/admin/evaluation-reports/perf-20260528-uat/",
+  "cloudwatch_dashboard_url": "https://console.aws.amazon.com/cloudwatch/home?region=ap-northeast-1#dashboards:name=saphnexa-uat"
+}

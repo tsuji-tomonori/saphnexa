@@ -15,6 +15,7 @@ scenario("route role metadata", () => {
     ["/chat", "general_user"],
     ["/admin", "admin"],
     ["/admin/docs/latest/", "admin"],
+    ["/admin/docs/versions/v0.17/", "admin"],
     ["/admin/test-reports/allure/latest/", "admin"]
   ]) {
     assert(routesSource.includes(`path: "${path}"`), `route missing: ${path}`);

@@ -1,0 +1,19 @@
+{
+  "schema_version": "saphnexa-aws-dev-uat-e2e-result.raw.v1",
+  "environment": "uat",
+  "run_id": "e2e-20260528",
+  "status": "captured",
+  "passed_flows": 6,
+  "total_flows": 6,
+  "pass_rate": 1,
+  "allure_run_url": "https://d3saphnexauat.cloudfront.net/admin/test-reports/allure/runs/e2e-20260528-uat/",
+  "cloudfront_access_log_s3_uri": "s3://saphnexa-uat-logs/cloudfront/e2e-20260528/",
+  "scenarios": [
+    { "id": "general-user-chat", "status": "passed", "role": "general_user" },
+    { "id": "shared-chat-permission", "status": "passed", "role": "general_user" },
+    { "id": "admin-document-registration", "status": "passed", "role": "admin" },
+    { "id": "admin-evaluation-run", "status": "passed", "role": "admin" },
+    { "id": "admin-docs-artifact-view", "status": "passed", "role": "admin" },
+    { "id": "admin-allure-artifact-view", "status": "passed", "role": "admin" }
+  ]
+}

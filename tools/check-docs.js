@@ -9,7 +9,8 @@ const requiredRunbooks = [
   "docs/ops/runbooks/access-change.md",
   "docs/ops/runbooks/backup-restore.md",
   "docs/ops/runbooks/cloudformation-inventory.md",
-  "docs/ops/runbooks/final-acceptance.md"
+  "docs/ops/runbooks/final-acceptance.md",
+  "docs/ops/runbooks/aws-dev-uat-validation.md"
 ];
 
 for (const file of requiredRunbooks) {
@@ -32,9 +33,13 @@ assert(
 );
 
 const localVerification = readText("docs/ops/local-verification.md");
+const awsDevUatRunbook = readText("docs/ops/runbooks/aws-dev-uat-validation.md");
 for (const command of [
   "npm run admin-artifacts:build",
   "npm run artifacts:check",
+  "npm run admin-artifacts:publish:check",
+  "npm run api:openapi:check",
+  "npm run cdk:constructs:check",
   "npm run coverage:check",
   "npm run ui:check",
   "npm run web:flow:check",
@@ -45,6 +50,7 @@ for (const command of [
   "npm run failure:check",
   "npm run rag:quality:check",
   "npm run rag:security:check",
+  "npm run rag:aws-binding:check",
   "npm run rag:perf:local",
   "npm run db:migration:check",
   "npm run db:integrity:check",
@@ -66,11 +72,91 @@ for (const command of [
   "npm run acceptance:final:check",
   "npm run acceptance:package:build",
   "npm run acceptance:package:check",
+  "npm run aws:dev-uat:preflight",
+  "npm run aws:dev-uat:preflight:build",
+  "npm run aws:dev-uat:execution-bridge:check",
+  "npm run aws:dev-uat:execution-bridge:probe",
+  "npm run aws:dev-uat:raw-capture-plan:build",
+  "npm run aws:dev-uat:raw-capture-plan:check",
+  "npm run aws:dev-uat:raw-input-scaffold:build",
+  "npm run aws:dev-uat:raw-input-scaffold:check",
+  "npm run aws:dev-uat:operator-input:build",
+  "npm run aws:dev-uat:operator-input:check",
+  "npm run aws:dev-uat:operator-input:fixture:check",
+  "npm run aws:dev-uat:operator-runbook:build",
+  "npm run aws:dev-uat:operator-runbook:check",
+  "npm run aws:dev-uat:operator-runbook:fixture:check",
+  "npm run aws:dev-uat:raw-output:check",
+  "npm run aws:dev-uat:raw-output:fixture:check",
+  "npm run aws:dev-uat:raw-input:check",
+  "npm run aws:dev-uat:raw-input:fixture:check",
+  "npm run aws:dev-uat:evidence-bundle:check",
+  "npm run aws:dev-uat:evidence-bundle:fixture:check",
+  "npm run aws:dev-uat:preflight-raw-input:build",
+  "npm run aws:dev-uat:preflight-raw-input:fixture:check",
+  "npm run aws:dev-uat:validation-capture:fixture:check",
+  "npm run aws:dev-uat:validation-raw-input:build",
+  "npm run aws:dev-uat:validation-raw-input:fixture:check",
+  "npm run aws:dev-uat:materialized-flow:fixture:check",
+  "npm run aws:dev-uat:final-readiness:check",
+  "npm run aws:dev-uat:final-readiness:fixture:check",
+  "npm run aws:dev-uat:operator-handoff:check",
+  "npm run aws:dev-uat:operator-handoff:fixture:check",
+  "npm run aws:dev-uat:capture-helpers:check",
+  "npm run aws:dev-uat:validation:build",
+  "npm run aws:dev-uat:validation:check",
+  "npm run aws:dev-uat:validation:fixture:check",
+  "npm run aws:dev-uat:evidence:fixture:check",
   "npm run cfn:inventory:build",
   "npm run cfn:inventory:check",
+  "npm run edge:identity:realtime:check",
   "npm run cfn:inventory:normalize:fixture:check"
 ]) {
   assert(localVerification.includes(command), `local verification docs missing ${command}`);
+}
+for (const phrase of [
+  "preflight `materialize_command`",
+  "validation `materialize_command`",
+  "raw output/input check command",
+  "materialization.command",
+  "materialized flow fixture",
+  "final readiness manifest",
+  "operator handoff",
+  "evidence input map",
+  "final readiness bundle gate summary",
+  "final_readiness_summary.evidence_bundle",
+  "required_inputs.evidence",
+  "operator input",
+  "resolved operator input",
+  "operator execution runbook",
+  "requires_resolved_operator_input",
+  "ready operator execution runbook",
+  "validation suite gate command order",
+  "suite gate commands",
+  "current git commit",
+  "artifact coverage",
+  "current readiness artifact path match",
+  "current artifact digest/size match",
+  "all bundle artifact metadata match",
+  "all bundle artifact scope match",
+  "mismatched evidence bundle artifact path",
+  "mismatched evidence bundle artifact digest",
+  "mismatched raw-output artifact digest",
+  "out-of-scope bundle artifact",
+  "invalid_evidence_bundle_manifest",
+  "stale_evidence_bundle_manifest",
+  "stale_operator_input",
+  "stale_operator_runbook",
+  "missing_operator_runbook",
+  "invalid_operator_runbook",
+  "missing_operator_input",
+  "invalid_operator_input",
+  "missing raw input",
+  "capture plan / scaffold / materialize / raw output-input check",
+  "final evidence build / final gate",
+  "scaffold/build/check"
+]) {
+  assert(awsDevUatRunbook.includes(phrase) || localVerification.includes(phrase), `docs missing AWS dev/UAT materializer plan phrase: ${phrase}`);
 }
 for (const phrase of [
   "defect-snapshot-refresh",

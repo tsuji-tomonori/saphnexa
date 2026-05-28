@@ -1,0 +1,1 @@
+sample-cloudfront-access-log-object.gz
