@@ -182,6 +182,7 @@ jobs:
       - run: npm run acceptance:package:build
       - run: npm run acceptance:package:check
       - run: npm run aws:dev-uat:execution-bridge:check
+      - run: npm run aws:dev-uat:raw-capture-plan:check
       - run: npm run aws:dev-uat:evidence:fixture:check
       - run: npm run aws:dev-uat:validation:check
       - run: npm run aws:dev-uat:validation:fixture:check

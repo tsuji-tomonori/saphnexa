@@ -95,26 +95,33 @@ bedrock-evaluation-job
 npm run aws:dev-uat:execution-bridge:probe
 ```
 
-4. 実 AWS raw capture input から `dist/acceptance/aws_dev_uat_preflight.json` を生成する。
+4. raw capture plan を生成・検査し、必要な command id、raw output file、build/final gate の対応を確認する。
+
+```bash
+npm run aws:dev-uat:raw-capture-plan:build
+npm run aws:dev-uat:raw-capture-plan:check
+```
+
+5. 実 AWS raw capture input から `dist/acceptance/aws_dev_uat_preflight.json` を生成する。
 
 ```bash
 npm run aws:dev-uat:preflight:build -- --input <raw-preflight-input.json>
 ```
 
-5. 次を実行する。
+6. 次を実行する。
 
 ```bash
 npm run aws:dev-uat:preflight:final
 ```
 
-6. pass 後に AWS dev/UAT E2E、性能、RAG 品質検証へ進む。
-7. 実 AWS dev/UAT で主要 E2E、負荷試験、RAG 品質評価を実行し、raw result input から `dist/acceptance/aws_dev_uat_validation.json` を生成する。
+7. pass 後に AWS dev/UAT E2E、性能、RAG 品質検証へ進む。
+8. 実 AWS dev/UAT で主要 E2E、負荷試験、RAG 品質評価を実行し、raw result input から `dist/acceptance/aws_dev_uat_validation.json` を生成する。
 
 ```bash
 npm run aws:dev-uat:validation:build -- --input <raw-validation-input.json>
 ```
 
-8. 次を実行する。
+9. 次を実行する。
 
 ```bash
 npm run test:e2e:aws
@@ -132,6 +139,7 @@ npm run aws:dev-uat:validation:final
 ```bash
 npm run aws:dev-uat:preflight
 npm run aws:dev-uat:execution-bridge:check
+npm run aws:dev-uat:raw-capture-plan:check
 npm run aws:dev-uat:validation:check
 npm run aws:dev-uat:validation:fixture:check
 npm run aws:dev-uat:evidence:fixture:check
@@ -139,6 +147,7 @@ npm run aws:dev-uat:evidence:fixture:check
 
 この command は `docs/acceptance/evidence/aws_dev_uat_preflight.example.json` を検査する。`fixture` 証跡なので最終検収や AWS dev/UAT 実行完了の根拠にはしない。
 `npm run aws:dev-uat:execution-bridge:check` は AWS STS probe を行わず、final evidence path、AWS identity probe command、final gate command order、必要 input、証跡 mapping の整合を検査する。`npm run aws:dev-uat:execution-bridge:probe` は `aws sts get-caller-identity --output json` を read-only で実行し、credentials がなければ `waiting_for_external_execution` として `dist/acceptance/aws_dev_uat_execution_bridge.json` に記録する。
+`npm run aws:dev-uat:raw-capture-plan:check` は raw capture plan を生成してから、preflight / validation の command id、`output_ref`、build command、final command が builder と同期していることを検査する。この command は plan を書き出すだけで、AWS command の実行や外部状態変更は行わない。
 `npm run aws:dev-uat:validation:check` も `docs/acceptance/evidence/aws_dev_uat_validation.example.json` だけを検査する。`npm run aws:dev-uat:validation:fixture:check` は fixture の positive path と、final 指定・E2E失敗・性能閾値超過・RAG品質閾値超過の negative path を検査する。
 `npm run aws:dev-uat:evidence:fixture:check` は `*.capture.sample.json` から一時ディレクトリに `aws-captured` evidence を生成し、既存 final checker に通す。sample raw input は最終検収 evidence として扱わない。
 
@@ -158,6 +167,8 @@ npm run aws:dev-uat:preflight
 npm run aws:dev-uat:preflight:build -- --input <raw-preflight-input.json>
 npm run aws:dev-uat:execution-bridge:check
 npm run aws:dev-uat:execution-bridge:probe
+npm run aws:dev-uat:raw-capture-plan:build
+npm run aws:dev-uat:raw-capture-plan:check
 npm run aws:dev-uat:preflight:final
 npm run aws:dev-uat:validation:build -- --input <raw-validation-input.json>
 npm run aws:dev-uat:validation:check

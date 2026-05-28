@@ -5,20 +5,29 @@ import { assert, readJson } from "./lib.js";
 
 export const preflightEvidenceOutputPath = "dist/acceptance/aws_dev_uat_preflight.json";
 export const validationEvidenceOutputPath = "dist/acceptance/aws_dev_uat_validation.json";
+export const preflightCaptureCommandIds = [
+  "aws-sts",
+  "cloudformation-describe-stacks",
+  "cloudformation-list-stack-resources",
+  "flyway-info",
+  "hono-openapi",
+  "edge-realtime",
+  "rag-runtime",
+  "published-artifacts"
+];
+export const validationCaptureCommandIds = [
+  "e2e-allure",
+  "cloudfront-access-log",
+  "performance-report",
+  "cloudwatch-dashboard",
+  "rag-quality-report",
+  "bedrock-evaluation-job"
+];
 
 export function buildAwsDevUatPreflightEvidence(inputPath, outputPath = preflightEvidenceOutputPath) {
   assert(inputPath, "preflight evidence input path is required");
   const input = readJson(inputPath);
-  const captureProvenance = assertCaptureProvenance(input.capture_provenance, inputPath, [
-    "aws-sts",
-    "cloudformation-describe-stacks",
-    "cloudformation-list-stack-resources",
-    "flyway-info",
-    "hono-openapi",
-    "edge-realtime",
-    "rag-runtime",
-    "published-artifacts"
-  ]);
+  const captureProvenance = assertCaptureProvenance(input.capture_provenance, inputPath, preflightCaptureCommandIds);
   const outputs = stackOutputs(input.cloudformation);
   const accountId = accountIdFrom(input.aws?.account_id, input.aws?.account_id_parts, input.aws_identity?.Account, input.aws_identity?.AccountParts);
   const region = input.aws?.region || "ap-northeast-1";
@@ -99,14 +108,7 @@ export function buildAwsDevUatPreflightEvidence(inputPath, outputPath = prefligh
 export function buildAwsDevUatValidationEvidence(inputPath, outputPath = validationEvidenceOutputPath) {
   assert(inputPath, "validation evidence input path is required");
   const input = readJson(inputPath);
-  const captureProvenance = assertCaptureProvenance(input.capture_provenance, inputPath, [
-    "e2e-allure",
-    "cloudfront-access-log",
-    "performance-report",
-    "cloudwatch-dashboard",
-    "rag-quality-report",
-    "bedrock-evaluation-job"
-  ]);
+  const captureProvenance = assertCaptureProvenance(input.capture_provenance, inputPath, validationCaptureCommandIds);
   const accountId = accountIdFrom(input.aws?.account_id, input.aws?.account_id_parts);
   const evidence = {
     schema_version: "saphnexa-aws-dev-uat-validation.v1",

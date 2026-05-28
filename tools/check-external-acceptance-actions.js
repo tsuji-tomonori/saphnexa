@@ -44,6 +44,8 @@ assert(awsDevUatValidation.acceptance_ids.includes("AC-098"), "AWS dev/UAT valid
 assert(awsDevUatValidation.acceptance_ids.includes("AC-123"), "AWS dev/UAT validation action must cover E2E");
 for (const command of [
   "npm run aws:dev-uat:execution-bridge:probe",
+  "npm run aws:dev-uat:raw-capture-plan:build",
+  "npm run aws:dev-uat:raw-capture-plan:check",
   "npm run aws:dev-uat:preflight:build -- --input <raw-preflight-input.json>",
   "npm run aws:dev-uat:preflight:final",
   "npm run aws:dev-uat:validation:build -- --input <raw-validation-input.json>",
@@ -54,7 +56,13 @@ for (const command of [
 ]) {
   assert(awsDevUatValidation.candidate_commands.includes(command), `AWS dev/UAT validation action missing ${command}`);
 }
+assert(
+  awsDevUatValidation.candidate_commands.indexOf("npm run aws:dev-uat:raw-capture-plan:check") <
+    awsDevUatValidation.candidate_commands.indexOf("npm run aws:dev-uat:preflight:build -- --input <raw-preflight-input.json>"),
+  "AWS dev/UAT validation action must verify raw capture plan before building preflight evidence"
+);
 assert(awsDevUatValidation.evidence_outputs.includes("dist/acceptance/aws_dev_uat_execution_bridge.json"), "AWS dev/UAT validation action must output execution bridge snapshot");
+assert(awsDevUatValidation.evidence_outputs.includes("dist/acceptance/aws_dev_uat_raw_capture_plan.json"), "AWS dev/UAT validation action must output raw capture plan");
 assert(awsDevUatValidation.evidence_outputs.includes("dist/acceptance/aws_dev_uat_preflight.json"), "AWS dev/UAT validation action must output preflight evidence");
 assert(awsDevUatValidation.evidence_outputs.includes("dist/acceptance/aws_dev_uat_validation.json"), "AWS dev/UAT validation action must output validation evidence");
 const defectSnapshotRefresh = plan.actions.find((action) => action.id === "defect-snapshot-refresh");
