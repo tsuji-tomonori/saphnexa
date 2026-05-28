@@ -1,6 +1,6 @@
 # Objective 全体監査と PR 本文更新
 
-状態: in_progress
+状態: done
 
 ## 背景
 
@@ -36,11 +36,11 @@
 
 ## 受け入れ条件
 
-- [ ] objective 1〜7 について、現行 branch の証跡に基づく監査レポートが存在する。
-- [ ] 実 AWS 未実施事項を完了済みとして書かず、次に必要な final evidence を明記する。
-- [ ] PR #2 のタイトル/本文が、現在の累積変更と検証結果を反映している。
-- [ ] `git diff --check` と必要な docs/report 検査が pass する。
-- [ ] PR に監査結果とセルフレビューコメントを追加できる。
+- [x] objective 1〜7 について、現行 branch の証跡に基づく監査レポートが存在する。
+- [x] 実 AWS 未実施事項を完了済みとして書かず、次に必要な final evidence を明記する。
+- [x] PR #2 のタイトル/本文が、現在の累積変更と検証結果を反映している。
+- [x] `git diff --check` と必要な docs/report 検査が pass する。
+- [x] PR に監査結果とセルフレビューコメントを追加できる。
 
 ## 検証計画
 
@@ -59,3 +59,11 @@
 
 - 実 AWS 証跡がないため、objective の「AWS dev/UAT 検証完了」までは証明できない。
 - このタスクは reviewability と completion audit の改善であり、外部環境の最終 PASS には別途 AWS 実行が必要である。
+
+## 完了記録
+
+- 監査レポート: `reports/working/20260528-1112-objective-completion-audit.md`
+- PR: https://github.com/tsuji-tomonori/saphnexa/pull/2
+- 受け入れ条件確認コメント: https://github.com/tsuji-tomonori/saphnexa/pull/2#issuecomment-4560375536
+- セルフレビューコメント: https://github.com/tsuji-tomonori/saphnexa/pull/2#issuecomment-4560377057
+- 実行した検証: `git pull --ff-only`, `git diff --check`, `git diff --cached --check`, `npm run docs:check`, `npm run acceptance:package:check`, `gh pr view 2 --json title,body,url`
