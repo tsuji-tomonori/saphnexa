@@ -49,8 +49,10 @@ for (const command of [
   "npm run aws:dev-uat:raw-input-scaffold:build",
   "npm run aws:dev-uat:raw-input-scaffold:check",
   "npm run aws:dev-uat:capture-helpers:check",
+  "npm run aws:dev-uat:raw-input:check -- preflight --input <raw-preflight-input.json>",
   "npm run aws:dev-uat:preflight:build -- --input <raw-preflight-input.json>",
   "npm run aws:dev-uat:preflight:final",
+  "npm run aws:dev-uat:raw-input:check -- validation --input <raw-validation-input.json>",
   "npm run aws:dev-uat:validation:build -- --input <raw-validation-input.json>",
   "npm run test:e2e:aws",
   "npm run perf:aws",
@@ -66,8 +68,18 @@ assert(
 );
 assert(
   awsDevUatValidation.candidate_commands.indexOf("npm run aws:dev-uat:raw-input-scaffold:check") <
+    awsDevUatValidation.candidate_commands.indexOf("npm run aws:dev-uat:raw-input:check -- preflight --input <raw-preflight-input.json>"),
+  "AWS dev/UAT validation action must verify raw input scaffold before dry-running preflight raw input"
+);
+assert(
+  awsDevUatValidation.candidate_commands.indexOf("npm run aws:dev-uat:raw-input:check -- preflight --input <raw-preflight-input.json>") <
     awsDevUatValidation.candidate_commands.indexOf("npm run aws:dev-uat:preflight:build -- --input <raw-preflight-input.json>"),
-  "AWS dev/UAT validation action must verify raw input scaffold before building preflight evidence"
+  "AWS dev/UAT validation action must dry-run preflight raw input before building preflight evidence"
+);
+assert(
+  awsDevUatValidation.candidate_commands.indexOf("npm run aws:dev-uat:raw-input:check -- validation --input <raw-validation-input.json>") <
+    awsDevUatValidation.candidate_commands.indexOf("npm run aws:dev-uat:validation:build -- --input <raw-validation-input.json>"),
+  "AWS dev/UAT validation action must dry-run validation raw input before building validation evidence"
 );
 assert(
   awsDevUatValidation.candidate_commands.indexOf("npm run aws:dev-uat:capture-helpers:check") <
