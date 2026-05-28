@@ -65,6 +65,8 @@ npm run aws:dev-uat:raw-output:fixture:check
 npm run aws:dev-uat:raw-input:check -- preflight --input <raw-preflight-input.json>
 npm run aws:dev-uat:raw-input:check -- validation --input <raw-validation-input.json>
 npm run aws:dev-uat:raw-input:fixture:check
+npm run aws:dev-uat:evidence-bundle:check -- --preflight-raw-input <raw-preflight-input.json> --validation-raw-input <raw-validation-input.json> --preflight-evidence dist/acceptance/aws_dev_uat_preflight.json --validation-evidence dist/acceptance/aws_dev_uat_validation.json --execution-bridge dist/acceptance/aws_dev_uat_execution_bridge.json --output dist/acceptance/aws_dev_uat_evidence_bundle_manifest.json
+npm run aws:dev-uat:evidence-bundle:fixture:check
 npm run aws:dev-uat:capture-helpers:check
 npm run aws:dev-uat:validation:build -- --input <raw-validation-input.json>
 npm run aws:dev-uat:validation:check
@@ -127,6 +129,8 @@ git diff --check
 - `npm run aws:dev-uat:raw-output:fixture:check` が sample raw output の positive path と、parse 不能 JSON、空 text、sample/fixture text rejection を検査すること。
 - `npm run aws:dev-uat:raw-input:check -- preflight --input <raw-preflight-input.json>` と `npm run aws:dev-uat:raw-input:check -- validation --input <raw-validation-input.json>` が operator 入力を一時ディレクトリで evidence build し、既存 final gate 相当を通すこと。
 - `npm run aws:dev-uat:raw-input:fixture:check` が sample raw input の dry-run positive path と、scaffold / `pending_capture` rejection を検査すること。
+- `npm run aws:dev-uat:evidence-bundle:check -- ...` が preflight / validation の raw input、raw output、final evidence、execution bridge を束ね、各 artifact の path、size、sha256 を `dist/acceptance/aws_dev_uat_evidence_bundle_manifest.json` に記録すること。
+- `npm run aws:dev-uat:evidence-bundle:fixture:check` が sample bundle manifest の positive path と missing artifact の negative path を検査すること。
 - `npm run aws:dev-uat:capture-helpers:check` が raw capture plan に listed された repo-local helper entrypoint の help と missing-env failure を検査すること。
 - `npm run aws:dev-uat:validation:build -- --input <raw-validation-input.json>` が実 AWS E2E・性能・RAG品質 raw result から `dist/acceptance/aws_dev_uat_validation.json` を生成すること。
 - `npm run aws:dev-uat:validation:check` が E2E・性能・RAG品質結果の fixture 構造と閾値を検査し、`npm run aws:dev-uat:validation:fixture:check` が fixture/negative path を検査し、実証跡では `npm run test:e2e:aws`、`npm run perf:aws`、`npm run rag:quality:aws`、`npm run aws:dev-uat:validation:final` が必要であること。
@@ -156,6 +160,7 @@ git diff --check
 - `npm run aws:dev-uat:raw-input-scaffold:check` は raw input scaffold の生成と構造検査だけを行う。`pending_capture` の scaffold は final raw input ではなく、実 AWS raw output、`captured_at`、`capture_provenance.commands[].status: captured`、参照先 `output_ref` が揃うまで最終検収 evidence として扱わない。
 - `npm run aws:dev-uat:raw-output:fixture:check` は sample raw output の形式確認だけを行う。実 AWS credentials、実 raw output、実 deploy/publish がなければ最終検収 evidence として扱わない。
 - `npm run aws:dev-uat:raw-input:fixture:check` は sample raw input の dry-run 構造確認だけを行う。実 AWS credentials、実 raw output、実 deploy/publish がなければ最終検収 evidence として扱わない。
+- `npm run aws:dev-uat:evidence-bundle:fixture:check` は sample bundle manifest の構造確認だけを行う。実 AWS credentials、実 raw output、final evidence、execution bridge が揃わなければ最終検収 evidence として扱わない。
 - `npm run aws:dev-uat:capture-helpers:check` は helper の `--help` と missing-env failure だけを確認する。実環境 URL への HTTP probe は、必須 env を指定して helper を明示実行した場合だけ行う。
 - `npm run aws:dev-uat:validation:check` は fixture の構造確認だけを行う。実 AWS dev/UAT E2E・性能・RAG品質証跡は `dist/acceptance/aws_dev_uat_validation.json` を `evidence_class: aws-captured` で作成し、final suite gate を通す必要がある。
 - Git tag、GitHub release、検収用 `evidence_manifest.json` の最終確定。

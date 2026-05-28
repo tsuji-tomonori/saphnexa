@@ -146,8 +146,15 @@ npm run aws:dev-uat:preflight:build -- --input <raw-preflight-input.json>
 npm run aws:dev-uat:preflight:final
 ```
 
-7. pass 後に AWS dev/UAT E2E、性能、RAG 品質検証へ進む。
-8. 実 AWS dev/UAT で主要 E2E、負荷試験、RAG 品質評価を実行し、raw result input から `dist/acceptance/aws_dev_uat_validation.json` を生成する。
+7. pass 後に AWS dev/UAT E2E、性能、RAG 品質検証を実行し、raw output を取得する。
+
+```bash
+npm run test:e2e:aws
+npm run perf:aws
+npm run rag:quality:aws
+```
+
+8. 実 AWS dev/UAT の raw result input から `dist/acceptance/aws_dev_uat_validation.json` を生成する。
 
 ```bash
 npm run aws:dev-uat:raw-output:check -- validation --input <raw-validation-input.json>
@@ -155,13 +162,11 @@ npm run aws:dev-uat:raw-input:check -- validation --input <raw-validation-input.
 npm run aws:dev-uat:validation:build -- --input <raw-validation-input.json>
 ```
 
-9. 次を実行する。
+9. final gate と evidence bundle manifest を作成する。
 
 ```bash
-npm run test:e2e:aws
-npm run perf:aws
-npm run rag:quality:aws
 npm run aws:dev-uat:validation:final
+npm run aws:dev-uat:evidence-bundle:check -- --preflight-raw-input <raw-preflight-input.json> --validation-raw-input <raw-validation-input.json> --preflight-evidence dist/acceptance/aws_dev_uat_preflight.json --validation-evidence dist/acceptance/aws_dev_uat_validation.json --execution-bridge dist/acceptance/aws_dev_uat_execution_bridge.json --output dist/acceptance/aws_dev_uat_evidence_bundle_manifest.json
 ```
 
 ## 検証
@@ -177,6 +182,7 @@ npm run aws:dev-uat:raw-capture-plan:check
 npm run aws:dev-uat:raw-input-scaffold:check
 npm run aws:dev-uat:raw-output:fixture:check
 npm run aws:dev-uat:raw-input:fixture:check
+npm run aws:dev-uat:evidence-bundle:fixture:check
 npm run aws:dev-uat:capture-helpers:check
 npm run aws:dev-uat:validation:check
 npm run aws:dev-uat:validation:fixture:check
@@ -189,6 +195,7 @@ npm run aws:dev-uat:evidence:fixture:check
 `npm run aws:dev-uat:raw-input-scaffold:check` は scaffold を生成してから、preflight / validation の command id、command、`output_ref` が raw capture plan と同期していること、かつ全 command が `pending_capture` のままで final evidence ではないことを検査する。この command は scaffold を書き出すだけで、AWS command の実行や外部状態変更は行わない。
 `npm run aws:dev-uat:raw-output:fixture:check` は sample raw input の `output_ref` 参照先を読み、JSON parse と text non-empty の positive path、parse 不能 JSON、空 text、sample/fixture text rejection の negative path を検査する。sample raw output は最終検収 evidence として扱わない。
 `npm run aws:dev-uat:raw-input:fixture:check` は sample raw input を dry-run checker に通し、scaffold と `pending_capture` raw input が reject されることを検査する。sample raw input は最終検収 evidence として扱わない。
+`npm run aws:dev-uat:evidence-bundle:fixture:check` は sample raw input/output から preflight / validation evidence と bundle manifest を生成し、各 artifact の path、size、sha256 と missing artifact の negative path を検査する。sample bundle manifest は最終検収 evidence として扱わない。
 `npm run aws:dev-uat:capture-helpers:check` は helper entrypoint の `--help` と missing-env failure を検査する。実環境 endpoint への HTTP probe は行わない。
 `npm run aws:dev-uat:validation:check` も `docs/acceptance/evidence/aws_dev_uat_validation.example.json` だけを検査する。`npm run aws:dev-uat:validation:fixture:check` は fixture の positive path と、final 指定・E2E失敗・性能閾値超過・RAG品質閾値超過の negative path を検査する。
 `npm run aws:dev-uat:evidence:fixture:check` は `*.capture.sample.json` から一時ディレクトリに `aws-captured` evidence を生成し、既存 final checker に通す。sample raw input は最終検収 evidence として扱わない。
@@ -217,8 +224,12 @@ npm run aws:dev-uat:raw-output:check -- preflight --input <raw-preflight-input.j
 npm run aws:dev-uat:raw-output:fixture:check
 npm run aws:dev-uat:raw-input:check -- preflight --input <raw-preflight-input.json>
 npm run aws:dev-uat:raw-input:fixture:check
+npm run aws:dev-uat:evidence-bundle:fixture:check
 npm run aws:dev-uat:capture-helpers:check
 npm run aws:dev-uat:preflight:final
+npm run test:e2e:aws
+npm run perf:aws
+npm run rag:quality:aws
 npm run aws:dev-uat:raw-output:check -- validation --input <raw-validation-input.json>
 npm run aws:dev-uat:raw-input:check -- validation --input <raw-validation-input.json>
 npm run aws:dev-uat:validation:build -- --input <raw-validation-input.json>
@@ -226,9 +237,7 @@ npm run aws:dev-uat:validation:check
 npm run aws:dev-uat:validation:fixture:check
 npm run aws:dev-uat:evidence:fixture:check
 npm run aws:dev-uat:validation:final
-npm run test:e2e:aws
-npm run perf:aws
-npm run rag:quality:aws
+npm run aws:dev-uat:evidence-bundle:check -- --preflight-raw-input <raw-preflight-input.json> --validation-raw-input <raw-validation-input.json> --preflight-evidence dist/acceptance/aws_dev_uat_preflight.json --validation-evidence dist/acceptance/aws_dev_uat_validation.json --execution-bridge dist/acceptance/aws_dev_uat_execution_bridge.json --output dist/acceptance/aws_dev_uat_evidence_bundle_manifest.json
 npm run acceptance:external-actions:check
 npm run acceptance:final:check
 ```

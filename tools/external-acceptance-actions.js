@@ -84,13 +84,14 @@ export function buildExternalAcceptanceActionPlan(outputPath = externalActionPla
         "npm run aws:dev-uat:raw-input:check -- preflight --input <raw-preflight-input.json>",
         "npm run aws:dev-uat:preflight:build -- --input <raw-preflight-input.json>",
         "npm run aws:dev-uat:preflight:final",
-        "npm run aws:dev-uat:raw-output:check -- validation --input <raw-validation-input.json>",
-        "npm run aws:dev-uat:raw-input:check -- validation --input <raw-validation-input.json>",
-        "npm run aws:dev-uat:validation:build -- --input <raw-validation-input.json>",
         "npm run test:e2e:aws",
         "npm run perf:aws",
         "npm run rag:quality:aws",
-        "npm run aws:dev-uat:validation:final"
+        "npm run aws:dev-uat:raw-output:check -- validation --input <raw-validation-input.json>",
+        "npm run aws:dev-uat:raw-input:check -- validation --input <raw-validation-input.json>",
+        "npm run aws:dev-uat:validation:build -- --input <raw-validation-input.json>",
+        "npm run aws:dev-uat:validation:final",
+        "npm run aws:dev-uat:evidence-bundle:check -- --preflight-raw-input <raw-preflight-input.json> --validation-raw-input <raw-validation-input.json> --preflight-evidence dist/acceptance/aws_dev_uat_preflight.json --validation-evidence dist/acceptance/aws_dev_uat_validation.json --execution-bridge dist/acceptance/aws_dev_uat_execution_bridge.json --output dist/acceptance/aws_dev_uat_evidence_bundle_manifest.json"
       ],
       required_before_run: ["AWS deploy/publish 完了", "テストユーザー/管理者ユーザー準備", "golden dataset 準備", "負荷試験 window 承認"],
       evidence_outputs: [
@@ -100,6 +101,7 @@ export function buildExternalAcceptanceActionPlan(outputPath = externalActionPla
         "dist/acceptance/raw/aws_dev_uat_validation.raw.scaffold.json",
         "dist/acceptance/aws_dev_uat_preflight.json",
         "dist/acceptance/aws_dev_uat_validation.json",
+        "dist/acceptance/aws_dev_uat_evidence_bundle_manifest.json",
         "Allure E2E run URL",
         "performance report URL",
         "RAG quality evaluation report URL",
