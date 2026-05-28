@@ -9,7 +9,10 @@ export function synthLocalInventory(env = "dev") {
     constructs: saphnexaConstructs.map((item) => item.name),
     intent_catalog: Object.fromEntries(saphnexaConstructs.map((item) => [item.name, {
       resources: item.resources,
+      cfnResourceTypes: item.cfnResourceTypes || [],
+      cfnResources: item.cfnResources || [],
       outputs: item.outputs,
+      cfnOutputs: item.cfnOutputs || [],
       edgeRoutingIntent: item.edgeRoutingIntent || null,
       channelPolicyIntent: item.channelPolicyIntent || null,
       kmsPolicyIntent: item.kmsPolicyIntent || null,

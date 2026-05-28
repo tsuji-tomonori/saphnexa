@@ -37,6 +37,7 @@ for (const command of [
   "npm run admin-artifacts:build",
   "npm run artifacts:check",
   "npm run api:openapi:check",
+  "npm run cdk:constructs:check",
   "npm run coverage:check",
   "npm run ui:check",
   "npm run web:flow:check",

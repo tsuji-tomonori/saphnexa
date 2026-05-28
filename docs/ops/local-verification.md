@@ -11,6 +11,7 @@ npm run test:contract
 npm run api:openapi:check
 npm run test:integration:local
 npm run scan:bundle-domains
+npm run cdk:constructs:check
 npm run cfn:inventory:build
 npm run cfn:inventory:check
 npm run cfn:inventory:normalize:fixture:check
@@ -56,6 +57,7 @@ git diff --check
 
 - 公開 API 38 件と Tools API 6 件の contract metadata。
 - Hono/Zod/OpenAPI 実装 entrypoint が 38 route と `/openapi.json` を route contract から生成し、CSRF/role/Zod validation metadata を保持すること。
+- CDK 実 Construct source が 7 Construct class を持ち、DSQL、CloudFront、Cognito、AppSync Events、S3 Vectors、Bedrock KB、AgentCore、admin artifacts 公開基盤の CloudFormation resource type inventory と同期していること。
 - chat が独立リソースであり、owner/viewer によって操作権限が変わること。
 - 質問送信が `message_id` / `run_id` を即時生成し、event detail を REST で取得できること。
 - RAG が Tools API 境界を通り、ACL check 後の Evidence だけで citation を作ること。
@@ -98,6 +100,7 @@ git diff --check
 
 - AWS dev/UAT での Cognito、DSQL、S3、CloudFront、AppSync Events、Bedrock KB、S3 Vectors、AgentCore の実接続。
 - Hono runtime の実 Lambda adapter 起動、依存 install、Cognito authorizer、CSRF cookie integration、CloudFront 経由の実 HTTP request。
+- `aws-cdk-lib` / `constructs` install 後の実 `cdk synth`、CDK bootstrap、CDK deploy、CloudFormation change set 実行。
 - CDK deploy、CloudFormation outputs、S3 inventory、CloudWatch logs、CloudFront/S3/Docusaurus/Allure 公開 URL。
 - CloudFormation `describe-stacks` / `list-stack-resources` の実取得と、AC-081 の最終 PASS 判定。
 - GitHub issue tracker の最終再取得と、AC-153 の最終 PASS 判定。

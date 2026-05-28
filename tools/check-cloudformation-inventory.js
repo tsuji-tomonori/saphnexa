@@ -66,13 +66,16 @@ assert(/^sha256:[a-f0-9]{64}$/.test(inventory.local_cdk_inventory.checksum), "Cl
 for (const construct of inventory.local_cdk_inventory.constructs) {
   assert(construct.name.endsWith("Construct"), `invalid construct name: ${construct.name}`);
   assert(construct.resource_count === construct.resources.length, `resource count mismatch: ${construct.name}`);
+  assert(construct.cfn_resource_count === construct.cfn_resources.length, `cfn resource count mismatch: ${construct.name}`);
   assert(construct.output_count === construct.outputs.length, `output count mismatch: ${construct.name}`);
   assert(construct.resource_count > 0, `missing resources: ${construct.name}`);
+  assert(construct.cfn_resource_count > 0, `missing cfn resources: ${construct.name}`);
   assert(construct.output_count > 0, `missing outputs: ${construct.name}`);
 }
 
 for (const type of expectedMajorResourceTypes) {
   assert(inventory.expected_major_resource_types.includes(type), `missing expected resource type: ${type}`);
+  assert(inventory.local_cdk_inventory.required_cfn_resource_types.includes(type), `missing local cfn resource type: ${type}`);
   assert(inventory.expected_major_resource_type_minimum_counts[type] === expectedMajorResourceTypeMinimumCounts[type], `minimum resource count mismatch: ${type}`);
 }
 
