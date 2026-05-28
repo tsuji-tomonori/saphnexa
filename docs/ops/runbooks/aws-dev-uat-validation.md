@@ -200,6 +200,7 @@ npm run aws:dev-uat:capture-helpers:check
 npm run aws:dev-uat:preflight-raw-input:fixture:check
 npm run aws:dev-uat:validation-capture:fixture:check
 npm run aws:dev-uat:validation-raw-input:fixture:check
+npm run aws:dev-uat:materialized-flow:fixture:check
 npm run aws:dev-uat:validation:check
 npm run aws:dev-uat:validation:fixture:check
 npm run aws:dev-uat:evidence:fixture:check
@@ -216,6 +217,7 @@ npm run aws:dev-uat:evidence:fixture:check
 `npm run aws:dev-uat:preflight-raw-input:fixture:check` は preflight scaffold と sample raw output files から final raw input を生成し、raw output check、raw input dry-run、preflight final gate へ進めることを検査する。sample raw output は最終検収 evidence として扱わない。
 `npm run aws:dev-uat:validation-capture:fixture:check` は E2E、性能、RAG品質結果 capture helper の `--help`、missing-env failure、閾値未達 failure、valid env JSON output を検査する。sample env は最終検収 evidence として扱わない。
 `npm run aws:dev-uat:validation-raw-input:fixture:check` は validation scaffold と sample raw output files から final raw input を生成し、raw output check、raw input dry-run、validation final gate へ進めることを検査する。sample raw output は最終検収 evidence として扱わない。
+`npm run aws:dev-uat:materialized-flow:fixture:check` は materialized flow fixture として、preflight / validation scaffold から raw input を生成し、raw output/input check、preflight/validation final evidence build、validation suite gate、raw input/output/final evidence/execution bridge を含む evidence bundle manifest まで通す。missing materialized raw input と missing raw output の negative path も検査するが、sample raw output は最終検収 evidence として扱わない。
 `npm run aws:dev-uat:validation:check` も `docs/acceptance/evidence/aws_dev_uat_validation.example.json` だけを検査する。`npm run aws:dev-uat:validation:fixture:check` は fixture の positive path と、final 指定・E2E失敗・性能閾値超過・RAG品質閾値超過の negative path を検査する。
 `npm run aws:dev-uat:evidence:fixture:check` は `*.capture.sample.json` から一時ディレクトリに `aws-captured` evidence を生成し、既存 final checker に通す。sample raw input は最終検収 evidence として扱わない。
 
@@ -248,6 +250,7 @@ npm run aws:dev-uat:capture-helpers:check
 npm run aws:dev-uat:preflight-raw-input:build -- --scaffold dist/acceptance/raw/aws_dev_uat_preflight.raw.scaffold.json --output <raw-preflight-input.json> --captured-at <capture-jst-timestamp> --git-tag <release-tag> --github-release-url <github-release-url>
 npm run aws:dev-uat:preflight-raw-input:fixture:check
 npm run aws:dev-uat:validation-capture:fixture:check
+npm run aws:dev-uat:materialized-flow:fixture:check
 npm run aws:dev-uat:preflight:final
 node tools/capture-aws-dev-uat-e2e-result.js --env uat --run-id <run-id> > raw/e2e-allure-run.json
 node tools/capture-aws-dev-uat-performance-result.js --env uat --run-id <run-id> > raw/performance-report.json
@@ -262,6 +265,7 @@ npm run rag:quality:aws
 npm run aws:dev-uat:validation:check
 npm run aws:dev-uat:validation:fixture:check
 npm run aws:dev-uat:evidence:fixture:check
+npm run aws:dev-uat:materialized-flow:fixture:check
 npm run aws:dev-uat:validation:final
 npm run aws:dev-uat:evidence-bundle:check -- --preflight-raw-input <raw-preflight-input.json> --validation-raw-input <raw-validation-input.json> --preflight-evidence dist/acceptance/aws_dev_uat_preflight.json --validation-evidence dist/acceptance/aws_dev_uat_validation.json --execution-bridge dist/acceptance/aws_dev_uat_execution_bridge.json --output dist/acceptance/aws_dev_uat_evidence_bundle_manifest.json
 npm run acceptance:external-actions:check

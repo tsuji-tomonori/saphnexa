@@ -250,6 +250,10 @@ tasks:
     desc: Verify AWS dev/UAT validation raw input materializer
     cmds:
       - npm run aws:dev-uat:validation-raw-input:fixture:check
+  aws:dev-uat:materialized-flow:fixture:check:
+    desc: Verify AWS dev/UAT materialized raw input to evidence bundle flow
+    cmds:
+      - npm run aws:dev-uat:materialized-flow:fixture:check
   aws:dev-uat:evidence-bundle:fixture:check:
     desc: Verify AWS dev/UAT evidence bundle manifest fixture
     cmds:
