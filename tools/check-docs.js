@@ -33,6 +33,7 @@ assert(
 );
 
 const localVerification = readText("docs/ops/local-verification.md");
+const awsDevUatRunbook = readText("docs/ops/runbooks/aws-dev-uat-validation.md");
 for (const command of [
   "npm run admin-artifacts:build",
   "npm run artifacts:check",
@@ -99,6 +100,13 @@ for (const command of [
   "npm run cfn:inventory:normalize:fixture:check"
 ]) {
   assert(localVerification.includes(command), `local verification docs missing ${command}`);
+}
+for (const phrase of [
+  "validation `materialize_command`",
+  "raw output/input check command",
+  "materialization.command"
+]) {
+  assert(awsDevUatRunbook.includes(phrase) || localVerification.includes(phrase), `docs missing AWS dev/UAT materializer plan phrase: ${phrase}`);
 }
 for (const phrase of [
   "defect-snapshot-refresh",

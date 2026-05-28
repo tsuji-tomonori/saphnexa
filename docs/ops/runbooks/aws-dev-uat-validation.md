@@ -98,7 +98,7 @@ bedrock-evaluation-job
 npm run aws:dev-uat:execution-bridge:probe
 ```
 
-4. raw capture plan を生成・検査し、必要な command id、raw output file、build/final gate の対応を確認する。
+4. raw capture plan を生成・検査し、必要な command id、raw output file、validation materializer、build/final gate の対応を確認する。
 
 ```bash
 npm run aws:dev-uat:raw-capture-plan:build
@@ -117,7 +117,7 @@ dist/acceptance/raw/aws_dev_uat_preflight.raw.scaffold.json
 dist/acceptance/raw/aws_dev_uat_validation.raw.scaffold.json
 ```
 
-scaffold は `schema_version: saphnexa-aws-dev-uat-raw-input-scaffold.v1`、`scaffold_status: requires_operator_values`、`final_evidence: false`、`capture_provenance.commands[].status: pending_capture` のまま出力される。実 AWS raw output を取得し、必要値、`captured_at`、`capture_provenance.captured_at`、各 `output_ref` の参照先ファイルを揃えたうえで、operator が final raw input として別名保存する。scaffold そのものは `npm run aws:dev-uat:preflight:final` や `npm run aws:dev-uat:validation:final` の根拠にしない。
+scaffold は `schema_version: saphnexa-aws-dev-uat-raw-input-scaffold.v1`、`scaffold_status: requires_operator_values`、`final_evidence: false`、`capture_provenance.commands[].status: pending_capture` のまま出力される。validation scaffold は `materialization.command` に raw output files から final validation raw input を生成する command を持つ。実 AWS raw output を取得し、必要値、`captured_at`、`capture_provenance.captured_at`、各 `output_ref` の参照先ファイルを揃えたうえで、operator が final raw input として別名保存する。scaffold そのものは `npm run aws:dev-uat:preflight:final` や `npm run aws:dev-uat:validation:final` の根拠にしない。
 
 operator が final raw input を保存したら、`dist/acceptance/` の final evidence を更新する前に dry-run checker を実行する。dry-run checker は一時ディレクトリに evidence を生成し、既存 final gate を通す。scaffold、`pending_capture`、`captured_at` 未設定、`output_ref` 参照先欠落、閾値未達は fail する。
 

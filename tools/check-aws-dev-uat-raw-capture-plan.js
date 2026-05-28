@@ -51,8 +51,19 @@ export function validateRawCapturePlan(plan) {
     label: "validation",
     expectedRawInputPath: `${plan.capture_root}/aws_dev_uat_validation.raw.json`,
     expectedEvidenceOutputPath: validationEvidenceOutputPath,
+    expectedMaterializeCommand: `npm run aws:dev-uat:validation-raw-input:build -- --scaffold ${plan.capture_root}/aws_dev_uat_validation.raw.scaffold.json --output ${plan.capture_root}/aws_dev_uat_validation.raw.json --captured-at <capture-jst-timestamp> --git-tag <release-tag> --github-release-url <github-release-url> --aws-account-id <aws-account-id>`,
+    expectedRawOutputCheckCommand: `npm run aws:dev-uat:raw-output:check -- validation --input ${plan.capture_root}/aws_dev_uat_validation.raw.json`,
+    expectedRawInputCheckCommand: `npm run aws:dev-uat:raw-input:check -- validation --input ${plan.capture_root}/aws_dev_uat_validation.raw.json`,
     expectedBuildCommand: "npm run aws:dev-uat:validation:build -- --input dist/acceptance/raw/aws_dev_uat_validation.raw.json",
     expectedFinalCommand: "npm run aws:dev-uat:validation:final",
+    expectedFinalizationOrder: [
+      "commands",
+      "materialize_command",
+      "raw_output_check_command",
+      "raw_input_check_command",
+      "build_command",
+      "final_command"
+    ],
     expectedCommandIds: validationCaptureCommandIds,
     expectedOutputRefs: [
       "raw/e2e-allure-run.json",
@@ -69,6 +80,21 @@ function validateMode(mode, context) {
   assert(mode && typeof mode === "object", `raw capture plan missing ${context.label} mode`);
   assert(mode.raw_input_path === context.expectedRawInputPath, `${context.label}.raw_input_path mismatch`);
   assert(mode.evidence_output_path === context.expectedEvidenceOutputPath, `${context.label}.evidence_output_path mismatch`);
+  if (context.expectedMaterializeCommand) {
+    assert(mode.raw_input_scaffold_path === mode.raw_input_path.replace(/\.raw\.json$/, ".raw.scaffold.json"), `${context.label}.raw_input_scaffold_path mismatch`);
+    assert(mode.materialize_command === context.expectedMaterializeCommand, `${context.label}.materialize_command mismatch`);
+    assert(mode.raw_output_check_command === context.expectedRawOutputCheckCommand, `${context.label}.raw_output_check_command mismatch`);
+    assert(mode.raw_input_check_command === context.expectedRawInputCheckCommand, `${context.label}.raw_input_check_command mismatch`);
+    assert(JSON.stringify(mode.finalization_order || []) === JSON.stringify(context.expectedFinalizationOrder), `${context.label}.finalization_order mismatch`);
+    assert(
+      mode.finalization_order.indexOf("materialize_command") < mode.finalization_order.indexOf("raw_output_check_command"),
+      `${context.label}.materialize_command must run before raw output check`
+    );
+    assert(
+      mode.finalization_order.indexOf("raw_input_check_command") < mode.finalization_order.indexOf("build_command"),
+      `${context.label}.raw_input_check_command must run before build command`
+    );
+  }
   assert(mode.build_command === context.expectedBuildCommand, `${context.label}.build_command mismatch`);
   assert(mode.final_command === context.expectedFinalCommand, `${context.label}.final_command mismatch`);
   assert(JSON.stringify(mode.required_command_ids || []) === JSON.stringify(context.expectedCommandIds), `${context.label}.required_command_ids mismatch`);

@@ -41,9 +41,21 @@ export function buildAwsDevUatRawCapturePlan(options = {}) {
       },
       validation: {
         raw_input_path: `${captureRoot}/aws_dev_uat_validation.raw.json`,
+        raw_input_scaffold_path: `${captureRoot}/aws_dev_uat_validation.raw.scaffold.json`,
         evidence_output_path: validationEvidenceOutputPath,
+        materialize_command: `npm run aws:dev-uat:validation-raw-input:build -- --scaffold ${captureRoot}/aws_dev_uat_validation.raw.scaffold.json --output ${captureRoot}/aws_dev_uat_validation.raw.json --captured-at <capture-jst-timestamp> --git-tag <release-tag> --github-release-url <github-release-url> --aws-account-id <aws-account-id>`,
+        raw_output_check_command: `npm run aws:dev-uat:raw-output:check -- validation --input ${captureRoot}/aws_dev_uat_validation.raw.json`,
+        raw_input_check_command: `npm run aws:dev-uat:raw-input:check -- validation --input ${captureRoot}/aws_dev_uat_validation.raw.json`,
         build_command: "npm run aws:dev-uat:validation:build -- --input dist/acceptance/raw/aws_dev_uat_validation.raw.json",
         final_command: "npm run aws:dev-uat:validation:final",
+        finalization_order: [
+          "commands",
+          "materialize_command",
+          "raw_output_check_command",
+          "raw_input_check_command",
+          "build_command",
+          "final_command"
+        ],
         required_command_ids: validationCaptureCommandIds,
         commands: validationCommands({ environment, region, stackName, runId })
       }

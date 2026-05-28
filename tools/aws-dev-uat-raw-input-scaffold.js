@@ -150,9 +150,16 @@ function validationScaffold(plan, generatedAt) {
       unsupported_claim_rate: null,
       report_url: null
     },
+    materialization: {
+      status: "pending_materialization",
+      raw_input_scaffold_path: plan.modes.validation.raw_input_scaffold_path,
+      raw_input_path: plan.modes.validation.raw_input_path,
+      command: plan.modes.validation.materialize_command
+    },
     capture_provenance: provenance(plan.modes.validation, generatedAt),
     operator_notes: [
-      "Fill this file with real AWS dev/UAT E2E, performance, and RAG quality results before running the validation evidence builder.",
+      "Capture real AWS dev/UAT E2E, performance, and RAG quality raw output files first.",
+      "Run materialization.command to generate the final validation raw input from this scaffold and the captured raw output files.",
       "Set captured_at and capture_provenance.captured_at to the actual JST capture timestamp.",
       "Change every capture_provenance.commands[].status to captured only after the referenced output_ref file exists.",
       "Do not use this scaffold itself as final evidence."

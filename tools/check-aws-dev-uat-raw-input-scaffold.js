@@ -22,7 +22,8 @@ validateScaffold(readJson(preflightRawInputScaffoldPath), {
 validateScaffold(readJson(validationRawInputScaffoldPath), {
   label: "validation",
   planMode: plan.modes.validation,
-  expectedCommandIds: validationCaptureCommandIds
+  expectedCommandIds: validationCaptureCommandIds,
+  expectedMaterialization: true
 });
 
 console.log("AWS dev/UAT raw input scaffold check passed");
@@ -46,6 +47,13 @@ function validateScaffold(scaffold, context) {
     JSON.stringify(scaffold.capture_provenance.commands.map((item) => item.id)) === JSON.stringify(context.planMode.commands.map((item) => item.id)),
     `${context.label} command ids must match raw capture plan`
   );
+  if (context.expectedMaterialization) {
+    assert(scaffold.materialization?.status === "pending_materialization", `${context.label} materialization status mismatch`);
+    assert(scaffold.materialization?.raw_input_scaffold_path === context.planMode.raw_input_scaffold_path, `${context.label} materialization scaffold path mismatch`);
+    assert(scaffold.materialization?.raw_input_path === context.planMode.raw_input_path, `${context.label} materialization raw input path mismatch`);
+    assert(scaffold.materialization?.command === context.planMode.materialize_command, `${context.label} materialization command mismatch`);
+    assert(scaffold.operator_notes.some((item) => item.includes("Run materialization.command")), `${context.label} scaffold must tell operator to run materialization.command`);
+  }
 
   for (const [index, command] of scaffold.capture_provenance.commands.entries()) {
     const planned = context.planMode.commands[index];
