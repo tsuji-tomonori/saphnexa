@@ -1,6 +1,6 @@
 # AWS dev/UAT 実行ブリッジ確認
 
-状態: in_progress
+状態: done
 
 ## 背景
 
@@ -36,11 +36,11 @@
 
 ## 受け入れ条件
 
-- [ ] AWS dev/UAT final evidence 作成に必要な command、input、artifact path が current state に基づいて整理されている。
-- [ ] AWS CLI / 認証 / evidence file の有無を確認し、実 AWS 実行可否を正直に記録している。
-- [ ] 不足していた repo 内実行導線があれば補強されている。
-- [ ] `git diff --check` と、変更範囲に見合う docs / acceptance check が pass する。
-- [ ] PR に受け入れ条件確認とセルフレビューコメントを追加できる。
+- [x] AWS dev/UAT final evidence 作成に必要な command、input、artifact path が current state に基づいて整理されている。
+- [x] AWS CLI / 認証 / evidence file の有無を確認し、実 AWS 実行可否を正直に記録している。
+- [x] 不足していた repo 内実行導線があれば補強されている。
+- [x] `git diff --check` と、変更範囲に見合う docs / acceptance check が pass する。
+- [x] PR に受け入れ条件確認とセルフレビューコメントを追加できる。
 
 ## 検証計画
 
@@ -59,3 +59,13 @@
 
 - AWS 認証情報や dev/UAT 環境情報がない場合、実 deploy / migration / publish / E2E / 性能 / RAG品質評価は完了できない。
 - 調査で blocker が確認されても、同じ blocker が継続条件を満たすまでは goal 全体を blocked とは扱わない。
+
+## 完了記録
+
+- 実装 commit: `22a4cad`
+- PR: https://github.com/tsuji-tomonori/saphnexa/pull/2
+- 受け入れ条件確認コメント: https://github.com/tsuji-tomonori/saphnexa/pull/2#issuecomment-4560425998
+- セルフレビューコメント: https://github.com/tsuji-tomonori/saphnexa/pull/2#issuecomment-4560427951
+- 作業レポート: `reports/working/20260528-1140-aws-dev-uat-execution-bridge.md`
+- 実行した検証: `aws sts get-caller-identity --output json`, `npm run aws:dev-uat:execution-bridge:check`, `npm run aws:dev-uat:execution-bridge:probe`, `npm run ci:check`, `npm run acceptance:external-actions:check`, `npm run docs:check`, `npm run acceptance:package:check`, `git diff --check`, `npm run verify`
+- 未実施: 実 AWS deploy / migration / publish / E2E / 性能 / RAG品質評価。理由は AWS credentials と final evidence 未作成。
