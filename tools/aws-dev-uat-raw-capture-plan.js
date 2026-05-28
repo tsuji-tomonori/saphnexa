@@ -33,9 +33,21 @@ export function buildAwsDevUatRawCapturePlan(options = {}) {
     modes: {
       preflight: {
         raw_input_path: `${captureRoot}/aws_dev_uat_preflight.raw.json`,
+        raw_input_scaffold_path: `${captureRoot}/aws_dev_uat_preflight.raw.scaffold.json`,
         evidence_output_path: preflightEvidenceOutputPath,
+        materialize_command: `npm run aws:dev-uat:preflight-raw-input:build -- --scaffold ${captureRoot}/aws_dev_uat_preflight.raw.scaffold.json --output ${captureRoot}/aws_dev_uat_preflight.raw.json --captured-at <capture-jst-timestamp> --git-tag <release-tag> --github-release-url <github-release-url>`,
+        raw_output_check_command: `npm run aws:dev-uat:raw-output:check -- preflight --input ${captureRoot}/aws_dev_uat_preflight.raw.json`,
+        raw_input_check_command: `npm run aws:dev-uat:raw-input:check -- preflight --input ${captureRoot}/aws_dev_uat_preflight.raw.json`,
         build_command: "npm run aws:dev-uat:preflight:build -- --input dist/acceptance/raw/aws_dev_uat_preflight.raw.json",
         final_command: "npm run aws:dev-uat:preflight:final",
+        finalization_order: [
+          "commands",
+          "materialize_command",
+          "raw_output_check_command",
+          "raw_input_check_command",
+          "build_command",
+          "final_command"
+        ],
         required_command_ids: preflightCaptureCommandIds,
         commands: preflightCommands({ environment, region, stackName, runId })
       },

@@ -33,8 +33,19 @@ export function validateRawCapturePlan(plan) {
     label: "preflight",
     expectedRawInputPath: `${plan.capture_root}/aws_dev_uat_preflight.raw.json`,
     expectedEvidenceOutputPath: preflightEvidenceOutputPath,
+    expectedMaterializeCommand: `npm run aws:dev-uat:preflight-raw-input:build -- --scaffold ${plan.capture_root}/aws_dev_uat_preflight.raw.scaffold.json --output ${plan.capture_root}/aws_dev_uat_preflight.raw.json --captured-at <capture-jst-timestamp> --git-tag <release-tag> --github-release-url <github-release-url>`,
+    expectedRawOutputCheckCommand: `npm run aws:dev-uat:raw-output:check -- preflight --input ${plan.capture_root}/aws_dev_uat_preflight.raw.json`,
+    expectedRawInputCheckCommand: `npm run aws:dev-uat:raw-input:check -- preflight --input ${plan.capture_root}/aws_dev_uat_preflight.raw.json`,
     expectedBuildCommand: "npm run aws:dev-uat:preflight:build -- --input dist/acceptance/raw/aws_dev_uat_preflight.raw.json",
     expectedFinalCommand: "npm run aws:dev-uat:preflight:final",
+    expectedFinalizationOrder: [
+      "commands",
+      "materialize_command",
+      "raw_output_check_command",
+      "raw_input_check_command",
+      "build_command",
+      "final_command"
+    ],
     expectedCommandIds: preflightCaptureCommandIds,
     expectedOutputRefs: [
       "raw/aws-sts-get-caller-identity.json",

@@ -68,6 +68,8 @@ npm run aws:dev-uat:raw-input:fixture:check
 npm run aws:dev-uat:evidence-bundle:check -- --preflight-raw-input <raw-preflight-input.json> --validation-raw-input <raw-validation-input.json> --preflight-evidence dist/acceptance/aws_dev_uat_preflight.json --validation-evidence dist/acceptance/aws_dev_uat_validation.json --execution-bridge dist/acceptance/aws_dev_uat_execution_bridge.json --output dist/acceptance/aws_dev_uat_evidence_bundle_manifest.json
 npm run aws:dev-uat:evidence-bundle:fixture:check
 npm run aws:dev-uat:capture-helpers:check
+npm run aws:dev-uat:preflight-raw-input:build -- --scaffold dist/acceptance/raw/aws_dev_uat_preflight.raw.scaffold.json --output <raw-preflight-input.json> --captured-at <capture-jst-timestamp> --git-tag <release-tag> --github-release-url <github-release-url>
+npm run aws:dev-uat:preflight-raw-input:fixture:check
 npm run aws:dev-uat:validation-capture:fixture:check
 npm run aws:dev-uat:validation-raw-input:build -- --scaffold dist/acceptance/raw/aws_dev_uat_validation.raw.scaffold.json --output <raw-validation-input.json> --captured-at <capture-jst-timestamp> --git-tag <release-tag> --github-release-url <github-release-url> --aws-account-id <aws-account-id>
 npm run aws:dev-uat:validation-raw-input:fixture:check
@@ -126,7 +128,7 @@ git diff --check
 - `npm run aws:dev-uat:preflight:build -- --input <raw-preflight-input.json>` が実 AWS raw capture input から `dist/acceptance/aws_dev_uat_preflight.json` を生成すること。
 - `npm run aws:dev-uat:execution-bridge:check` が `dist/acceptance/aws_dev_uat_execution_bridge.json` を生成し、final evidence path、AWS identity probe command、final gate command order、必要 input、証跡 mapping を検査すること。
 - `npm run aws:dev-uat:execution-bridge:probe` が AWS STS の read-only probe と final evidence file の有無を記録し、credentials や `aws-captured` 証跡が足りない場合は `waiting_for_external_execution` として残すこと。
-- `npm run aws:dev-uat:raw-capture-plan:check` が `dist/acceptance/aws_dev_uat_raw_capture_plan.json` を生成し、preflight / validation の command id、`output_ref`、validation `materialize_command`、raw output/input check command、build command、final command が builder と同期していることを検査すること。
+- `npm run aws:dev-uat:raw-capture-plan:check` が `dist/acceptance/aws_dev_uat_raw_capture_plan.json` を生成し、preflight / validation の command id、`output_ref`、preflight `materialize_command`、validation `materialize_command`、raw output/input check command、build command、final command が builder と同期していることを検査すること。
 - `npm run aws:dev-uat:raw-input-scaffold:check` が `dist/acceptance/raw/aws_dev_uat_preflight.raw.scaffold.json` と `dist/acceptance/raw/aws_dev_uat_validation.raw.scaffold.json` を生成し、raw capture plan の command id、command、`output_ref` と同期していること、かつ `pending_capture` の未捕捉 draft として final evidence ではないことを検査すること。
 - `npm run aws:dev-uat:raw-output:check -- preflight --input <raw-preflight-input.json>` と `npm run aws:dev-uat:raw-output:check -- validation --input <raw-validation-input.json>` が raw input の `output_ref` 参照先を読み、JSON output の parse と text output の non-empty を検査すること。
 - `npm run aws:dev-uat:raw-output:fixture:check` が sample raw output の positive path と、parse 不能 JSON、空 text、sample/fixture text rejection を検査すること。

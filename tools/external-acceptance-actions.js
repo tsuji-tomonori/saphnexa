@@ -80,6 +80,7 @@ export function buildExternalAcceptanceActionPlan(outputPath = externalActionPla
         "npm run aws:dev-uat:raw-input-scaffold:build",
         "npm run aws:dev-uat:raw-input-scaffold:check",
         "npm run aws:dev-uat:capture-helpers:check",
+        "npm run aws:dev-uat:preflight-raw-input:build -- --scaffold dist/acceptance/raw/aws_dev_uat_preflight.raw.scaffold.json --output <raw-preflight-input.json> --captured-at <capture-jst-timestamp> --git-tag <release-tag> --github-release-url <github-release-url>",
         "npm run aws:dev-uat:raw-output:check -- preflight --input <raw-preflight-input.json>",
         "npm run aws:dev-uat:raw-input:check -- preflight --input <raw-preflight-input.json>",
         "npm run aws:dev-uat:preflight:build -- --input <raw-preflight-input.json>",

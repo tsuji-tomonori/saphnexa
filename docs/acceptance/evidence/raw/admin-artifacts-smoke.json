@@ -1,4 +1,13 @@
 {
-  "docusaurus_latest": "passed",
-  "allure_latest": "passed"
+  "schema_version": "saphnexa-admin-artifacts-smoke.raw.v1",
+  "environment": "uat",
+  "run_id": "uat-manual-capture",
+  "status": "captured",
+  "signed_cookie_supplied": true,
+  "docusaurus_latest_url": "https://d3saphnexauat.cloudfront.net/admin/docs/latest/",
+  "docusaurus_latest_probe": { "ok": true, "status": 200 },
+  "docusaurus_version_url": "https://d3saphnexauat.cloudfront.net/admin/docs/versions/v0.17/",
+  "docusaurus_version_probe": { "ok": true, "status": 200 },
+  "allure_latest_url": "https://d3saphnexauat.cloudfront.net/admin/test-reports/allure/latest/",
+  "allure_latest_probe": { "ok": true, "status": 200 }
 }

@@ -94,9 +94,16 @@ function preflightScaffold(plan, generatedAt) {
       docusaurus_version_url: null,
       allure_latest_url: null
     },
+    materialization: {
+      status: "pending_materialization",
+      raw_input_scaffold_path: plan.modes.preflight.raw_input_scaffold_path,
+      raw_input_path: plan.modes.preflight.raw_input_path,
+      command: plan.modes.preflight.materialize_command
+    },
     capture_provenance: provenance(plan.modes.preflight, generatedAt),
     operator_notes: [
-      "Fill this file with real AWS dev/UAT captured values before running the preflight evidence builder.",
+      "Capture real AWS dev/UAT preflight raw output files first.",
+      "Run materialization.command to generate the final preflight raw input from this scaffold and the captured raw output files.",
       "Set captured_at and capture_provenance.captured_at to the actual JST capture timestamp.",
       "Change every capture_provenance.commands[].status to captured only after the referenced output_ref file exists.",
       "Do not use this scaffold itself as final evidence."

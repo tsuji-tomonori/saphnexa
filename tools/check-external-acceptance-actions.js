@@ -45,6 +45,7 @@ assert(awsDevUatValidation.acceptance_ids.includes("AC-123"), "AWS dev/UAT valid
 const e2eCaptureCommand = "node tools/capture-aws-dev-uat-e2e-result.js --env uat --run-id <run-id> > raw/e2e-allure-run.json";
 const perfCaptureCommand = "node tools/capture-aws-dev-uat-performance-result.js --env uat --run-id <run-id> > raw/performance-report.json";
 const ragCaptureCommand = "node tools/capture-aws-dev-uat-rag-quality-result.js --env uat --run-id <run-id> > raw/rag-quality-report.json";
+const preflightMaterializeCommand = "npm run aws:dev-uat:preflight-raw-input:build -- --scaffold dist/acceptance/raw/aws_dev_uat_preflight.raw.scaffold.json --output <raw-preflight-input.json> --captured-at <capture-jst-timestamp> --git-tag <release-tag> --github-release-url <github-release-url>";
 const validationMaterializeCommand = "npm run aws:dev-uat:validation-raw-input:build -- --scaffold dist/acceptance/raw/aws_dev_uat_validation.raw.scaffold.json --output <raw-validation-input.json> --captured-at <capture-jst-timestamp> --git-tag <release-tag> --github-release-url <github-release-url> --aws-account-id <aws-account-id>";
 for (const command of [
   "npm run aws:dev-uat:execution-bridge:probe",
@@ -53,6 +54,7 @@ for (const command of [
   "npm run aws:dev-uat:raw-input-scaffold:build",
   "npm run aws:dev-uat:raw-input-scaffold:check",
   "npm run aws:dev-uat:capture-helpers:check",
+  preflightMaterializeCommand,
   "npm run aws:dev-uat:raw-output:check -- preflight --input <raw-preflight-input.json>",
   "npm run aws:dev-uat:raw-input:check -- preflight --input <raw-preflight-input.json>",
   "npm run aws:dev-uat:preflight:build -- --input <raw-preflight-input.json>",
@@ -82,8 +84,13 @@ assert(
 );
 assert(
   awsDevUatValidation.candidate_commands.indexOf("npm run aws:dev-uat:raw-input-scaffold:check") <
+    awsDevUatValidation.candidate_commands.indexOf(preflightMaterializeCommand),
+  "AWS dev/UAT validation action must verify raw input scaffold before materializing preflight raw input"
+);
+assert(
+  awsDevUatValidation.candidate_commands.indexOf(preflightMaterializeCommand) <
     awsDevUatValidation.candidate_commands.indexOf("npm run aws:dev-uat:raw-output:check -- preflight --input <raw-preflight-input.json>"),
-  "AWS dev/UAT validation action must verify raw input scaffold before checking preflight raw outputs"
+  "AWS dev/UAT validation action must materialize preflight raw input before checking preflight raw outputs"
 );
 assert(
   awsDevUatValidation.candidate_commands.indexOf("npm run aws:dev-uat:raw-output:check -- preflight --input <raw-preflight-input.json>") <

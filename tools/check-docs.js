@@ -86,6 +86,8 @@ for (const command of [
   "npm run aws:dev-uat:raw-input:fixture:check",
   "npm run aws:dev-uat:evidence-bundle:check",
   "npm run aws:dev-uat:evidence-bundle:fixture:check",
+  "npm run aws:dev-uat:preflight-raw-input:build",
+  "npm run aws:dev-uat:preflight-raw-input:fixture:check",
   "npm run aws:dev-uat:validation-capture:fixture:check",
   "npm run aws:dev-uat:validation-raw-input:build",
   "npm run aws:dev-uat:validation-raw-input:fixture:check",
@@ -102,6 +104,7 @@ for (const command of [
   assert(localVerification.includes(command), `local verification docs missing ${command}`);
 }
 for (const phrase of [
+  "preflight `materialize_command`",
   "validation `materialize_command`",
   "raw output/input check command",
   "materialization.command"

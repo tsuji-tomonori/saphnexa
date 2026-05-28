@@ -17,7 +17,8 @@ validateRawCapturePlan(plan);
 validateScaffold(readJson(preflightRawInputScaffoldPath), {
   label: "preflight",
   planMode: plan.modes.preflight,
-  expectedCommandIds: preflightCaptureCommandIds
+  expectedCommandIds: preflightCaptureCommandIds,
+  expectedMaterialization: true
 });
 validateScaffold(readJson(validationRawInputScaffoldPath), {
   label: "validation",
