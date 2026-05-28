@@ -53,7 +53,9 @@ export function validateAwsDevUatFinalReadiness(manifest, options = {}) {
   assert(Array.isArray(manifest.next_commands), "final readiness next_commands must be an array");
   if (manifest.ready) {
     assert(manifest.operator_input.ready === true, "ready final readiness must have resolved operator input");
+    assert(manifest.operator_input.current_git_commit === true, "ready final readiness must have current operator input");
     assert(manifest.operator_execution_runbook.ready === true, "ready final readiness must have ready operator execution runbook");
+    assert(manifest.operator_execution_runbook.current_git_commit === true, "ready final readiness must have current operator execution runbook");
     assert(manifest.blockers.length === 0, "ready final readiness must not have blockers");
     assert(manifest.next_commands.length === 0, "ready final readiness must not have next commands");
   } else {

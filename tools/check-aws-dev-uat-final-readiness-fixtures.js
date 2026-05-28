@@ -98,6 +98,54 @@ try {
   validateAwsDevUatFinalReadiness(invalidOperatorRunbook);
   assert(invalidOperatorRunbook.blockers.includes("invalid_operator_runbook"), "invalid operator runbook fixture must block readiness");
 
+  writeText(operatorInputPath, `${JSON.stringify({ ...readJson(operatorInputPath), git_commit_sha: "0".repeat(40) }, null, 2)}\n`);
+  buildAwsDevUatOperatorExecutionRunbook({
+    outputPath: operatorRunbookPath,
+    externalActionPlan,
+    externalActionPlanPath,
+    rawCapturePlan: plan,
+    rawCapturePlanPath: planPath,
+    operatorInput: resolvedOperatorInput(operatorInputScaffold),
+    operatorInputPath
+  });
+  const staleOperatorInput = buildAwsDevUatFinalReadiness({
+    outputPath: join(tmpRoot, "stale-operator-input-readiness.json"),
+    rawCapturePlanPath: planPath,
+    rawCapturePlan: plan,
+    executionBridgePath: bridgePath,
+    executionBridge: readJson(bridgePath),
+    operatorInputPath,
+    operatorRunbookPath,
+    evidenceBundleManifestPath: join(tmpRoot, "missing", "aws_dev_uat_evidence_bundle_manifest.json")
+  });
+  validateAwsDevUatFinalReadiness(staleOperatorInput);
+  assert(staleOperatorInput.blockers.includes("stale_operator_input"), "stale operator input fixture must block readiness");
+  writeText(operatorInputPath, `${JSON.stringify(resolvedOperatorInput(operatorInputScaffold), null, 2)}\n`);
+
+  buildAwsDevUatOperatorExecutionRunbook({
+    outputPath: operatorRunbookPath,
+    externalActionPlan,
+    externalActionPlanPath,
+    rawCapturePlan: plan,
+    rawCapturePlanPath: planPath,
+    operatorInput: readJson(operatorInputPath),
+    operatorInputPath
+  });
+  const staleRunbook = readJson(operatorRunbookPath);
+  writeText(operatorRunbookPath, `${JSON.stringify({ ...staleRunbook, git_commit_sha: "0".repeat(40) }, null, 2)}\n`);
+  const staleOperatorRunbook = buildAwsDevUatFinalReadiness({
+    outputPath: join(tmpRoot, "stale-operator-runbook-readiness.json"),
+    rawCapturePlanPath: planPath,
+    rawCapturePlan: plan,
+    executionBridgePath: bridgePath,
+    executionBridge: readJson(bridgePath),
+    operatorInputPath,
+    operatorRunbookPath,
+    evidenceBundleManifestPath: join(tmpRoot, "missing", "aws_dev_uat_evidence_bundle_manifest.json")
+  });
+  validateAwsDevUatFinalReadiness(staleOperatorRunbook);
+  assert(staleOperatorRunbook.blockers.includes("stale_operator_runbook"), "stale operator runbook fixture must block readiness");
+
   const preflightRawInputPath = plan.modes.preflight.raw_input_path;
   const validationRawInputPath = plan.modes.validation.raw_input_path;
   materializeInputWithOutputs("docs/acceptance/evidence/aws_dev_uat_preflight.capture.sample.json", preflightRawInputPath);

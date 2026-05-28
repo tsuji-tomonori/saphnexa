@@ -64,12 +64,18 @@ export function buildAwsDevUatFinalReadiness(options = {}) {
   } else if (!operatorInput.ready) {
     blockers.push("invalid_operator_input");
     nextCommands.push(`npm run aws:dev-uat:operator-input:check -- --input ${operatorInputPath} --require-resolved`);
+  } else if (operatorInput.current_git_commit === false) {
+    blockers.push("stale_operator_input");
+    nextCommands.push(`npm run aws:dev-uat:operator-input:check -- --input ${operatorInputPath} --require-resolved`);
   }
   if (!operatorRunbook.exists) {
     blockers.push("missing_operator_runbook");
     nextCommands.push(`npm run aws:dev-uat:operator-runbook:check -- --input ${operatorInputPath} --require-resolved`);
   } else if (!operatorRunbook.ready) {
     blockers.push("invalid_operator_runbook");
+    nextCommands.push(`npm run aws:dev-uat:operator-runbook:check -- --input ${operatorInputPath} --require-resolved`);
+  } else if (operatorRunbook.current_git_commit === false) {
+    blockers.push("stale_operator_runbook");
     nextCommands.push(`npm run aws:dev-uat:operator-runbook:check -- --input ${operatorInputPath} --require-resolved`);
   }
   if (!bundleState.exists) {
@@ -137,6 +143,7 @@ function operatorRunbookState(path) {
     schema_version: runbook.schema_version,
     runbook_status: runbook.runbook_status,
     ready_for_external_execution: runbook.ready_for_external_execution,
+    current_git_commit: runbook.git_commit_sha === currentGitCommit(),
     phase_order: runbook.phase_order,
     ready: true
   };
@@ -171,6 +178,7 @@ function operatorInputState(path) {
     input_status: input.input_status,
     final_input: input.final_input,
     release_git_tag: input.release?.git_tag || null,
+    current_git_commit: input.git_commit_sha === currentGitCommit() && input.release?.commit_sha === currentGitCommit(),
     aws_account_id_present: /^\d{12}$/.test(input.aws?.account_id || ""),
     ready: true
   };
