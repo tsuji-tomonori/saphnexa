@@ -192,6 +192,8 @@ jobs:
       - run: npm run aws:dev-uat:validation-capture:fixture:check
       - run: npm run aws:dev-uat:validation-raw-input:fixture:check
       - run: npm run aws:dev-uat:materialized-flow:fixture:check
+      - run: npm run aws:dev-uat:final-readiness:check
+      - run: npm run aws:dev-uat:final-readiness:fixture:check
       - run: npm run aws:dev-uat:evidence:fixture:check
       - run: npm run aws:dev-uat:validation:check
       - run: npm run aws:dev-uat:validation:fixture:check

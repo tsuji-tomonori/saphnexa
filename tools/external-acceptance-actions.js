@@ -99,7 +99,8 @@ export function buildExternalAcceptanceActionPlan(outputPath = externalActionPla
         "npm run perf:aws",
         "npm run rag:quality:aws",
         "npm run aws:dev-uat:validation:final",
-        "npm run aws:dev-uat:evidence-bundle:check -- --preflight-raw-input <raw-preflight-input.json> --validation-raw-input <raw-validation-input.json> --preflight-evidence dist/acceptance/aws_dev_uat_preflight.json --validation-evidence dist/acceptance/aws_dev_uat_validation.json --execution-bridge dist/acceptance/aws_dev_uat_execution_bridge.json --output dist/acceptance/aws_dev_uat_evidence_bundle_manifest.json"
+        "npm run aws:dev-uat:evidence-bundle:check -- --preflight-raw-input <raw-preflight-input.json> --validation-raw-input <raw-validation-input.json> --preflight-evidence dist/acceptance/aws_dev_uat_preflight.json --validation-evidence dist/acceptance/aws_dev_uat_validation.json --execution-bridge dist/acceptance/aws_dev_uat_execution_bridge.json --output dist/acceptance/aws_dev_uat_evidence_bundle_manifest.json",
+        "npm run aws:dev-uat:final-readiness:check -- --probe-aws-identity --require-ready"
       ],
       required_before_run: ["AWS deploy/publish 完了", "テストユーザー/管理者ユーザー準備", "golden dataset 準備", "負荷試験 window 承認", "E2E/性能/RAG品質の外部実行結果取得済み"],
       evidence_outputs: [
@@ -110,6 +111,7 @@ export function buildExternalAcceptanceActionPlan(outputPath = externalActionPla
         "dist/acceptance/aws_dev_uat_preflight.json",
         "dist/acceptance/aws_dev_uat_validation.json",
         "dist/acceptance/aws_dev_uat_evidence_bundle_manifest.json",
+        "dist/acceptance/aws_dev_uat_final_readiness.json",
         "Allure E2E run URL",
         "performance report URL",
         "RAG quality evaluation report URL",

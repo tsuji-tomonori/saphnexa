@@ -73,7 +73,8 @@ for (const command of [
   "npm run perf:aws",
   "npm run rag:quality:aws",
   "npm run aws:dev-uat:validation:final",
-  "npm run aws:dev-uat:evidence-bundle:check -- --preflight-raw-input <raw-preflight-input.json> --validation-raw-input <raw-validation-input.json> --preflight-evidence dist/acceptance/aws_dev_uat_preflight.json --validation-evidence dist/acceptance/aws_dev_uat_validation.json --execution-bridge dist/acceptance/aws_dev_uat_execution_bridge.json --output dist/acceptance/aws_dev_uat_evidence_bundle_manifest.json"
+  "npm run aws:dev-uat:evidence-bundle:check -- --preflight-raw-input <raw-preflight-input.json> --validation-raw-input <raw-validation-input.json> --preflight-evidence dist/acceptance/aws_dev_uat_preflight.json --validation-evidence dist/acceptance/aws_dev_uat_validation.json --execution-bridge dist/acceptance/aws_dev_uat_execution_bridge.json --output dist/acceptance/aws_dev_uat_evidence_bundle_manifest.json",
+  "npm run aws:dev-uat:final-readiness:check -- --probe-aws-identity --require-ready"
 ]) {
   assert(awsDevUatValidation.candidate_commands.includes(command), `AWS dev/UAT validation action missing ${command}`);
 }
@@ -148,6 +149,11 @@ assert(
   "AWS dev/UAT validation action must check evidence bundle after validation final gate"
 );
 assert(
+  awsDevUatValidation.candidate_commands.indexOf("npm run aws:dev-uat:evidence-bundle:check -- --preflight-raw-input <raw-preflight-input.json> --validation-raw-input <raw-validation-input.json> --preflight-evidence dist/acceptance/aws_dev_uat_preflight.json --validation-evidence dist/acceptance/aws_dev_uat_validation.json --execution-bridge dist/acceptance/aws_dev_uat_execution_bridge.json --output dist/acceptance/aws_dev_uat_evidence_bundle_manifest.json") <
+    awsDevUatValidation.candidate_commands.indexOf("npm run aws:dev-uat:final-readiness:check -- --probe-aws-identity --require-ready"),
+  "AWS dev/UAT validation action must check final readiness after evidence bundle"
+);
+assert(
   awsDevUatValidation.candidate_commands.indexOf("npm run aws:dev-uat:capture-helpers:check") <
     awsDevUatValidation.candidate_commands.indexOf("npm run aws:dev-uat:preflight:build -- --input <raw-preflight-input.json>"),
   "AWS dev/UAT validation action must verify capture helpers before building preflight evidence"
@@ -159,6 +165,7 @@ assert(awsDevUatValidation.evidence_outputs.includes("dist/acceptance/raw/aws_de
 assert(awsDevUatValidation.evidence_outputs.includes("dist/acceptance/aws_dev_uat_preflight.json"), "AWS dev/UAT validation action must output preflight evidence");
 assert(awsDevUatValidation.evidence_outputs.includes("dist/acceptance/aws_dev_uat_validation.json"), "AWS dev/UAT validation action must output validation evidence");
 assert(awsDevUatValidation.evidence_outputs.includes("dist/acceptance/aws_dev_uat_evidence_bundle_manifest.json"), "AWS dev/UAT validation action must output evidence bundle manifest");
+assert(awsDevUatValidation.evidence_outputs.includes("dist/acceptance/aws_dev_uat_final_readiness.json"), "AWS dev/UAT validation action must output final readiness manifest");
 const defectSnapshotRefresh = plan.actions.find((action) => action.id === "defect-snapshot-refresh");
 assert(defectSnapshotRefresh.acceptance_ids.includes("AC-153"), "defect snapshot refresh action must cover AC-153");
 assert(defectSnapshotRefresh.candidate_commands.includes("gh issue list --state open --json number,title,labels,state"), "defect snapshot refresh action must include GitHub issue list command");

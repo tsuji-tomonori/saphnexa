@@ -254,6 +254,14 @@ tasks:
     desc: Verify AWS dev/UAT materialized raw input to evidence bundle flow
     cmds:
       - npm run aws:dev-uat:materialized-flow:fixture:check
+  aws:dev-uat:final-readiness:check:
+    desc: Build and verify AWS dev/UAT final readiness manifest without changing AWS state
+    cmds:
+      - npm run aws:dev-uat:final-readiness:check
+  aws:dev-uat:final-readiness:fixture:check:
+    desc: Verify AWS dev/UAT final readiness manifest fixture branches
+    cmds:
+      - npm run aws:dev-uat:final-readiness:fixture:check
   aws:dev-uat:evidence-bundle:fixture:check:
     desc: Verify AWS dev/UAT evidence bundle manifest fixture
     cmds:
