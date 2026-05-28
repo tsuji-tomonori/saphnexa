@@ -1,6 +1,6 @@
 # AWS dev/UAT raw evidence provenance 強化
 
-状態: in_progress
+状態: done
 
 ## 背景
 
@@ -39,12 +39,12 @@ preflight / validation の raw input に capture provenance を必須化し、�
 
 ## 受け入れ条件
 
-- [ ] preflight raw input の capture provenance が必須化され、欠落時に builder/checker が fail する。
-- [ ] validation raw input の capture provenance が必須化され、欠落時に builder/checker が fail する。
-- [ ] builder output に `capture_provenance` が含まれ、final evidence と raw source の対応を追跡できる。
-- [ ] runbook / local verification が provenance 要件と同期している。
-- [ ] `git diff --check`、targeted checks、`npm run verify` が pass する。
-- [ ] PR に受け入れ条件確認とセルフレビューコメントを追加できる。
+- [x] preflight raw input の capture provenance が必須化され、欠落時に builder/checker が fail する。
+- [x] validation raw input の capture provenance が必須化され、欠落時に builder/checker が fail する。
+- [x] builder output に `capture_provenance` が含まれ、final evidence と raw source の対応を追跡できる。
+- [x] runbook / local verification が provenance 要件と同期している。
+- [x] `git diff --check`、targeted checks、`npm run verify` が pass する。
+- [x] PR に受け入れ条件確認とセルフレビューコメントを追加できる。
 
 ## 検証計画
 
@@ -65,3 +65,13 @@ preflight / validation の raw input に capture provenance を必須化し、�
 
 - provenance は raw input が「どのコマンドで取得されたか」を記録するが、実 AWS credentials がない状態では実コマンド結果そのものの真正性までは証明できない。
 - goal 全体完了には、実 AWS 実行と `aws-captured` evidence の final gate pass が引き続き必要である。
+
+## 完了記録
+
+- 実装 commit: `9b52b21`
+- PR: https://github.com/tsuji-tomonori/saphnexa/pull/2
+- 受け入れ条件確認コメント: https://github.com/tsuji-tomonori/saphnexa/pull/2#issuecomment-4560539401
+- セルフレビューコメント: https://github.com/tsuji-tomonori/saphnexa/pull/2#issuecomment-4560541164
+- 作業レポート: `reports/working/20260528-1208-aws-dev-uat-raw-provenance.md`
+- 実行した検証: `npm run aws:dev-uat:evidence:fixture:check`, builder CLI, final checker, `npm run acceptance:external-actions:check`, `npm run acceptance:package:check`, `npm run docs:check`, `git diff --check`, `npm run verify`
+- 未実施: 実 AWS deploy / migration / publish / E2E / 性能 / RAG品質評価。理由は AWS credentials と実 raw output が未準備。
