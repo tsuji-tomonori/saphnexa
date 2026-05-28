@@ -1,6 +1,6 @@
 # AWS dev/UAT evidence bundle manifest
 
-- 状態: doing
+- 状態: done
 - タスク種別: 機能追加
 - 対象ブランチ: `codex/aws-dev-uat-preflight`
 - 対象PR: #2
@@ -36,13 +36,19 @@ AWS dev/UAT の raw capture plan、raw input scaffold、raw output content check
 
 ## 受け入れ条件
 
-- [ ] `node tools/check-aws-dev-uat-evidence-bundle.js ...` で raw input、raw output、preflight evidence、validation evidence を bundle manifest として検査できる。
-- [ ] bundle manifest に各 artifact の path、size、sha256 が記録される。
-- [ ] checker は raw output content check、raw input dry-run、preflight final gate、validation final gate を通す。
-- [ ] fixture check が sample raw input から一時 evidence bundle を作成し、negative path も検査する。
-- [ ] external action plan が E2E/性能/RAG品質実行後に validation raw output/input/evidence build を行う順序になっている。
-- [ ] `npm run verify`、CI workflow、Taskfile、external acceptance actions、docs check に bundle checker が反映される。
-- [ ] runbook と local verification docs に bundle check の手順と制約が記載される。
+- [x] `node tools/check-aws-dev-uat-evidence-bundle.js ...` で raw input、raw output、preflight evidence、validation evidence を bundle manifest として検査できる。
+- [x] bundle manifest に各 artifact の path、size、sha256 が記録される。
+- [x] checker は raw output content check、raw input dry-run、preflight final gate、validation final gate を通す。
+- [x] fixture check が sample raw input から一時 evidence bundle を作成し、negative path も検査する。
+- [x] external action plan が E2E/性能/RAG品質実行後に validation raw output/input/evidence build を行う順序になっている。
+- [x] `npm run verify`、CI workflow、Taskfile、external acceptance actions、docs check に bundle checker が反映される。
+- [x] runbook と local verification docs に bundle check の手順と制約が記載される。
+
+## 完了メモ
+
+- PR #2 に受け入れ条件確認コメントとセルフレビューコメントを投稿済み。
+- `npm run verify` と targeted checks は pass。
+- `aws sts get-caller-identity --output json` は AWS credentials 未設定で fail。実 AWS dev/UAT E2E・性能・RAG品質検証と実 evidence bundle manifest 作成は未実施。
 
 ## 検証計画
 
