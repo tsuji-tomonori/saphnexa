@@ -1,6 +1,6 @@
 # AWS dev/UAT raw output ref 検査強化
 
-状態: in_progress
+状態: done
 
 ## 背景
 
@@ -38,12 +38,12 @@ AWS dev/UAT raw input には `capture_provenance.commands[].output_ref` を必�
 
 ## 受け入れ条件
 
-- [ ] `output_ref` が raw input ファイルからの相対パスとして存在検査される。
-- [ ] `output_ref` 参照先が存在しない場合、builder/checker が fail する。
-- [ ] sample raw output files が repository に存在し、fixture check が pass する。
-- [ ] runbook / local verification が raw output ref 要件と同期している。
-- [ ] `git diff --check`、targeted checks、`npm run verify` が pass する。
-- [ ] PR に受け入れ条件確認とセルフレビューコメントを追加できる。
+- [x] `output_ref` が raw input ファイルからの相対パスとして存在検査される。
+- [x] `output_ref` 参照先が存在しない場合、builder/checker が fail する。
+- [x] sample raw output files が repository に存在し、fixture check が pass する。
+- [x] runbook / local verification が raw output ref 要件と同期している。
+- [x] `git diff --check`、targeted checks、`npm run verify` が pass する。
+- [x] PR に受け入れ条件確認とセルフレビューコメントを追加できる。
 
 ## 検証計画
 
@@ -63,3 +63,25 @@ AWS dev/UAT raw input には `capture_provenance.commands[].output_ref` を必�
 
 - sample raw output は fixture であり、実 AWS output の真正性を証明しない。
 - 実 AWS credentials がないため、実 output の取得は引き続き未実施である。
+
+## 完了記録
+
+- PR: https://github.com/tsuji-tomonori/saphnexa/pull/2
+- 実装 commit: `9d828a4`
+- 受け入れ条件確認コメント: https://github.com/tsuji-tomonori/saphnexa/pull/2#issuecomment-4560604519
+- セルフレビューコメント: https://github.com/tsuji-tomonori/saphnexa/pull/2#issuecomment-4560606762
+- 作業レポート: `reports/working/20260528-1216-aws-dev-uat-raw-output-refs.md`
+- 検証:
+  - `npm run aws:dev-uat:evidence:fixture:check`: pass
+  - `npm run aws:dev-uat:preflight:build -- --input docs/acceptance/evidence/aws_dev_uat_preflight.capture.sample.json --output /tmp/saphnexa-aws-dev-uat-preflight.json`: pass
+  - `npm run aws:dev-uat:validation:build -- --input docs/acceptance/evidence/aws_dev_uat_validation.capture.sample.json --output /tmp/saphnexa-aws-dev-uat-validation.json`: pass
+  - `node tools/check-aws-dev-uat-preflight.js /tmp/saphnexa-aws-dev-uat-preflight.json --require-final`: pass
+  - `node tools/check-aws-dev-uat-validation.js /tmp/saphnexa-aws-dev-uat-validation.json --require-final`: pass
+  - `npm run docs:check`: pass
+  - `npm run acceptance:package:check`: pass
+  - `npm run acceptance:external-actions:check`: pass
+  - `git diff --check`: pass
+  - `npm run verify`: pass
+- 未実施:
+  - 実 AWS dev/UAT deploy / migration / publish / E2E / 性能 / RAG品質評価は AWS credentials と実 raw output がないため未実施。
+  - `aws sts get-caller-identity --output json`: credentials 未設定で fail。
