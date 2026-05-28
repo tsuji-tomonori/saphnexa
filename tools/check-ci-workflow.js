@@ -71,6 +71,7 @@ for (const command of [
   "npm run acceptance:package:check",
   "npm run aws:dev-uat:execution-bridge:check",
   "npm run aws:dev-uat:raw-capture-plan:check",
+  "npm run aws:dev-uat:capture-helpers:check",
   "npm run aws:dev-uat:evidence:fixture:check",
   "npm run aws:dev-uat:validation:check",
   "npm run aws:dev-uat:validation:fixture:check"

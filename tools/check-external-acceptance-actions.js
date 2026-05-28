@@ -46,6 +46,7 @@ for (const command of [
   "npm run aws:dev-uat:execution-bridge:probe",
   "npm run aws:dev-uat:raw-capture-plan:build",
   "npm run aws:dev-uat:raw-capture-plan:check",
+  "npm run aws:dev-uat:capture-helpers:check",
   "npm run aws:dev-uat:preflight:build -- --input <raw-preflight-input.json>",
   "npm run aws:dev-uat:preflight:final",
   "npm run aws:dev-uat:validation:build -- --input <raw-validation-input.json>",
@@ -60,6 +61,11 @@ assert(
   awsDevUatValidation.candidate_commands.indexOf("npm run aws:dev-uat:raw-capture-plan:check") <
     awsDevUatValidation.candidate_commands.indexOf("npm run aws:dev-uat:preflight:build -- --input <raw-preflight-input.json>"),
   "AWS dev/UAT validation action must verify raw capture plan before building preflight evidence"
+);
+assert(
+  awsDevUatValidation.candidate_commands.indexOf("npm run aws:dev-uat:capture-helpers:check") <
+    awsDevUatValidation.candidate_commands.indexOf("npm run aws:dev-uat:preflight:build -- --input <raw-preflight-input.json>"),
+  "AWS dev/UAT validation action must verify capture helpers before building preflight evidence"
 );
 assert(awsDevUatValidation.evidence_outputs.includes("dist/acceptance/aws_dev_uat_execution_bridge.json"), "AWS dev/UAT validation action must output execution bridge snapshot");
 assert(awsDevUatValidation.evidence_outputs.includes("dist/acceptance/aws_dev_uat_raw_capture_plan.json"), "AWS dev/UAT validation action must output raw capture plan");

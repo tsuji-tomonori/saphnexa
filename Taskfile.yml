@@ -218,6 +218,10 @@ tasks:
     desc: Build and verify the AWS dev/UAT raw capture plan without changing AWS state
     cmds:
       - npm run aws:dev-uat:raw-capture-plan:check
+  aws:dev-uat:capture-helpers:check:
+    desc: Verify AWS dev/UAT raw capture helper entrypoints and missing-env failures
+    cmds:
+      - npm run aws:dev-uat:capture-helpers:check
   aws:dev-uat:validation:check:
     desc: Verify AWS dev/UAT E2E, performance, and RAG quality validation evidence fixture
     cmds:

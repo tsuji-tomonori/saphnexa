@@ -77,6 +77,7 @@ export function buildExternalAcceptanceActionPlan(outputPath = externalActionPla
         "npm run aws:dev-uat:execution-bridge:probe",
         "npm run aws:dev-uat:raw-capture-plan:build",
         "npm run aws:dev-uat:raw-capture-plan:check",
+        "npm run aws:dev-uat:capture-helpers:check",
         "npm run aws:dev-uat:preflight:build -- --input <raw-preflight-input.json>",
         "npm run aws:dev-uat:preflight:final",
         "npm run aws:dev-uat:validation:build -- --input <raw-validation-input.json>",

@@ -100,7 +100,16 @@ npm run aws:dev-uat:execution-bridge:probe
 ```bash
 npm run aws:dev-uat:raw-capture-plan:build
 npm run aws:dev-uat:raw-capture-plan:check
+npm run aws:dev-uat:capture-helpers:check
 ```
+
+`edge-realtime`、`rag-runtime`、`published-artifacts` の raw output は repo 内 helper で取得する。helper は実環境値を env から受け取り、必須 env がない場合は fail する。架空値や fallback 成功は出さない。
+
+| helper | 必須 env |
+|---|---|
+| `node tools/capture-edge-realtime-smoke.js` | `SAPHNEXA_CLOUDFRONT_URL`, `SAPHNEXA_COGNITO_USER_POOL_ID`, `SAPHNEXA_COGNITO_USER_POOL_CLIENT_ID`, `SAPHNEXA_APPSYNC_EVENT_API_HTTP_ENDPOINT`, `SAPHNEXA_APPSYNC_EVENT_API_REALTIME_ENDPOINT` |
+| `node tools/capture-rag-runtime-smoke.js` | `SAPHNEXA_BEDROCK_KNOWLEDGE_BASE_ID`, `SAPHNEXA_S3_VECTOR_BUCKET_NAME`, `SAPHNEXA_S3_VECTOR_INDEX_NAME`, `SAPHNEXA_AGENTCORE_RUNTIME_ARN`, `SAPHNEXA_TOOLS_API_URL` |
+| `node tools/capture-admin-artifacts-smoke.js` | `SAPHNEXA_DOCUSAURUS_LATEST_URL`, `SAPHNEXA_DOCUSAURUS_VERSION_URL`, `SAPHNEXA_ALLURE_LATEST_URL`; signed-cookie 保護された artifact では `SAPHNEXA_CLOUDFRONT_COOKIE` も指定する |
 
 5. 実 AWS raw capture input から `dist/acceptance/aws_dev_uat_preflight.json` を生成する。
 
@@ -140,6 +149,7 @@ npm run aws:dev-uat:validation:final
 npm run aws:dev-uat:preflight
 npm run aws:dev-uat:execution-bridge:check
 npm run aws:dev-uat:raw-capture-plan:check
+npm run aws:dev-uat:capture-helpers:check
 npm run aws:dev-uat:validation:check
 npm run aws:dev-uat:validation:fixture:check
 npm run aws:dev-uat:evidence:fixture:check
@@ -148,6 +158,7 @@ npm run aws:dev-uat:evidence:fixture:check
 この command は `docs/acceptance/evidence/aws_dev_uat_preflight.example.json` を検査する。`fixture` 証跡なので最終検収や AWS dev/UAT 実行完了の根拠にはしない。
 `npm run aws:dev-uat:execution-bridge:check` は AWS STS probe を行わず、final evidence path、AWS identity probe command、final gate command order、必要 input、証跡 mapping の整合を検査する。`npm run aws:dev-uat:execution-bridge:probe` は `aws sts get-caller-identity --output json` を read-only で実行し、credentials がなければ `waiting_for_external_execution` として `dist/acceptance/aws_dev_uat_execution_bridge.json` に記録する。
 `npm run aws:dev-uat:raw-capture-plan:check` は raw capture plan を生成してから、preflight / validation の command id、`output_ref`、build command、final command が builder と同期していることを検査する。この command は plan を書き出すだけで、AWS command の実行や外部状態変更は行わない。
+`npm run aws:dev-uat:capture-helpers:check` は helper entrypoint の `--help` と missing-env failure を検査する。実環境 endpoint への HTTP probe は行わない。
 `npm run aws:dev-uat:validation:check` も `docs/acceptance/evidence/aws_dev_uat_validation.example.json` だけを検査する。`npm run aws:dev-uat:validation:fixture:check` は fixture の positive path と、final 指定・E2E失敗・性能閾値超過・RAG品質閾値超過の negative path を検査する。
 `npm run aws:dev-uat:evidence:fixture:check` は `*.capture.sample.json` から一時ディレクトリに `aws-captured` evidence を生成し、既存 final checker に通す。sample raw input は最終検収 evidence として扱わない。
 
@@ -169,6 +180,7 @@ npm run aws:dev-uat:execution-bridge:check
 npm run aws:dev-uat:execution-bridge:probe
 npm run aws:dev-uat:raw-capture-plan:build
 npm run aws:dev-uat:raw-capture-plan:check
+npm run aws:dev-uat:capture-helpers:check
 npm run aws:dev-uat:preflight:final
 npm run aws:dev-uat:validation:build -- --input <raw-validation-input.json>
 npm run aws:dev-uat:validation:check

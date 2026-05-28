@@ -80,6 +80,7 @@ function validateMode(mode, context) {
   for (const item of mode.commands) {
     assert(typeof item.command === "string" && item.command.trim().length > 0, `${context.label}.${item.id}.command is required`);
     assert(!/(placeholder|todo|tbd|dummy|mock|localhost|127\.0\.0\.1|0\.0\.0\.0)/i.test(item.command), `${context.label}.${item.id}.command must not be placeholder/local text`);
+    assertNodeHelperExists(item.command, `${context.label}.${item.id}.command`);
     assert(typeof item.output_ref === "string" && item.output_ref.startsWith("raw/"), `${context.label}.${item.id}.output_ref must stay under raw/`);
     assert(!isAbsolute(item.output_ref), `${context.label}.${item.id}.output_ref must be relative`);
     assert(!item.output_ref.split(/[\\/]/).includes(".."), `${context.label}.${item.id}.output_ref must not traverse directories`);
@@ -88,4 +89,10 @@ function validateMode(mode, context) {
     assert(item.status_after_capture === "captured", `${context.label}.${item.id}.status_after_capture mismatch`);
     outputRefs.add(item.output_ref);
   }
+}
+
+function assertNodeHelperExists(command, label) {
+  const match = command.match(/^node (tools\/[A-Za-z0-9._-]+\.js)(?:\s|$)/);
+  if (!match) return;
+  assert(existsSync(match[1]), `${label} references missing helper: ${match[1]}`);
 }
