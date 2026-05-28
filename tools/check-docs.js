@@ -136,6 +136,7 @@ for (const phrase of [
   "invalid_operator_input",
   "missing raw input",
   "capture plan / scaffold / materialize / raw output-input check",
+  "final evidence build / final gate",
   "scaffold/build/check"
 ]) {
   assert(awsDevUatRunbook.includes(phrase) || localVerification.includes(phrase), `docs missing AWS dev/UAT materializer plan phrase: ${phrase}`);

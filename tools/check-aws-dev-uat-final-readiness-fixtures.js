@@ -53,9 +53,13 @@ try {
   assert(blocked.next_commands.includes(plan.modes.preflight.materialize_command), "blocked fixture must suggest preflight raw input materialize");
   assert(blocked.next_commands.includes(plan.modes.preflight.raw_output_check_command), "blocked fixture must suggest preflight raw output check");
   assert(blocked.next_commands.includes(plan.modes.preflight.raw_input_check_command), "blocked fixture must suggest preflight raw input check");
+  assert(blocked.next_commands.includes(plan.modes.preflight.build_command), "blocked fixture must suggest preflight final evidence build");
+  assert(blocked.next_commands.includes(plan.modes.preflight.final_command), "blocked fixture must suggest preflight final gate");
   assert(blocked.next_commands.includes(plan.modes.validation.materialize_command), "blocked fixture must suggest validation raw input materialize");
   assert(blocked.next_commands.includes(plan.modes.validation.raw_output_check_command), "blocked fixture must suggest validation raw output check");
   assert(blocked.next_commands.includes(plan.modes.validation.raw_input_check_command), "blocked fixture must suggest validation raw input check");
+  assert(blocked.next_commands.includes(plan.modes.validation.build_command), "blocked fixture must suggest validation final evidence build");
+  assert(blocked.next_commands.includes(plan.modes.validation.final_command), "blocked fixture must suggest validation final gate");
   assert(blocked.next_commands.includes("npm run aws:dev-uat:operator-input:build"), "blocked fixture must suggest operator input scaffold build");
   assert(blocked.next_commands.includes("npm run aws:dev-uat:operator-input:check"), "blocked fixture must suggest operator input scaffold check");
   assert(

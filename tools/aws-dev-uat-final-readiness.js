@@ -259,6 +259,8 @@ function collectStageReadiness(stage, blockers, nextCommands) {
     nextCommands.push(stage.materialize_command);
     nextCommands.push(stage.raw_output_check_command);
     nextCommands.push(stage.raw_input_check_command);
+    nextCommands.push(stage.build_command);
+    nextCommands.push(stage.final_command);
     return;
   }
   if (stage.raw_input.parse_error) blockers.push(`invalid_${stage.mode}_raw_input`);
