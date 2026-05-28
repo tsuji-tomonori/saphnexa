@@ -60,6 +60,8 @@ export function buildAwsDevUatFinalReadiness(options = {}) {
   }
   if (!operatorInput.exists) {
     blockers.push("missing_operator_input");
+    nextCommands.push("npm run aws:dev-uat:operator-input:build");
+    nextCommands.push("npm run aws:dev-uat:operator-input:check");
     nextCommands.push(`npm run aws:dev-uat:operator-input:check -- --input ${operatorInputPath} --require-resolved`);
   } else if (!operatorInput.ready) {
     blockers.push("invalid_operator_input");
@@ -70,6 +72,8 @@ export function buildAwsDevUatFinalReadiness(options = {}) {
   }
   if (!operatorRunbook.exists) {
     blockers.push("missing_operator_runbook");
+    nextCommands.push("npm run aws:dev-uat:operator-runbook:build");
+    nextCommands.push("npm run aws:dev-uat:operator-runbook:check");
     nextCommands.push(`npm run aws:dev-uat:operator-runbook:check -- --input ${operatorInputPath} --require-resolved`);
   } else if (!operatorRunbook.ready) {
     blockers.push("invalid_operator_runbook");

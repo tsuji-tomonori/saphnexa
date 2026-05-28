@@ -133,7 +133,8 @@ for (const phrase of [
   "missing_operator_runbook",
   "invalid_operator_runbook",
   "missing_operator_input",
-  "invalid_operator_input"
+  "invalid_operator_input",
+  "scaffold/build/check"
 ]) {
   assert(awsDevUatRunbook.includes(phrase) || localVerification.includes(phrase), `docs missing AWS dev/UAT materializer plan phrase: ${phrase}`);
 }

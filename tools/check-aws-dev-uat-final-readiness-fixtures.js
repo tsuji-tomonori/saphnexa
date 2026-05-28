@@ -48,10 +48,14 @@ try {
   assert(blocked.blockers.includes("missing_operator_input"), "blocked fixture must include operator input blocker");
   assert(blocked.blockers.includes("missing_operator_runbook"), "blocked fixture must include operator runbook blocker");
   assert(blocked.next_commands.includes("npm run aws:dev-uat:execution-bridge:probe"), "blocked fixture must suggest AWS identity probe");
+  assert(blocked.next_commands.includes("npm run aws:dev-uat:operator-input:build"), "blocked fixture must suggest operator input scaffold build");
+  assert(blocked.next_commands.includes("npm run aws:dev-uat:operator-input:check"), "blocked fixture must suggest operator input scaffold check");
   assert(
     blocked.next_commands.includes(`npm run aws:dev-uat:operator-input:check -- --input ${operatorInputPath} --require-resolved`),
     "blocked fixture must suggest resolved operator input check"
   );
+  assert(blocked.next_commands.includes("npm run aws:dev-uat:operator-runbook:build"), "blocked fixture must suggest operator runbook build");
+  assert(blocked.next_commands.includes("npm run aws:dev-uat:operator-runbook:check"), "blocked fixture must suggest operator runbook check");
   assert(
     blocked.next_commands.includes(`npm run aws:dev-uat:operator-runbook:check -- --input ${operatorInputPath} --require-resolved`),
     "blocked fixture must suggest operator runbook check"
