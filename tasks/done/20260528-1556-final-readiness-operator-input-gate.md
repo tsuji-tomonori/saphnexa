@@ -1,6 +1,6 @@
 # Final readiness operator input gate
 
-状態: doing
+状態: done
 
 ## 背景
 
@@ -37,11 +37,11 @@ AWS dev/UAT final readiness manifest は raw capture plan、execution bridge、r
 
 ## 受け入れ条件
 
-- [ ] `npm run aws:dev-uat:final-readiness:check` が operator input state を manifest に含め、resolved operator input がない場合に blocker / next command を出す。
-- [ ] `npm run aws:dev-uat:final-readiness:fixture:check` が ready fixture では resolved operator input を要求し、missing / invalid operator input を ready 扱いにしない。
-- [ ] docs と `tools/check-docs.js` が final readiness operator input gate と同期している。
-- [ ] `npm run verify` が pass する。
-- [ ] 実 AWS credentials がないため実 AWS dev/UAT 実行完了とは扱わないことを docs/report/PR に明記する。
+- [x] `npm run aws:dev-uat:final-readiness:check` が operator input state を manifest に含め、resolved operator input がない場合に blocker / next command を出す。
+- [x] `npm run aws:dev-uat:final-readiness:fixture:check` が ready fixture では resolved operator input を要求し、missing / invalid operator input を ready 扱いにしない。
+- [x] docs と `tools/check-docs.js` が final readiness operator input gate と同期している。
+- [x] `npm run verify` が pass する。
+- [x] 実 AWS credentials がないため実 AWS dev/UAT 実行完了とは扱わないことを docs/report/PR に明記する。
 
 ## 検証計画
 
@@ -66,3 +66,11 @@ AWS dev/UAT final readiness manifest は raw capture plan、execution bridge、r
 
 - 実 AWS credentials がないため、ready path は fixture による構造検査に留まる。
 - resolved operator input は final readiness の必要条件であり、実 AWS 証跡や外部承認の代替ではない。
+
+## 完了メモ
+
+- 実装 commit: `40522f3`
+- PR: https://github.com/tsuji-tomonori/saphnexa/pull/2
+- 受け入れ条件コメント: https://github.com/tsuji-tomonori/saphnexa/pull/2#issuecomment-4561561313
+- セルフレビューコメント: https://github.com/tsuji-tomonori/saphnexa/pull/2#issuecomment-4561561285
+- 作業レポート: `reports/working/20260528-1602-final-readiness-operator-input-gate.md`
