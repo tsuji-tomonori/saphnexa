@@ -84,6 +84,12 @@
 
 - `reports/working/20260528-0919-cdk-real-constructs.md`
 
+## PR
+
+- PR: https://github.com/tsuji-tomonori/saphnexa/pull/2
+- 受け入れ条件確認コメント: https://github.com/tsuji-tomonori/saphnexa/pull/2#issuecomment-4559773416
+- セルフレビューコメント: https://github.com/tsuji-tomonori/saphnexa/pull/2#issuecomment-4559775060
+
 ## PR レビュー観点
 
 - 実 AWS deploy 証跡なしで AC-081 や AWS 実結合を完了扱いにしていないこと。
@@ -98,4 +104,4 @@
 
 ## 状態
 
-in_progress
+done
