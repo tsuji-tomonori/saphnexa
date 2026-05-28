@@ -123,6 +123,8 @@ for (const phrase of [
   "final readiness manifest",
   "operator handoff",
   "evidence input map",
+  "final readiness bundle gate summary",
+  "final_readiness_summary.evidence_bundle",
   "required_inputs.evidence",
   "operator input",
   "resolved operator input",

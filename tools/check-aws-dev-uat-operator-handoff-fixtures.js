@@ -43,6 +43,11 @@ try {
   assert(handoff.required_inputs.evidence.validation.raw_input_path.endsWith("aws_dev_uat_validation.raw.json"), "handoff must include validation raw input path");
   assert(handoff.required_inputs.evidence.validation.final_evidence_path.endsWith("aws_dev_uat_validation.json"), "handoff must include validation final evidence path");
   assert(handoff.required_inputs.evidence.evidence_bundle.check_command.includes("aws:dev-uat:evidence-bundle:check"), "handoff must include evidence bundle check command");
+  assert(handoff.final_readiness_summary.status === "blocked_by_external_execution", "handoff must summarize blocked final readiness");
+  assert(handoff.final_readiness_summary.evidence_bundle.manifest_path.endsWith("aws_dev_uat_evidence_bundle_manifest.json"), "handoff must summarize evidence bundle path");
+  assert(handoff.final_readiness_summary.evidence_bundle.required_artifacts_present === false, "blocked handoff must summarize missing bundle coverage");
+  assert(handoff.final_readiness_summary.evidence_bundle.all_artifacts_metadata_matches === false, "blocked handoff must summarize bundle metadata gate");
+  assert(handoff.final_readiness_summary.evidence_bundle.all_artifacts_scope_matches === false, "blocked handoff must summarize bundle scope gate");
 
   const invalid = structuredClone(handoff);
   invalid.execution_groups[0].requires_confirmation = false;

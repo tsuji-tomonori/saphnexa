@@ -56,6 +56,7 @@ export function buildAwsDevUatOperatorHandoff(options = {}) {
     handoff_ready: actions.every((action) => action.status === "pending" && action.requires_confirmation === true),
     execution_status: finalReadiness.status,
     aws_ready: finalReadiness.ready,
+    final_readiness_summary: finalReadinessSummary(finalReadiness),
     external_state_change: false,
     does_not_execute_commands: true,
     source_artifacts: {
@@ -108,6 +109,29 @@ export function buildAwsDevUatOperatorHandoff(options = {}) {
 
 export function requiredAwsDevUatOperatorHandoffActionIds() {
   return [...handoffActionIds];
+}
+
+function finalReadinessSummary(finalReadiness) {
+  const bundle = finalReadiness.evidence_bundle_manifest || {};
+  return {
+    status: finalReadiness.status,
+    ready: finalReadiness.ready,
+    blockers: finalReadiness.blockers,
+    next_commands: finalReadiness.next_commands,
+    evidence_bundle: {
+      manifest_path: bundle.path || awsDevUatEvidenceBundleManifestPath,
+      exists: bundle.exists === true,
+      ready: bundle.ready === true,
+      current_git_commit: bundle.current_git_commit === true,
+      invalid_content: bundle.invalid_content === true,
+      stale: bundle.current_git_commit === false,
+      artifact_count: bundle.artifact_count ?? null,
+      artifact_count_matches: bundle.artifact_count_matches === true,
+      required_artifacts_present: bundle.required_artifacts_present === true,
+      all_artifacts_metadata_matches: bundle.all_artifacts_metadata_matches === true,
+      all_artifacts_scope_matches: bundle.all_artifacts_scope_matches === true
+    }
+  };
 }
 
 function actionSummary(plan, id) {

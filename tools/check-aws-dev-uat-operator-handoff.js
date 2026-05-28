@@ -22,6 +22,7 @@ export function validateAwsDevUatOperatorHandoff(handoff) {
   assert(handoff.handoff_ready === true, "operator handoff must be ready to hand off pending actions");
   assert(["blocked_by_external_execution", "ready_for_final_acceptance_package"].includes(handoff.execution_status), "operator handoff execution status mismatch");
   assert(handoff.aws_ready === (handoff.execution_status === "ready_for_final_acceptance_package"), "operator handoff AWS ready mismatch");
+  assertFinalReadinessSummary(handoff.final_readiness_summary, handoff);
   assert(handoff.external_state_change === false, "operator handoff must not change external state");
   assert(handoff.does_not_execute_commands === true, "operator handoff must not execute commands");
   assert(existsOrGeneratedPath(handoff.source_artifacts.external_action_plan), "operator handoff external action plan path mismatch");
@@ -130,6 +131,31 @@ export function validateAwsDevUatOperatorHandoff(handoff) {
   assert(handoff.note.includes("approval-required execution plan"), "operator handoff must state approval scope");
 
   if (existsSync(handoff.source_artifacts.external_action_plan)) readJson(handoff.source_artifacts.external_action_plan);
+}
+
+function assertFinalReadinessSummary(summary, handoff) {
+  assert(summary?.status === handoff.execution_status, "operator handoff final readiness summary status mismatch");
+  assert(summary.ready === handoff.aws_ready, "operator handoff final readiness summary ready mismatch");
+  assert(Array.isArray(summary.blockers), "operator handoff final readiness summary blockers must be an array");
+  assert(Array.isArray(summary.next_commands), "operator handoff final readiness summary next commands must be an array");
+  assert(summary.evidence_bundle?.manifest_path === "dist/acceptance/aws_dev_uat_evidence_bundle_manifest.json", "operator handoff final readiness bundle path mismatch");
+  assert(typeof summary.evidence_bundle.exists === "boolean", "operator handoff final readiness bundle existence flag is required");
+  assert(typeof summary.evidence_bundle.ready === "boolean", "operator handoff final readiness bundle ready flag is required");
+  assert(typeof summary.evidence_bundle.current_git_commit === "boolean", "operator handoff final readiness bundle git flag is required");
+  assert(typeof summary.evidence_bundle.invalid_content === "boolean", "operator handoff final readiness bundle invalid flag is required");
+  assert(typeof summary.evidence_bundle.stale === "boolean", "operator handoff final readiness bundle stale flag is required");
+  assert(summary.evidence_bundle.artifact_count === null || Number.isInteger(summary.evidence_bundle.artifact_count), "operator handoff final readiness bundle artifact count mismatch");
+  assert(typeof summary.evidence_bundle.artifact_count_matches === "boolean", "operator handoff final readiness bundle artifact count match flag is required");
+  assert(typeof summary.evidence_bundle.required_artifacts_present === "boolean", "operator handoff final readiness bundle coverage flag is required");
+  assert(typeof summary.evidence_bundle.all_artifacts_metadata_matches === "boolean", "operator handoff final readiness bundle metadata flag is required");
+  assert(typeof summary.evidence_bundle.all_artifacts_scope_matches === "boolean", "operator handoff final readiness bundle scope flag is required");
+  if (handoff.aws_ready) {
+    assert(summary.evidence_bundle.ready === true, "AWS-ready handoff must summarize a ready evidence bundle");
+    assert(summary.evidence_bundle.current_git_commit === true, "AWS-ready handoff must summarize current evidence bundle git");
+    assert(summary.evidence_bundle.required_artifacts_present === true, "AWS-ready handoff must summarize artifact coverage");
+    assert(summary.evidence_bundle.all_artifacts_metadata_matches === true, "AWS-ready handoff must summarize artifact metadata match");
+    assert(summary.evidence_bundle.all_artifacts_scope_matches === true, "AWS-ready handoff must summarize artifact scope match");
+  }
 }
 
 function assertEvidenceInput(actual, expected) {
