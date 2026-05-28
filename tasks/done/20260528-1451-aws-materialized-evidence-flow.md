@@ -1,6 +1,6 @@
 # AWS dev/UAT materialized evidence flow
 
-- 状態: doing
+- 状態: done
 - タスク種別: 機能追加
 - 対象ブランチ: `codex/aws-dev-uat-preflight`
 - 対象PR: #2
@@ -36,11 +36,11 @@ sample raw output と scaffold から preflight / validation raw input を mater
 
 ## 受け入れ条件
 
-- [ ] preflight / validation raw input をそれぞれ materializer で生成し、raw output/input check を通せる。
-- [ ] 生成 raw input から preflight / validation final evidence を作り、validation suite gate と evidence bundle manifest を通せる。
-- [ ] evidence bundle manifest が materialized raw input、raw output、final evidence、execution bridge artifact を含む。
-- [ ] fixture check が missing materialized raw input と missing raw output の negative path を検査する。
-- [ ] runbook、local verification、CI/verify/Taskfile/docs check に materialized flow fixture が反映される。
+- [x] preflight / validation raw input をそれぞれ materializer で生成し、raw output/input check を通せる。
+- [x] 生成 raw input から preflight / validation final evidence を作り、validation suite gate と evidence bundle manifest を通せる。
+- [x] evidence bundle manifest が materialized raw input、raw output、final evidence、execution bridge artifact を含む。
+- [x] fixture check が missing materialized raw input と missing raw output の negative path を検査する。
+- [x] runbook、local verification、CI/verify/Taskfile/docs check に materialized flow fixture が反映される。
 
 ## 検証計画
 
@@ -65,3 +65,28 @@ sample raw output と scaffold から preflight / validation raw input を mater
 ## リスク
 
 - fixture は sample raw output を使う構造検査であり、実 AWS dev/UAT 実行の代替ではない。
+
+## 完了メモ
+
+- 実装commit: `631cb7483784c4b9fffdc6e2ba76d35095e9004a`
+- PR: https://github.com/tsuji-tomonori/saphnexa/pull/2
+- 受け入れ条件コメント: https://github.com/tsuji-tomonori/saphnexa/pull/2#issuecomment-4561239623
+- セルフレビューコメント: https://github.com/tsuji-tomonori/saphnexa/pull/2#issuecomment-4561243235
+- 作業レポート: `reports/working/20260528-1451-aws-materialized-evidence-flow.md`
+
+### 実行した検証
+
+- `npm run aws:dev-uat:materialized-flow:fixture:check`: pass
+- `npm run aws:dev-uat:preflight-raw-input:fixture:check`: pass
+- `npm run aws:dev-uat:validation-raw-input:fixture:check`: pass
+- `npm run aws:dev-uat:evidence-bundle:fixture:check`: pass
+- `npm run acceptance:external-actions:check`: pass
+- `npm run ci:check`: pass
+- `npm run docs:check`: pass
+- `task aws:dev-uat:materialized-flow:fixture:check`: pass
+- `git diff --check`: pass
+- `npm run verify`: pass
+
+### 未実施・制約
+
+- `aws sts get-caller-identity --output json`: fail。AWS credentials 未設定のため、実 AWS dev/UAT 実行、Flyway 実適用、E2E、性能、RAG品質評価、実 evidence 作成は未実施。
