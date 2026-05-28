@@ -218,6 +218,14 @@ tasks:
     desc: Build and verify the AWS dev/UAT raw capture plan without changing AWS state
     cmds:
       - npm run aws:dev-uat:raw-capture-plan:check
+  aws:dev-uat:raw-input-scaffold:build:
+    desc: Build AWS dev/UAT raw input scaffolds from the raw capture plan
+    cmds:
+      - npm run aws:dev-uat:raw-input-scaffold:build
+  aws:dev-uat:raw-input-scaffold:check:
+    desc: Build and verify AWS dev/UAT raw input scaffolds without changing AWS state
+    cmds:
+      - npm run aws:dev-uat:raw-input-scaffold:check
   aws:dev-uat:capture-helpers:check:
     desc: Verify AWS dev/UAT raw capture helper entrypoints and missing-env failures
     cmds:

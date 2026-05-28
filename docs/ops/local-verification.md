@@ -57,6 +57,8 @@ npm run aws:dev-uat:execution-bridge:check
 npm run aws:dev-uat:execution-bridge:probe
 npm run aws:dev-uat:raw-capture-plan:build
 npm run aws:dev-uat:raw-capture-plan:check
+npm run aws:dev-uat:raw-input-scaffold:build
+npm run aws:dev-uat:raw-input-scaffold:check
 npm run aws:dev-uat:capture-helpers:check
 npm run aws:dev-uat:validation:build -- --input <raw-validation-input.json>
 npm run aws:dev-uat:validation:check
@@ -114,6 +116,7 @@ git diff --check
 - `npm run aws:dev-uat:execution-bridge:check` が `dist/acceptance/aws_dev_uat_execution_bridge.json` を生成し、final evidence path、AWS identity probe command、final gate command order、必要 input、証跡 mapping を検査すること。
 - `npm run aws:dev-uat:execution-bridge:probe` が AWS STS の read-only probe と final evidence file の有無を記録し、credentials や `aws-captured` 証跡が足りない場合は `waiting_for_external_execution` として残すこと。
 - `npm run aws:dev-uat:raw-capture-plan:check` が `dist/acceptance/aws_dev_uat_raw_capture_plan.json` を生成し、preflight / validation の command id、`output_ref`、build command、final command が builder と同期していることを検査すること。
+- `npm run aws:dev-uat:raw-input-scaffold:check` が `dist/acceptance/raw/aws_dev_uat_preflight.raw.scaffold.json` と `dist/acceptance/raw/aws_dev_uat_validation.raw.scaffold.json` を生成し、raw capture plan の command id、command、`output_ref` と同期していること、かつ `pending_capture` の未捕捉 draft として final evidence ではないことを検査すること。
 - `npm run aws:dev-uat:capture-helpers:check` が raw capture plan に listed された repo-local helper entrypoint の help と missing-env failure を検査すること。
 - `npm run aws:dev-uat:validation:build -- --input <raw-validation-input.json>` が実 AWS E2E・性能・RAG品質 raw result から `dist/acceptance/aws_dev_uat_validation.json` を生成すること。
 - `npm run aws:dev-uat:validation:check` が E2E・性能・RAG品質結果の fixture 構造と閾値を検査し、`npm run aws:dev-uat:validation:fixture:check` が fixture/negative path を検査し、実証跡では `npm run test:e2e:aws`、`npm run perf:aws`、`npm run rag:quality:aws`、`npm run aws:dev-uat:validation:final` が必要であること。
@@ -140,6 +143,7 @@ git diff --check
 - raw input の `capture_provenance` は、取得コマンドと raw output ref の監査用 metadata である。`output_ref` は raw input ファイルからの相対パスで、参照先ファイルが存在する必要がある。実 AWS credentials と raw output 本体がなければ、最終検収 evidence として扱わない。
 - `npm run aws:dev-uat:execution-bridge:probe` は AWS credentials と final evidence file の有無を記録するだけであり、deploy、migration、publish、load test、Bedrock Evaluations は実行しない。
 - `npm run aws:dev-uat:raw-capture-plan:check` は raw capture plan の生成と構造検査だけを行う。plan に listed された command の実行や raw output の取得は行わない。
+- `npm run aws:dev-uat:raw-input-scaffold:check` は raw input scaffold の生成と構造検査だけを行う。`pending_capture` の scaffold は final raw input ではなく、実 AWS raw output、`captured_at`、`capture_provenance.commands[].status: captured`、参照先 `output_ref` が揃うまで最終検収 evidence として扱わない。
 - `npm run aws:dev-uat:capture-helpers:check` は helper の `--help` と missing-env failure だけを確認する。実環境 URL への HTTP probe は、必須 env を指定して helper を明示実行した場合だけ行う。
 - `npm run aws:dev-uat:validation:check` は fixture の構造確認だけを行う。実 AWS dev/UAT E2E・性能・RAG品質証跡は `dist/acceptance/aws_dev_uat_validation.json` を `evidence_class: aws-captured` で作成し、final suite gate を通す必要がある。
 - Git tag、GitHub release、検収用 `evidence_manifest.json` の最終確定。

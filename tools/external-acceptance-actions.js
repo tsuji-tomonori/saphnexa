@@ -77,6 +77,8 @@ export function buildExternalAcceptanceActionPlan(outputPath = externalActionPla
         "npm run aws:dev-uat:execution-bridge:probe",
         "npm run aws:dev-uat:raw-capture-plan:build",
         "npm run aws:dev-uat:raw-capture-plan:check",
+        "npm run aws:dev-uat:raw-input-scaffold:build",
+        "npm run aws:dev-uat:raw-input-scaffold:check",
         "npm run aws:dev-uat:capture-helpers:check",
         "npm run aws:dev-uat:preflight:build -- --input <raw-preflight-input.json>",
         "npm run aws:dev-uat:preflight:final",
@@ -90,6 +92,8 @@ export function buildExternalAcceptanceActionPlan(outputPath = externalActionPla
       evidence_outputs: [
         "dist/acceptance/aws_dev_uat_execution_bridge.json",
         "dist/acceptance/aws_dev_uat_raw_capture_plan.json",
+        "dist/acceptance/raw/aws_dev_uat_preflight.raw.scaffold.json",
+        "dist/acceptance/raw/aws_dev_uat_validation.raw.scaffold.json",
         "dist/acceptance/aws_dev_uat_preflight.json",
         "dist/acceptance/aws_dev_uat_validation.json",
         "Allure E2E run URL",

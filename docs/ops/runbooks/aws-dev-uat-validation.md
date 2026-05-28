@@ -20,6 +20,9 @@ E2E、性能、RAG 品質検証の実行結果は `dist/acceptance/aws_dev_uat_v
 
 ```text
 dist/acceptance/aws_dev_uat_execution_bridge.json
+dist/acceptance/aws_dev_uat_raw_capture_plan.json
+dist/acceptance/raw/aws_dev_uat_preflight.raw.scaffold.json
+dist/acceptance/raw/aws_dev_uat_validation.raw.scaffold.json
 dist/acceptance/aws_dev_uat_preflight.json
 dist/acceptance/aws_dev_uat_validation.json
 ```
@@ -100,10 +103,21 @@ npm run aws:dev-uat:execution-bridge:probe
 ```bash
 npm run aws:dev-uat:raw-capture-plan:build
 npm run aws:dev-uat:raw-capture-plan:check
+npm run aws:dev-uat:raw-input-scaffold:build
+npm run aws:dev-uat:raw-input-scaffold:check
 npm run aws:dev-uat:capture-helpers:check
 ```
 
 `edge-realtime`、`rag-runtime`、`published-artifacts` の raw output は repo 内 helper で取得する。helper は実環境値を env から受け取り、必須 env がない場合は fail する。架空値や fallback 成功は出さない。
+
+`npm run aws:dev-uat:raw-input-scaffold:build` は raw capture plan から次の draft input を生成する。
+
+```text
+dist/acceptance/raw/aws_dev_uat_preflight.raw.scaffold.json
+dist/acceptance/raw/aws_dev_uat_validation.raw.scaffold.json
+```
+
+scaffold は `schema_version: saphnexa-aws-dev-uat-raw-input-scaffold.v1`、`scaffold_status: requires_operator_values`、`final_evidence: false`、`capture_provenance.commands[].status: pending_capture` のまま出力される。実 AWS raw output を取得し、必要値、`captured_at`、`capture_provenance.captured_at`、各 `output_ref` の参照先ファイルを揃えたうえで、operator が final raw input として別名保存する。scaffold そのものは `npm run aws:dev-uat:preflight:final` や `npm run aws:dev-uat:validation:final` の根拠にしない。
 
 | helper | 必須 env |
 |---|---|
@@ -149,6 +163,7 @@ npm run aws:dev-uat:validation:final
 npm run aws:dev-uat:preflight
 npm run aws:dev-uat:execution-bridge:check
 npm run aws:dev-uat:raw-capture-plan:check
+npm run aws:dev-uat:raw-input-scaffold:check
 npm run aws:dev-uat:capture-helpers:check
 npm run aws:dev-uat:validation:check
 npm run aws:dev-uat:validation:fixture:check
@@ -158,6 +173,7 @@ npm run aws:dev-uat:evidence:fixture:check
 この command は `docs/acceptance/evidence/aws_dev_uat_preflight.example.json` を検査する。`fixture` 証跡なので最終検収や AWS dev/UAT 実行完了の根拠にはしない。
 `npm run aws:dev-uat:execution-bridge:check` は AWS STS probe を行わず、final evidence path、AWS identity probe command、final gate command order、必要 input、証跡 mapping の整合を検査する。`npm run aws:dev-uat:execution-bridge:probe` は `aws sts get-caller-identity --output json` を read-only で実行し、credentials がなければ `waiting_for_external_execution` として `dist/acceptance/aws_dev_uat_execution_bridge.json` に記録する。
 `npm run aws:dev-uat:raw-capture-plan:check` は raw capture plan を生成してから、preflight / validation の command id、`output_ref`、build command、final command が builder と同期していることを検査する。この command は plan を書き出すだけで、AWS command の実行や外部状態変更は行わない。
+`npm run aws:dev-uat:raw-input-scaffold:check` は scaffold を生成してから、preflight / validation の command id、command、`output_ref` が raw capture plan と同期していること、かつ全 command が `pending_capture` のままで final evidence ではないことを検査する。この command は scaffold を書き出すだけで、AWS command の実行や外部状態変更は行わない。
 `npm run aws:dev-uat:capture-helpers:check` は helper entrypoint の `--help` と missing-env failure を検査する。実環境 endpoint への HTTP probe は行わない。
 `npm run aws:dev-uat:validation:check` も `docs/acceptance/evidence/aws_dev_uat_validation.example.json` だけを検査する。`npm run aws:dev-uat:validation:fixture:check` は fixture の positive path と、final 指定・E2E失敗・性能閾値超過・RAG品質閾値超過の negative path を検査する。
 `npm run aws:dev-uat:evidence:fixture:check` は `*.capture.sample.json` から一時ディレクトリに `aws-captured` evidence を生成し、既存 final checker に通す。sample raw input は最終検収 evidence として扱わない。
@@ -180,6 +196,8 @@ npm run aws:dev-uat:execution-bridge:check
 npm run aws:dev-uat:execution-bridge:probe
 npm run aws:dev-uat:raw-capture-plan:build
 npm run aws:dev-uat:raw-capture-plan:check
+npm run aws:dev-uat:raw-input-scaffold:build
+npm run aws:dev-uat:raw-input-scaffold:check
 npm run aws:dev-uat:capture-helpers:check
 npm run aws:dev-uat:preflight:final
 npm run aws:dev-uat:validation:build -- --input <raw-validation-input.json>
