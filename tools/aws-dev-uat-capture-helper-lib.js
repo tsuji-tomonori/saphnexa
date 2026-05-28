@@ -97,7 +97,7 @@ export async function probeUrl(url, options = {}) {
 }
 
 export function writeCapture(data) {
-  console.log(JSON.stringify(data, null, 2));
+  writeSync(1, `${JSON.stringify(data, null, 2)}\n`);
 }
 
 export function assert(condition, message) {

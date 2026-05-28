@@ -80,6 +80,9 @@ function validateMode(mode, context) {
   for (const item of mode.commands) {
     assert(typeof item.command === "string" && item.command.trim().length > 0, `${context.label}.${item.id}.command is required`);
     assert(!/(placeholder|todo|tbd|dummy|mock|localhost|127\.0\.0\.1|0\.0\.0\.0)/i.test(item.command), `${context.label}.${item.id}.command must not be placeholder/local text`);
+    if (context.label === "validation") {
+      assert(!/(npm run test:e2e:aws|npm run perf:aws|npm run rag:quality:aws)/.test(item.command), `${context.label}.${item.id}.command must not call final suite gate as raw capture`);
+    }
     assertNodeHelperExists(item.command, `${context.label}.${item.id}.command`);
     assert(typeof item.output_ref === "string" && item.output_ref.startsWith("raw/"), `${context.label}.${item.id}.output_ref must stay under raw/`);
     assert(!isAbsolute(item.output_ref), `${context.label}.${item.id}.output_ref must be relative`);

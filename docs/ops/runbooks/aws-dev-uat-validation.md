@@ -133,6 +133,9 @@ raw output checker は `capture_provenance.commands[].output_ref` の参照先�
 | `node tools/capture-edge-realtime-smoke.js` | `SAPHNEXA_CLOUDFRONT_URL`, `SAPHNEXA_COGNITO_USER_POOL_ID`, `SAPHNEXA_COGNITO_USER_POOL_CLIENT_ID`, `SAPHNEXA_APPSYNC_EVENT_API_HTTP_ENDPOINT`, `SAPHNEXA_APPSYNC_EVENT_API_REALTIME_ENDPOINT` |
 | `node tools/capture-rag-runtime-smoke.js` | `SAPHNEXA_BEDROCK_KNOWLEDGE_BASE_ID`, `SAPHNEXA_S3_VECTOR_BUCKET_NAME`, `SAPHNEXA_S3_VECTOR_INDEX_NAME`, `SAPHNEXA_AGENTCORE_RUNTIME_ARN`, `SAPHNEXA_TOOLS_API_URL` |
 | `node tools/capture-admin-artifacts-smoke.js` | `SAPHNEXA_DOCUSAURUS_LATEST_URL`, `SAPHNEXA_DOCUSAURUS_VERSION_URL`, `SAPHNEXA_ALLURE_LATEST_URL`; signed-cookie 保護された artifact では `SAPHNEXA_CLOUDFRONT_COOKIE` も指定する |
+| `node tools/capture-aws-dev-uat-e2e-result.js` | `SAPHNEXA_E2E_PASSED_FLOWS`, `SAPHNEXA_E2E_TOTAL_FLOWS`, `SAPHNEXA_ALLURE_RUN_URL` |
+| `node tools/capture-aws-dev-uat-performance-result.js` | `SAPHNEXA_PERF_NON_AI_API_P95_MS`, `SAPHNEXA_PERF_ERROR_RATE`, `SAPHNEXA_PERF_QUESTION_START_P95_MS`, `SAPHNEXA_PERF_RAG_FIRST_NOTICE_P95_MS`, `SAPHNEXA_PERF_FINAL_ANSWER_P95_MS`, `SAPHNEXA_PERF_TIMEOUT_RATE`, `SAPHNEXA_PERF_REPORT_URL` |
+| `node tools/capture-aws-dev-uat-rag-quality-result.js` | `SAPHNEXA_RAG_GOLDEN_DATASET`, `SAPHNEXA_RAG_EVALUATION_JOB_ID`, `SAPHNEXA_RAG_BEDROCK_EVALUATION_JOB_ARN`, `SAPHNEXA_RAG_RECALL_AT_10`, `SAPHNEXA_RAG_CITATION_PRECISION`, `SAPHNEXA_RAG_GROUNDEDNESS`, `SAPHNEXA_RAG_REFUSAL_ACCURACY`, `SAPHNEXA_RAG_UNSUPPORTED_CLAIM_RATE`, `SAPHNEXA_RAG_REPORT_URL` |
 
 5. 実 AWS raw capture input から `dist/acceptance/aws_dev_uat_preflight.json` を生成する。
 
@@ -146,12 +149,15 @@ npm run aws:dev-uat:preflight:build -- --input <raw-preflight-input.json>
 npm run aws:dev-uat:preflight:final
 ```
 
-7. pass 後に AWS dev/UAT E2E、性能、RAG 品質検証を実行し、raw output を取得する。
+7. pass 後に AWS dev/UAT E2E、性能、RAG 品質検証を外部実行し、結果 URL / metrics / Bedrock Evaluation Job を確定してから raw output を取得する。
 
 ```bash
-npm run test:e2e:aws
-npm run perf:aws
-npm run rag:quality:aws
+node tools/capture-aws-dev-uat-e2e-result.js --env uat --run-id <run-id> > raw/e2e-allure-run.json
+aws s3 ls s3://saphnexa-uat-logs/cloudfront/<run-id>/ --region ap-northeast-1 > raw/cloudfront-access-log-list.txt
+node tools/capture-aws-dev-uat-performance-result.js --env uat --run-id <run-id> > raw/performance-report.json
+aws cloudwatch get-dashboard --dashboard-name saphnexa-uat --region ap-northeast-1 > raw/cloudwatch-dashboard.json
+node tools/capture-aws-dev-uat-rag-quality-result.js --env uat --run-id <run-id> > raw/rag-quality-report.json
+aws bedrock get-evaluation-job --job-identifier rag-eval-<run-id> --region ap-northeast-1 > raw/bedrock-evaluation-job.json
 ```
 
 8. 実 AWS dev/UAT の raw result input から `dist/acceptance/aws_dev_uat_validation.json` を生成する。
@@ -162,9 +168,12 @@ npm run aws:dev-uat:raw-input:check -- validation --input <raw-validation-input.
 npm run aws:dev-uat:validation:build -- --input <raw-validation-input.json>
 ```
 
-9. final gate と evidence bundle manifest を作成する。
+9. suite gate、final gate、evidence bundle manifest を作成する。
 
 ```bash
+npm run test:e2e:aws
+npm run perf:aws
+npm run rag:quality:aws
 npm run aws:dev-uat:validation:final
 npm run aws:dev-uat:evidence-bundle:check -- --preflight-raw-input <raw-preflight-input.json> --validation-raw-input <raw-validation-input.json> --preflight-evidence dist/acceptance/aws_dev_uat_preflight.json --validation-evidence dist/acceptance/aws_dev_uat_validation.json --execution-bridge dist/acceptance/aws_dev_uat_execution_bridge.json --output dist/acceptance/aws_dev_uat_evidence_bundle_manifest.json
 ```
@@ -184,6 +193,7 @@ npm run aws:dev-uat:raw-output:fixture:check
 npm run aws:dev-uat:raw-input:fixture:check
 npm run aws:dev-uat:evidence-bundle:fixture:check
 npm run aws:dev-uat:capture-helpers:check
+npm run aws:dev-uat:validation-capture:fixture:check
 npm run aws:dev-uat:validation:check
 npm run aws:dev-uat:validation:fixture:check
 npm run aws:dev-uat:evidence:fixture:check
@@ -197,6 +207,7 @@ npm run aws:dev-uat:evidence:fixture:check
 `npm run aws:dev-uat:raw-input:fixture:check` は sample raw input を dry-run checker に通し、scaffold と `pending_capture` raw input が reject されることを検査する。sample raw input は最終検収 evidence として扱わない。
 `npm run aws:dev-uat:evidence-bundle:fixture:check` は sample raw input/output から preflight / validation evidence と bundle manifest を生成し、各 artifact の path、size、sha256 と missing artifact の negative path を検査する。sample bundle manifest は最終検収 evidence として扱わない。
 `npm run aws:dev-uat:capture-helpers:check` は helper entrypoint の `--help` と missing-env failure を検査する。実環境 endpoint への HTTP probe は行わない。
+`npm run aws:dev-uat:validation-capture:fixture:check` は E2E、性能、RAG品質結果 capture helper の `--help`、missing-env failure、閾値未達 failure、valid env JSON output を検査する。sample env は最終検収 evidence として扱わない。
 `npm run aws:dev-uat:validation:check` も `docs/acceptance/evidence/aws_dev_uat_validation.example.json` だけを検査する。`npm run aws:dev-uat:validation:fixture:check` は fixture の positive path と、final 指定・E2E失敗・性能閾値超過・RAG品質閾値超過の negative path を検査する。
 `npm run aws:dev-uat:evidence:fixture:check` は `*.capture.sample.json` から一時ディレクトリに `aws-captured` evidence を生成し、既存 final checker に通す。sample raw input は最終検収 evidence として扱わない。
 
@@ -226,13 +237,17 @@ npm run aws:dev-uat:raw-input:check -- preflight --input <raw-preflight-input.js
 npm run aws:dev-uat:raw-input:fixture:check
 npm run aws:dev-uat:evidence-bundle:fixture:check
 npm run aws:dev-uat:capture-helpers:check
+npm run aws:dev-uat:validation-capture:fixture:check
 npm run aws:dev-uat:preflight:final
-npm run test:e2e:aws
-npm run perf:aws
-npm run rag:quality:aws
+node tools/capture-aws-dev-uat-e2e-result.js --env uat --run-id <run-id> > raw/e2e-allure-run.json
+node tools/capture-aws-dev-uat-performance-result.js --env uat --run-id <run-id> > raw/performance-report.json
+node tools/capture-aws-dev-uat-rag-quality-result.js --env uat --run-id <run-id> > raw/rag-quality-report.json
 npm run aws:dev-uat:raw-output:check -- validation --input <raw-validation-input.json>
 npm run aws:dev-uat:raw-input:check -- validation --input <raw-validation-input.json>
 npm run aws:dev-uat:validation:build -- --input <raw-validation-input.json>
+npm run test:e2e:aws
+npm run perf:aws
+npm run rag:quality:aws
 npm run aws:dev-uat:validation:check
 npm run aws:dev-uat:validation:fixture:check
 npm run aws:dev-uat:evidence:fixture:check

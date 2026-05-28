@@ -70,11 +70,11 @@ function preflightCommands({ environment, region, stackName, runId }) {
 
 function validationCommands({ environment, region, stackName, runId }) {
   return [
-    command("e2e-allure", `SAPHNEXA_ENV=${environment} SAPHNEXA_AWS_RUN_ID=${runId} npm run test:e2e:aws`, "raw/e2e-allure-run.json", "json"),
+    command("e2e-allure", `node tools/capture-aws-dev-uat-e2e-result.js --env ${environment} --run-id ${runId}`, "raw/e2e-allure-run.json", "json"),
     command("cloudfront-access-log", `aws s3 ls s3://saphnexa-${environment}-logs/cloudfront/${runId}/ --region ${region}`, "raw/cloudfront-access-log-list.txt", "text"),
-    command("performance-report", `SAPHNEXA_ENV=${environment} SAPHNEXA_AWS_RUN_ID=${runId} npm run perf:aws`, "raw/performance-report.json", "json"),
+    command("performance-report", `node tools/capture-aws-dev-uat-performance-result.js --env ${environment} --run-id ${runId}`, "raw/performance-report.json", "json"),
     command("cloudwatch-dashboard", `aws cloudwatch get-dashboard --dashboard-name ${stackName} --region ${region}`, "raw/cloudwatch-dashboard.json", "json"),
-    command("rag-quality-report", `SAPHNEXA_ENV=${environment} SAPHNEXA_AWS_RUN_ID=${runId} npm run rag:quality:aws`, "raw/rag-quality-report.json", "json"),
+    command("rag-quality-report", `node tools/capture-aws-dev-uat-rag-quality-result.js --env ${environment} --run-id ${runId}`, "raw/rag-quality-report.json", "json"),
     command("bedrock-evaluation-job", `aws bedrock get-evaluation-job --job-identifier rag-eval-${runId} --region ${region}`, "raw/bedrock-evaluation-job.json", "json")
   ];
 }

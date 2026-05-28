@@ -42,6 +42,9 @@ assert(cloudFormationCapture.candidate_commands.includes("CFN_CAPTURED_AT=<captu
 const awsDevUatValidation = plan.actions.find((action) => action.id === "aws-dev-uat-validation");
 assert(awsDevUatValidation.acceptance_ids.includes("AC-098"), "AWS dev/UAT validation action must cover RAG quality");
 assert(awsDevUatValidation.acceptance_ids.includes("AC-123"), "AWS dev/UAT validation action must cover E2E");
+const e2eCaptureCommand = "node tools/capture-aws-dev-uat-e2e-result.js --env uat --run-id <run-id> > raw/e2e-allure-run.json";
+const perfCaptureCommand = "node tools/capture-aws-dev-uat-performance-result.js --env uat --run-id <run-id> > raw/performance-report.json";
+const ragCaptureCommand = "node tools/capture-aws-dev-uat-rag-quality-result.js --env uat --run-id <run-id> > raw/rag-quality-report.json";
 for (const command of [
   "npm run aws:dev-uat:execution-bridge:probe",
   "npm run aws:dev-uat:raw-capture-plan:build",
@@ -53,12 +56,18 @@ for (const command of [
   "npm run aws:dev-uat:raw-input:check -- preflight --input <raw-preflight-input.json>",
   "npm run aws:dev-uat:preflight:build -- --input <raw-preflight-input.json>",
   "npm run aws:dev-uat:preflight:final",
-  "npm run test:e2e:aws",
-  "npm run perf:aws",
-  "npm run rag:quality:aws",
+  e2eCaptureCommand,
+  "aws s3 ls s3://saphnexa-uat-logs/cloudfront/<run-id>/ --region ap-northeast-1 > raw/cloudfront-access-log-list.txt",
+  perfCaptureCommand,
+  "aws cloudwatch get-dashboard --dashboard-name saphnexa-uat --region ap-northeast-1 > raw/cloudwatch-dashboard.json",
+  ragCaptureCommand,
+  "aws bedrock get-evaluation-job --job-identifier rag-eval-<run-id> --region ap-northeast-1 > raw/bedrock-evaluation-job.json",
   "npm run aws:dev-uat:raw-output:check -- validation --input <raw-validation-input.json>",
   "npm run aws:dev-uat:raw-input:check -- validation --input <raw-validation-input.json>",
   "npm run aws:dev-uat:validation:build -- --input <raw-validation-input.json>",
+  "npm run test:e2e:aws",
+  "npm run perf:aws",
+  "npm run rag:quality:aws",
   "npm run aws:dev-uat:validation:final",
   "npm run aws:dev-uat:evidence-bundle:check -- --preflight-raw-input <raw-preflight-input.json> --validation-raw-input <raw-validation-input.json> --preflight-evidence dist/acceptance/aws_dev_uat_preflight.json --validation-evidence dist/acceptance/aws_dev_uat_validation.json --execution-bridge dist/acceptance/aws_dev_uat_execution_bridge.json --output dist/acceptance/aws_dev_uat_evidence_bundle_manifest.json"
 ]) {
@@ -85,19 +94,22 @@ assert(
   "AWS dev/UAT validation action must dry-run preflight raw input before building preflight evidence"
 );
 assert(
-  awsDevUatValidation.candidate_commands.indexOf("npm run test:e2e:aws") <
+  e2eCaptureCommand &&
+    awsDevUatValidation.candidate_commands.indexOf(e2eCaptureCommand) <
     awsDevUatValidation.candidate_commands.indexOf("npm run aws:dev-uat:raw-output:check -- validation --input <raw-validation-input.json>"),
-  "AWS dev/UAT validation action must run E2E before checking validation raw outputs"
+  "AWS dev/UAT validation action must capture E2E result before checking validation raw outputs"
 );
 assert(
-  awsDevUatValidation.candidate_commands.indexOf("npm run perf:aws") <
+  perfCaptureCommand &&
+    awsDevUatValidation.candidate_commands.indexOf(perfCaptureCommand) <
     awsDevUatValidation.candidate_commands.indexOf("npm run aws:dev-uat:raw-output:check -- validation --input <raw-validation-input.json>"),
-  "AWS dev/UAT validation action must run performance before checking validation raw outputs"
+  "AWS dev/UAT validation action must capture performance result before checking validation raw outputs"
 );
 assert(
-  awsDevUatValidation.candidate_commands.indexOf("npm run rag:quality:aws") <
+  ragCaptureCommand &&
+    awsDevUatValidation.candidate_commands.indexOf(ragCaptureCommand) <
     awsDevUatValidation.candidate_commands.indexOf("npm run aws:dev-uat:raw-output:check -- validation --input <raw-validation-input.json>"),
-  "AWS dev/UAT validation action must run RAG quality before checking validation raw outputs"
+  "AWS dev/UAT validation action must capture RAG quality result before checking validation raw outputs"
 );
 assert(
   awsDevUatValidation.candidate_commands.indexOf("npm run aws:dev-uat:raw-output:check -- validation --input <raw-validation-input.json>") <
@@ -109,6 +121,13 @@ assert(
     awsDevUatValidation.candidate_commands.indexOf("npm run aws:dev-uat:validation:build -- --input <raw-validation-input.json>"),
   "AWS dev/UAT validation action must dry-run validation raw input before building validation evidence"
 );
+for (const command of ["npm run test:e2e:aws", "npm run perf:aws", "npm run rag:quality:aws"]) {
+  assert(
+    awsDevUatValidation.candidate_commands.indexOf("npm run aws:dev-uat:validation:build -- --input <raw-validation-input.json>") <
+      awsDevUatValidation.candidate_commands.indexOf(command),
+    `${command} must run after validation evidence build`
+  );
+}
 assert(
   awsDevUatValidation.candidate_commands.indexOf("npm run aws:dev-uat:validation:final") <
     awsDevUatValidation.candidate_commands.indexOf("npm run aws:dev-uat:evidence-bundle:check -- --preflight-raw-input <raw-preflight-input.json> --validation-raw-input <raw-validation-input.json> --preflight-evidence dist/acceptance/aws_dev_uat_preflight.json --validation-evidence dist/acceptance/aws_dev_uat_validation.json --execution-bridge dist/acceptance/aws_dev_uat_execution_bridge.json --output dist/acceptance/aws_dev_uat_evidence_bundle_manifest.json"),
