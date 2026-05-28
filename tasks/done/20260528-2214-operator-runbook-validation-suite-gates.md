@@ -1,6 +1,6 @@
 # operator runbook validation suite gates
 
-- 状態: do
+- 状態: done
 - タスク種別: 機能追加
 - ブランチ: `codex/aws-dev-uat-preflight`
 - PR: https://github.com/tsuji-tomonori/saphnexa/pull/2
@@ -58,6 +58,11 @@ operator execution runbook だけを見ても AWS dev/UAT E2E・性能・RAG品�
 ## 作業レポート
 
 - `reports/working/20260528-2217-operator-runbook-validation-suite-gates.md`
+
+## PR コメント
+
+- 受け入れ条件確認: https://github.com/tsuji-tomonori/saphnexa/pull/2#issuecomment-4564344546
+- セルフレビュー: https://github.com/tsuji-tomonori/saphnexa/pull/2#issuecomment-4564347810
 
 ## PR レビュー観点
 
