@@ -1,6 +1,6 @@
 # Final readiness current git gate
 
-状態: do
+状態: done
 
 ## 背景
 
@@ -64,3 +64,21 @@ AWS dev/UAT final readiness は resolved operator input と ready operator execu
 
 - 実 AWS credentials がないため、ready path は fixture による構造検査に留まる。
 - current git gate は実 AWS 証跡や外部承認の代替ではなく、証跡と検収対象 commit の対応を強める追加条件である。
+
+## 完了メモ
+
+- 実装 commit: `a1c3171` (`✨ feat(acceptance): final readinessにcurrent git gateを追加`)
+- PR: https://github.com/tsuji-tomonori/saphnexa/pull/2
+- 受け入れ条件確認コメント: https://github.com/tsuji-tomonori/saphnexa/pull/2#issuecomment-4561827941
+- セルフレビューコメント: https://github.com/tsuji-tomonori/saphnexa/pull/2#issuecomment-4561827920
+- 作業レポート: `reports/working/20260528-1640-final-readiness-current-git-gate.md`
+
+## 完了時の検証
+
+- `npm run aws:dev-uat:final-readiness:check`: pass
+- `npm run aws:dev-uat:final-readiness:fixture:check`: pass
+- `npm run aws:dev-uat:operator-runbook:check`: pass
+- `npm run docs:check`: pass
+- `git diff --check`: pass
+- `npm run verify`: pass
+- `aws sts get-caller-identity --output json`: fail。理由: `Unable to locate credentials.`
