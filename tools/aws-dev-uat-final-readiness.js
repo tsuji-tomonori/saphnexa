@@ -273,6 +273,8 @@ function evidenceBundleState(path, expectedPaths) {
     return {
       ...state,
       artifact_count: 0,
+      all_artifacts: [],
+      all_artifacts_metadata_matches: false,
       required_artifacts: requiredArtifacts.map((item) => missingRequiredArtifactState(item)),
       required_artifacts_present: false
     };
@@ -288,6 +290,8 @@ function evidenceBundleState(path, expectedPaths) {
       current_git_commit: null,
       artifact_count: 0,
       artifact_count_matches: false,
+      all_artifacts: [],
+      all_artifacts_metadata_matches: false,
       required_artifacts: requiredArtifacts.map((item) => missingRequiredArtifactState(item)),
       required_artifacts_present: false,
       invalid_content: true,
@@ -296,6 +300,8 @@ function evidenceBundleState(path, expectedPaths) {
   }
 
   const artifacts = Array.isArray(bundle.artifacts) ? bundle.artifacts : [];
+  const allArtifactStates = artifacts.map((artifact) => artifactMetadataState(artifact));
+  const allArtifactsMetadataMatches = artifacts.length > 0 && allArtifactStates.every((artifact) => artifact.metadata_matches);
   const requiredArtifactStates = requiredArtifacts.map((required) => {
     const matchingArtifacts = artifacts.filter((artifact) => artifact.kind === required.kind && artifact.mode === required.mode);
     const expectedPath = resolve(required.expected_path);
@@ -328,6 +334,7 @@ function evidenceBundleState(path, expectedPaths) {
     bundle.evidence_class !== "aws-captured" ||
     !artifactCountMatches ||
     artifacts.length === 0 ||
+    !allArtifactsMetadataMatches ||
     !requiredArtifactsPresent;
 
   return {
@@ -339,10 +346,34 @@ function evidenceBundleState(path, expectedPaths) {
     current_git_commit: currentGit,
     artifact_count: Number.isInteger(bundle.artifact_count) ? bundle.artifact_count : null,
     artifact_count_matches: artifactCountMatches,
+    all_artifacts: allArtifactStates,
+    all_artifacts_metadata_matches: allArtifactsMetadataMatches,
     required_artifacts: requiredArtifactStates,
     required_artifacts_present: requiredArtifactsPresent,
     invalid_content: invalidContent,
     ready: !invalidContent && currentGit
+  };
+}
+
+function artifactMetadataState(artifact) {
+  const artifactPath = typeof artifact.path === "string" && artifact.path.length > 0 ? resolve(artifact.path) : null;
+  const currentMetadata = artifactPath ? artifactFileMetadata(artifactPath) : { exists: false, size_bytes: null, sha256: null };
+  const expectedSha256 = typeof artifact.sha256 === "string" ? artifact.sha256 : null;
+  const expectedSizeBytes = Number.isInteger(artifact.size_bytes) ? artifact.size_bytes : null;
+  const sha256Matches = currentMetadata.exists && expectedSha256 === currentMetadata.sha256;
+  const sizeBytesMatches = currentMetadata.exists && expectedSizeBytes === currentMetadata.size_bytes;
+  return {
+    kind: artifact.kind || null,
+    mode: artifact.mode || null,
+    path: artifactPath,
+    path_exists: currentMetadata.exists,
+    expected_sha256: expectedSha256,
+    actual_sha256: currentMetadata.sha256,
+    sha256_matches: sha256Matches,
+    expected_size_bytes: expectedSizeBytes,
+    actual_size_bytes: currentMetadata.size_bytes,
+    size_bytes_matches: sizeBytesMatches,
+    metadata_matches: sha256Matches && sizeBytesMatches
   };
 }
 

@@ -312,6 +312,46 @@ try {
     "digest mismatch bundle fixture must expose the mismatched artifact digest"
   );
 
+  const rawOutputDigestMismatchBundlePath = join(tmpRoot, "raw-output-digest-mismatch", "aws_dev_uat_evidence_bundle_manifest.json");
+  const rawOutputDigestMismatchBundleManifest = readJson(bundlePath);
+  rawOutputDigestMismatchBundleManifest.artifacts = rawOutputDigestMismatchBundleManifest.artifacts.map((artifact) =>
+    artifact.kind === "raw-output"
+      ? { ...artifact, sha256: "f".repeat(64) }
+      : artifact
+  );
+  writeText(rawOutputDigestMismatchBundlePath, `${JSON.stringify(rawOutputDigestMismatchBundleManifest, null, 2)}\n`);
+  const rawOutputDigestMismatchBundle = buildAwsDevUatFinalReadiness({
+    outputPath: join(tmpRoot, "raw-output-digest-mismatch-bundle-readiness.json"),
+    rawCapturePlanPath: planPath,
+    rawCapturePlan: plan,
+    executionBridgePath: bridgePath,
+    executionBridge: readJson(bridgePath),
+    awsIdentity: authenticatedIdentity(),
+    operatorInputPath,
+    operatorRunbookPath,
+    preflightRawInputPath,
+    validationRawInputPath,
+    preflightEvidencePath,
+    validationEvidencePath,
+    evidenceBundleManifestPath: rawOutputDigestMismatchBundlePath
+  });
+  validateAwsDevUatFinalReadiness(rawOutputDigestMismatchBundle);
+  assert(rawOutputDigestMismatchBundle.blockers.includes("invalid_evidence_bundle_manifest"), "raw output digest mismatch bundle fixture must block readiness");
+  assert(
+    rawOutputDigestMismatchBundle.evidence_bundle_manifest.required_artifacts_present === true,
+    "raw output digest mismatch bundle fixture must keep required artifact coverage"
+  );
+  assert(
+    rawOutputDigestMismatchBundle.evidence_bundle_manifest.all_artifacts_metadata_matches === false,
+    "raw output digest mismatch bundle fixture must fail all artifact metadata coverage"
+  );
+  assert(
+    rawOutputDigestMismatchBundle.evidence_bundle_manifest.all_artifacts.some(
+      (item) => item.kind === "raw-output" && item.sha256_matches === false && item.metadata_matches === false
+    ),
+    "raw output digest mismatch bundle fixture must expose the mismatched raw output digest"
+  );
+
   const ready = buildAwsDevUatFinalReadiness({
     outputPath: join(tmpRoot, "ready-readiness.json"),
     rawCapturePlanPath: planPath,
@@ -334,6 +374,7 @@ try {
   assert(ready.evidence_bundle_manifest.ready === true, "ready fixture must include ready evidence bundle");
   assert(ready.evidence_bundle_manifest.current_git_commit === true, "ready fixture must include current evidence bundle");
   assert(ready.evidence_bundle_manifest.required_artifacts_present === true, "ready fixture must include bundle artifact coverage");
+  assert(ready.evidence_bundle_manifest.all_artifacts_metadata_matches === true, "ready fixture must include matching all bundle artifact metadata");
   assert(
     ready.evidence_bundle_manifest.required_artifacts.every((item) => item.path_matches === true),
     "ready fixture must include matching bundle artifact paths"

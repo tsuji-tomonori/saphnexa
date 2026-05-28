@@ -60,6 +60,7 @@ export function validateAwsDevUatFinalReadiness(manifest, options = {}) {
     assert(manifest.evidence_bundle_manifest.current_git_commit === true, "ready final readiness must have current evidence bundle manifest");
     assert(manifest.evidence_bundle_manifest.required_artifacts_present === true, "ready final readiness must have bundle artifact coverage");
     assert(manifest.evidence_bundle_manifest.artifact_count_matches === true, "ready final readiness must have matching bundle artifact count");
+    assert(manifest.evidence_bundle_manifest.all_artifacts_metadata_matches === true, "ready final readiness must have all bundle artifact metadata matching current files");
     assert(
       manifest.evidence_bundle_manifest.required_artifacts.every((item) => item.path_matches === true),
       "ready final readiness must have bundle artifact paths matching current readiness inputs"
@@ -117,6 +118,14 @@ function validateEvidenceBundleManifestState(state) {
   assert(["checked", null].includes(state.bundle_status) || state.invalid_content === true, "bundle manifest status state mismatch");
   assert(["aws-captured", null].includes(state.evidence_class) || state.invalid_content === true, "bundle manifest evidence class state mismatch");
   assert(typeof state.artifact_count_matches === "boolean", "bundle manifest artifact count match flag is required");
+  assert(Array.isArray(state.all_artifacts), "bundle manifest all artifacts must be an array");
+  assert(typeof state.all_artifacts_metadata_matches === "boolean", "bundle manifest all artifact metadata flag is required");
+  for (const artifact of state.all_artifacts) {
+    assert(typeof artifact.path_exists === "boolean", "bundle artifact path existence flag is required");
+    assert(typeof artifact.sha256_matches === "boolean", "bundle artifact sha256 match flag is required");
+    assert(typeof artifact.size_bytes_matches === "boolean", "bundle artifact size match flag is required");
+    assert(typeof artifact.metadata_matches === "boolean", "bundle artifact metadata match flag is required");
+  }
   for (const required of [
     ["raw-input", "preflight"],
     ["raw-input", "validation"],
