@@ -1,6 +1,6 @@
 # AWS dev/UAT preflight raw input materializer
 
-- 状態: doing
+- 状態: done
 - タスク種別: 機能追加
 - 対象ブランチ: `codex/aws-dev-uat-preflight`
 - 対象PR: #2
@@ -37,11 +37,11 @@ preflight raw output files と scaffold から final preflight raw input を生�
 
 ## 受け入れ条件
 
-- [ ] preflight raw output files と scaffold から preflight raw input を生成できる。
-- [ ] 生成 raw input は raw output check、raw input dry-run、preflight evidence build/final gate に進められる。
-- [ ] raw capture plan と preflight scaffold が preflight materializer command と finalization order を持つ。
-- [ ] fixture check が positive path と missing raw output / CloudFormation output missing / Flyway checksum failure の negative path を検査する。
-- [ ] external action plan、runbook、local verification、CI/verify/Taskfile/docs check に preflight materializer が反映される。
+- [x] preflight raw output files と scaffold から preflight raw input を生成できる。
+- [x] 生成 raw input は raw output check、raw input dry-run、preflight evidence build/final gate に進められる。
+- [x] raw capture plan と preflight scaffold が preflight materializer command と finalization order を持つ。
+- [x] fixture check が positive path と missing raw output / CloudFormation output missing / Flyway checksum failure の negative path を検査する。
+- [x] external action plan、runbook、local verification、CI/verify/Taskfile/docs check に preflight materializer が反映される。
 
 ## 検証計画
 
@@ -67,3 +67,11 @@ preflight raw output files と scaffold から final preflight raw input を生�
 ## リスク
 
 - materializer は取得済み raw output の組み立てを自動化するだけで、AWS deploy、migration、publish、smoke 実行は開始しない。
+
+## 完了メモ
+
+- 実装コミット: `c92119c`
+- PR 受け入れ条件コメント: `https://github.com/tsuji-tomonori/saphnexa/pull/2#issuecomment-4561164364`
+- PR セルフレビューコメント: `https://github.com/tsuji-tomonori/saphnexa/pull/2#issuecomment-4561168196`
+- 主な検証: `npm run verify`、`task aws:dev-uat:preflight-raw-input:fixture:check`、`git diff --check` pass。
+- 制約: AWS credentials がないため、実 AWS dev/UAT 検証は未実施。
