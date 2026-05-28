@@ -254,7 +254,11 @@ function evidenceState(mode, path) {
 function collectStageReadiness(stage, blockers, nextCommands) {
   if (!stage.raw_input.exists) {
     blockers.push(`missing_${stage.mode}_raw_input`);
+    nextCommands.push("npm run aws:dev-uat:raw-capture-plan:check");
+    nextCommands.push("npm run aws:dev-uat:raw-input-scaffold:check");
     nextCommands.push(stage.materialize_command);
+    nextCommands.push(stage.raw_output_check_command);
+    nextCommands.push(stage.raw_input_check_command);
     return;
   }
   if (stage.raw_input.parse_error) blockers.push(`invalid_${stage.mode}_raw_input`);

@@ -48,6 +48,14 @@ try {
   assert(blocked.blockers.includes("missing_operator_input"), "blocked fixture must include operator input blocker");
   assert(blocked.blockers.includes("missing_operator_runbook"), "blocked fixture must include operator runbook blocker");
   assert(blocked.next_commands.includes("npm run aws:dev-uat:execution-bridge:probe"), "blocked fixture must suggest AWS identity probe");
+  assert(blocked.next_commands.includes("npm run aws:dev-uat:raw-capture-plan:check"), "blocked fixture must suggest raw capture plan check");
+  assert(blocked.next_commands.includes("npm run aws:dev-uat:raw-input-scaffold:check"), "blocked fixture must suggest raw input scaffold check");
+  assert(blocked.next_commands.includes(plan.modes.preflight.materialize_command), "blocked fixture must suggest preflight raw input materialize");
+  assert(blocked.next_commands.includes(plan.modes.preflight.raw_output_check_command), "blocked fixture must suggest preflight raw output check");
+  assert(blocked.next_commands.includes(plan.modes.preflight.raw_input_check_command), "blocked fixture must suggest preflight raw input check");
+  assert(blocked.next_commands.includes(plan.modes.validation.materialize_command), "blocked fixture must suggest validation raw input materialize");
+  assert(blocked.next_commands.includes(plan.modes.validation.raw_output_check_command), "blocked fixture must suggest validation raw output check");
+  assert(blocked.next_commands.includes(plan.modes.validation.raw_input_check_command), "blocked fixture must suggest validation raw input check");
   assert(blocked.next_commands.includes("npm run aws:dev-uat:operator-input:build"), "blocked fixture must suggest operator input scaffold build");
   assert(blocked.next_commands.includes("npm run aws:dev-uat:operator-input:check"), "blocked fixture must suggest operator input scaffold check");
   assert(
