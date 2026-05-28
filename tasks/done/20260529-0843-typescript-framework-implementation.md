@@ -1,6 +1,6 @@
 # TypeScript framework implementation
 
-- 状態: doing
+- 状態: done
 - タスク種別: 機能追加
 - 作成日時: 2026-05-29 08:43 JST
 - 対象ブランチ: `codex/typescript-framework-implementation`
@@ -45,17 +45,24 @@ AWS dev/UAT preflight 前に、既存の JS scaffold と最小 TSX skeleton を�
 
 ## 受け入れ条件
 
-- [ ] `apps/api` が Hono + Zod OpenAPI の TypeScript 実装入口を持つ。
-- [ ] `apps/agent` が AgentCore Runtime 用 TypeScript app と `/ping`、`/invocations` contract を持つ。
-- [ ] `apps/tools-api` が TypeScript Hono tools API 実装入口を持つ。
-- [ ] `apps/web` が React + Vite + TypeScript package として成立し、Chat/Admin が hooks / feature components / pages に分割される。
-- [ ] `packages/ui` が Atomic Design 階層と vanilla-extract 方針の primitives を持つ。
-- [ ] Chat UI が assistant-ui runtime adapter 境界を持つ。
-- [ ] Admin UI が DataTable / Form / Dialog / Drawer 相当の共通 UI organism を使う。
-- [ ] TanStack Query で API state を管理する hook 境界を持つ。
-- [ ] API schema / model catalog / tool contract / domain store の既存共有境界を壊さない。
-- [ ] TypeScript compilation または repo の型 surface check を実行し、結果を記録する。
-- [ ] 未導入の実 AWS 接続や未実施検証は、実施済み扱いせず PR / report に明記する。
+- [x] `apps/api` が Hono + Zod OpenAPI の TypeScript 実装入口を持つ。
+- [x] `apps/agent` が AgentCore Runtime 用 TypeScript app と `/ping`、`/invocations` contract を持つ。
+- [x] `apps/tools-api` が TypeScript Hono tools API 実装入口を持つ。
+- [x] `apps/web` が React + Vite + TypeScript package として成立し、Chat/Admin が hooks / feature components / pages に分割される。
+- [x] `packages/ui` が Atomic Design 階層と vanilla-extract 方針の primitives を持つ。
+- [x] Chat UI が assistant-ui runtime adapter 境界を持つ。
+- [x] Admin UI が DataTable / Form / Dialog / Drawer 相当の共通 UI organism を使う。
+- [x] TanStack Query で API state を管理する hook 境界を持つ。
+- [x] API schema / model catalog / tool contract / domain store の既存共有境界を壊さない。
+- [x] TypeScript compilation または repo の型 surface check を実行し、結果を記録する。
+- [x] 未導入の実 AWS 接続や未実施検証は、実施済み扱いせず PR / report に明記する。
+
+## 完了時確認
+
+- PR: https://github.com/tsuji-tomonori/saphnexa/pull/3
+- 受け入れ条件コメント: https://github.com/tsuji-tomonori/saphnexa/pull/3#issuecomment-4569284119
+- セルフレビューコメント: https://github.com/tsuji-tomonori/saphnexa/pull/3#issuecomment-4569285640
+- 作業レポート: `reports/working/20260529-0853-typescript-framework-implementation.md`
 
 ## 検証計画
 
