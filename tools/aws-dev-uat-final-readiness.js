@@ -275,6 +275,7 @@ function evidenceBundleState(path, expectedPaths) {
       artifact_count: 0,
       all_artifacts: [],
       all_artifacts_metadata_matches: false,
+      all_artifacts_scope_matches: false,
       required_artifacts: requiredArtifacts.map((item) => missingRequiredArtifactState(item)),
       required_artifacts_present: false
     };
@@ -292,6 +293,7 @@ function evidenceBundleState(path, expectedPaths) {
       artifact_count_matches: false,
       all_artifacts: [],
       all_artifacts_metadata_matches: false,
+      all_artifacts_scope_matches: false,
       required_artifacts: requiredArtifacts.map((item) => missingRequiredArtifactState(item)),
       required_artifacts_present: false,
       invalid_content: true,
@@ -300,8 +302,11 @@ function evidenceBundleState(path, expectedPaths) {
   }
 
   const artifacts = Array.isArray(bundle.artifacts) ? bundle.artifacts : [];
-  const allArtifactStates = artifacts.map((artifact) => artifactMetadataState(artifact));
+  const expectedArtifactScope = expectedEvidenceBundleArtifactScope(expectedPaths);
+  const expectedArtifactKeys = new Set(expectedArtifactScope.map((artifact) => artifactScopeKey(artifact.kind, artifact.mode, artifact.expected_path)));
+  const allArtifactStates = artifacts.map((artifact) => artifactMetadataState(artifact, expectedArtifactKeys));
   const allArtifactsMetadataMatches = artifacts.length > 0 && allArtifactStates.every((artifact) => artifact.metadata_matches);
+  const allArtifactsScopeMatches = artifacts.length > 0 && allArtifactStates.every((artifact) => artifact.scope_matches);
   const requiredArtifactStates = requiredArtifacts.map((required) => {
     const matchingArtifacts = artifacts.filter((artifact) => artifact.kind === required.kind && artifact.mode === required.mode);
     const expectedPath = resolve(required.expected_path);
@@ -335,6 +340,7 @@ function evidenceBundleState(path, expectedPaths) {
     !artifactCountMatches ||
     artifacts.length === 0 ||
     !allArtifactsMetadataMatches ||
+    !allArtifactsScopeMatches ||
     !requiredArtifactsPresent;
 
   return {
@@ -348,6 +354,7 @@ function evidenceBundleState(path, expectedPaths) {
     artifact_count_matches: artifactCountMatches,
     all_artifacts: allArtifactStates,
     all_artifacts_metadata_matches: allArtifactsMetadataMatches,
+    all_artifacts_scope_matches: allArtifactsScopeMatches,
     required_artifacts: requiredArtifactStates,
     required_artifacts_present: requiredArtifactsPresent,
     invalid_content: invalidContent,
@@ -355,17 +362,19 @@ function evidenceBundleState(path, expectedPaths) {
   };
 }
 
-function artifactMetadataState(artifact) {
+function artifactMetadataState(artifact, expectedArtifactKeys = new Set()) {
   const artifactPath = typeof artifact.path === "string" && artifact.path.length > 0 ? resolve(artifact.path) : null;
   const currentMetadata = artifactPath ? artifactFileMetadata(artifactPath) : { exists: false, size_bytes: null, sha256: null };
   const expectedSha256 = typeof artifact.sha256 === "string" ? artifact.sha256 : null;
   const expectedSizeBytes = Number.isInteger(artifact.size_bytes) ? artifact.size_bytes : null;
   const sha256Matches = currentMetadata.exists && expectedSha256 === currentMetadata.sha256;
   const sizeBytesMatches = currentMetadata.exists && expectedSizeBytes === currentMetadata.size_bytes;
+  const scopeMatches = artifactPath ? expectedArtifactKeys.has(artifactScopeKey(artifact.kind, artifact.mode, artifactPath)) : false;
   return {
     kind: artifact.kind || null,
     mode: artifact.mode || null,
     path: artifactPath,
+    scope_matches: scopeMatches,
     path_exists: currentMetadata.exists,
     expected_sha256: expectedSha256,
     actual_sha256: currentMetadata.sha256,
@@ -377,6 +386,14 @@ function artifactMetadataState(artifact) {
   };
 }
 
+function expectedEvidenceBundleArtifactScope(expectedPaths) {
+  return [
+    ...requiredEvidenceBundleArtifacts(expectedPaths),
+    ...rawOutputExpectedArtifacts("preflight", expectedPaths.preflightRawInputPath),
+    ...rawOutputExpectedArtifacts("validation", expectedPaths.validationRawInputPath)
+  ];
+}
+
 function requiredEvidenceBundleArtifacts(expectedPaths) {
   return [
     { kind: "raw-input", mode: "preflight", expected_path: resolve(expectedPaths.preflightRawInputPath) },
@@ -385,6 +402,28 @@ function requiredEvidenceBundleArtifacts(expectedPaths) {
     { kind: "final-evidence", mode: "validation", expected_path: resolve(expectedPaths.validationEvidencePath) },
     { kind: "execution-bridge", mode: "all", expected_path: resolve(expectedPaths.executionBridgePath) }
   ];
+}
+
+function rawOutputExpectedArtifacts(mode, inputPath) {
+  if (!existsSync(resolve(inputPath))) return [];
+  let input;
+  try {
+    input = readJson(inputPath);
+  } catch {
+    return [];
+  }
+  const commands = Array.isArray(input.capture_provenance?.commands) ? input.capture_provenance.commands : [];
+  return commands
+    .filter((command) => typeof command.output_ref === "string" && command.output_ref.length > 0)
+    .map((command) => ({
+      kind: "raw-output",
+      mode,
+      expected_path: resolve(dirname(inputPath), command.output_ref)
+    }));
+}
+
+function artifactScopeKey(kind, mode, path) {
+  return `${kind || ""}\0${mode || ""}\0${resolve(path || "")}`;
 }
 
 function missingRequiredArtifactState(item) {

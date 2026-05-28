@@ -352,6 +352,47 @@ try {
     "raw output digest mismatch bundle fixture must expose the mismatched raw output digest"
   );
 
+  const outOfScopeBundlePath = join(tmpRoot, "out-of-scope-artifact", "aws_dev_uat_evidence_bundle_manifest.json");
+  const outOfScopeBundleManifest = readJson(bundlePath);
+  const copiedArtifact = outOfScopeBundleManifest.artifacts.find((artifact) => artifact.kind === "raw-input" && artifact.mode === "preflight");
+  outOfScopeBundleManifest.artifacts = [
+    ...outOfScopeBundleManifest.artifacts,
+    { ...copiedArtifact, kind: "unexpected-artifact" }
+  ];
+  outOfScopeBundleManifest.artifact_count = outOfScopeBundleManifest.artifacts.length;
+  writeText(outOfScopeBundlePath, `${JSON.stringify(outOfScopeBundleManifest, null, 2)}\n`);
+  const outOfScopeBundle = buildAwsDevUatFinalReadiness({
+    outputPath: join(tmpRoot, "out-of-scope-artifact-readiness.json"),
+    rawCapturePlanPath: planPath,
+    rawCapturePlan: plan,
+    executionBridgePath: bridgePath,
+    executionBridge: readJson(bridgePath),
+    awsIdentity: authenticatedIdentity(),
+    operatorInputPath,
+    operatorRunbookPath,
+    preflightRawInputPath,
+    validationRawInputPath,
+    preflightEvidencePath,
+    validationEvidencePath,
+    evidenceBundleManifestPath: outOfScopeBundlePath
+  });
+  validateAwsDevUatFinalReadiness(outOfScopeBundle);
+  assert(outOfScopeBundle.blockers.includes("invalid_evidence_bundle_manifest"), "out-of-scope artifact fixture must block readiness");
+  assert(
+    outOfScopeBundle.evidence_bundle_manifest.all_artifacts_metadata_matches === true,
+    "out-of-scope artifact fixture must keep metadata coverage isolated from scope coverage"
+  );
+  assert(
+    outOfScopeBundle.evidence_bundle_manifest.all_artifacts_scope_matches === false,
+    "out-of-scope artifact fixture must fail all artifact scope coverage"
+  );
+  assert(
+    outOfScopeBundle.evidence_bundle_manifest.all_artifacts.some(
+      (item) => item.kind === "unexpected-artifact" && item.scope_matches === false && item.metadata_matches === true
+    ),
+    "out-of-scope artifact fixture must expose the unexpected artifact"
+  );
+
   const ready = buildAwsDevUatFinalReadiness({
     outputPath: join(tmpRoot, "ready-readiness.json"),
     rawCapturePlanPath: planPath,
@@ -375,6 +416,7 @@ try {
   assert(ready.evidence_bundle_manifest.current_git_commit === true, "ready fixture must include current evidence bundle");
   assert(ready.evidence_bundle_manifest.required_artifacts_present === true, "ready fixture must include bundle artifact coverage");
   assert(ready.evidence_bundle_manifest.all_artifacts_metadata_matches === true, "ready fixture must include matching all bundle artifact metadata");
+  assert(ready.evidence_bundle_manifest.all_artifacts_scope_matches === true, "ready fixture must include matching all bundle artifact scope");
   assert(
     ready.evidence_bundle_manifest.required_artifacts.every((item) => item.path_matches === true),
     "ready fixture must include matching bundle artifact paths"

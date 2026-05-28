@@ -61,6 +61,7 @@ export function validateAwsDevUatFinalReadiness(manifest, options = {}) {
     assert(manifest.evidence_bundle_manifest.required_artifacts_present === true, "ready final readiness must have bundle artifact coverage");
     assert(manifest.evidence_bundle_manifest.artifact_count_matches === true, "ready final readiness must have matching bundle artifact count");
     assert(manifest.evidence_bundle_manifest.all_artifacts_metadata_matches === true, "ready final readiness must have all bundle artifact metadata matching current files");
+    assert(manifest.evidence_bundle_manifest.all_artifacts_scope_matches === true, "ready final readiness must have all bundle artifacts in current expected scope");
     assert(
       manifest.evidence_bundle_manifest.required_artifacts.every((item) => item.path_matches === true),
       "ready final readiness must have bundle artifact paths matching current readiness inputs"
@@ -120,7 +121,9 @@ function validateEvidenceBundleManifestState(state) {
   assert(typeof state.artifact_count_matches === "boolean", "bundle manifest artifact count match flag is required");
   assert(Array.isArray(state.all_artifacts), "bundle manifest all artifacts must be an array");
   assert(typeof state.all_artifacts_metadata_matches === "boolean", "bundle manifest all artifact metadata flag is required");
+  assert(typeof state.all_artifacts_scope_matches === "boolean", "bundle manifest all artifact scope flag is required");
   for (const artifact of state.all_artifacts) {
+    assert(typeof artifact.scope_matches === "boolean", "bundle artifact scope match flag is required");
     assert(typeof artifact.path_exists === "boolean", "bundle artifact path existence flag is required");
     assert(typeof artifact.sha256_matches === "boolean", "bundle artifact sha256 match flag is required");
     assert(typeof artifact.size_bytes_matches === "boolean", "bundle artifact size match flag is required");
