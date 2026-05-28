@@ -99,6 +99,12 @@ CloudFront の単一入口に SPA、REST API、AppSync Events、Docusaurus/Allur
 
 - `reports/working/20260528-0937-edge-identity-realtime-binding.md`
 
+## PR
+
+- PR: https://github.com/tsuji-tomonori/saphnexa/pull/2
+- 受け入れ条件確認コメント: https://github.com/tsuji-tomonori/saphnexa/pull/2#issuecomment-4559853715
+- セルフレビューコメント: https://github.com/tsuji-tomonori/saphnexa/pull/2#issuecomment-4559855716
+
 ## PR レビュー観点
 
 - React に execute-api / appsync-api / appsync-realtime-api の実ドメインを入れていないこと。
@@ -114,4 +120,4 @@ CloudFront の単一入口に SPA、REST API、AppSync Events、Docusaurus/Allur
 
 ## 状態
 
-in_progress
+done
