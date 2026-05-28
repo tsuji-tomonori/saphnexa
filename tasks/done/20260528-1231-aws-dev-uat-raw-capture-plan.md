@@ -1,6 +1,6 @@
 # AWS dev/UAT raw capture plan 追加
 
-状態: in_progress
+状態: done
 
 ## 背景
 
@@ -36,12 +36,12 @@ preflight / validation の raw capture plan を生成・検査する CLI を追�
 
 ## 受け入れ条件
 
-- [ ] preflight / validation の raw capture plan を生成できる。
-- [ ] raw capture plan checker が command id、output ref、build/final command の整合を検査する。
-- [ ] npm scripts / Taskfile / CI / external action plan / docs が raw capture plan と同期している。
-- [ ] plan 生成・検査は AWS 外部状態を変更しない。
-- [ ] `git diff --check`、targeted checks、`npm run verify` が pass する。
-- [ ] PR に受け入れ条件確認とセルフレビューコメントを追加できる。
+- [x] preflight / validation の raw capture plan を生成できる。
+- [x] raw capture plan checker が command id、output ref、build/final command の整合を検査する。
+- [x] npm scripts / Taskfile / CI / external action plan / docs が raw capture plan と同期している。
+- [x] plan 生成・検査は AWS 外部状態を変更しない。
+- [x] `git diff --check`、targeted checks、`npm run verify` が pass する。
+- [x] PR に受け入れ条件確認とセルフレビューコメントを追加できる。
 
 ## 検証計画
 
@@ -63,3 +63,27 @@ preflight / validation の raw capture plan を生成・検査する CLI を追�
 
 - plan は実行手順の機械化であり、実 AWS output の取得や真正性を証明しない。
 - AWS credentials がないため、実 dev/UAT final evidence の作成は引き続き未実施である。
+
+## 完了記録
+
+- PR: https://github.com/tsuji-tomonori/saphnexa/pull/2
+- 実装 commit: `6680a5d`
+- 受け入れ条件確認コメント: https://github.com/tsuji-tomonori/saphnexa/pull/2#issuecomment-4560663863
+- セルフレビューコメント: https://github.com/tsuji-tomonori/saphnexa/pull/2#issuecomment-4560665872
+- 作業レポート: `reports/working/20260528-1231-aws-dev-uat-raw-capture-plan.md`
+- 検証:
+  - `npm run aws:dev-uat:raw-capture-plan:build`: pass
+  - `npm run aws:dev-uat:raw-capture-plan:check`: pass
+  - `node tools/build-aws-dev-uat-raw-capture-plan.js --env dev --stack-name saphnexa-dev-app --run-id dev-raw-capture --output /tmp/saphnexa-aws-dev-uat-raw-capture-plan.json`: pass
+  - `node tools/check-aws-dev-uat-raw-capture-plan.js /tmp/saphnexa-aws-dev-uat-raw-capture-plan.json`: pass
+  - `npm run acceptance:external-actions:check`: pass
+  - `npm run ci:check`: pass
+  - `npm run docs:check`: pass
+  - `npm run aws:dev-uat:evidence:fixture:check`: pass
+  - `npm run aws:dev-uat:execution-bridge:check`: pass
+  - `npm run acceptance:package:check`: pass
+  - `git diff --check`: pass
+  - `npm run verify`: pass
+- 未実施:
+  - 実 AWS dev/UAT deploy / migration / publish / E2E / 性能 / RAG品質評価は AWS credentials と実 raw output がないため未実施。
+  - `aws sts get-caller-identity --output json`: credentials 未設定で fail。
