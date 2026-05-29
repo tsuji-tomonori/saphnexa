@@ -1,6 +1,7 @@
-import { useCallback, useMemo, useState } from "react";
+import { useCallback, useState } from "react";
 import { apiPostOperation, apiRoutes } from "@saphnexa/api-client";
 import { AppShell } from "@saphnexa/ui";
+import { AssistantRuntimeBoundary } from "../features/chat/AssistantRuntimeBoundary";
 import { CitationDrawerPanel } from "../features/chat/CitationDrawerPanel";
 import { ChatSessionNav } from "../features/chat/ChatSessionNav";
 import { MessageComposer } from "../features/chat/MessageComposer";
@@ -9,7 +10,7 @@ import { useChatSessions } from "../hooks/useChatSessions";
 import { useMe } from "../hooks/useMe";
 import { useMessageEvents } from "../hooks/useMessageEvents";
 import { useMessageRealtime } from "../hooks/useMessageRealtime";
-import { createSaphnexaAssistantAdapter } from "../lib/assistantRuntime";
+import { submitAssistantQuestion } from "../lib/assistantRuntime";
 
 export function ChatPage() {
   const me = useMe();
@@ -22,7 +23,6 @@ export function ChatPage() {
   const activeChatId = selectedChatId ?? chats[0]?.chat_id ?? null;
   const events = useMessageEvents(activeChatId, messageId);
   const csrfToken = me.data?.csrf_token ?? "";
-  const assistantAdapter = useMemo(() => (activeChatId ? createSaphnexaAssistantAdapter(csrfToken, activeChatId) : null), [activeChatId, csrfToken]);
   const refetchMessageEvents = useCallback(() => {
     void events.refetch();
   }, [events.refetch]);
@@ -35,7 +35,7 @@ export function ChatPage() {
 
   async function submit(question: string) {
     if (!activeChatId) return;
-    const accepted = await apiPostOperation("submitQuestion", apiRoutes.submitQuestion(activeChatId), { question }, csrfToken);
+    const accepted = await submitAssistantQuestion({ chatId: activeChatId, question, csrfToken });
     setMessageId(accepted.message_id);
     const ticket = await apiPostOperation("issueWsTicket", apiRoutes.issueWsTicket(), { chat_id: activeChatId, message_id: accepted.message_id }, csrfToken);
     setWsTicket(ticket.ticket);
@@ -47,10 +47,12 @@ export function ChatPage() {
       className="sx-chat-shell"
       navigation={<ChatSessionNav chats={chats} selectedChatId={activeChatId} onSelect={setSelectedChatId} />}
     >
-      <MessageComposer csrfToken={csrfToken} onSubmit={submit} />
-      <p role="status">リアルタイム接続: {realtime.status}</p>
-      <MessageEventsPanel events={events.data?.events ?? []} />
-      <CitationDrawerPanel open={Boolean(assistantAdapter)} events={events.data?.events ?? []} />
+      <AssistantRuntimeBoundary csrfToken={csrfToken} chatId={activeChatId}>
+        <MessageComposer csrfToken={csrfToken} onSubmit={submit} />
+        <p role="status">リアルタイム接続: {realtime.status}</p>
+        <MessageEventsPanel events={events.data?.events ?? []} />
+        <CitationDrawerPanel open={Boolean(activeChatId && csrfToken)} events={events.data?.events ?? []} />
+      </AssistantRuntimeBoundary>
     </AppShell>
   );
 }

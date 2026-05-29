@@ -9,7 +9,12 @@ checkFile("ChatApp", "apps/web/src/chat/ChatApp.tsx", [
 ]);
 checkFile("ChatPage", "apps/web/src/pages/ChatPage.tsx", [
   rule("main landmark", (body) => body.includes("className=\"sx-chat-shell\"")),
-  rule("assistant runtime adapter", (body) => body.includes("createSaphnexaAssistantAdapter"))
+  rule("assistant runtime provider boundary", (body) => body.includes("AssistantRuntimeBoundary"))
+]);
+checkFile("AssistantRuntimeBoundary", "apps/web/src/features/chat/AssistantRuntimeBoundary.tsx", [
+  rule("assistant runtime provider", (body) => body.includes("AssistantRuntimeProvider")),
+  rule("assistant local runtime", (body) => body.includes("useLocalRuntime")),
+  rule("empty token guard", (body) => body.includes("!props.chatId || !props.csrfToken"))
 ]);
 checkFile("ChatSessionNav", "apps/web/src/features/chat/ChatSessionNav.tsx", [
   rule("labelled navigation", (body) => body.includes("<nav aria-label=\"チャット一覧\">")),

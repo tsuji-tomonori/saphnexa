@@ -15,7 +15,13 @@ for (const file of files) {
     assert(body.includes("className=\"sx-chat-shell\""), "ChatPage must expose chat shell landmark through AppShell");
     assert(body.includes("useChatSessions"), "ChatPage must use TanStack Query chat hook");
     assert(body.includes("useMessageEvents"), "ChatPage must use TanStack Query message events hook");
-    assert(body.includes("createSaphnexaAssistantAdapter"), "ChatPage must bind assistant-ui runtime adapter boundary");
+    assert(body.includes("AssistantRuntimeBoundary"), "ChatPage must bind assistant-ui runtime provider boundary");
+    assert(body.includes("submitAssistantQuestion"), "ChatPage must submit through assistant route helper boundary");
+  }
+  if (file.includes("AssistantRuntimeBoundary")) {
+    assert(body.includes("AssistantRuntimeProvider"), "AssistantRuntimeBoundary must provide assistant-ui runtime");
+    assert(body.includes("useLocalRuntime"), "AssistantRuntimeBoundary must create a local assistant-ui runtime");
+    assert(body.includes("createSaphnexaAssistantAdapter"), "AssistantRuntimeBoundary must bind the Saphnexa chat model adapter");
   }
   if (file.includes("ChatSessionNav")) {
     assert(body.includes("<nav") && body.includes("aria-label=\"チャット一覧\""), "ChatApp must expose labelled chat navigation");

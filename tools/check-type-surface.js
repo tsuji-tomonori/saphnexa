@@ -83,6 +83,7 @@ for (const file of [
   "apps/workers/src/event-publisher.ts",
   "apps/web/src/main.tsx",
   "apps/web/src/pages/ChatPage.tsx",
+  "apps/web/src/features/chat/AssistantRuntimeBoundary.tsx",
   "apps/web/src/pages/AdminDashboardPage.tsx",
   "packages/ui/src/templates/AppShell.tsx"
 ]) {
@@ -179,7 +180,6 @@ for (const token of [
   'apiGetOperation("listChatSessions"',
   'apiGetOperation("listMessageEvents"',
   'apiGetOperation("listPublishedArtifacts"',
-  'apiPostOperation("submitQuestion"',
   'apiPostOperation("issueWsTicket"',
   'apiPostOperation("startEvaluationRun"'
 ]) {
@@ -188,11 +188,17 @@ for (const token of [
 const webRealtimeClientTs = readText("apps/web/src/lib/realtimeClient.ts");
 const webRealtimeHookTs = readText("apps/web/src/hooks/useMessageRealtime.ts");
 const webChatPageTs = readText("apps/web/src/pages/ChatPage.tsx");
+const webAssistantRuntimeTs = readText("apps/web/src/lib/assistantRuntime.ts");
+const webAssistantRuntimeBoundaryTs = readText("apps/web/src/features/chat/AssistantRuntimeBoundary.tsx");
 assert(webRealtimeClientTs.includes("endpoint = \"/event/realtime\""), "Web realtime client must default to same-origin /event/realtime");
 assert(webRealtimeClientTs.includes("ticket: input.ticket") && webRealtimeClientTs.includes("channels: input.channels"), "Web realtime client must authorize subscriptions with payload ticket and channels");
 assert(!webRealtimeClientTs.includes("ticket="), "Web realtime client must not put ticket in WebSocket URL query");
 assert(!webRealtimeHookTs.includes("VITE_APPSYNC_EVENTS_URL"), "Web realtime hook must not require AWS service domain env");
 assert(webChatPageTs.includes("setWsChannels(ticket.channels)") && webChatPageTs.includes("events.refetch()"), "ChatPage must use ticket response channels and REST refetch after realtime notification");
+assert(webChatPageTs.includes("AssistantRuntimeBoundary") && webChatPageTs.includes("submitAssistantQuestion"), "ChatPage must connect assistant runtime provider and route helper submit boundary");
+assert(webAssistantRuntimeTs.includes("submitAssistantQuestion") && webAssistantRuntimeTs.includes("apiPostOperation(") && webAssistantRuntimeTs.includes("\"submitQuestion\""), "assistant runtime must submit through generated operation helper");
+assert(webAssistantRuntimeBoundaryTs.includes("AssistantRuntimeProvider") && webAssistantRuntimeBoundaryTs.includes("useLocalRuntime"), "assistant runtime boundary must provide local assistant-ui runtime");
+assert(webAssistantRuntimeBoundaryTs.includes("createSaphnexaAssistantAdapter"), "assistant runtime boundary must bind the Saphnexa chat model adapter");
 
 const toolContractTs = readText("packages/tool-contract/src/tools.ts");
 assert(toolContractTs.includes("export interface ToolContract"), "Tool contract TS source must export ToolContract");

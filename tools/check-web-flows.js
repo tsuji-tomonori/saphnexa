@@ -15,6 +15,7 @@ const chatNavSource = readText("apps/web/src/features/chat/ChatSessionNav.tsx");
 const composerSource = readText("apps/web/src/features/chat/MessageComposer.tsx");
 const eventsPanelSource = readText("apps/web/src/features/chat/MessageEventsPanel.tsx");
 const citationDrawerSource = readText("apps/web/src/features/chat/CitationDrawerPanel.tsx");
+const assistantRuntimeBoundarySource = readText("apps/web/src/features/chat/AssistantRuntimeBoundary.tsx");
 const realtimeHookSource = readText("apps/web/src/hooks/useMessageRealtime.ts");
 const realtimeClientSource = readText("apps/web/src/lib/realtimeClient.ts");
 const adminSource = readText("apps/web/src/admin/AdminApp.tsx");
@@ -59,7 +60,8 @@ scenario("chat UI source contract", () => {
     "useMessageEvents",
     "useMessageRealtime",
     "CitationDrawerPanel",
-    "createSaphnexaAssistantAdapter",
+    "AssistantRuntimeBoundary",
+    "submitAssistantQuestion",
     "setMessageId(accepted.message_id)",
     "setWsChannels(ticket.channels)",
     "events.refetch()"
@@ -98,9 +100,18 @@ scenario("chat UI source contract", () => {
     "@assistant-ui/react",
     "apiRoutes.submitQuestion",
     "apiPostOperation",
-    "\"submitQuestion\""
+    "\"submitQuestion\"",
+    "submitAssistantQuestion"
   ]) {
     assert(assistantRuntimeSource.includes(token), `assistant runtime missing token: ${token}`);
+  }
+  for (const token of [
+    "AssistantRuntimeProvider",
+    "useLocalRuntime",
+    "createSaphnexaAssistantAdapter",
+    "!props.chatId || !props.csrfToken"
+  ]) {
+    assert(assistantRuntimeBoundarySource.includes(token), `assistant runtime boundary missing token: ${token}`);
   }
   for (const token of [
     "CitationDrawer",
