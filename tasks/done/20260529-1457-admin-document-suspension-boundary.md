@@ -98,6 +98,11 @@ Admin 文書管理から文書を公開停止できる API/UI 境界を追加す
 - この slice は local/API 境界であり、実 S3 object delete、Bedrock KB / S3 Vectors delete、保持期間後 lifecycle の証跡ではない。
 - `deleted` は local source gate の回答対象外状態として扱うが、実 retrieval index からの除外は AWS dev/UAT または別 slice で確認が必要。
 
+## PR コメント
+
+- 受け入れ条件確認: https://github.com/tsuji-tomonori/saphnexa/pull/3#issuecomment-4571360616
+- セルフレビュー結果: https://github.com/tsuji-tomonori/saphnexa/pull/3#issuecomment-4571360612
+
 ## 状態
 
-in_progress
+done
