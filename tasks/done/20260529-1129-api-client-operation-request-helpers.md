@@ -1,6 +1,6 @@
 # API client operation request helpers
 
-- 状態: doing
+- 状態: done
 - タスク種別: 機能追加
 - 作成日時: 2026-05-29 11:29 JST
 - 対象ブランチ: `codex/typescript-framework-implementation`
@@ -72,6 +72,11 @@ API route contract は変えない。local verification docs に operation-aware
 - Web 側が generated response 型に移行し、手書き generic が残っていないこと。
 - CSRF token は既存の header/body injection 境界を壊していないこと。
 - 実 HTTP や runtime validation を過大に完了扱いしていないこと。
+
+## PR コメント
+
+- 受け入れ条件確認: https://github.com/tsuji-tomonori/saphnexa/pull/3#issuecomment-4569991123
+- セルフレビュー: https://github.com/tsuji-tomonori/saphnexa/pull/3#issuecomment-4569991780
 
 ## リスク・制約
 
