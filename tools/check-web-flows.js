@@ -212,6 +212,8 @@ scenario("admin UI source contract", () => {
   assert(documentLifecycleHookSource.includes("apiPostOperation(\"createDocumentVersion\""), "useCreateDocumentVersion hook must use generated createDocumentVersion operation helper");
   assert(documentLifecycleHookSource.includes("apiRoutes.activateDocumentVersion(input.document_id, input.version_id)"), "useActivateDocumentVersion hook must use activateDocumentVersion route helper");
   assert(documentLifecycleHookSource.includes("apiPostOperation(\"activateDocumentVersion\""), "useActivateDocumentVersion hook must use generated activateDocumentVersion operation helper");
+  assert(documentLifecycleHookSource.includes("apiRoutes.updateDocumentAcl(input.document_id, input.version_id)"), "useUpdateDocumentAcl hook must use updateDocumentAcl route helper");
+  assert(documentLifecycleHookSource.includes("apiPostOperation(\"updateDocumentAcl\""), "useUpdateDocumentAcl hook must use generated updateDocumentAcl operation helper");
   assert(documentLifecycleHookSource.includes("apiRoutes.suspendDocument(input.document_id)"), "useSuspendDocument hook must use suspendDocument route helper");
   assert(documentLifecycleHookSource.includes("apiPostOperation(\"suspendDocument\""), "useSuspendDocument hook must use generated suspendDocument operation helper");
   assert(documentLifecycleHookSource.includes("invalidateQueries({ queryKey: [\"admin-document-detail\", input.document_id] })"), "document lifecycle hook must refresh document detail query");
@@ -245,7 +247,9 @@ scenario("admin UI source contract", () => {
     "文書ACL一覧",
     "文書取り込みジョブ一覧",
     "PDF実アップロードとStep Functions実行: 未接続",
+    "Cognito group反映、Bedrock KB / S3 Vectors metadata再同期: 未接続",
     "物理削除、S3 object delete、Bedrock KB / S3 Vectors delete: 未接続",
+    "disabled={!props.csrfToken || !documentId || !aclVersionId || !aclScopeId || updateDocumentAcl.isPending}",
     "disabled={!props.csrfToken || version.status !== \"succeeded\" || activateVersion.isPending}",
     "disabled={!props.csrfToken || document.status === \"deleted\" || suspendDocument.isPending}",
     "role=\"alert\""
@@ -371,6 +375,11 @@ scenario("admin local API flow", () => {
   assert(api.request("user-owner", "activateDocumentVersion", { csrf_token: "csrf-user-owner", document_id: registered.body.document_id, version_id: "ver-flow-complete" }).status === 403, "general user must not activate document versions");
   const activatedVersion = api.request("admin-1", "activateDocumentVersion", { csrf_token: csrf, document_id: registered.body.document_id, version_id: "ver-flow-complete" });
   assert(activatedVersion.status === 200 && activatedVersion.body.version.status === "active", "completed document version must activate");
+  assert(api.request("user-owner", "updateDocumentAcl", { csrf_token: "csrf-user-owner", document_id: registered.body.document_id, version_id: "ver-flow-complete", acl_scope_id: "group:block" }).status === 403, "general user must not update document ACL");
+  const aclUpdated = api.request("admin-1", "updateDocumentAcl", { csrf_token: csrf, document_id: registered.body.document_id, version_id: "ver-flow-complete", acl_scope_id: "group:legal" });
+  assert(aclUpdated.status === 200, "admin document ACL update failed");
+  assert(aclUpdated.body.document.acl_entries.some((entry) => entry.version_id === "ver-flow-complete" && entry.acl_scope_id === "group:legal"), "updated ACL scope missing from document detail");
+  assert(!aclUpdated.body.document.acl_entries.some((entry) => entry.version_id === "ver-flow-complete" && entry.acl_scope_id === "group:admin"), "old ACL scope must be replaced for updated version");
   assert(api.request("user-owner", "suspendDocument", { csrf_token: "csrf-user-owner", document_id: registered.body.document_id }).status === 403, "general user must not suspend documents");
   const suspended = api.request("admin-1", "suspendDocument", { csrf_token: csrf, document_id: registered.body.document_id });
   assert(suspended.status === 200 && suspended.body.document.status === "deleted", "admin document suspension failed");

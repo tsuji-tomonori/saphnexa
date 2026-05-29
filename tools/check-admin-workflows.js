@@ -51,6 +51,10 @@ const activated = api.request("admin-1", "activateDocumentVersion", { csrf_token
 assert(activated.status === 200, "document version activation must succeed");
 assert(api.store.state.document_versions.find((item) => item.document_id === "doc-versioned" && item.version_id === "ver-2").status === "active", "new version must be active");
 assert(api.store.state.document_versions.find((item) => item.document_id === "doc-versioned" && item.version_id === "ver-1").status === "archived", "old version must be archived");
+const aclUpdated = api.request("admin-1", "updateDocumentAcl", { csrf_token: adminCsrf, document_id: "doc-versioned", version_id: "ver-2", acl_scope_id: "group:legal" });
+assert(aclUpdated.status === 200, "document ACL update must succeed");
+assert(aclUpdated.body.document.acl_entries.some((entry) => entry.version_id === "ver-2" && entry.acl_scope_id === "group:legal"), "updated document ACL entry missing");
+assert(!aclUpdated.body.document.acl_entries.some((entry) => entry.version_id === "ver-2" && entry.acl_scope_id === "admin"), "document ACL update must replace old version ACL entry");
 const suspended = api.request("admin-1", "suspendDocument", { csrf_token: adminCsrf, document_id: "doc-versioned" });
 assert(suspended.status === 200, "document suspension must succeed");
 assert(suspended.body.document.status === "deleted", "suspended document must be deleted");
@@ -80,7 +84,7 @@ assert(api.request("admin-1", "issueArtifactAccessCookie", { csrf_token: adminCs
 for (const eventName of ["admin.user_import.updated", "admin.ingestion.updated", "admin.evaluation.updated", "admin.artifact.published"]) {
   assert(api.store.state.admin_events.some((event) => event.event_name === eventName), `admin event missing: ${eventName}`);
 }
-for (const category of ["admin_operation", "document_publish", "artifact_access", "chat_share", "tools_execution", "evaluation"]) {
+for (const category of ["admin_operation", "document_publish", "document_acl", "artifact_access", "chat_share", "tools_execution", "evaluation"]) {
   assert(api.store.state.audit_events.some((event) => event.category === category), `audit category missing: ${category}`);
 }
 

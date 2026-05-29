@@ -242,6 +242,7 @@ for (const token of [
   'apiPostOperation("createDocument"',
   'apiPostOperation("createDocumentVersion"',
   'apiPostOperation("activateDocumentVersion"',
+  'apiPostOperation("updateDocumentAcl"',
   'apiPostOperation("suspendDocument"',
   'apiPostOperation("retryIngestionJob"',
   'apiPostOperation("issueWsTicket"',
@@ -423,6 +424,7 @@ for (const token of [
   "getIngestionJob",
   "createDocumentVersion",
   "activateDocumentVersion",
+  "updateDocumentAcl",
   "suspendDocument"
 ]) {
   assert(storeTypesTs.includes(token), `Domain store TS source missing ${token}`);
@@ -477,6 +479,7 @@ for (const token of [
   "getDocument",
   "createDocumentVersion",
   "activateDocumentVersion",
+  "updateDocumentAcl",
   "suspendDocument",
   "getIngestionJob",
   'resultTable: "users"',

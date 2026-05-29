@@ -479,6 +479,114 @@ const dsqlOperationMappings = {
       return { version: firstRow(rows) };
     }
   },
+  updateDocumentAcl: {
+    notFoundErrorCode: "DSQL_DOCUMENT_VERSION_NOT_FOUND",
+    plan(request) {
+      return {
+        operationId: "updateDocumentAcl",
+        resultTable: "documents",
+        sql: `
+          WITH actor AS (
+            SELECT tenant_id
+            FROM users
+            WHERE user_id = :actor_id
+              AND role = 'admin'
+              AND status = 'active'
+          ),
+          target_version AS (
+            SELECT dv.tenant_id, dv.document_id, dv.version_id
+            FROM document_versions dv
+            JOIN documents d
+              ON d.tenant_id = dv.tenant_id
+             AND d.document_id = dv.document_id
+             AND d.status <> 'deleted'
+            JOIN actor a
+              ON a.tenant_id = dv.tenant_id
+            WHERE dv.document_id = :document_id
+              AND dv.version_id = :version_id
+              AND dv.status <> 'deleted'
+          ),
+          delete_existing_acl AS (
+            DELETE FROM document_acl_entries acl
+             USING target_version tv
+             WHERE acl.tenant_id = tv.tenant_id
+               AND acl.document_id = tv.document_id
+               AND acl.version_id = tv.version_id
+            RETURNING acl.acl_scope_id
+          ),
+          insert_acl AS (
+            INSERT INTO document_acl_entries (
+              tenant_id, document_id, version_id, acl_scope_id, effect
+            )
+            SELECT
+              tv.tenant_id,
+              tv.document_id,
+              tv.version_id,
+              :acl_scope_id,
+              'allow'
+            FROM target_version tv
+            RETURNING *
+          )
+          SELECT
+            d.tenant_id,
+            d.document_id,
+            d.title,
+            d.status,
+            d.created_by_user_id,
+            d.created_at,
+            d.updated_at,
+            COALESCE(
+              json_agg(DISTINCT dv.*) FILTER (WHERE dv.version_id IS NOT NULL),
+              '[]'::json
+            ) AS versions,
+            COALESCE(
+              json_agg(DISTINCT j.*) FILTER (WHERE j.job_id IS NOT NULL),
+              '[]'::json
+            ) AS ingestion_jobs,
+            COALESCE(
+              json_agg(DISTINCT acl.*) FILTER (WHERE acl.acl_scope_id IS NOT NULL),
+              '[]'::json
+            ) AS acl_entries
+          FROM documents d
+          JOIN target_version tv
+            ON tv.tenant_id = d.tenant_id
+           AND tv.document_id = d.document_id
+          LEFT JOIN document_versions dv
+            ON dv.tenant_id = d.tenant_id
+           AND dv.document_id = d.document_id
+          LEFT JOIN ingestion_jobs j
+            ON j.tenant_id = d.tenant_id
+           AND j.document_id = d.document_id
+          LEFT JOIN document_acl_entries acl
+            ON acl.tenant_id = d.tenant_id
+           AND acl.document_id = d.document_id
+          GROUP BY d.tenant_id, d.document_id, d.title, d.status, d.created_by_user_id, d.created_at, d.updated_at
+          LIMIT 1
+        `,
+        params: {
+          actor_id: request.actorId,
+          document_id: request.input.document_id,
+          version_id: request.input.version_id,
+          acl_scope_id: request.input.acl_scope_id
+        }
+      };
+    },
+    map(rows) {
+      const row = firstRow(rows) as DbRow<"documents"> & {
+        versions?: unknown;
+        ingestion_jobs?: unknown;
+        acl_entries?: unknown;
+      };
+      return {
+        document: {
+          ...row,
+          versions: arrayValue(row.versions),
+          ingestion_jobs: arrayValue(row.ingestion_jobs),
+          acl_entries: arrayValue(row.acl_entries)
+        }
+      };
+    }
+  },
   suspendDocument: {
     notFoundErrorCode: "DSQL_DOCUMENT_NOT_FOUND",
     plan(request) {

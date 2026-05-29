@@ -208,6 +208,7 @@ function successResponseSchema(route: ApiRoute) {
     getDocument: objectSchema(["document"], { document: documentDetailSchema() }),
     createDocumentVersion: objectSchema(["document_id", "version_id", "job_id", "raw_s3_uri"], { document_id: stringSchema(), version_id: stringSchema(), job_id: stringSchema(), raw_s3_uri: stringSchema(), idempotent: booleanSchema() }),
     activateDocumentVersion: objectSchema(["version"], { version: documentVersionSchema() }),
+    updateDocumentAcl: objectSchema(["document"], { document: documentDetailSchema() }),
     suspendDocument: objectSchema(["document"], { document: documentDetailSchema() }),
     getIngestionJob: objectSchema(["job"], { job: ingestionJobSchema() }),
     retryIngestionJob: objectSchema(["job"], { job: ingestionJobSchema() }),

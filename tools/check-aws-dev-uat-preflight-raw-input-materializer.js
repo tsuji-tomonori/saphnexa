@@ -23,7 +23,7 @@ try {
   const rawInput = materialize(scaffoldPath, outputPath);
   assert(rawInput.aws.account_id_parts.join("") === sampleAccountId, "preflight materializer must preserve AWS account from STS");
   assert(rawInput.cloudformation.outputs.ApiEndpoint === "https://api.uat.saphnexa.awsapps.com", "preflight materializer must map CloudFormation outputs");
-  assert(rawInput.hono_openapi.route_count === 39, "preflight materializer must map OpenAPI route count");
+  assert(rawInput.hono_openapi.route_count === 40, "preflight materializer must map OpenAPI route count");
   assert(rawInput.dsql_flyway.checksum_status === "matched", "preflight materializer must map Flyway checksum");
   assert(!rawInput.cloudformation.outputs.AgentCoreRuntimeArn.includes("sample-account"), "preflight materializer must derive final AgentCore ARN from account id");
   checkAwsDevUatRawOutputs("preflight", outputPath, { allowFixtureText: true });

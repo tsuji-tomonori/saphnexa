@@ -18,7 +18,7 @@ accepted
 
 ## 根拠
 
-- API 39 件と Tools API 6 件は contract metadata で件数・path・CSRF・error schema を検査できる。
+- API 40 件と Tools API 6 件は contract metadata で件数・path・CSRF・error schema を検査できる。
 - chat は `chat_sessions` と `chat_participants` に分離し、owner/viewer の認可差をローカル統合テストで確認できる。
 - RAG fixture は KB retrieve、ACL check、reference expansion、evidence pack、citation format の Tools 境界を必ず通る。
 - 軽量通知は event id/seq/detail URL のみとし、回答本文や chunk 本文を含めない。

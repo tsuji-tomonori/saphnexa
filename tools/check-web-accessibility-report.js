@@ -91,11 +91,14 @@ checkFile("DocumentVersionLifecyclePanel", "apps/web/src/features/admin/Document
   rule("section label", (body) => body.includes("aria-label=\"文書版ライフサイクル\"")),
   rule("lookup form label", (body) => body.includes("aria-label=\"文書詳細検索フォーム\"")),
   rule("version form label", (body) => body.includes("aria-label=\"文書版追加フォーム\"")),
+  rule("acl form label", (body) => body.includes("aria-label=\"文書ACL更新フォーム\"")),
   rule("field labels", (body) => body.includes("label=\"文書ID\"") && body.includes("label=\"PDFファイル名\"")),
   rule("pending status", (body) => body.includes("<p role=\"status\">文書版の状態を更新しています</p>")),
   rule("honest ingestion state", (body) => body.includes("PDF実アップロードとStep Functions実行: 未接続")),
+  rule("honest acl sync state", (body) => body.includes("Cognito group反映、Bedrock KB / S3 Vectors metadata再同期: 未接続")),
   rule("honest physical delete state", (body) => body.includes("物理削除、S3 object delete、Bedrock KB / S3 Vectors delete: 未接続")),
   rule("activation disabled state", (body) => body.includes("disabled={!props.csrfToken || version.status !== \"succeeded\" || activateVersion.isPending}")),
+  rule("acl update disabled state", (body) => body.includes("disabled={!props.csrfToken || !documentId || !aclVersionId || !aclScopeId || updateDocumentAcl.isPending}")),
   rule("suspend disabled state", (body) => body.includes("disabled={!props.csrfToken || document.status === \"deleted\" || suspendDocument.isPending}")),
   rule("error alert", (body) => body.includes("role=\"alert\""))
 ]);

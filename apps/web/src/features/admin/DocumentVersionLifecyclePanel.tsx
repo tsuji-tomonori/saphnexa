@@ -3,7 +3,13 @@ import { useState } from "react";
 import { Controller, useForm } from "react-hook-form";
 import { z } from "zod";
 import { Button, DataTable, Dialog, FormField, Input, StatusBadge } from "@saphnexa/ui";
-import { useActivateDocumentVersion, useCreateDocumentVersion, useDocumentDetail, useSuspendDocument } from "../../hooks/useDocumentLifecycle";
+import {
+  useActivateDocumentVersion,
+  useCreateDocumentVersion,
+  useDocumentDetail,
+  useSuspendDocument,
+  useUpdateDocumentAcl
+} from "../../hooks/useDocumentLifecycle";
 
 const documentLookupSchema = z.object({
   document_id: z.string().min(1, "文書IDは必須です")
@@ -16,8 +22,14 @@ const versionSchema = z.object({
   acl_scope_id: z.string().optional()
 });
 
+const aclSchema = z.object({
+  version_id: z.string().min(1, "文書版IDは必須です"),
+  acl_scope_id: z.string().min(1, "ACL scopeは必須です")
+});
+
 type DocumentLookupValues = z.infer<typeof documentLookupSchema>;
 type VersionValues = z.infer<typeof versionSchema>;
+type AclValues = z.infer<typeof aclSchema>;
 
 export function DocumentVersionLifecyclePanel(props: { csrfToken: string }) {
   const lookupForm = useForm<DocumentLookupValues>({
@@ -28,14 +40,22 @@ export function DocumentVersionLifecyclePanel(props: { csrfToken: string }) {
     resolver: zodResolver(versionSchema),
     defaultValues: { version_id: "", version_label: "", file_name: "", acl_scope_id: "" }
   });
+  const aclForm = useForm<AclValues>({
+    resolver: zodResolver(aclSchema),
+    defaultValues: { version_id: "", acl_scope_id: "" }
+  });
   const [documentId, setDocumentId] = useState("");
   const lookupDocumentId = lookupForm.watch("document_id").trim();
+  const aclVersionId = aclForm.watch("version_id").trim();
+  const aclScopeId = aclForm.watch("acl_scope_id").trim();
   const detail = useDocumentDetail(documentId);
   const createVersion = useCreateDocumentVersion(props.csrfToken);
   const activateVersion = useActivateDocumentVersion(props.csrfToken);
+  const updateDocumentAcl = useUpdateDocumentAcl(props.csrfToken);
   const suspendDocument = useSuspendDocument(props.csrfToken);
   const document = detail.data?.document;
-  const errorMessage = errorText(detail.error) || errorText(createVersion.error) || errorText(activateVersion.error) || errorText(suspendDocument.error);
+  const errorMessage =
+    errorText(detail.error) || errorText(createVersion.error) || errorText(activateVersion.error) || errorText(updateDocumentAcl.error) || errorText(suspendDocument.error);
 
   function submitLookup(values: DocumentLookupValues) {
     setDocumentId(values.document_id.trim());
@@ -45,6 +65,12 @@ export function DocumentVersionLifecyclePanel(props: { csrfToken: string }) {
     if (!documentId) return;
     await createVersion.mutateAsync({ document_id: documentId, ...values });
     versionForm.reset({ version_id: "", version_label: "", file_name: "", acl_scope_id: "" });
+  }
+
+  async function submitAcl(values: AclValues) {
+    if (!documentId) return;
+    await updateDocumentAcl.mutateAsync({ document_id: documentId, version_id: values.version_id, acl_scope_id: values.acl_scope_id });
+    aclForm.reset({ version_id: "", acl_scope_id: "" });
   }
 
   return (
@@ -122,6 +148,33 @@ export function DocumentVersionLifecyclePanel(props: { csrfToken: string }) {
               <p role="status">PDF実アップロードとStep Functions実行: 未接続</p>
               <Button type="submit" disabled={!props.csrfToken || !documentId || createVersion.isPending}>文書版追加</Button>
             </form>
+            <form aria-label="文書ACL更新フォーム" onSubmit={aclForm.handleSubmit(submitAcl)}>
+              <Controller
+                control={aclForm.control}
+                name="version_id"
+                render={({ field, fieldState }) => (
+                  <FormField label="ACL更新対象 文書版ID" htmlFor="lifecycle-acl-version-id" help={fieldState.error?.message}>
+                    <Input id="lifecycle-acl-version-id" value={field.value} onChange={field.onChange} />
+                  </FormField>
+                )}
+              />
+              <Controller
+                control={aclForm.control}
+                name="acl_scope_id"
+                render={({ field, fieldState }) => (
+                  <FormField label="更新後 ACL scope" htmlFor="lifecycle-acl-update-scope" help={fieldState.error?.message}>
+                    <Input id="lifecycle-acl-update-scope" value={field.value} onChange={field.onChange} />
+                  </FormField>
+                )}
+              />
+              <p role="status">Cognito group反映、Bedrock KB / S3 Vectors metadata再同期: 未接続</p>
+              <Button
+                type="submit"
+                disabled={!props.csrfToken || !documentId || !aclVersionId || !aclScopeId || updateDocumentAcl.isPending}
+              >
+                ACL更新
+              </Button>
+            </form>
             <DataTable
               caption="文書版一覧"
               empty="文書版はありません"
@@ -171,7 +224,7 @@ export function DocumentVersionLifecyclePanel(props: { csrfToken: string }) {
         ) : null}
         {errorMessage ? <p role="alert">{errorMessage}</p> : null}
       </section>
-      <Dialog open={createVersion.isPending || activateVersion.isPending || suspendDocument.isPending} title="文書版ライフサイクル">
+      <Dialog open={createVersion.isPending || activateVersion.isPending || updateDocumentAcl.isPending || suspendDocument.isPending} title="文書版ライフサイクル">
         <p role="status">文書版の状態を更新しています</p>
       </Dialog>
     </>

@@ -87,6 +87,14 @@ assert(
   "getDocument response schema must expose document ACL entries array"
 );
 assert(
+  document.paths["/v1/admin/documents/{document_id}/versions/{version_id}/acl"].post["x-saphnexa-csrf-required"] === true,
+  "updateDocumentAcl route must require CSRF"
+);
+assert(
+  document.paths["/v1/admin/documents/{document_id}/versions/{version_id}/acl"].post.responses["200"].content["application/json"].schema.properties.document.properties.acl_entries.type === "array",
+  "updateDocumentAcl response schema must expose document ACL entries array"
+);
+assert(
   document.paths["/v1/admin/documents/{document_id}/suspend"].post["x-saphnexa-csrf-required"] === true,
   "suspendDocument route must require CSRF"
 );

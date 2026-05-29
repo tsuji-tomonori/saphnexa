@@ -66,6 +66,8 @@ export function createLocalApi() {
             return accepted(store.createDocumentVersion(actor, input.document_id, input));
           case "activateDocumentVersion":
             return ok({ version: store.activateDocumentVersion(actor, input.document_id, input.version_id) });
+          case "updateDocumentAcl":
+            return ok({ document: store.updateDocumentAcl(actor, input.document_id, input.version_id, input) });
           case "suspendDocument":
             return ok({ document: store.suspendDocument(actor, input.document_id) });
           case "getIngestionJob":

@@ -69,6 +69,7 @@ export function createLocalStore() {
     createDocument,
     createDocumentVersion,
     activateDocumentVersion,
+    updateDocumentAcl,
     suspendDocument,
     retryIngestionJob,
     issueArtifactAccessCookie,
@@ -440,12 +441,7 @@ export function createLocalStore() {
     requireAdmin(actor);
     const document = state.documents.find((item) => item.tenant_id === actor.tenant_id && item.document_id === document_id && item.status !== statuses.DELETED);
     if (!document) throw forbidden("DOCUMENT_NOT_FOUND", "文書が存在しない。", 404);
-    return {
-      ...document,
-      versions: state.document_versions.filter((item) => item.tenant_id === actor.tenant_id && item.document_id === document_id),
-      ingestion_jobs: state.ingestion_jobs.filter((item) => item.tenant_id === actor.tenant_id && item.document_id === document_id),
-      acl_entries: state.document_acl_entries.filter((item) => item.tenant_id === actor.tenant_id && item.document_id === document_id)
-    };
+    return documentDetail(actor, document);
   }
 
   function getIngestionJob(actor, job_id) {
@@ -474,6 +470,27 @@ export function createLocalStore() {
     return activeVersion;
   }
 
+  function updateDocumentAcl(actor, document_id, version_id, input) {
+    requireAdmin(actor);
+    const document = state.documents.find((item) => item.tenant_id === actor.tenant_id && item.document_id === document_id && item.status !== statuses.DELETED);
+    if (!document) throw forbidden("DOCUMENT_NOT_FOUND", "文書が存在しない。", 404);
+    const version = state.document_versions.find((item) => item.tenant_id === actor.tenant_id && item.document_id === document_id && item.version_id === version_id && item.status !== statuses.DELETED);
+    if (!version) throw forbidden("DOCUMENT_VERSION_NOT_FOUND", "文書版が存在しない。", 404);
+    const acl_scope_id = typeof input.acl_scope_id === "string" ? input.acl_scope_id.trim() : "";
+    if (!acl_scope_id) throw forbidden("DOCUMENT_ACL_SCOPE_REQUIRED", "ACL scope が必要。", 400);
+    state.document_acl_entries = state.document_acl_entries.filter(
+      (item) => !(item.tenant_id === actor.tenant_id && item.document_id === document_id && item.version_id === version_id)
+    );
+    state.document_acl_entries.push({ tenant_id: actor.tenant_id, document_id, version_id, acl_scope_id, effect: "allow" });
+    recordAuditEvent(actor, "document.acl.updated", "document_acl", document_id, {
+      version_id,
+      acl_scope_id,
+      cognito_group_synced: false,
+      retrieval_index_resynced: false
+    });
+    return documentDetail(actor, document);
+  }
+
   function suspendDocument(actor, document_id) {
     requireAdmin(actor);
     const document = state.documents.find((item) => item.tenant_id === actor.tenant_id && item.document_id === document_id && item.status !== statuses.DELETED);
@@ -487,11 +504,15 @@ export function createLocalStore() {
       affected_versions: state.document_versions.filter((item) => item.tenant_id === actor.tenant_id && item.document_id === document_id).length,
       physical_delete: false
     });
+    return documentDetail(actor, document);
+  }
+
+  function documentDetail(actor, document) {
     return {
       ...document,
-      versions: state.document_versions.filter((item) => item.tenant_id === actor.tenant_id && item.document_id === document_id),
-      ingestion_jobs: state.ingestion_jobs.filter((item) => item.tenant_id === actor.tenant_id && item.document_id === document_id),
-      acl_entries: state.document_acl_entries.filter((item) => item.tenant_id === actor.tenant_id && item.document_id === document_id)
+      versions: state.document_versions.filter((item) => item.tenant_id === actor.tenant_id && item.document_id === document.document_id),
+      ingestion_jobs: state.ingestion_jobs.filter((item) => item.tenant_id === actor.tenant_id && item.document_id === document.document_id),
+      acl_entries: state.document_acl_entries.filter((item) => item.tenant_id === actor.tenant_id && item.document_id === document.document_id)
     };
   }
 
