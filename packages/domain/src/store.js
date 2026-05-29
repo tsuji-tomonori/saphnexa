@@ -59,6 +59,7 @@ export function createLocalStore() {
     getChat,
     submitQuestion,
     listEvents,
+    createFeedback,
     addFavorite,
     deleteFavorite,
     listFavorites,
@@ -321,6 +322,38 @@ export function createLocalStore() {
     return state.chat_message_events
       .filter((item) => item.chat_id === chat_id && item.message_id === message_id && item.event_seq > after_seq)
       .sort((a, b) => a.event_seq - b.event_seq);
+  }
+
+  function createFeedback(actor, chat_id, message_id, input = {}) {
+    requireReader(actor, chat_id);
+    const message = state.chat_messages.find((item) => item.tenant_id === actor.tenant_id && item.chat_id === chat_id && item.message_id === message_id);
+    if (!message || message.sender_type !== "assistant") throw forbidden("MESSAGE_NOT_FOUND", "フィードバック対象の回答が存在しない。", 404);
+    const rating = input.rating || "positive";
+    if (!["positive", "negative"].includes(rating)) throw forbidden("FEEDBACK_RATING_INVALID", "フィードバック評価が不正。", 400);
+    const existing = state.message_feedback.find((item) => item.tenant_id === actor.tenant_id && item.chat_id === chat_id && item.message_id === message_id && item.user_id === actor.user_id);
+    if (existing) {
+      existing.rating = rating;
+      existing.comment = input.comment || null;
+      existing.problem_type = input.problem_type || null;
+      return existing;
+    }
+    const feedback = {
+      tenant_id: actor.tenant_id,
+      feedback_id: nextId("feedback"),
+      chat_id,
+      message_id,
+      user_id: actor.user_id,
+      rating,
+      comment: input.comment || null,
+      problem_type: input.problem_type || null,
+      created_at: now()
+    };
+    state.message_feedback.push(feedback);
+    appendEvent(actor.tenant_id, chat_id, message_id, "chat.feedback.recorded", "progress", {
+      feedback_id: feedback.feedback_id,
+      rating: feedback.rating
+    });
+    return feedback;
   }
 
   function addFavorite(actor, input) {

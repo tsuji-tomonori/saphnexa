@@ -265,7 +265,7 @@ export interface ApiClientOperationTypes {
     query: ApiClientEmptyObject;
     requestBody: { csrf_token: string; title?: string; question?: string; user_id?: string; document_id?: string; version_id?: string; version_label?: string; file_name?: string; acl_scope_id?: string; dataset_id?: string; model_id?: string; import_id?: string; job_id?: string; now_ms?: number; rows?: ApiClientJsonObject[]; metadata?: ApiClientJsonObject; retrieval_policy?: { top_k?: number; allowed_acl_scope_ids?: string[] } } & ApiClientJsonObject;
     successStatus: 201;
-    successResponse: { feedback: { tenant_id: string; feedback_id: string; user_id: string; chat_id?: string | null; message_id?: string | null; rating?: string; comment?: string; created_at: string } & ApiClientJsonObject };
+    successResponse: { feedback: { tenant_id: string; feedback_id: string; user_id: string; chat_id?: string | null; message_id?: string | null; rating?: string; comment?: string | null; problem_type?: string | null; created_at: string } & ApiClientJsonObject };
     errorResponse: ApiClientErrorResponse;
   };
   listFavorites: {

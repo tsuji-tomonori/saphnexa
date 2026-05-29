@@ -15,6 +15,8 @@ for (const file of files) {
     assert(body.includes("className=\"sx-chat-shell\""), "ChatPage must expose chat shell landmark through AppShell");
     assert(body.includes("useChatSessions"), "ChatPage must use TanStack Query chat hook");
     assert(body.includes("useMessageEvents"), "ChatPage must use TanStack Query message events hook");
+    assert(body.includes("useCreateFeedback"), "ChatPage must use TanStack Query feedback hook");
+    assert(body.includes("FeedbackPanel"), "ChatPage must render feedback panel through feature component");
     assert(body.includes("useFavorites"), "ChatPage must use TanStack Query favorites hook");
     assert(body.includes("FavoritePanel"), "ChatPage must render favorite panel through feature component");
     assert(body.includes("AssistantRuntimeBoundary"), "ChatPage must bind assistant-ui runtime provider boundary");
@@ -36,6 +38,13 @@ for (const file of files) {
   }
   if (file.includes("MessageEventsPanel")) {
     assert(body.includes("MessageThread") && body.includes("emptyLabel=\"イベントはありません\""), "ChatApp must render events through MessageThread with an honest empty state");
+  }
+  if (file.includes("FeedbackPanel")) {
+    assert(body.includes("Textarea"), "Chat feedback must expose a comment textarea");
+    assert(body.includes("フィードバックを登録しました"), "Chat feedback must render a submitted status from mutation data");
+    assert(body.includes("!props.csrfToken || !props.activeChatId || !props.activeMessageId || props.isPending"), "Chat feedback action must require token, chat, and message");
+    assert(!body.includes("feedback-local"), "Chat feedback must not hard-code local feedback ids");
+    assert(!body.includes("msg-local"), "Chat feedback must not hard-code local message ids");
   }
   if (file.includes("FavoritePanel")) {
     assert(body.includes("DataTable"), "Chat favorites must render through DataTable");

@@ -309,7 +309,8 @@ function feedbackSchema() {
     chat_id: nullableStringSchema(),
     message_id: nullableStringSchema(),
     rating: stringSchema(),
-    comment: stringSchema(),
+    comment: nullableStringSchema(),
+    problem_type: nullableStringSchema(),
     created_at: stringSchema()
   }, true);
 }

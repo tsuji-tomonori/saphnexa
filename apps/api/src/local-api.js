@@ -40,6 +40,8 @@ export function createLocalApi() {
             return accepted(store.submitQuestion(actor, input.chat_id, input, rag));
           case "listMessageEvents":
             return ok({ events: store.listEvents(actor, input.chat_id, input.message_id, input.after_seq || 0) });
+          case "createFeedback":
+            return created({ feedback: store.createFeedback(actor, input.chat_id, input.message_id, input) });
           case "addFavorite":
             return created({ favorite: store.addFavorite(actor, input) });
           case "deleteFavorite":

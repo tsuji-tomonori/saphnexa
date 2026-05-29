@@ -10,6 +10,7 @@ checkFile("ChatApp", "apps/web/src/chat/ChatApp.tsx", [
 checkFile("ChatPage", "apps/web/src/pages/ChatPage.tsx", [
   rule("main landmark", (body) => body.includes("className=\"sx-chat-shell\"")),
   rule("assistant runtime provider boundary", (body) => body.includes("AssistantRuntimeBoundary")),
+  rule("feedback panel", (body) => body.includes("FeedbackPanel")),
   rule("favorite panel", (body) => body.includes("FavoritePanel"))
 ]);
 checkFile("AssistantRuntimeBoundary", "apps/web/src/features/chat/AssistantRuntimeBoundary.tsx", [
@@ -35,6 +36,14 @@ checkFile("CitationDrawerPanel", "apps/web/src/features/chat/CitationDrawerPanel
 checkFile("MessageEventsPanel", "apps/web/src/features/chat/MessageEventsPanel.tsx", [
   rule("event panel label", (body) => body.includes("aria-label=\"イベント\"")),
   rule("empty event status", (body) => body.includes("emptyLabel=\"イベントはありません\""))
+]);
+checkFile("FeedbackPanel", "apps/web/src/features/chat/FeedbackPanel.tsx", [
+  rule("section label", (body) => body.includes("aria-label=\"回答フィードバック\"")),
+  rule("comment textarea label", (body) => body.includes("aria-label=\"フィードバックコメント\"")),
+  rule("submitted status", (body) => body.includes("<p role=\"status\">フィードバックを登録しました")),
+  rule("pending status", (body) => body.includes("<p role=\"status\">フィードバックを送信しています</p>")),
+  rule("button disabled state", (body) => body.includes("!props.csrfToken || !props.activeChatId || !props.activeMessageId || props.isPending")),
+  rule("button type", (body) => !/<button(?![^>]*\stype=)/.test(body))
 ]);
 checkFile("FavoritePanel", "apps/web/src/features/chat/FavoritePanel.tsx", [
   rule("section label", (body) => body.includes("aria-label=\"お気に入り\"")),

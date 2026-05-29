@@ -110,6 +110,7 @@ export const dbTableMetadata = [
   ]),
   table("message_feedback", ["tenant_id", "chat_id", "message_id", "user_id"], [
     column("tenant_id", "string", false),
+    column("feedback_id", "uuid", false),
     column("chat_id", "uuid", false),
     column("message_id", "uuid", false),
     column("user_id", "string", false),

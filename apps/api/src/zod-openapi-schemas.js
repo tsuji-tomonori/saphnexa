@@ -75,7 +75,7 @@ function responseSchema(route) {
     submitQuestion: z.object({ message_id: z.string(), run_id: z.string(), status: z.string() }),
     listMessageEvents: z.object({ events: z.array(messageEventSchema()) }),
     cancelAnswerGeneration: z.object({ message_id: z.string(), run_id: z.string(), status: z.string() }),
-    createFeedback: z.object({ feedback: z.record(z.unknown()) }),
+    createFeedback: z.object({ feedback: feedbackSchema() }),
     listFavorites: z.object({ favorites: z.array(favoriteSchema()) }),
     addFavorite: z.object({ favorite: favoriteSchema() }),
     issueWsTicket: z.object({ ticket: z.string(), expires_in_seconds: z.number().int(), channels: z.array(z.string()) }),
@@ -177,6 +177,20 @@ function favoriteSchema() {
     tenant_id: z.string(),
     favorite_id: z.string(),
     user_id: z.string(),
+    created_at: z.string()
+  }).passthrough();
+}
+
+function feedbackSchema() {
+  return z.object({
+    tenant_id: z.string(),
+    feedback_id: z.string(),
+    user_id: z.string(),
+    chat_id: z.string().nullable().optional(),
+    message_id: z.string().nullable().optional(),
+    rating: z.string().optional(),
+    comment: z.string().nullable().optional(),
+    problem_type: z.string().nullable().optional(),
     created_at: z.string()
   }).passthrough();
 }

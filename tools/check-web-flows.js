@@ -15,6 +15,7 @@ const chatNavSource = readText("apps/web/src/features/chat/ChatSessionNav.tsx");
 const composerSource = readText("apps/web/src/features/chat/MessageComposer.tsx");
 const eventsPanelSource = readText("apps/web/src/features/chat/MessageEventsPanel.tsx");
 const citationDrawerSource = readText("apps/web/src/features/chat/CitationDrawerPanel.tsx");
+const feedbackPanelSource = readText("apps/web/src/features/chat/FeedbackPanel.tsx");
 const favoritePanelSource = readText("apps/web/src/features/chat/FavoritePanel.tsx");
 const assistantRuntimeBoundarySource = readText("apps/web/src/features/chat/AssistantRuntimeBoundary.tsx");
 const realtimeHookSource = readText("apps/web/src/hooks/useMessageRealtime.ts");
@@ -32,6 +33,7 @@ const userTableSource = readText("apps/web/src/features/admin/UserTable.tsx");
 const assistantRuntimeSource = readText("apps/web/src/lib/assistantRuntime.ts");
 const meHookSource = readText("apps/web/src/hooks/useMe.ts");
 const chatSessionsHookSource = readText("apps/web/src/hooks/useChatSessions.ts");
+const feedbackHookSource = readText("apps/web/src/hooks/useCreateFeedback.ts");
 const favoritesHookSource = readText("apps/web/src/hooks/useFavorites.ts");
 const adminUsersHookSource = readText("apps/web/src/hooks/useAdminUsers.ts");
 const userImportHookSource = readText("apps/web/src/hooks/useUserImport.ts");
@@ -73,10 +75,12 @@ scenario("chat UI source contract", () => {
     "useChatSessions",
     "useMessageEvents",
     "useMessageRealtime",
+    "useCreateFeedback",
     "useFavorites",
     "useAddFavorite",
     "useDeleteFavorite",
     "CitationDrawerPanel",
+    "FeedbackPanel",
     "FavoritePanel",
     "AssistantRuntimeBoundary",
     "submitAssistantQuestion",
@@ -90,6 +94,9 @@ scenario("chat UI source contract", () => {
   assert(apiClientSource.includes("/api/me"), "API client getMe helper must call /api/me");
   assert(chatSessionsHookSource.includes("apiRoutes.listChatSessions()"), "useChatSessions hook must use listChatSessions route helper");
   assert(apiClientSource.includes("/api/chat-sessions"), "API client chat sessions helper must call /api/chat-sessions");
+  assert(feedbackHookSource.includes("apiRoutes.createFeedback(input.chat_id, input.message_id)"), "useCreateFeedback hook must use createFeedback route helper");
+  assert(feedbackHookSource.includes("apiPostOperation(\"createFeedback\""), "useCreateFeedback hook must use generated createFeedback helper");
+  assert(apiClientSource.includes("/api/chat-sessions/{chat_id}/messages/{message_id}/feedback"), "API client feedback helper must call feedback path");
   assert(favoritesHookSource.includes("apiRoutes.listFavorites()"), "useFavorites hook must use listFavorites route helper");
   assert(favoritesHookSource.includes("apiGetOperation(\"listFavorites\""), "useFavorites hook must use generated listFavorites helper");
   assert(favoritesHookSource.includes("apiRoutes.addFavorite()"), "useAddFavorite hook must use addFavorite route helper");
@@ -131,6 +138,16 @@ scenario("chat UI source contract", () => {
     "activeFavorite ? \"お気に入り解除\" : \"お気に入り登録\""
   ]) {
     assert(favoritePanelSource.includes(token), `FavoritePanel missing token: ${token}`);
+  }
+  for (const token of [
+    "aria-label=\"回答フィードバック\"",
+    "Textarea",
+    "aria-label=\"フィードバックコメント\"",
+    "フィードバックを登録しました",
+    "高評価",
+    "低評価"
+  ]) {
+    assert(feedbackPanelSource.includes(token), `FeedbackPanel missing token: ${token}`);
   }
   for (const token of [
     "@assistant-ui/react",
@@ -189,6 +206,22 @@ scenario("chat local API flow", () => {
   assert(events.body.events.some((event) => event.event_name === "chat.message.final_ready"), "final event missing");
   const finalEvent = events.body.events.find((event) => event.event_name === "chat.message.final_ready");
   assert(Array.isArray(finalEvent.payload_json.citations), "final event citations missing");
+  const feedback = api.request("user-owner", "createFeedback", {
+    csrf_token: csrf,
+    chat_id: chat.body.chat.chat_id,
+    message_id: submit.body.message_id,
+    rating: "positive",
+    comment: "参考になりました"
+  });
+  assert(feedback.status === 201, "feedback creation failed");
+  assert(feedback.body.feedback.rating === "positive", "feedback rating missing");
+  const outsiderFeedback = api.request("user-outsider", "createFeedback", {
+    csrf_token: "csrf-user-outsider",
+    chat_id: chat.body.chat.chat_id,
+    message_id: submit.body.message_id,
+    rating: "negative"
+  });
+  assert(outsiderFeedback.status === 403, "outsider must not create feedback for unreadable chat");
   const favorite = api.request("user-owner", "addFavorite", { csrf_token: csrf, chat_id: chat.body.chat.chat_id });
   assert(favorite.status === 201, "favorite creation failed");
   const outsiderFavorite = api.request("user-outsider", "addFavorite", { csrf_token: "csrf-user-outsider", chat_id: chat.body.chat.chat_id });

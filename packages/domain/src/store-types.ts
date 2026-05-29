@@ -111,6 +111,18 @@ export interface FavoriteRecord {
   created_at: string;
 }
 
+export interface MessageFeedbackRecord {
+  tenant_id: string;
+  feedback_id: string;
+  chat_id: string;
+  message_id: string;
+  user_id: string;
+  rating: string;
+  comment: string | null;
+  problem_type: string | null;
+  created_at: string;
+}
+
 export interface DocumentRecord {
   tenant_id: string;
   document_id: string;
@@ -238,7 +250,7 @@ export interface LocalDomainState {
   chat_runs: ChatRun[];
   chat_message_events: ChatMessageEvent[];
   citation_records: CitationRecord[];
-  message_feedback: Array<Record<string, unknown>>;
+  message_feedback: MessageFeedbackRecord[];
   favorites: FavoriteRecord[];
   documents: DocumentRecord[];
   document_versions: DocumentVersion[];
@@ -282,6 +294,7 @@ export interface LocalStore {
   getChat(actor: LocalActor, chat_id: string): ChatSession & { participants: ChatParticipant[]; messages: ChatMessage[] };
   submitQuestion(actor: LocalActor, chat_id: string, input: { question: string; retrieval_policy?: RetrievalPolicyJson; model_id?: string; failure_injection?: string }, ragAdapter?: RagAdapter): { message_id: string; run_id: string; status: Status };
   listEvents(actor: LocalActor, chat_id: string, message_id: string, after_seq?: number): ChatMessageEvent[];
+  createFeedback(actor: LocalActor, chat_id: string, message_id: string, input: { rating?: string; comment?: string; problem_type?: string }): MessageFeedbackRecord;
   addFavorite(actor: LocalActor, input: { chat_id?: string; message_id?: string }): FavoriteRecord;
   deleteFavorite(actor: LocalActor, favorite_id: string): boolean;
   listFavorites(actor: LocalActor): FavoriteRecord[];

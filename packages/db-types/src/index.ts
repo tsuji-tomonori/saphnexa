@@ -102,6 +102,7 @@ export interface DbRowByTable {
   };
   message_feedback: {
     tenant_id: string;
+    feedback_id: DbUuid;
     chat_id: DbUuid;
     message_id: DbUuid;
     user_id: string;

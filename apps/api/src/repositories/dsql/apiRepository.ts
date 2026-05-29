@@ -199,6 +199,74 @@ const dsqlOperationMappings = {
       return { events: rows };
     }
   },
+  createFeedback: {
+    notFoundErrorCode: "DSQL_FEEDBACK_TARGET_NOT_FOUND",
+    plan(request) {
+      return {
+        operationId: "createFeedback",
+        resultTable: "message_feedback",
+        sql: `
+          WITH actor AS (
+            SELECT tenant_id, user_id
+            FROM users
+            WHERE user_id = :actor_id
+              AND status = 'active'
+          ),
+          readable_message AS (
+            SELECT m.tenant_id, m.chat_id, m.message_id
+            FROM chat_messages m
+            JOIN chat_participants p
+              ON p.tenant_id = m.tenant_id
+             AND p.chat_id = m.chat_id
+             AND p.user_id = :actor_id
+             AND p.status = 'active'
+            WHERE m.chat_id = :chat_id
+              AND m.message_id = :message_id
+              AND m.sender_type = 'assistant'
+              AND :rating IN ('positive', 'negative')
+          )
+          INSERT INTO message_feedback (
+            tenant_id, feedback_id, chat_id, message_id, user_id, rating, comment, problem_type, created_at
+          )
+          SELECT
+            a.tenant_id,
+            COALESCE(existing.feedback_id, gen_random_uuid()),
+            rm.chat_id,
+            rm.message_id,
+            a.user_id,
+            :rating,
+            :comment,
+            :problem_type,
+            COALESCE(existing.created_at, now())
+          FROM actor a
+          JOIN readable_message rm
+            ON rm.tenant_id = a.tenant_id
+          LEFT JOIN message_feedback existing
+            ON existing.tenant_id = a.tenant_id
+           AND existing.chat_id = rm.chat_id
+           AND existing.message_id = rm.message_id
+           AND existing.user_id = a.user_id
+          ON CONFLICT (tenant_id, chat_id, message_id, user_id)
+          DO UPDATE SET
+            rating = EXCLUDED.rating,
+            comment = EXCLUDED.comment,
+            problem_type = EXCLUDED.problem_type
+          RETURNING *
+        `,
+        params: {
+          actor_id: request.actorId,
+          chat_id: request.input.chat_id,
+          message_id: request.input.message_id,
+          rating: request.input.rating ?? "positive",
+          comment: request.input.comment ?? null,
+          problem_type: request.input.problem_type ?? null
+        }
+      };
+    },
+    map(rows) {
+      return { feedback: firstRow(rows) };
+    }
+  },
   listFavorites: {
     plan(request) {
       return {

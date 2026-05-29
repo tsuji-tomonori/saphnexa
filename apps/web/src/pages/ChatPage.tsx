@@ -4,11 +4,13 @@ import { AppShell } from "@saphnexa/ui";
 import { AssistantRuntimeBoundary } from "../features/chat/AssistantRuntimeBoundary";
 import { CitationDrawerPanel } from "../features/chat/CitationDrawerPanel";
 import { ChatSessionNav } from "../features/chat/ChatSessionNav";
+import { FeedbackPanel } from "../features/chat/FeedbackPanel";
 import { FavoritePanel } from "../features/chat/FavoritePanel";
 import { MessageComposer } from "../features/chat/MessageComposer";
 import { MessageEventsPanel } from "../features/chat/MessageEventsPanel";
 import { useChatSessions } from "../hooks/useChatSessions";
 import { useAddFavorite, useDeleteFavorite, useFavorites } from "../hooks/useFavorites";
+import { useCreateFeedback } from "../hooks/useCreateFeedback";
 import { useMe } from "../hooks/useMe";
 import { useMessageEvents } from "../hooks/useMessageEvents";
 import { useMessageRealtime } from "../hooks/useMessageRealtime";
@@ -21,6 +23,7 @@ export function ChatPage() {
   const csrfToken = me.data?.csrf_token ?? "";
   const addFavorite = useAddFavorite(csrfToken);
   const deleteFavorite = useDeleteFavorite(csrfToken);
+  const createFeedback = useCreateFeedback(csrfToken);
   const [selectedChatId, setSelectedChatId] = useState<string | null>(null);
   const [messageId, setMessageId] = useState<string | null>(null);
   const [wsTicket, setWsTicket] = useState<string | null>(null);
@@ -63,6 +66,14 @@ export function ChatPage() {
           isMutating={addFavorite.isPending || deleteFavorite.isPending}
           onAdd={(chatId) => addFavorite.mutate({ chat_id: chatId })}
           onDelete={(favoriteId) => deleteFavorite.mutate({ favorite_id: favoriteId })}
+        />
+        <FeedbackPanel
+          activeChatId={activeChatId}
+          activeMessageId={messageId}
+          csrfToken={csrfToken}
+          isPending={createFeedback.isPending}
+          submittedRating={createFeedback.data?.feedback.rating}
+          onSubmit={(input) => createFeedback.mutate({ chat_id: input.chatId, message_id: input.messageId, rating: input.rating, comment: input.comment })}
         />
         <MessageEventsPanel events={events.data?.events ?? []} />
         <CitationDrawerPanel open={Boolean(activeChatId && csrfToken)} events={events.data?.events ?? []} />

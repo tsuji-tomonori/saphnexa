@@ -140,6 +140,7 @@ CREATE TABLE citation_records (
 
 CREATE TABLE message_feedback (
   tenant_id varchar(64) NOT NULL,
+  feedback_id uuid NOT NULL,
   chat_id uuid NOT NULL,
   message_id uuid NOT NULL,
   user_id varchar(128) NOT NULL,
