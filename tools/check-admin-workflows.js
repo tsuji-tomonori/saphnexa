@@ -66,8 +66,12 @@ for (let index = 0; index < 3; index += 1) {
   const metrics = evaluation.body.evaluation_run.metrics_json;
   assert(metrics.retrieval && metrics.generation && metrics.end_to_end, "evaluation metrics must include three categories");
   assert(evaluation.body.evaluation_run.artifact_s3_prefix.startsWith("s3://saphnexa-local/evaluation/"), "evaluation artifact prefix missing");
+  const detail = api.request("admin-1", "getEvaluationRun", { evaluation_run_id: evaluation.body.evaluation_run.evaluation_run_id });
+  assert(detail.status === 200 && detail.body.items.length >= 2, "evaluation run detail must include case items");
+  assert(detail.body.items.every((item) => item.evaluation_run_id === evaluation.body.evaluation_run.evaluation_run_id), "evaluation items must belong to run");
 }
 assert(api.store.state.evaluation_runs.length === 3, "evaluation run count mismatch");
+assert(api.store.state.evaluation_run_items.length === 6, "evaluation run item count mismatch");
 
 const chatId = api.request("user-owner", "createChatSession", { csrf_token: ownerCsrf, title: "audit chat" }).body.chat.chat_id;
 assert(api.request("user-owner", "addChatParticipant", { csrf_token: ownerCsrf, chat_id: chatId, user_id: "user-viewer" }).status === 201, "chat share must succeed");

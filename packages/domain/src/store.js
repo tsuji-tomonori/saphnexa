@@ -39,6 +39,7 @@ export function createLocalStore() {
       created_at: baseTime
     }],
     evaluation_runs: [],
+    evaluation_run_items: [],
     published_artifacts: [
       artifact("artifact-docs-latest", "design_doc_html", "設計書サイト latest", "/admin/docs/latest/", "dist/admin/docs/latest/manifest.json"),
       artifact("artifact-docs-v0-16", "design_doc_html", "設計書サイト v0.16", "/admin/docs/versions/v0.16/", "dist/admin/docs/versions/v0.16/manifest.json"),
@@ -83,6 +84,7 @@ export function createLocalStore() {
     issueWsTicket,
     consumeWsTicket,
     startEvaluationRun,
+    getEvaluationRun,
     listAdminArtifacts,
     listLlmModels: () => llmModels.filter((item) => item.status === statuses.ACTIVE)
   };
@@ -687,6 +689,9 @@ export function createLocalStore() {
       created_by_user_id: actor.user_id
     };
     state.evaluation_runs.push(run);
+    for (const item of evaluationRunItems(actor.tenant_id, evaluation_run_id)) {
+      state.evaluation_run_items.push(item);
+    }
     recordAdminEvent(actor, "admin.evaluation.updated", { evaluation_run_id, status: run.status, dataset_id: run.dataset_id });
     recordAuditEvent(actor, "admin.evaluation.completed", "evaluation", evaluation_run_id, {
       dataset_id: run.dataset_id,
@@ -694,6 +699,17 @@ export function createLocalStore() {
       metrics: Object.keys(run.metrics_json)
     });
     return run;
+  }
+
+  function getEvaluationRun(actor, evaluation_run_id) {
+    requireAdmin(actor);
+    const evaluation_run = state.evaluation_runs.find((item) => item.tenant_id === actor.tenant_id && item.evaluation_run_id === evaluation_run_id);
+    return {
+      evaluation_run,
+      items: state.evaluation_run_items
+        .filter((item) => item.tenant_id === actor.tenant_id && item.evaluation_run_id === evaluation_run_id)
+        .sort((a, b) => a.case_id.localeCompare(b.case_id))
+    };
   }
 
   function listAdminArtifacts(actor) {
@@ -852,6 +868,55 @@ function artifact(artifact_id, artifact_type, title, viewer_path, source_ref) {
     created_at: baseTime,
     updated_at: baseTime
   };
+}
+
+function evaluationRunItems(tenant_id, evaluation_run_id) {
+  return [
+    {
+      tenant_id,
+      evaluation_run_id,
+      case_id: "case-retrieval-acl",
+      status: statuses.SUCCEEDED,
+      answer_text: "就業規則の休暇規程に基づいて回答します。",
+      retrieved_context_json: {
+        retrieved_count: 4,
+        allowed_count: 3,
+        denied_count: 1
+      },
+      judge_result_json: {
+        grounded: true,
+        citation_supported: true,
+        acl_leak_detected: false
+      },
+      metrics_json: {
+        retrieval: { recall_at_10: 0.9 },
+        generation: { groundedness: 0.92 },
+        acl: { denied_context_leak: 0 }
+      }
+    },
+    {
+      tenant_id,
+      evaluation_run_id,
+      case_id: "case-unanswerable-refusal",
+      status: statuses.SUCCEEDED,
+      answer_text: "根拠がないため回答できません。",
+      retrieved_context_json: {
+        retrieved_count: 1,
+        allowed_count: 0,
+        denied_count: 1
+      },
+      judge_result_json: {
+        grounded: true,
+        refusal_correct: true,
+        unsupported_claim_count: 0
+      },
+      metrics_json: {
+        retrieval: { recall_at_10: 0.82 },
+        generation: { unsupported_claim_rate: 0 },
+        end_to_end: { refusal_accuracy: 1 }
+      }
+    }
+  ];
 }
 
 function now() {

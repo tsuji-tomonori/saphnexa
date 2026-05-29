@@ -176,6 +176,16 @@ export interface DbRowByTable {
     metrics_json: DbJson | null;
     created_by_user_id: string;
   };
+  evaluation_run_items: {
+    tenant_id: string;
+    evaluation_run_id: string;
+    case_id: string;
+    status: string;
+    answer_text: string | null;
+    retrieved_context_json: DbJson | null;
+    judge_result_json: DbJson | null;
+    metrics_json: DbJson | null;
+  };
   ws_tickets: {
     tenant_id: string;
     ticket_id: string;

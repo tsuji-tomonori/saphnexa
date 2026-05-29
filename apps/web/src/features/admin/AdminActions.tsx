@@ -61,6 +61,18 @@ export function AdminActions(props: { csrfToken: string }) {
           { key: "artifact_s3_prefix", header: "成果物prefix", render: (run) => run.artifact_s3_prefix }
         ]}
       />
+      <DataTable
+        caption="評価case別結果"
+        empty={evaluationRunId ? "評価case別結果はありません" : "評価runを選択してください"}
+        rows={(evaluationRun.data?.items ?? []).map((item) => ({ ...item, id: item.case_id }))}
+        columns={[
+          { key: "case_id", header: "case ID", render: (item) => item.case_id },
+          { key: "status", header: "状態", render: (item) => <StatusBadge status={item.status} /> },
+          { key: "answer_text", header: "回答", render: (item) => item.answer_text ?? "未設定" },
+          { key: "metrics_json", header: "metrics", render: (item) => JSON.stringify(item.metrics_json ?? {}) },
+          { key: "judge_result_json", header: "judge", render: (item) => JSON.stringify(item.judge_result_json ?? {}) }
+        ]}
+      />
       <Dialog open={evaluation.isPending} title="評価実行">
         <p role="status">評価実行を開始しています</p>
       </Dialog>

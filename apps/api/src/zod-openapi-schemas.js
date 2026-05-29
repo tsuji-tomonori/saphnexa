@@ -94,7 +94,7 @@ function responseSchema(route) {
     retryIngestionJob: z.object({ job: ingestionJobSchema() }),
     listEvaluationDatasets: z.object({ datasets: z.array(evaluationDatasetSchema()) }),
     startEvaluationRun: z.object({ evaluation_run: evaluationRunSchema() }),
-    getEvaluationRun: z.object({ evaluation_run: evaluationRunSchema().optional() }),
+    getEvaluationRun: z.object({ evaluation_run: evaluationRunSchema().optional(), items: z.array(evaluationRunItemSchema()) }),
     listPublishedArtifacts: z.object({ artifacts: z.array(publishedArtifactSchema()) }),
     issueArtifactAccessCookie: z.object({ cookie_issued: z.boolean(), expires_in_seconds: z.number().int() })
   };
@@ -330,6 +330,19 @@ function evaluationRunSchema() {
     status: z.string(),
     metrics_json: z.record(z.unknown()),
     created_by_user_id: z.string()
+  });
+}
+
+function evaluationRunItemSchema() {
+  return z.object({
+    tenant_id: z.string(),
+    evaluation_run_id: z.string(),
+    case_id: z.string(),
+    status: z.string(),
+    answer_text: z.string().nullable().optional(),
+    retrieved_context_json: z.record(z.unknown()).nullable().optional(),
+    judge_result_json: z.record(z.unknown()).nullable().optional(),
+    metrics_json: z.record(z.unknown()).nullable().optional()
   });
 }
 

@@ -96,8 +96,7 @@ export function createLocalApi() {
           case "startEvaluationRun":
             return accepted({ evaluation_run: store.startEvaluationRun(actor, input) });
           case "getEvaluationRun":
-            requireAdmin(actor);
-            return ok({ evaluation_run: store.state.evaluation_runs.find((item) => item.evaluation_run_id === input.evaluation_run_id) });
+            return ok(store.getEvaluationRun(actor, input.evaluation_run_id));
           case "listPublishedArtifacts":
             return ok({ artifacts: store.listAdminArtifacts(actor) });
           case "issueArtifactAccessCookie":

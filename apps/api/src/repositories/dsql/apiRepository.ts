@@ -1446,14 +1446,32 @@ const dsqlOperationMappings = {
             r.artifact_s3_prefix,
             r.status,
             r.metrics_json,
-            r.created_by_user_id
+            r.created_by_user_id,
+            COALESCE(
+              json_agg(i ORDER BY i.case_id ASC) FILTER (WHERE i.case_id IS NOT NULL),
+              '[]'::json
+            ) AS items
           FROM evaluation_runs r
           JOIN users u
             ON u.tenant_id = r.tenant_id
            AND u.user_id = :actor_id
            AND u.role = 'admin'
            AND u.status = 'active'
+          LEFT JOIN evaluation_run_items i
+            ON i.tenant_id = r.tenant_id
+           AND i.evaluation_run_id = r.evaluation_run_id
           WHERE r.evaluation_run_id = :evaluation_run_id
+          GROUP BY
+            r.tenant_id,
+            r.evaluation_run_id,
+            r.dataset_id,
+            r.model_id,
+            r.prompt_version,
+            r.retrieval_config_json,
+            r.artifact_s3_prefix,
+            r.status,
+            r.metrics_json,
+            r.created_by_user_id
           LIMIT 1
         `,
         params: {
@@ -1463,7 +1481,12 @@ const dsqlOperationMappings = {
       };
     },
     map(rows) {
-      return { evaluation_run: firstRow(rows) };
+      const row = firstRow(rows) as DbRow<"evaluation_runs"> & { items?: unknown };
+      const { items, ...evaluation_run } = row;
+      return {
+        evaluation_run,
+        items: arrayValue(items)
+      };
     }
   },
   getIngestionJob: {

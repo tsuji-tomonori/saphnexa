@@ -30,6 +30,7 @@ assert(zodSource.includes("function responseSchema"), "Zod schema catalog must d
 assert(zodSource.includes("listMessageEvents: z.object({ events: z.array(messageEventSchema()) })"), "Zod schema catalog must validate message event response items");
 assert(zodSource.includes("listPublishedArtifacts: z.object({ artifacts: z.array(publishedArtifactSchema()) })"), "Zod schema catalog must validate published artifact response items");
 assert(zodSource.includes("startEvaluationRun: z.object({ evaluation_run: evaluationRunSchema() })"), "Zod schema catalog must validate evaluation run response");
+assert(zodSource.includes("getEvaluationRun: z.object({ evaluation_run: evaluationRunSchema().optional(), items: z.array(evaluationRunItemSchema()) })"), "Zod schema catalog must validate evaluation run item response");
 assert(appSource.includes("validateSuccessResponse"), "Hono app must validate dispatcher success responses at runtime");
 assert(appSource.includes("RESPONSE_VALIDATION_FAILED"), "Hono response validation failures must use a standard error response");
 assert(appWrapperSource.includes("OpenAPIHono"), "Hono JS runtime mirror must keep OpenAPIHono compatibility");

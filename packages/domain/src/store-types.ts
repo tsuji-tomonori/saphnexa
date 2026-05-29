@@ -222,6 +222,17 @@ export interface EvaluationRun {
   created_by_user_id: string;
 }
 
+export interface EvaluationRunItem {
+  tenant_id: string;
+  evaluation_run_id: string;
+  case_id: string;
+  status: Status;
+  answer_text: string | null;
+  retrieved_context_json: Record<string, unknown> | null;
+  judge_result_json: Record<string, unknown> | null;
+  metrics_json: Record<string, unknown>;
+}
+
 export interface PublishedArtifact {
   artifact_id: string;
   artifact_type: "design_doc_html" | "allure_report";
@@ -263,6 +274,7 @@ export interface LocalDomainState {
   user_import_rows: Array<Record<string, unknown>>;
   evaluation_datasets: EvaluationDataset[];
   evaluation_runs: EvaluationRun[];
+  evaluation_run_items: EvaluationRunItem[];
   published_artifacts: PublishedArtifact[];
   tool_invocations: ToolInvocationRecord[];
 }
@@ -316,6 +328,7 @@ export interface LocalStore {
   issueWsTicket(actor: LocalActor, input?: { now_ms?: number }): { ticket: string; expires_in_seconds: number; channels: string[] };
   consumeWsTicket(actor: LocalActor, ticket_id: string, now_ms?: number): { ticket_id: string; channels: string[]; status: string };
   startEvaluationRun(actor: LocalActor, input?: { dataset_id?: string; model_id?: string }): EvaluationRun;
+  getEvaluationRun(actor: LocalActor, evaluation_run_id: string): { evaluation_run: EvaluationRun | undefined; items: EvaluationRunItem[] };
   listAdminArtifacts(actor: LocalActor): PublishedArtifact[];
 }
 

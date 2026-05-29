@@ -477,6 +477,8 @@ scenario("admin UI source contract", () => {
     "setJobStatus(response.evaluation_run.status)",
     "評価run ID",
     "評価run詳細",
+    "評価case別結果",
+    "evaluationRun.data?.items",
     "Step Functions評価runner、Bedrock Evaluations job、評価HTML report、AppSync fan-out: 未接続"
   ]) {
     assert(adminActionsSource.includes(token), `AdminActions missing token: ${token}`);
@@ -487,6 +489,7 @@ scenario("admin UI source contract", () => {
   assert(startEvaluationHookSource.includes("apiPostOperation(\"startEvaluationRun\""), "useStartEvaluationRun hook must use generated evaluation operation helper");
   assert(startEvaluationHookSource.includes("apiRoutes.getEvaluationRun(evaluationRunId ?? \"\")"), "useEvaluationRun hook must use getEvaluationRun route helper");
   assert(startEvaluationHookSource.includes("apiGetOperation(\"getEvaluationRun\""), "useEvaluationRun hook must use generated evaluation run operation helper");
+  assert(startEvaluationHookSource.includes("items: response.items satisfies EvaluationRunItem[]"), "useEvaluationRun hook must expose evaluation run items");
   assert(apiClientSource.includes("/api/admin/evaluation-datasets"), "API client evaluation dataset helper must call /api/admin/evaluation-datasets");
   assert(apiClientSource.includes("/api/admin/evaluation-runs"), "API client evaluation run helper must call /api/admin/evaluation-runs");
   for (const token of [
@@ -627,6 +630,9 @@ scenario("admin local API flow", () => {
   assert(evaluation.status === 202, "evaluation run failed");
   const evaluationDetail = api.request("admin-1", "getEvaluationRun", { evaluation_run_id: evaluation.body.evaluation_run.evaluation_run_id });
   assert(evaluationDetail.status === 200 && evaluationDetail.body.evaluation_run.metrics_json.retrieval.recall_at_10 === 0.86, "admin evaluation run detail failed");
+  assert(evaluationDetail.body.items.length >= 2, "admin evaluation run items missing");
+  assert(evaluationDetail.body.items.every((item) => item.evaluation_run_id === evaluation.body.evaluation_run.evaluation_run_id), "evaluation run items must belong to requested run");
+  assert(evaluationDetail.body.items.some((item) => item.metrics_json.retrieval || item.metrics_json.end_to_end), "evaluation run item metrics missing");
   assert(api.request("user-owner", "getEvaluationRun", { evaluation_run_id: evaluation.body.evaluation_run.evaluation_run_id }).status === 403, "general user must not fetch evaluation run details");
   const cookie = api.request("admin-1", "issueArtifactAccessCookie", { csrf_token: csrf });
   assert(cookie.status === 201, "artifact cookie failed");

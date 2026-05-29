@@ -174,6 +174,7 @@ for (const token of [
   "successResponse: { chats: { tenant_id: string; chat_id: string; title: string;",
   "participants: { tenant_id: string; chat_id: string; user_id: string;",
   "metrics_json: { retrieval?: { recall_at_10?: number }",
+  "items: { tenant_id: string; evaluation_run_id: string; case_id: string; status:",
   "successResponse: { cookie_issued: boolean; expires_in_seconds: number }"
 ]) {
   assert(apiClientOperationTypesTs.includes(token), `API client generated operation types missing field-level token ${token}`);
@@ -320,6 +321,7 @@ for (const tableName of [
   "tool_invocations",
   "evaluation_datasets",
   "evaluation_runs",
+  "evaluation_run_items",
   "published_artifacts"
 ]) {
   assert(dbTableMetadataTs.includes(`"${tableName}"`), `DB table metadata TS source missing ${tableName}`);
@@ -345,7 +347,10 @@ for (const columnName of [
   "published_by",
   "evaluation_run_id",
   "dataset_id",
+  "case_id",
   "metrics_json",
+  "retrieved_context_json",
+  "judge_result_json",
   "artifact_s3_prefix"
 ]) {
   assert(dbTableMetadataTs.includes(`"${columnName}"`), `DB table metadata TS source missing ${columnName}`);
@@ -450,6 +455,7 @@ for (const token of [
   "addFavorite",
   "deleteFavorite",
   "listFavorites",
+  "getEvaluationRun",
   "listAdminArtifacts"
 ]) {
   assert(storeTypesTs.includes(token), `Domain store TS source missing ${token}`);
@@ -474,6 +480,7 @@ for (const token of [
   "ChatRun",
   "ChatMessageEvent",
   "CitationRecord",
+  "EvaluationRunItem",
   "ToolInvocationRecord"
 ]) {
   assert(storeTypesTs.includes(token), `Domain store TS source missing ${token}`);
@@ -560,6 +567,7 @@ for (const token of [
   "FROM ingestion_jobs",
   "FROM evaluation_datasets",
   "FROM evaluation_runs",
+  "JOIN evaluation_run_items",
   "JOIN ingestion_jobs",
   "JOIN chat_participants",
   "u.role = 'admin'"

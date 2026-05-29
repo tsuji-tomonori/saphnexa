@@ -108,6 +108,8 @@ checkFile("AdminActions", "apps/web/src/features/admin/AdminActions.tsx", [
   rule("evaluation disabled state", (body) => body.includes("disabled={!props.csrfToken || !datasetId}")),
   rule("evaluation run field", (body) => body.includes("label=\"評価run ID\"")),
   rule("evaluation run detail table", (body) => body.includes("caption=\"評価run詳細\"")),
+  rule("evaluation case result table", (body) => body.includes("caption=\"評価case別結果\"")),
+  rule("evaluation case result empty state", (body) => body.includes("評価case別結果はありません")),
   rule("honest evaluation pipeline state", (body) => body.includes("Step Functions評価runner、Bedrock Evaluations job、評価HTML report、AppSync fan-out: 未接続")),
   rule("evaluation progress status", (body) => body.includes("<p role=\"status\">評価実行を開始しています</p>"))
 ]);

@@ -1,6 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { apiGetOperation, apiPostOperation, apiRoutes } from "@saphnexa/api-client";
-import type { EvaluationDataset, EvaluationRun } from "../types";
+import type { EvaluationDataset, EvaluationRun, EvaluationRunItem } from "../types";
 
 export function useEvaluationDatasets() {
   return useQuery({
@@ -18,7 +18,10 @@ export function useEvaluationRun(evaluationRunId: string | null) {
     enabled: Boolean(evaluationRunId),
     queryFn: async () => {
       const response = await apiGetOperation("getEvaluationRun", apiRoutes.getEvaluationRun(evaluationRunId ?? ""));
-      return { evaluation_run: response.evaluation_run satisfies EvaluationRun | undefined };
+      return {
+        evaluation_run: response.evaluation_run satisfies EvaluationRun | undefined,
+        items: response.items satisfies EvaluationRunItem[]
+      };
     }
   });
 }

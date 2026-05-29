@@ -209,7 +209,7 @@ function successResponseSchema(route) {
     retryIngestionJob: objectSchema(["job"], { job: ingestionJobSchema() }),
     listEvaluationDatasets: objectSchema(["datasets"], { datasets: arrayOf(evaluationDatasetSchema()) }),
     startEvaluationRun: objectSchema(["evaluation_run"], { evaluation_run: evaluationRunSchema() }),
-    getEvaluationRun: objectSchema(["evaluation_run"], { evaluation_run: evaluationRunSchema() }),
+    getEvaluationRun: objectSchema(["evaluation_run", "items"], { evaluation_run: evaluationRunSchema(), items: arrayOf(evaluationRunItemSchema()) }),
     listPublishedArtifacts: objectSchema(["artifacts"], { artifacts: arrayOf(publishedArtifactSchema()) }),
     issueArtifactAccessCookie: objectSchema(["cookie_issued", "expires_in_seconds"], { cookie_issued: booleanSchema(), expires_in_seconds: integerSchema() })
   };
@@ -454,6 +454,19 @@ function evaluationRunSchema() {
   });
 }
 
+function evaluationRunItemSchema() {
+  return objectSchema(["tenant_id", "evaluation_run_id", "case_id", "status", "metrics_json"], {
+    tenant_id: stringSchema(),
+    evaluation_run_id: stringSchema(),
+    case_id: stringSchema(),
+    status: statusSchema(),
+    answer_text: nullableStringSchema(),
+    retrieved_context_json: nullableJsonObjectSchema(),
+    judge_result_json: nullableJsonObjectSchema(),
+    metrics_json: nullableJsonObjectSchema()
+  });
+}
+
 function publishedArtifactSchema() {
   return objectSchema(["tenant_id", "artifact_id", "artifact_type", "title", "viewer_path", "status", "source_ref"], {
     tenant_id: stringSchema(),
@@ -507,6 +520,10 @@ function objectSchema(required, properties, additionalProperties = false) {
 
 function jsonObjectSchema() {
   return { type: "object", additionalProperties: true };
+}
+
+function nullableJsonObjectSchema() {
+  return { type: ["object", "null"], additionalProperties: true };
 }
 
 function arrayOf(items) {

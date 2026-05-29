@@ -123,6 +123,8 @@ for (const file of files) {
     assert(body.includes("評価データセットはありません"), "Admin evaluation must render an honest empty dataset state");
     assert(body.includes("disabled={!props.csrfToken || !datasetId}"), "Admin evaluation must require csrf token and dataset id");
     assert(body.includes("評価run詳細") && body.includes("metrics_json"), "Admin evaluation must render run details and metrics from API data");
+    assert(body.includes("評価case別結果") && body.includes("evaluationRun.data?.items"), "Admin evaluation must render case-level items from API data");
+    assert(body.includes("評価case別結果はありません"), "Admin evaluation must render an honest empty case result state");
     assert(body.includes("Step Functions評価runner、Bedrock Evaluations job、評価HTML report、AppSync fan-out: 未接続"), "Admin evaluation must not imply external evaluation pipeline is implemented");
     assert(!body.includes("dataset-local-golden"), "Admin UI must not hard-code a dataset id");
   }

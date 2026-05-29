@@ -174,6 +174,16 @@ export const dbTableMetadata = [
     column("metrics_json", "json", true),
     column("created_by_user_id", "string", false)
   ]),
+  table("evaluation_run_items", ["tenant_id", "evaluation_run_id", "case_id"], [
+    column("tenant_id", "string", false),
+    column("evaluation_run_id", "string", false),
+    column("case_id", "uuid", false),
+    column("status", "string", false),
+    column("answer_text", "string", true),
+    column("retrieved_context_json", "json", true),
+    column("judge_result_json", "json", true),
+    column("metrics_json", "json", true)
+  ]),
   table("published_artifacts", ["tenant_id", "artifact_id"], [
     column("tenant_id", "string", false),
     column("artifact_id", "string", false),

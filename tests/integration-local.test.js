@@ -81,6 +81,10 @@ test("admin APIs reject general users and allow admins", () => {
   const evaluation = api.request("admin-1", "startEvaluationRun", { csrf_token: adminCsrf, dataset_id: "dataset-local-golden" });
   assert.equal(evaluation.status, 202);
   assert.equal(evaluation.body.evaluation_run.metrics_json.retrieval.recall_at_10 >= 0.85, true);
+  const detail = api.request("admin-1", "getEvaluationRun", { evaluation_run_id: evaluation.body.evaluation_run.evaluation_run_id });
+  assert.equal(detail.status, 200);
+  assert.equal(detail.body.items.length >= 2, true);
+  assert.equal(detail.body.items.every((item) => item.evaluation_run_id === evaluation.body.evaluation_run.evaluation_run_id), true);
 });
 
 test("state-changing APIs reject missing or mismatched CSRF tokens", () => {
