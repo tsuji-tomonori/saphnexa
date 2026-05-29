@@ -83,27 +83,30 @@ for (const route of publicApiRoutes) {
 }
 
 const apiClientTs = readText("packages/api-client/src/client.ts");
-for (const token of [
-  "getMe",
-  "listChatSessions",
-  "submitQuestion",
-  "listMessageEvents",
-  "issueWsTicket",
-  "listPublishedArtifacts",
-  "startEvaluationRun",
-  "/api/me",
-  "/api/chat-sessions",
-  "/api/ws-ticket",
-  "/api/admin/artifacts",
-  "/api/admin/evaluation-runs"
-]) {
-  assert(apiClientTs.includes(token), `API client TS source missing ${token}`);
-  assert(apiContractTs.includes(token), `API contract TS source missing API client token ${token}`);
+assert(apiClientTs.includes("apiRouteTemplates"), "API client TS source must expose API route templates");
+assert(apiClientTs.includes("pathFromTemplate"), "API client TS source must derive helper paths from templates");
+for (const route of publicApiRoutes) {
+  assert(apiClientTs.includes(`${route.operationId}:`), `API client route template missing operation ${route.operationId}`);
+  assert(apiClientTs.includes(route.viewerPath), `API client route template missing ${route.viewerPath}`);
+  assert(
+    apiClientTs.includes(`pathFromTemplate(apiRouteTemplates.${route.operationId}`),
+    `API client route helper must derive ${route.operationId} from its template`
+  );
+  assert(apiContractTs.includes(`"${route.operationId}"`), `API contract TS source missing API client operation ${route.operationId}`);
+  assert(apiContractTs.includes(`"${route.viewerPath}"`), `API contract TS source missing API client path ${route.viewerPath}`);
+  for (const paramName of route.viewerPath.matchAll(/\{([^}]+)\}/g)) {
+    assert(apiClientTs.includes(paramName[1]), `API client parameterized route missing param ${paramName[1]}`);
+  }
 }
-for (const token of ["ApiClientPath", "apiRoutes", "ApiClientRouteName"]) {
+assert(
+  publicApiRoutes.every((route) => apiClientTs.includes(route.operationId)),
+  "API client route helpers must cover every public API operation"
+);
+for (const token of ["ApiClientPath", "ApiClientPathTemplate", "apiRoutes", "ApiClientRouteName", "apiPatch", "apiDelete"]) {
   assert(apiClientTs.includes(token), `API client TS source missing ${token}`);
 }
 assert(apiClientTs.includes("path: ApiClientPath"), "API client request helpers must require ApiClientPath");
+assert(apiClientTs.includes("encodeURIComponent"), "API client parameterized route helpers must URL-encode parameters");
 
 const toolContractTs = readText("packages/tool-contract/src/tools.ts");
 assert(toolContractTs.includes("export interface ToolContract"), "Tool contract TS source must export ToolContract");
