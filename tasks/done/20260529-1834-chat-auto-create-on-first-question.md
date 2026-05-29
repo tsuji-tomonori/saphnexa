@@ -1,6 +1,6 @@
 # Chat 初回質問送信時の自動チャット作成境界
 
-- 状態: do
+- 状態: done
 - タスク種別: 機能追加
 - 作成日時: 2026-05-29 18:34
 - 対象ブランチ: `codex/typescript-framework-implementation`
@@ -41,11 +41,11 @@ Chat UI は `/chat/:chat_id` の選択境界まで接続済みだが、チャッ
 
 ## 受け入れ条件
 
-- [ ] チャット未作成状態で質問送信した場合、質問文由来のタイトルで `createChatSession` が呼ばれる。
-- [ ] 作成された chat が選択され、URL が `/chat/<chat_id>` に更新される。
-- [ ] 作成された chat id で `submitAssistantQuestion`、message id 更新、WS ticket 発行、channels 更新が継続される。
-- [ ] UI/source gate/docs 上で「初回質問送信時の自動チャット作成」は接続済み範囲になり、`chat event append` は未接続として残る。
-- [ ] 選定した検証コマンドが pass する。
+- [x] チャット未作成状態で質問送信した場合、質問文由来のタイトルで `createChatSession` が呼ばれる。
+- [x] 作成された chat が選択され、URL が `/chat/<chat_id>` に更新される。
+- [x] 作成された chat id で `submitAssistantQuestion`、message id 更新、WS ticket 発行、channels 更新が継続される。
+- [x] UI/source gate/docs 上で「初回質問送信時の自動チャット作成」は接続済み範囲になり、`chat event append` は未接続として残る。
+- [x] 選定した検証コマンドが pass する。
 
 ## 検証計画
 
