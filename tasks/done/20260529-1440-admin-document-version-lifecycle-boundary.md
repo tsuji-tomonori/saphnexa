@@ -75,6 +75,11 @@ Admin Dashboard の文書タブに文書版 lifecycle 確認 UI を追加し、�
 - `npm run admin:workflow:check`: pass
 - `git diff --check`: pass
 
+## PR コメント
+
+- 受け入れ条件確認: https://github.com/tsuji-tomonori/saphnexa/pull/3#issuecomment-4571209203
+- セルフレビュー結果: https://github.com/tsuji-tomonori/saphnexa/pull/3#issuecomment-4571209247
+
 ## PR レビュー観点
 
 - Web UI が架空の文書版・件数・ACL を表示していないこと。
@@ -90,4 +95,4 @@ Admin Dashboard の文書タブに文書版 lifecycle 確認 UI を追加し、�
 
 ## 状態
 
-in_progress
+done
