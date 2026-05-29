@@ -77,4 +77,4 @@ Admin UI から評価データセット一覧を確認し、選択した dataset
 
 ## 状態
 
-acceptance_verified_pr_comment_pending
+done
