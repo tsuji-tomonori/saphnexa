@@ -9,7 +9,7 @@ export function AdminActions(props: { csrfToken: string }) {
 
   async function startEvaluation() {
     const response = await evaluation.mutateAsync(datasetId);
-    setJobStatus(statusFromEvaluationRun(response.evaluation_run));
+    setJobStatus(response.evaluation_run.status);
   }
 
   return (
@@ -24,8 +24,4 @@ export function AdminActions(props: { csrfToken: string }) {
       </Dialog>
     </Panel>
   );
-}
-
-function statusFromEvaluationRun(value: Record<string, unknown>) {
-  return typeof value.status === "string" ? value.status : "unknown";
 }

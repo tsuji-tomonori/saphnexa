@@ -178,40 +178,284 @@ function requestBodySchema(route) {
 
 function successResponseSchema(route) {
   const schemas = {
-    getMe: objectSchema(["user", "csrf_token"], { user: jsonObjectSchema(), csrf_token: stringSchema() }),
-    listChatSessions: objectSchema(["chats"], { chats: arrayOf(jsonObjectSchema()) }),
-    createChatSession: objectSchema(["chat"], { chat: jsonObjectSchema() }),
-    getChatSession: objectSchema(["chat"], { chat: jsonObjectSchema() }),
-    updateChatSession: objectSchema(["chat"], { chat: jsonObjectSchema() }),
-    listChatParticipants: objectSchema(["participants"], { participants: arrayOf(jsonObjectSchema()) }),
-    addChatParticipant: objectSchema(["participant"], { participant: jsonObjectSchema() }),
-    updateChatParticipant: objectSchema(["participant"], { participant: jsonObjectSchema() }),
-    listMessages: objectSchema(["messages"], { messages: arrayOf(jsonObjectSchema()) }),
+    getMe: objectSchema(["user", "csrf_token"], { user: userSchema(), csrf_token: stringSchema() }),
+    listChatSessions: objectSchema(["chats"], { chats: arrayOf(chatSessionSchema()) }),
+    createChatSession: objectSchema(["chat"], { chat: chatSessionSchema() }),
+    getChatSession: objectSchema(["chat"], { chat: chatDetailSchema() }),
+    updateChatSession: objectSchema(["chat"], { chat: chatSessionSchema() }),
+    listChatParticipants: objectSchema(["participants"], { participants: arrayOf(chatParticipantSchema()) }),
+    addChatParticipant: objectSchema(["participant"], { participant: chatParticipantSchema() }),
+    updateChatParticipant: objectSchema(["participant"], { participant: chatParticipantSchema() }),
+    listMessages: objectSchema(["messages"], { messages: arrayOf(chatMessageSchema()) }),
     submitQuestion: objectSchema(["message_id", "run_id", "status"], { message_id: stringSchema(), run_id: stringSchema(), status: stringSchema() }),
-    listMessageEvents: objectSchema(["events"], { events: arrayOf(jsonObjectSchema()) }),
+    listMessageEvents: objectSchema(["events"], { events: arrayOf(messageEventSchema()) }),
     cancelAnswerGeneration: objectSchema(["message_id", "run_id", "status"], { message_id: stringSchema(), run_id: stringSchema(), status: stringSchema() }),
-    createFeedback: objectSchema(["feedback"], { feedback: jsonObjectSchema() }),
-    listFavorites: objectSchema(["favorites"], { favorites: arrayOf(jsonObjectSchema()) }),
-    addFavorite: objectSchema(["favorite"], { favorite: jsonObjectSchema() }),
+    createFeedback: objectSchema(["feedback"], { feedback: feedbackSchema() }),
+    listFavorites: objectSchema(["favorites"], { favorites: arrayOf(favoriteSchema()) }),
+    addFavorite: objectSchema(["favorite"], { favorite: favoriteSchema() }),
     issueWsTicket: objectSchema(["ticket", "expires_in_seconds", "channels"], { ticket: stringSchema(), expires_in_seconds: integerSchema(), channels: arrayOf(stringSchema()) }),
-    listLlmModels: objectSchema(["models"], { models: arrayOf(jsonObjectSchema()) }),
-    adminListUsers: objectSchema(["users"], { users: arrayOf(jsonObjectSchema()) }),
-    startUserImport: objectSchema(["import"], { import: jsonObjectSchema() }),
-    getUserImport: objectSchema(["import", "rows"], { import: jsonObjectSchema(), rows: arrayOf(jsonObjectSchema()) }),
-    adminListDocuments: objectSchema(["documents"], { documents: arrayOf(jsonObjectSchema()) }),
+    listLlmModels: objectSchema(["models"], { models: arrayOf(llmModelSchema()) }),
+    adminListUsers: objectSchema(["users"], { users: arrayOf(userSchema()) }),
+    startUserImport: objectSchema(["import"], { import: userImportSchema() }),
+    getUserImport: objectSchema(["import", "rows"], { import: userImportSchema(), rows: arrayOf(userImportRowSchema()) }),
+    adminListDocuments: objectSchema(["documents"], { documents: arrayOf(documentSchema()) }),
     createDocument: objectSchema(["document_id", "version_id", "job_id", "raw_s3_uri"], { document_id: stringSchema(), version_id: stringSchema(), job_id: stringSchema(), raw_s3_uri: stringSchema(), idempotent: booleanSchema() }),
-    getDocument: objectSchema(["document"], { document: jsonObjectSchema() }),
+    getDocument: objectSchema(["document"], { document: documentSchema() }),
     createDocumentVersion: objectSchema(["document_id", "version_id", "job_id", "raw_s3_uri"], { document_id: stringSchema(), version_id: stringSchema(), job_id: stringSchema(), raw_s3_uri: stringSchema(), idempotent: booleanSchema() }),
-    activateDocumentVersion: objectSchema(["version"], { version: jsonObjectSchema() }),
-    getIngestionJob: objectSchema(["job"], { job: jsonObjectSchema() }),
-    retryIngestionJob: objectSchema(["job"], { job: jsonObjectSchema() }),
-    listEvaluationDatasets: objectSchema(["datasets"], { datasets: arrayOf(jsonObjectSchema()) }),
-    startEvaluationRun: objectSchema(["evaluation_run"], { evaluation_run: jsonObjectSchema() }),
-    getEvaluationRun: objectSchema(["evaluation_run"], { evaluation_run: jsonObjectSchema() }),
-    listPublishedArtifacts: objectSchema(["artifacts"], { artifacts: arrayOf(jsonObjectSchema()) }),
+    activateDocumentVersion: objectSchema(["version"], { version: documentVersionSchema() }),
+    getIngestionJob: objectSchema(["job"], { job: ingestionJobSchema() }),
+    retryIngestionJob: objectSchema(["job"], { job: ingestionJobSchema() }),
+    listEvaluationDatasets: objectSchema(["datasets"], { datasets: arrayOf(evaluationDatasetSchema()) }),
+    startEvaluationRun: objectSchema(["evaluation_run"], { evaluation_run: evaluationRunSchema() }),
+    getEvaluationRun: objectSchema(["evaluation_run"], { evaluation_run: evaluationRunSchema() }),
+    listPublishedArtifacts: objectSchema(["artifacts"], { artifacts: arrayOf(publishedArtifactSchema()) }),
     issueArtifactAccessCookie: objectSchema(["cookie_issued", "expires_in_seconds"], { cookie_issued: booleanSchema(), expires_in_seconds: integerSchema() })
   };
   return schemas[route.operationId] ?? jsonObjectSchema();
+}
+
+function userSchema() {
+  return objectSchema(["tenant_id", "user_id", "email", "display_name", "role", "status"], {
+    tenant_id: stringSchema(),
+    user_id: stringSchema(),
+    email: stringSchema(),
+    display_name: stringSchema(),
+    role: enumStringSchema(["general_user", "admin", "system"]),
+    department: stringSchema(),
+    employment_type: stringSchema(),
+    status: statusSchema(),
+    created_at: stringSchema(),
+    updated_at: stringSchema()
+  });
+}
+
+function chatSessionSchema() {
+  return objectSchema(["tenant_id", "chat_id", "title", "status", "created_by_user_id", "created_at", "updated_at"], {
+    tenant_id: stringSchema(),
+    chat_id: stringSchema(),
+    title: stringSchema(),
+    status: statusSchema(),
+    last_message_at: nullableStringSchema(),
+    created_by_user_id: stringSchema(),
+    created_at: stringSchema(),
+    updated_at: stringSchema(),
+    deleted_at: nullableStringSchema()
+  });
+}
+
+function chatDetailSchema() {
+  return objectSchema(["tenant_id", "chat_id", "title", "status", "participants", "messages"], {
+    ...chatSessionSchema().properties,
+    participants: arrayOf(chatParticipantSchema()),
+    messages: arrayOf(chatMessageSchema())
+  });
+}
+
+function chatParticipantSchema() {
+  return objectSchema(["tenant_id", "chat_id", "user_id", "participant_role", "status", "added_by_user_id", "added_at"], {
+    tenant_id: stringSchema(),
+    chat_id: stringSchema(),
+    user_id: stringSchema(),
+    participant_role: enumStringSchema(["owner", "viewer"]),
+    status: statusSchema(),
+    added_by_user_id: stringSchema(),
+    added_at: stringSchema(),
+    removed_at: nullableStringSchema()
+  });
+}
+
+function chatMessageSchema() {
+  return objectSchema(["tenant_id", "chat_id", "message_id", "sender_type", "content_text", "status", "created_at"], {
+    tenant_id: stringSchema(),
+    chat_id: stringSchema(),
+    message_id: stringSchema(),
+    parent_message_id: nullableStringSchema(),
+    sender_user_id: nullableStringSchema(),
+    sender_type: enumStringSchema(["general_user", "admin", "assistant"]),
+    content_text: stringSchema(),
+    run_id: nullableStringSchema(),
+    status: statusSchema(),
+    created_at: stringSchema(),
+    completed_at: nullableStringSchema()
+  });
+}
+
+function messageEventSchema() {
+  return objectSchema(["tenant_id", "chat_id", "message_id", "event_seq", "event_id", "event_name", "event_type", "payload_json", "created_at"], {
+    tenant_id: stringSchema(),
+    chat_id: stringSchema(),
+    message_id: stringSchema(),
+    event_seq: integerSchema(),
+    event_id: stringSchema(),
+    event_name: stringSchema(),
+    event_type: enumStringSchema(["progress", "partial", "final", "error"]),
+    payload_json: jsonObjectSchema(),
+    created_at: stringSchema()
+  });
+}
+
+function feedbackSchema() {
+  return objectSchema(["tenant_id", "feedback_id", "user_id", "created_at"], {
+    tenant_id: stringSchema(),
+    feedback_id: stringSchema(),
+    user_id: stringSchema(),
+    chat_id: nullableStringSchema(),
+    message_id: nullableStringSchema(),
+    rating: stringSchema(),
+    comment: stringSchema(),
+    created_at: stringSchema()
+  }, true);
+}
+
+function favoriteSchema() {
+  return objectSchema(["tenant_id", "favorite_id", "user_id", "created_at"], {
+    tenant_id: stringSchema(),
+    favorite_id: stringSchema(),
+    user_id: stringSchema(),
+    chat_id: nullableStringSchema(),
+    message_id: nullableStringSchema(),
+    created_at: stringSchema()
+  });
+}
+
+function llmModelSchema() {
+  return objectSchema(["tenant_id", "model_id", "display_name", "provider", "model_type", "capability_json", "status", "visible_to_user", "allowed_role", "default_for_task", "catalog_version"], {
+    tenant_id: enumStringSchema(["global"]),
+    model_id: stringSchema(),
+    display_name: stringSchema(),
+    provider: enumStringSchema(["bedrock"]),
+    model_type: enumStringSchema(["chat", "judge", "embedding"]),
+    capability_json: objectSchema([], {}, true),
+    status: enumStringSchema(["active", "inactive"]),
+    visible_to_user: booleanSchema(),
+    allowed_role: enumStringSchema(["general_user", "admin", "system"]),
+    default_for_task: stringSchema(),
+    catalog_version: stringSchema()
+  });
+}
+
+function userImportSchema() {
+  return objectSchema(["tenant_id", "import_id", "status", "result_s3_prefix", "result_report_json", "created_by_user_id"], {
+    tenant_id: stringSchema(),
+    import_id: stringSchema(),
+    status: statusSchema(),
+    result_s3_prefix: stringSchema(),
+    result_report_json: objectSchema(["created", "updated", "deleted", "failed", "error_rows_s3_uri"], {
+      created: integerSchema(),
+      updated: integerSchema(),
+      deleted: integerSchema(),
+      failed: integerSchema(),
+      error_rows_s3_uri: stringSchema()
+    }),
+    created_by_user_id: stringSchema()
+  });
+}
+
+function userImportRowSchema() {
+  return objectSchema(["tenant_id", "import_id", "row_number", "action", "status"], {
+    tenant_id: stringSchema(),
+    import_id: stringSchema(),
+    row_number: integerSchema(),
+    action: stringSchema(),
+    status: statusSchema(),
+    target_user_id: nullableStringSchema(),
+    error_message: nullableStringSchema()
+  });
+}
+
+function documentSchema() {
+  return objectSchema(["tenant_id", "document_id", "title", "status", "created_by_user_id", "created_at", "updated_at"], {
+    tenant_id: stringSchema(),
+    document_id: stringSchema(),
+    title: stringSchema(),
+    status: statusSchema(),
+    created_by_user_id: stringSchema(),
+    created_at: stringSchema(),
+    updated_at: stringSchema()
+  });
+}
+
+function documentVersionSchema() {
+  return objectSchema(["tenant_id", "document_id", "version_id", "version_label", "status", "raw_s3_uri", "metadata_json", "created_at"], {
+    tenant_id: stringSchema(),
+    document_id: stringSchema(),
+    version_id: stringSchema(),
+    version_label: stringSchema(),
+    status: enumStringSchema(["active", "archived", "failed", "uploaded"]),
+    raw_s3_uri: stringSchema(),
+    metadata_json: jsonObjectSchema(),
+    created_at: stringSchema()
+  });
+}
+
+function ingestionJobSchema() {
+  return objectSchema(["tenant_id", "job_id", "document_id", "version_id", "status", "raw_s3_uri", "parsed_s3_prefix", "retryable"], {
+    tenant_id: stringSchema(),
+    job_id: stringSchema(),
+    document_id: stringSchema(),
+    version_id: stringSchema(),
+    status: statusSchema(),
+    raw_s3_uri: stringSchema(),
+    parsed_s3_prefix: stringSchema(),
+    error_code: nullableStringSchema(),
+    retryable: booleanSchema()
+  });
+}
+
+function evaluationDatasetSchema() {
+  return objectSchema(["tenant_id", "dataset_id", "dataset_name", "status", "source_s3_uri", "created_at"], {
+    tenant_id: stringSchema(),
+    dataset_id: stringSchema(),
+    dataset_name: stringSchema(),
+    status: statusSchema(),
+    source_s3_uri: stringSchema(),
+    created_at: stringSchema()
+  });
+}
+
+function evaluationRunSchema() {
+  return objectSchema(["tenant_id", "evaluation_run_id", "dataset_id", "model_id", "prompt_version", "retrieval_config_json", "artifact_s3_prefix", "status", "metrics_json", "created_by_user_id"], {
+    tenant_id: stringSchema(),
+    evaluation_run_id: stringSchema(),
+    dataset_id: stringSchema(),
+    model_id: stringSchema(),
+    prompt_version: stringSchema(),
+    retrieval_config_json: objectSchema(["top_k"], { top_k: integerSchema() }, true),
+    artifact_s3_prefix: stringSchema(),
+    status: statusSchema(),
+    metrics_json: objectSchema([], {
+      retrieval: objectSchema([], { recall_at_10: numberSchema() }, true),
+      generation: objectSchema([], { groundedness: numberSchema() }, true),
+      end_to_end: objectSchema([], { refusal_accuracy: numberSchema() }, true)
+    }, true),
+    created_by_user_id: stringSchema()
+  });
+}
+
+function publishedArtifactSchema() {
+  return objectSchema(["tenant_id", "artifact_id", "artifact_type", "title", "viewer_path", "status", "source_ref"], {
+    tenant_id: stringSchema(),
+    artifact_id: stringSchema(),
+    artifact_type: enumStringSchema(["design_doc_html", "allure_report"]),
+    title: stringSchema(),
+    version_label: stringSchema(),
+    source_ref: stringSchema(),
+    s3_bucket: stringSchema(),
+    s3_prefix: stringSchema(),
+    viewer_path: stringSchema(),
+    manifest_path: stringSchema(),
+    status: stringSchema(),
+    checksum: stringSchema(),
+    published_by: stringSchema(),
+    published_at: stringSchema(),
+    expires_at: nullableStringSchema(),
+    created_at: stringSchema(),
+    updated_at: stringSchema()
+  });
+}
+
+function statusSchema() {
+  return enumStringSchema(["active", "archived", "deleted", "removed", "queued", "running", "streaming", "succeeded", "failed", "canceled"]);
 }
 
 function tag(route) {
@@ -251,8 +495,20 @@ function stringSchema() {
   return { type: "string" };
 }
 
+function nullableStringSchema() {
+  return { type: ["string", "null"] };
+}
+
+function enumStringSchema(values) {
+  return { type: "string", enum: values };
+}
+
 function integerSchema() {
   return { type: "integer" };
+}
+
+function numberSchema() {
+  return { type: "number" };
 }
 
 function booleanSchema() {

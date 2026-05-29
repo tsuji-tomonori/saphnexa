@@ -7,7 +7,7 @@ export function useChatSessions() {
     queryKey: ["chat-sessions"],
     queryFn: async () => {
       const response = await apiGetOperation("listChatSessions", apiRoutes.listChatSessions());
-      return { chats: response.chats as Chat[] };
+      return { chats: response.chats satisfies Chat[] };
     }
   });
 }

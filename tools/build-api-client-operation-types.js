@@ -102,7 +102,10 @@ function successResponseType(route, operation) {
 
 function schemaToType(schema) {
   if (schema.$ref === "#/components/schemas/ErrorResponse") return "ApiClientErrorResponse";
+  if (Array.isArray(schema.type)) return schema.type.map((item) => schemaToType({ ...schema, type: item })).join(" | ");
+  if (Array.isArray(schema.enum) && schema.enum.length > 0) return union(schema.enum);
   if (schema.type === "string") return "string";
+  if (schema.type === "null") return "null";
   if (schema.type === "integer" || schema.type === "number") return "number";
   if (schema.type === "boolean") return "boolean";
   if (schema.type === "array") return `${schemaToType(schema.items || { type: "object", additionalProperties: true })}[]`;

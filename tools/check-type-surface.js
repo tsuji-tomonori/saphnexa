@@ -97,8 +97,13 @@ for (const token of [
   "dataset_id?: string",
   "retrieval_policy?: { top_k?: number; allowed_acl_scope_ids?: string[] }",
   "successResponse: { message_id: string; run_id: string; status: string }",
-  "successResponse: { events: ApiClientJsonObject[] }",
-  "successResponse: { artifacts: ApiClientJsonObject[] }",
+  "successResponse: { events: { tenant_id: string; chat_id: string; message_id: string; event_seq: number;",
+  'event_type: "progress" | "partial" | "final" | "error"',
+  "successResponse: { artifacts: { tenant_id: string; artifact_id: string;",
+  "artifact_type: \"design_doc_html\" | \"allure_report\"",
+  "successResponse: { chats: { tenant_id: string; chat_id: string; title: string;",
+  "participants: { tenant_id: string; chat_id: string; user_id: string;",
+  "metrics_json: { retrieval?: { recall_at_10?: number }",
   "successResponse: { cookie_issued: boolean; expires_in_seconds: number }"
 ]) {
   assert(apiClientOperationTypesTs.includes(token), `API client generated operation types missing field-level token ${token}`);
@@ -149,6 +154,9 @@ for (const file of listFiles(["apps/web/src"], (path) => path.endsWith(".ts") ||
   const source = readText(file);
   assert(!source.includes("apiGet<"), `${file} must use generated operation response helpers instead of apiGet<T>`);
   assert(!source.includes("apiPost<"), `${file} must use generated operation response helpers instead of apiPost<T>`);
+  assert(!source.includes(" as Chat[]"), `${file} must use generated chat response item fields instead of Chat[] cast`);
+  assert(!source.includes(" as EventRow[]"), `${file} must use generated event response item fields instead of EventRow[] cast`);
+  assert(!source.includes(" as Artifact[]"), `${file} must use generated artifact response item fields instead of Artifact[] cast`);
 }
 for (const token of [
   'apiGetOperation("getMe"',

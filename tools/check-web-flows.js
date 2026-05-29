@@ -156,7 +156,7 @@ scenario("admin UI source contract", () => {
     "aria-label=\"管理操作\"",
     "role=\"status\"",
     "disabled={!props.csrfToken || !datasetId}",
-    "statusFromEvaluationRun(response.evaluation_run)"
+    "setJobStatus(response.evaluation_run.status)"
   ]) {
     assert(adminActionsSource.includes(token), `AdminActions missing token: ${token}`);
   }

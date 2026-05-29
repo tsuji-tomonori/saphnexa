@@ -7,7 +7,7 @@ export function useAdminArtifacts() {
     queryKey: ["admin-artifacts"],
     queryFn: async () => {
       const response = await apiGetOperation("listPublishedArtifacts", apiRoutes.listPublishedArtifacts());
-      return { artifacts: response.artifacts as Artifact[] };
+      return { artifacts: response.artifacts satisfies Artifact[] };
     }
   });
 }

@@ -69,7 +69,7 @@ export interface ApiClientOperationTypes {
     query: ApiClientEmptyObject;
     requestBody: never;
     successStatus: 200;
-    successResponse: { user: ApiClientJsonObject; csrf_token: string };
+    successResponse: { user: { tenant_id: string; user_id: string; email: string; display_name: string; role: "general_user" | "admin" | "system"; department?: string; employment_type?: string; status: "active" | "archived" | "deleted" | "removed" | "queued" | "running" | "streaming" | "succeeded" | "failed" | "canceled"; created_at?: string; updated_at?: string }; csrf_token: string };
     errorResponse: ApiClientErrorResponse;
   };
   listChatSessions: {
@@ -83,7 +83,7 @@ export interface ApiClientOperationTypes {
     query: ApiClientEmptyObject;
     requestBody: never;
     successStatus: 200;
-    successResponse: { chats: ApiClientJsonObject[] };
+    successResponse: { chats: { tenant_id: string; chat_id: string; title: string; status: "active" | "archived" | "deleted" | "removed" | "queued" | "running" | "streaming" | "succeeded" | "failed" | "canceled"; last_message_at?: string | null; created_by_user_id: string; created_at: string; updated_at: string; deleted_at?: string | null }[] };
     errorResponse: ApiClientErrorResponse;
   };
   createChatSession: {
@@ -97,7 +97,7 @@ export interface ApiClientOperationTypes {
     query: ApiClientEmptyObject;
     requestBody: { csrf_token: string; title?: string; question?: string; user_id?: string; document_id?: string; version_id?: string; version_label?: string; file_name?: string; acl_scope_id?: string; dataset_id?: string; model_id?: string; import_id?: string; job_id?: string; now_ms?: number; rows?: ApiClientJsonObject[]; metadata?: ApiClientJsonObject; retrieval_policy?: { top_k?: number; allowed_acl_scope_ids?: string[] } } & ApiClientJsonObject;
     successStatus: 201;
-    successResponse: { chat: ApiClientJsonObject };
+    successResponse: { chat: { tenant_id: string; chat_id: string; title: string; status: "active" | "archived" | "deleted" | "removed" | "queued" | "running" | "streaming" | "succeeded" | "failed" | "canceled"; last_message_at?: string | null; created_by_user_id: string; created_at: string; updated_at: string; deleted_at?: string | null } };
     errorResponse: ApiClientErrorResponse;
   };
   getChatSession: {
@@ -111,7 +111,7 @@ export interface ApiClientOperationTypes {
     query: ApiClientEmptyObject;
     requestBody: never;
     successStatus: 200;
-    successResponse: { chat: ApiClientJsonObject };
+    successResponse: { chat: { tenant_id: string; chat_id: string; title: string; status: "active" | "archived" | "deleted" | "removed" | "queued" | "running" | "streaming" | "succeeded" | "failed" | "canceled"; last_message_at?: string | null; created_by_user_id?: string; created_at?: string; updated_at?: string; deleted_at?: string | null; participants: { tenant_id: string; chat_id: string; user_id: string; participant_role: "owner" | "viewer"; status: "active" | "archived" | "deleted" | "removed" | "queued" | "running" | "streaming" | "succeeded" | "failed" | "canceled"; added_by_user_id: string; added_at: string; removed_at?: string | null }[]; messages: { tenant_id: string; chat_id: string; message_id: string; parent_message_id?: string | null; sender_user_id?: string | null; sender_type: "general_user" | "admin" | "assistant"; content_text: string; run_id?: string | null; status: "active" | "archived" | "deleted" | "removed" | "queued" | "running" | "streaming" | "succeeded" | "failed" | "canceled"; created_at: string; completed_at?: string | null }[] } };
     errorResponse: ApiClientErrorResponse;
   };
   updateChatSession: {
@@ -125,7 +125,7 @@ export interface ApiClientOperationTypes {
     query: ApiClientEmptyObject;
     requestBody: { csrf_token: string; title?: string; question?: string; user_id?: string; document_id?: string; version_id?: string; version_label?: string; file_name?: string; acl_scope_id?: string; dataset_id?: string; model_id?: string; import_id?: string; job_id?: string; now_ms?: number; rows?: ApiClientJsonObject[]; metadata?: ApiClientJsonObject; retrieval_policy?: { top_k?: number; allowed_acl_scope_ids?: string[] } } & ApiClientJsonObject;
     successStatus: 200;
-    successResponse: { chat: ApiClientJsonObject };
+    successResponse: { chat: { tenant_id: string; chat_id: string; title: string; status: "active" | "archived" | "deleted" | "removed" | "queued" | "running" | "streaming" | "succeeded" | "failed" | "canceled"; last_message_at?: string | null; created_by_user_id: string; created_at: string; updated_at: string; deleted_at?: string | null } };
     errorResponse: ApiClientErrorResponse;
   };
   deleteChatSession: {
@@ -153,7 +153,7 @@ export interface ApiClientOperationTypes {
     query: ApiClientEmptyObject;
     requestBody: never;
     successStatus: 200;
-    successResponse: { participants: ApiClientJsonObject[] };
+    successResponse: { participants: { tenant_id: string; chat_id: string; user_id: string; participant_role: "owner" | "viewer"; status: "active" | "archived" | "deleted" | "removed" | "queued" | "running" | "streaming" | "succeeded" | "failed" | "canceled"; added_by_user_id: string; added_at: string; removed_at?: string | null }[] };
     errorResponse: ApiClientErrorResponse;
   };
   addChatParticipant: {
@@ -167,7 +167,7 @@ export interface ApiClientOperationTypes {
     query: ApiClientEmptyObject;
     requestBody: { csrf_token: string; title?: string; question?: string; user_id?: string; document_id?: string; version_id?: string; version_label?: string; file_name?: string; acl_scope_id?: string; dataset_id?: string; model_id?: string; import_id?: string; job_id?: string; now_ms?: number; rows?: ApiClientJsonObject[]; metadata?: ApiClientJsonObject; retrieval_policy?: { top_k?: number; allowed_acl_scope_ids?: string[] } } & ApiClientJsonObject;
     successStatus: 201;
-    successResponse: { participant: ApiClientJsonObject };
+    successResponse: { participant: { tenant_id: string; chat_id: string; user_id: string; participant_role: "owner" | "viewer"; status: "active" | "archived" | "deleted" | "removed" | "queued" | "running" | "streaming" | "succeeded" | "failed" | "canceled"; added_by_user_id: string; added_at: string; removed_at?: string | null } };
     errorResponse: ApiClientErrorResponse;
   };
   updateChatParticipant: {
@@ -181,7 +181,7 @@ export interface ApiClientOperationTypes {
     query: ApiClientEmptyObject;
     requestBody: { csrf_token: string; title?: string; question?: string; user_id?: string; document_id?: string; version_id?: string; version_label?: string; file_name?: string; acl_scope_id?: string; dataset_id?: string; model_id?: string; import_id?: string; job_id?: string; now_ms?: number; rows?: ApiClientJsonObject[]; metadata?: ApiClientJsonObject; retrieval_policy?: { top_k?: number; allowed_acl_scope_ids?: string[] } } & ApiClientJsonObject;
     successStatus: 200;
-    successResponse: { participant: ApiClientJsonObject };
+    successResponse: { participant: { tenant_id: string; chat_id: string; user_id: string; participant_role: "owner" | "viewer"; status: "active" | "archived" | "deleted" | "removed" | "queued" | "running" | "streaming" | "succeeded" | "failed" | "canceled"; added_by_user_id: string; added_at: string; removed_at?: string | null } };
     errorResponse: ApiClientErrorResponse;
   };
   removeChatParticipant: {
@@ -209,7 +209,7 @@ export interface ApiClientOperationTypes {
     query: ApiClientEmptyObject;
     requestBody: never;
     successStatus: 200;
-    successResponse: { messages: ApiClientJsonObject[] };
+    successResponse: { messages: { tenant_id: string; chat_id: string; message_id: string; parent_message_id?: string | null; sender_user_id?: string | null; sender_type: "general_user" | "admin" | "assistant"; content_text: string; run_id?: string | null; status: "active" | "archived" | "deleted" | "removed" | "queued" | "running" | "streaming" | "succeeded" | "failed" | "canceled"; created_at: string; completed_at?: string | null }[] };
     errorResponse: ApiClientErrorResponse;
   };
   submitQuestion: {
@@ -237,7 +237,7 @@ export interface ApiClientOperationTypes {
     query: { after_seq?: number };
     requestBody: never;
     successStatus: 200;
-    successResponse: { events: ApiClientJsonObject[] };
+    successResponse: { events: { tenant_id: string; chat_id: string; message_id: string; event_seq: number; event_id: string; event_name: string; event_type: "progress" | "partial" | "final" | "error"; payload_json: ApiClientJsonObject; created_at: string }[] };
     errorResponse: ApiClientErrorResponse;
   };
   cancelAnswerGeneration: {
@@ -265,7 +265,7 @@ export interface ApiClientOperationTypes {
     query: ApiClientEmptyObject;
     requestBody: { csrf_token: string; title?: string; question?: string; user_id?: string; document_id?: string; version_id?: string; version_label?: string; file_name?: string; acl_scope_id?: string; dataset_id?: string; model_id?: string; import_id?: string; job_id?: string; now_ms?: number; rows?: ApiClientJsonObject[]; metadata?: ApiClientJsonObject; retrieval_policy?: { top_k?: number; allowed_acl_scope_ids?: string[] } } & ApiClientJsonObject;
     successStatus: 201;
-    successResponse: { feedback: ApiClientJsonObject };
+    successResponse: { feedback: { tenant_id: string; feedback_id: string; user_id: string; chat_id?: string | null; message_id?: string | null; rating?: string; comment?: string; created_at: string } & ApiClientJsonObject };
     errorResponse: ApiClientErrorResponse;
   };
   listFavorites: {
@@ -279,7 +279,7 @@ export interface ApiClientOperationTypes {
     query: ApiClientEmptyObject;
     requestBody: never;
     successStatus: 200;
-    successResponse: { favorites: ApiClientJsonObject[] };
+    successResponse: { favorites: { tenant_id: string; favorite_id: string; user_id: string; chat_id?: string | null; message_id?: string | null; created_at: string }[] };
     errorResponse: ApiClientErrorResponse;
   };
   addFavorite: {
@@ -293,7 +293,7 @@ export interface ApiClientOperationTypes {
     query: ApiClientEmptyObject;
     requestBody: { csrf_token: string; title?: string; question?: string; user_id?: string; document_id?: string; version_id?: string; version_label?: string; file_name?: string; acl_scope_id?: string; dataset_id?: string; model_id?: string; import_id?: string; job_id?: string; now_ms?: number; rows?: ApiClientJsonObject[]; metadata?: ApiClientJsonObject; retrieval_policy?: { top_k?: number; allowed_acl_scope_ids?: string[] } } & ApiClientJsonObject;
     successStatus: 201;
-    successResponse: { favorite: ApiClientJsonObject };
+    successResponse: { favorite: { tenant_id: string; favorite_id: string; user_id: string; chat_id?: string | null; message_id?: string | null; created_at: string } };
     errorResponse: ApiClientErrorResponse;
   };
   deleteFavorite: {
@@ -335,7 +335,7 @@ export interface ApiClientOperationTypes {
     query: ApiClientEmptyObject;
     requestBody: never;
     successStatus: 200;
-    successResponse: { models: ApiClientJsonObject[] };
+    successResponse: { models: { tenant_id: "global"; model_id: string; display_name: string; provider: "bedrock"; model_type: "chat" | "judge" | "embedding"; capability_json: ApiClientJsonObject; status: "active" | "inactive"; visible_to_user: boolean; allowed_role: "general_user" | "admin" | "system"; default_for_task: string; catalog_version: string }[] };
     errorResponse: ApiClientErrorResponse;
   };
   adminListUsers: {
@@ -349,7 +349,7 @@ export interface ApiClientOperationTypes {
     query: ApiClientEmptyObject;
     requestBody: never;
     successStatus: 200;
-    successResponse: { users: ApiClientJsonObject[] };
+    successResponse: { users: { tenant_id: string; user_id: string; email: string; display_name: string; role: "general_user" | "admin" | "system"; department?: string; employment_type?: string; status: "active" | "archived" | "deleted" | "removed" | "queued" | "running" | "streaming" | "succeeded" | "failed" | "canceled"; created_at?: string; updated_at?: string }[] };
     errorResponse: ApiClientErrorResponse;
   };
   startUserImport: {
@@ -363,7 +363,7 @@ export interface ApiClientOperationTypes {
     query: ApiClientEmptyObject;
     requestBody: { csrf_token: string; title?: string; question?: string; user_id?: string; document_id?: string; version_id?: string; version_label?: string; file_name?: string; acl_scope_id?: string; dataset_id?: string; model_id?: string; import_id?: string; job_id?: string; now_ms?: number; rows?: ApiClientJsonObject[]; metadata?: ApiClientJsonObject; retrieval_policy?: { top_k?: number; allowed_acl_scope_ids?: string[] } } & ApiClientJsonObject;
     successStatus: 202;
-    successResponse: { import: ApiClientJsonObject };
+    successResponse: { import: { tenant_id: string; import_id: string; status: "active" | "archived" | "deleted" | "removed" | "queued" | "running" | "streaming" | "succeeded" | "failed" | "canceled"; result_s3_prefix: string; result_report_json: { created: number; updated: number; deleted: number; failed: number; error_rows_s3_uri: string }; created_by_user_id: string } };
     errorResponse: ApiClientErrorResponse;
   };
   getUserImport: {
@@ -377,7 +377,7 @@ export interface ApiClientOperationTypes {
     query: ApiClientEmptyObject;
     requestBody: never;
     successStatus: 200;
-    successResponse: { import: ApiClientJsonObject; rows: ApiClientJsonObject[] };
+    successResponse: { import: { tenant_id: string; import_id: string; status: "active" | "archived" | "deleted" | "removed" | "queued" | "running" | "streaming" | "succeeded" | "failed" | "canceled"; result_s3_prefix: string; result_report_json: { created: number; updated: number; deleted: number; failed: number; error_rows_s3_uri: string }; created_by_user_id: string }; rows: { tenant_id: string; import_id: string; row_number: number; action: string; status: "active" | "archived" | "deleted" | "removed" | "queued" | "running" | "streaming" | "succeeded" | "failed" | "canceled"; target_user_id?: string | null; error_message?: string | null }[] };
     errorResponse: ApiClientErrorResponse;
   };
   adminListDocuments: {
@@ -391,7 +391,7 @@ export interface ApiClientOperationTypes {
     query: ApiClientEmptyObject;
     requestBody: never;
     successStatus: 200;
-    successResponse: { documents: ApiClientJsonObject[] };
+    successResponse: { documents: { tenant_id: string; document_id: string; title: string; status: "active" | "archived" | "deleted" | "removed" | "queued" | "running" | "streaming" | "succeeded" | "failed" | "canceled"; created_by_user_id: string; created_at: string; updated_at: string }[] };
     errorResponse: ApiClientErrorResponse;
   };
   createDocument: {
@@ -419,7 +419,7 @@ export interface ApiClientOperationTypes {
     query: ApiClientEmptyObject;
     requestBody: never;
     successStatus: 200;
-    successResponse: { document: ApiClientJsonObject };
+    successResponse: { document: { tenant_id: string; document_id: string; title: string; status: "active" | "archived" | "deleted" | "removed" | "queued" | "running" | "streaming" | "succeeded" | "failed" | "canceled"; created_by_user_id: string; created_at: string; updated_at: string } };
     errorResponse: ApiClientErrorResponse;
   };
   createDocumentVersion: {
@@ -447,7 +447,7 @@ export interface ApiClientOperationTypes {
     query: ApiClientEmptyObject;
     requestBody: { csrf_token: string; title?: string; question?: string; user_id?: string; document_id?: string; version_id?: string; version_label?: string; file_name?: string; acl_scope_id?: string; dataset_id?: string; model_id?: string; import_id?: string; job_id?: string; now_ms?: number; rows?: ApiClientJsonObject[]; metadata?: ApiClientJsonObject; retrieval_policy?: { top_k?: number; allowed_acl_scope_ids?: string[] } } & ApiClientJsonObject;
     successStatus: 200;
-    successResponse: { version: ApiClientJsonObject };
+    successResponse: { version: { tenant_id: string; document_id: string; version_id: string; version_label: string; status: "active" | "archived" | "failed" | "uploaded"; raw_s3_uri: string; metadata_json: ApiClientJsonObject; created_at: string } };
     errorResponse: ApiClientErrorResponse;
   };
   getIngestionJob: {
@@ -461,7 +461,7 @@ export interface ApiClientOperationTypes {
     query: ApiClientEmptyObject;
     requestBody: never;
     successStatus: 200;
-    successResponse: { job: ApiClientJsonObject };
+    successResponse: { job: { tenant_id: string; job_id: string; document_id: string; version_id: string; status: "active" | "archived" | "deleted" | "removed" | "queued" | "running" | "streaming" | "succeeded" | "failed" | "canceled"; raw_s3_uri: string; parsed_s3_prefix: string; error_code?: string | null; retryable: boolean } };
     errorResponse: ApiClientErrorResponse;
   };
   retryIngestionJob: {
@@ -475,7 +475,7 @@ export interface ApiClientOperationTypes {
     query: ApiClientEmptyObject;
     requestBody: { csrf_token: string; title?: string; question?: string; user_id?: string; document_id?: string; version_id?: string; version_label?: string; file_name?: string; acl_scope_id?: string; dataset_id?: string; model_id?: string; import_id?: string; job_id?: string; now_ms?: number; rows?: ApiClientJsonObject[]; metadata?: ApiClientJsonObject; retrieval_policy?: { top_k?: number; allowed_acl_scope_ids?: string[] } } & ApiClientJsonObject;
     successStatus: 202;
-    successResponse: { job: ApiClientJsonObject };
+    successResponse: { job: { tenant_id: string; job_id: string; document_id: string; version_id: string; status: "active" | "archived" | "deleted" | "removed" | "queued" | "running" | "streaming" | "succeeded" | "failed" | "canceled"; raw_s3_uri: string; parsed_s3_prefix: string; error_code?: string | null; retryable: boolean } };
     errorResponse: ApiClientErrorResponse;
   };
   listEvaluationDatasets: {
@@ -489,7 +489,7 @@ export interface ApiClientOperationTypes {
     query: ApiClientEmptyObject;
     requestBody: never;
     successStatus: 200;
-    successResponse: { datasets: ApiClientJsonObject[] };
+    successResponse: { datasets: { tenant_id: string; dataset_id: string; dataset_name: string; status: "active" | "archived" | "deleted" | "removed" | "queued" | "running" | "streaming" | "succeeded" | "failed" | "canceled"; source_s3_uri: string; created_at: string }[] };
     errorResponse: ApiClientErrorResponse;
   };
   startEvaluationRun: {
@@ -503,7 +503,7 @@ export interface ApiClientOperationTypes {
     query: ApiClientEmptyObject;
     requestBody: { csrf_token: string; title?: string; question?: string; user_id?: string; document_id?: string; version_id?: string; version_label?: string; file_name?: string; acl_scope_id?: string; dataset_id?: string; model_id?: string; import_id?: string; job_id?: string; now_ms?: number; rows?: ApiClientJsonObject[]; metadata?: ApiClientJsonObject; retrieval_policy?: { top_k?: number; allowed_acl_scope_ids?: string[] } } & ApiClientJsonObject;
     successStatus: 202;
-    successResponse: { evaluation_run: ApiClientJsonObject };
+    successResponse: { evaluation_run: { tenant_id: string; evaluation_run_id: string; dataset_id: string; model_id: string; prompt_version: string; retrieval_config_json: { top_k: number } & ApiClientJsonObject; artifact_s3_prefix: string; status: "active" | "archived" | "deleted" | "removed" | "queued" | "running" | "streaming" | "succeeded" | "failed" | "canceled"; metrics_json: { retrieval?: { recall_at_10?: number } & ApiClientJsonObject; generation?: { groundedness?: number } & ApiClientJsonObject; end_to_end?: { refusal_accuracy?: number } & ApiClientJsonObject } & ApiClientJsonObject; created_by_user_id: string } };
     errorResponse: ApiClientErrorResponse;
   };
   getEvaluationRun: {
@@ -517,7 +517,7 @@ export interface ApiClientOperationTypes {
     query: ApiClientEmptyObject;
     requestBody: never;
     successStatus: 200;
-    successResponse: { evaluation_run: ApiClientJsonObject };
+    successResponse: { evaluation_run: { tenant_id: string; evaluation_run_id: string; dataset_id: string; model_id: string; prompt_version: string; retrieval_config_json: { top_k: number } & ApiClientJsonObject; artifact_s3_prefix: string; status: "active" | "archived" | "deleted" | "removed" | "queued" | "running" | "streaming" | "succeeded" | "failed" | "canceled"; metrics_json: { retrieval?: { recall_at_10?: number } & ApiClientJsonObject; generation?: { groundedness?: number } & ApiClientJsonObject; end_to_end?: { refusal_accuracy?: number } & ApiClientJsonObject } & ApiClientJsonObject; created_by_user_id: string } };
     errorResponse: ApiClientErrorResponse;
   };
   listPublishedArtifacts: {
@@ -531,7 +531,7 @@ export interface ApiClientOperationTypes {
     query: ApiClientEmptyObject;
     requestBody: never;
     successStatus: 200;
-    successResponse: { artifacts: ApiClientJsonObject[] };
+    successResponse: { artifacts: { tenant_id: string; artifact_id: string; artifact_type: "design_doc_html" | "allure_report"; title: string; version_label?: string; source_ref: string; s3_bucket?: string; s3_prefix?: string; viewer_path: string; manifest_path?: string; status: string; checksum?: string; published_by?: string; published_at?: string; expires_at?: string | null; created_at?: string; updated_at?: string }[] };
     errorResponse: ApiClientErrorResponse;
   };
   issueArtifactAccessCookie: {
