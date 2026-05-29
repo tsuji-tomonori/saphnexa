@@ -36,11 +36,11 @@
 
 ## 受け入れ条件
 
-- [ ] Admin UI が `adminListDocuments` route helper / generated operation helper 経由で文書一覧を取得する。
-- [ ] Admin Dashboard に「文書」タブがあり、API response 由来の文書だけを `DataTable` で表示し、空の場合は正直な empty state を出す。
-- [ ] local API と DSQL repository が admin document list 境界を持ち、管理者ロール境界を弱めない。
-- [ ] source/UI/web flow/docs gate が Admin 文書一覧境界を検査する。
-- [ ] 選定した検証コマンドが pass し、PDF upload / 文書登録フォームを実施済み扱いしない。
+- [x] Admin UI が `adminListDocuments` route helper / generated operation helper 経由で文書一覧を取得する。
+- [x] Admin Dashboard に「文書」タブがあり、API response 由来の文書だけを `DataTable` で表示し、空の場合は正直な empty state を出す。
+- [x] local API と DSQL repository が admin document list 境界を持ち、管理者ロール境界を弱めない。
+- [x] source/UI/web flow/docs gate が Admin 文書一覧境界を検査する。
+- [x] 選定した検証コマンドが pass し、PDF upload / 文書登録フォームを実施済み扱いしない。
 
 ## 検証計画
 
@@ -53,6 +53,25 @@
 - `npm run docs:check`
 - `npm run web:build:check`
 - `git diff --check`
+
+## 検証結果
+
+- `npm run typecheck -w @saphnexa/api`: pass
+- `npm run typecheck -w @saphnexa/db-types`: pass
+- `npm run typecheck -w @saphnexa/web`: pass
+- `npm run ui:check`: pass
+- `npm run web:flow:check`: fail -> 修正後 pass
+- `npm run web:a11y:check`: fail -> 修正後 pass
+- `npm run typecheck:source`: pass
+- `npm run docs:check`: pass
+- `npm run web:build:check`: pass
+- `npm run test:integration:local`: pass
+- `git diff --check`: pass
+
+## PR コメント
+
+- 受け入れ条件確認: https://github.com/tsuji-tomonori/saphnexa/pull/3#issuecomment-4570812958
+- セルフレビュー結果: https://github.com/tsuji-tomonori/saphnexa/pull/3#issuecomment-4570812932
 
 ## PR レビュー観点
 
@@ -68,4 +87,4 @@
 
 ## 状態
 
-do
+done
