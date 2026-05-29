@@ -1,6 +1,6 @@
 # Chat メッセージ履歴 feedback state 復元境界
 
-- 状態: do
+- 状態: done
 - タスク種別: 機能追加
 - 作成日時: 2026-05-29 19:20
 - 対象ブランチ: `codex/typescript-framework-implementation`
@@ -46,12 +46,12 @@ Chat メッセージ履歴は `listMessages` でユーザー質問と assistant 
 
 ## 受け入れ条件
 
-- [ ] `listMessages` が message ごとに閲覧者本人の feedback state を `feedback` として返す。
-- [ ] 他ユーザーの feedback rating/comment が `listMessages` で漏えいしない。
-- [ ] DSQL `listMessages` plan が actor user の `message_feedback` だけを left join する。
-- [ ] Web Message history が feedback rating/comment を表示する。
-- [ ] UI/source gate/docs 上で `feedback state` は接続済み範囲になり、paging cursor と引用本文の完全 REST 復元は未接続として残る。
-- [ ] 選定した検証コマンドが pass する。
+- [x] `listMessages` が message ごとに閲覧者本人の feedback state を `feedback` として返す。
+- [x] 他ユーザーの feedback rating/comment が `listMessages` で漏えいしない。
+- [x] DSQL `listMessages` plan が actor user の `message_feedback` だけを left join する。
+- [x] Web Message history が feedback rating/comment を表示する。
+- [x] UI/source gate/docs 上で `feedback state` は接続済み範囲になり、paging cursor と引用本文の完全 REST 復元は未接続として残る。
+- [x] 選定した検証コマンドが pass する。
 
 ## 検証計画
 
