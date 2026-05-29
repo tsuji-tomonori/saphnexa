@@ -22,6 +22,7 @@ for (const file of files) {
     assert(body.includes("useRemoveChatParticipant"), "ChatPage must use participant remove mutation hook");
     assert(body.includes("ChatParticipantsPanel"), "ChatPage must render participants panel through feature component");
     assert(body.includes("useChatMessages"), "ChatPage must use TanStack Query messages hook");
+    assert(body.includes("useCancelAnswerGeneration"), "ChatPage must use answer cancel mutation hook");
     assert(body.includes("MessageHistoryPanel"), "ChatPage must render message history panel through feature component");
     assert(body.includes("useMessageEvents"), "ChatPage must use TanStack Query message events hook");
     assert(body.includes("useCreateFeedback"), "ChatPage must use TanStack Query feedback hook");
@@ -73,6 +74,9 @@ for (const file of files) {
     assert(body.includes("メッセージはありません"), "Chat message history must render an honest empty message state");
     assert(body.includes("チャットを選択してください"), "Chat message history must render an honest no-chat state");
     assert(body.includes("paging cursor、feedback state、引用本文の完全 REST 復元: 未接続"), "Chat message history must not imply paging/feedback/citation restoration is complete");
+    assert(body.includes("実 AgentCore Runtime 停止、SQS event-publish、stream中断: 未接続"), "Chat message history must not imply real runtime stop or event publish is complete");
+    assert(body.includes("回答生成キャンセル要求"), "Chat message history must expose answer cancel request action");
+    assert(body.includes("disabled={!props.csrfToken || !props.activeChatId || !props.activeMessageId || props.isCanceling}"), "Chat answer cancel action must require token, chat, and message");
     assert(body.includes("StatusBadge"), "Chat message history must show status through StatusBadge");
     assert(!body.includes("msg-local"), "Chat message history must not hard-code local message ids");
   }

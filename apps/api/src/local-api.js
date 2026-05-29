@@ -47,6 +47,8 @@ export function createLocalApi() {
             return noContent();
           case "submitQuestion":
             return accepted(store.submitQuestion(actor, input.chat_id, input, rag));
+          case "cancelAnswerGeneration":
+            return accepted(store.cancelAnswerGeneration(actor, input.chat_id, input.message_id, input));
           case "listMessageEvents":
             return ok({ events: store.listEvents(actor, input.chat_id, input.message_id, input.after_seq || 0) });
           case "createFeedback":

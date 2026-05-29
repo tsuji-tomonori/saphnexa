@@ -62,6 +62,7 @@ export function createLocalStore() {
     listChats,
     getChat,
     submitQuestion,
+    cancelAnswerGeneration,
     listEvents,
     createFeedback,
     addFavorite,
@@ -361,6 +362,28 @@ export function createLocalStore() {
       error_code,
       retryable: true
     });
+  }
+
+  function cancelAnswerGeneration(actor, chat_id, message_id, input = {}) {
+    requireReader(actor, chat_id);
+    const message = state.chat_messages.find((item) => item.tenant_id === actor.tenant_id && item.chat_id === chat_id && item.message_id === message_id);
+    if (!message || message.sender_type !== "assistant" || !message.run_id) throw forbidden("MESSAGE_NOT_FOUND", "キャンセル対象の回答が存在しない。", 404);
+    const run = state.chat_runs.find((item) => item.tenant_id === actor.tenant_id && item.chat_id === chat_id && item.message_id === message_id && item.run_id === message.run_id);
+    if (!run) throw forbidden("CHAT_RUN_NOT_FOUND", "キャンセル対象のrunが存在しない。", 404);
+    const owner = canWriteChat(participant(chat_id, actor.user_id));
+    if (!owner && run.requested_by_user_id !== actor.user_id) throw forbidden("CHAT_CANCEL_FORBIDDEN", "回答生成のキャンセル権限がない。");
+    run.status = statuses.CANCELED;
+    run.completed_at = now();
+    run.error_code = input.reason || null;
+    run.retryable = false;
+    message.status = statuses.CANCELED;
+    message.completed_at = now();
+    appendEvent(actor.tenant_id, chat_id, message_id, "chat.run.canceled", "final", {
+      run_id: run.run_id,
+      status: statuses.CANCELED,
+      reason: input.reason || null
+    });
+    return { message_id, run_id: run.run_id, status: statuses.CANCELED };
   }
 
   function listEvents(actor, chat_id, message_id, after_seq = 0) {

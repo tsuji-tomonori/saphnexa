@@ -297,6 +297,7 @@ export interface LocalStore {
   listChats(actor: LocalActor): ChatSession[];
   getChat(actor: LocalActor, chat_id: string): ChatSession & { participants: ChatParticipant[]; messages: ChatMessage[] };
   submitQuestion(actor: LocalActor, chat_id: string, input: { question: string; retrieval_policy?: RetrievalPolicyJson; model_id?: string; failure_injection?: string }, ragAdapter?: RagAdapter): { message_id: string; run_id: string; status: Status };
+  cancelAnswerGeneration(actor: LocalActor, chat_id: string, message_id: string, input?: { reason?: string }): { message_id: string; run_id: string; status: Status };
   listEvents(actor: LocalActor, chat_id: string, message_id: string, after_seq?: number): ChatMessageEvent[];
   createFeedback(actor: LocalActor, chat_id: string, message_id: string, input: { rating?: string; comment?: string; problem_type?: string }): MessageFeedbackRecord;
   addFavorite(actor: LocalActor, input: { chat_id?: string; message_id?: string }): FavoriteRecord;

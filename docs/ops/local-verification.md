@@ -130,6 +130,7 @@ git diff --check
 - `npm run web:build:check` が Vite production build output の `apps/web/dist/index.html`、hashed JS asset、JS sourcemap、gzip size 上限を検査すること。
 - Chat UI が React Hook Form + Zod validation、events payload 由来の Citation Drawer、AppSync Events / WebSocket client boundary を持ち、未接続時に架空 realtime event を生成しないこと。
 - Chat UI が `listMessages` route helper / generated operation helper を使い、参加中チャットのユーザー質問と assistant 回答を source/local gate で再表示できること。paging cursor、feedback state 復元、引用本文の完全 REST 復元、実ブラウザ E2E は別途確認する。
+- Chat UI が `cancelAnswerGeneration` route helper / generated operation helper を使い、owner または投稿者本人による回答生成キャンセル要求、viewer/outsider の拒否、`chat.run.canceled` event と canceled status を source/local gate で確認できること。実 AgentCore Runtime 停止、SQS event-publish、AppSync fan-out、streaming 中断、実ブラウザ E2E は別途確認する。
 - Chat UI が `listChatParticipants` route helper / generated operation helper を使い、参加中チャットの参加者、ロール、共有者、共有日時を source/local gate で確認できること。
 - Chat UI が `updateChatSession` / `deleteChatSession` route helper / generated operation helper を使い、owner によるチャットタイトル更新と論理削除、viewer/outsider の拒否、削除後の一覧・通常取得からの除外を source/local gate で確認できること。chat event table の完全追記 lifecycle、保持期間後の物理削除、実ブラウザ E2E は別途確認する。
 - Chat UI が `addChatParticipant` / `updateChatParticipant` / `removeChatParticipant` route helper / generated operation helper を使い、owner による viewer 共有、viewer 再有効化、共有解除を source/local gate で確認できること。owner 移譲、viewer の owner 昇格、実 AppSync Events fan-out、実ブラウザ E2E は別途確認する。

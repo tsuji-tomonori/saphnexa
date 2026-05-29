@@ -54,6 +54,9 @@ checkFile("MessageHistoryPanel", "apps/web/src/features/chat/MessageHistoryPanel
   rule("empty selected-chat state", (body) => body.includes("チャットを選択してください")),
   rule("pending status", (body) => body.includes("<p role=\"status\">メッセージ履歴を確認しています</p>")),
   rule("honest restore state", (body) => body.includes("paging cursor、feedback state、引用本文の完全 REST 復元: 未接続")),
+  rule("honest cancel state", (body) => body.includes("実 AgentCore Runtime 停止、SQS event-publish、stream中断: 未接続")),
+  rule("cancel action", (body) => body.includes("回答生成キャンセル要求")),
+  rule("cancel disabled state", (body) => body.includes("disabled={!props.csrfToken || !props.activeChatId || !props.activeMessageId || props.isCanceling}")),
   rule("status badge", (body) => body.includes("StatusBadge"))
 ]);
 checkFile("CitationDrawerPanel", "apps/web/src/features/chat/CitationDrawerPanel.tsx", [

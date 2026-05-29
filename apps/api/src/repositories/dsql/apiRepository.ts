@@ -485,6 +485,100 @@ const dsqlOperationMappings = {
       return { events: rows };
     }
   },
+  cancelAnswerGeneration: {
+    notFoundErrorCode: "DSQL_CANCEL_TARGET_NOT_FOUND",
+    plan(request) {
+      return {
+        operationId: "cancelAnswerGeneration",
+        resultTable: "chat_runs",
+        sql: `
+          WITH cancelable_run AS (
+            SELECT
+              r.tenant_id,
+              r.run_id,
+              r.chat_id,
+              r.message_id,
+              r.requested_by_user_id
+            FROM chat_runs r
+            JOIN chat_participants p
+              ON p.tenant_id = r.tenant_id
+             AND p.chat_id = r.chat_id
+             AND p.user_id = :actor_id
+             AND p.status = 'active'
+            WHERE r.chat_id = :chat_id
+              AND r.message_id = :message_id
+              AND (
+                p.participant_role = 'owner'
+                OR r.requested_by_user_id = :actor_id
+              )
+          ),
+          canceled_run AS (
+            UPDATE chat_runs r
+               SET status = 'canceled',
+                   completed_at = now(),
+                   error_code = NULL
+              FROM cancelable_run cr
+             WHERE r.tenant_id = cr.tenant_id
+               AND r.run_id = cr.run_id
+             RETURNING r.*
+          ),
+          canceled_message AS (
+            UPDATE chat_messages m
+               SET status = 'canceled',
+                   completed_at = now()
+              FROM canceled_run cr
+             WHERE m.tenant_id = cr.tenant_id
+               AND m.chat_id = cr.chat_id
+               AND m.message_id = cr.message_id
+             RETURNING m.message_id
+          ),
+          next_event AS (
+            SELECT
+              cr.tenant_id,
+              cr.chat_id,
+              cr.message_id,
+              COALESCE(MAX(e.event_seq), 0) + 1 AS event_seq,
+              cr.run_id
+            FROM canceled_run cr
+            LEFT JOIN chat_message_events e
+              ON e.tenant_id = cr.tenant_id
+             AND e.chat_id = cr.chat_id
+             AND e.message_id = cr.message_id
+            GROUP BY cr.tenant_id, cr.chat_id, cr.message_id, cr.run_id
+          )
+          INSERT INTO chat_message_events (
+            tenant_id, chat_id, message_id, event_seq, event_id, event_name, event_type, payload_json, created_at
+          )
+          SELECT
+            ne.tenant_id,
+            ne.chat_id,
+            ne.message_id,
+            ne.event_seq,
+            gen_random_uuid(),
+            'chat.run.canceled',
+            'final',
+            json_build_object('run_id', ne.run_id, 'status', 'canceled', 'reason', :reason),
+            now()
+          FROM next_event ne
+          RETURNING (
+            SELECT row_to_json(cr)
+            FROM canceled_run cr
+          ) AS canceled_run_json
+        `,
+        params: {
+          actor_id: request.actorId,
+          chat_id: request.input.chat_id,
+          message_id: request.input.message_id,
+          reason: request.input.reason ?? null
+        }
+      };
+    },
+    map(rows) {
+      const row = firstRow(rows) as DbRow<"chat_runs"> & { canceled_run_json?: DbRow<"chat_runs"> };
+      const run = row.canceled_run_json ?? row;
+      return { message_id: run.message_id, run_id: run.run_id, status: "canceled" };
+    }
+  },
   createFeedback: {
     notFoundErrorCode: "DSQL_FEEDBACK_TARGET_NOT_FOUND",
     plan(request) {

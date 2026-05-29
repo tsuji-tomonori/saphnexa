@@ -14,7 +14,7 @@ import { useChatSessions, useDeleteChatSession, useUpdateChatSession } from "../
 import { useAddFavorite, useDeleteFavorite, useFavorites } from "../hooks/useFavorites";
 import { useCreateFeedback } from "../hooks/useCreateFeedback";
 import { useMe } from "../hooks/useMe";
-import { useChatMessages } from "../hooks/useChatMessages";
+import { useCancelAnswerGeneration, useChatMessages } from "../hooks/useChatMessages";
 import { useMessageEvents } from "../hooks/useMessageEvents";
 import { useMessageRealtime } from "../hooks/useMessageRealtime";
 import { submitAssistantQuestion } from "../lib/assistantRuntime";
@@ -30,6 +30,7 @@ export function ChatPage() {
   const createFeedback = useCreateFeedback(csrfToken);
   const updateChatSession = useUpdateChatSession(csrfToken);
   const deleteChatSession = useDeleteChatSession(csrfToken);
+  const cancelAnswerGeneration = useCancelAnswerGeneration(csrfToken);
   const addChatParticipant = useAddChatParticipant(csrfToken);
   const updateChatParticipant = useUpdateChatParticipant(csrfToken);
   const removeChatParticipant = useRemoveChatParticipant(csrfToken);
@@ -114,8 +115,12 @@ export function ChatPage() {
         />
         <MessageHistoryPanel
           activeChatId={activeChatId}
+          activeMessageId={messageId}
+          csrfToken={csrfToken}
           messages={messages.data?.messages ?? []}
           isLoading={messages.isFetching}
+          isCanceling={cancelAnswerGeneration.isPending}
+          onCancel={(input) => cancelAnswerGeneration.mutate(input)}
         />
         <MessageEventsPanel events={events.data?.events ?? []} />
         <CitationDrawerPanel open={Boolean(activeChatId && csrfToken)} events={events.data?.events ?? []} />

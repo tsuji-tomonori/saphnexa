@@ -81,6 +81,7 @@ scenario("chat UI source contract", () => {
     "useDeleteChatSession",
     "useChatParticipants",
     "useChatMessages",
+    "useCancelAnswerGeneration",
     "useAddChatParticipant",
     "useUpdateChatParticipant",
     "useRemoveChatParticipant",
@@ -127,6 +128,9 @@ scenario("chat UI source contract", () => {
   assert(chatMessagesHookSource.includes("apiRoutes.listMessages(chatId ?? \"\")"), "useChatMessages hook must use listMessages route helper");
   assert(chatMessagesHookSource.includes("apiGetOperation(\"listMessages\""), "useChatMessages hook must use generated listMessages operation helper");
   assert(chatMessagesHookSource.includes("enabled: Boolean(chatId)"), "useChatMessages hook must wait for active chat");
+  assert(chatMessagesHookSource.includes("apiRoutes.cancelAnswerGeneration(input.chat_id, input.message_id)"), "useCancelAnswerGeneration hook must use cancelAnswerGeneration route helper");
+  assert(chatMessagesHookSource.includes("apiPostOperation(\"cancelAnswerGeneration\""), "useCancelAnswerGeneration hook must use generated cancelAnswerGeneration helper");
+  assert(chatMessagesHookSource.includes("invalidateQueries({ queryKey: [\"message-events\", input.chat_id, input.message_id] })"), "answer cancel mutation must refresh message events query");
   assert(apiClientSource.includes("/api/chat-sessions/{chat_id}/messages"), "API client listMessages helper must call messages path");
   assert(feedbackHookSource.includes("apiRoutes.createFeedback(input.chat_id, input.message_id)"), "useCreateFeedback hook must use createFeedback route helper");
   assert(feedbackHookSource.includes("apiPostOperation(\"createFeedback\""), "useCreateFeedback hook must use generated createFeedback helper");
@@ -187,6 +191,9 @@ scenario("chat UI source contract", () => {
     "チャットを選択してください",
     "メッセージ履歴を確認しています",
     "paging cursor、feedback state、引用本文の完全 REST 復元: 未接続",
+    "実 AgentCore Runtime 停止、SQS event-publish、stream中断: 未接続",
+    "回答生成キャンセル要求",
+    "disabled={!props.csrfToken || !props.activeChatId || !props.activeMessageId || props.isCanceling}",
     "StatusBadge",
     "message.content_text || \"本文未確定\""
   ]) {
@@ -300,6 +307,23 @@ scenario("chat local API flow", () => {
   assert(messages.body.messages.some((message) => message.message_id === submit.body.message_id && message.sender_type === "assistant"), "assistant message missing from message history");
   assert(messages.body.messages.some((message) => message.sender_user_id === "user-owner" && message.content_text.includes("Saphnexa")), "user message missing from message history");
   assert(api.request("user-outsider", "listMessages", { chat_id: chat.body.chat.chat_id }).status === 403, "outsider must not list messages for unreadable chat");
+  const cancelTarget = api.request("user-owner", "createChatSession", { csrf_token: csrf, title: "cancel target" });
+  const cancelSubmit = api.request("user-owner", "submitQuestion", {
+    csrf_token: csrf,
+    chat_id: cancelTarget.body.chat.chat_id,
+    question: "キャンセル境界を確認する"
+  });
+  assert(cancelSubmit.status === 202, "cancel target submit failed");
+  const cancelShare = api.request("user-owner", "addChatParticipant", { csrf_token: csrf, chat_id: cancelTarget.body.chat.chat_id, user_id: "user-viewer" });
+  assert(cancelShare.status === 201, "cancel target share failed");
+  assert(api.request("user-viewer", "cancelAnswerGeneration", { csrf_token: "csrf-user-viewer", chat_id: cancelTarget.body.chat.chat_id, message_id: cancelSubmit.body.message_id }).status === 403, "viewer must not cancel owner requested answer");
+  assert(api.request("user-outsider", "cancelAnswerGeneration", { csrf_token: "csrf-user-outsider", chat_id: cancelTarget.body.chat.chat_id, message_id: cancelSubmit.body.message_id }).status === 403, "outsider must not cancel unreadable answer");
+  const canceled = api.request("user-owner", "cancelAnswerGeneration", { csrf_token: csrf, chat_id: cancelTarget.body.chat.chat_id, message_id: cancelSubmit.body.message_id, reason: "local source gate" });
+  assert(canceled.status === 202 && canceled.body.status === "canceled", "owner must cancel answer generation");
+  const cancelMessages = api.request("user-owner", "listMessages", { chat_id: cancelTarget.body.chat.chat_id });
+  assert(cancelMessages.body.messages.some((message) => message.message_id === cancelSubmit.body.message_id && message.status === "canceled"), "canceled message status missing");
+  const cancelEvents = api.request("user-owner", "listMessageEvents", { chat_id: cancelTarget.body.chat.chat_id, message_id: cancelSubmit.body.message_id });
+  assert(cancelEvents.body.events.some((event) => event.event_name === "chat.run.canceled"), "cancel event missing");
   const feedback = api.request("user-owner", "createFeedback", {
     csrf_token: csrf,
     chat_id: chat.body.chat.chat_id,
