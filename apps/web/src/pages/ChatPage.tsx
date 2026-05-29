@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useState } from "react";
+import { useQueryClient } from "@tanstack/react-query";
 import { apiPostOperation, apiRoutes } from "@saphnexa/api-client";
 import { AppShell } from "@saphnexa/ui";
 import { AssistantRuntimeBoundary } from "../features/chat/AssistantRuntimeBoundary";
@@ -21,6 +22,7 @@ import { submitAssistantQuestion } from "../lib/assistantRuntime";
 import { useAddChatParticipant, useChatParticipants, useRemoveChatParticipant, useUpdateChatParticipant } from "../hooks/useChatParticipants";
 
 export function ChatPage() {
+  const queryClient = useQueryClient();
   const me = useMe();
   const chatSessions = useChatSessions();
   const favorites = useFavorites();
@@ -70,13 +72,22 @@ export function ChatPage() {
   }
 
   async function submit(question: string) {
-    if (!activeChatId) return;
-    const accepted = await submitAssistantQuestion({ chatId: activeChatId, question, csrfToken });
+    const hadActiveChat = Boolean(activeChatId);
+    const chatId = await ensureActiveChatId(question);
+    const accepted = await submitAssistantQuestion({ chatId, question, csrfToken });
     setMessageId(accepted.message_id);
-    void messages.refetch();
-    const ticket = await apiPostOperation("issueWsTicket", apiRoutes.issueWsTicket(), { chat_id: activeChatId, message_id: accepted.message_id }, csrfToken);
+    if (hadActiveChat) void messages.refetch();
+    void queryClient.invalidateQueries({ queryKey: ["chat-messages", chatId] });
+    const ticket = await apiPostOperation("issueWsTicket", apiRoutes.issueWsTicket(), { chat_id: chatId, message_id: accepted.message_id }, csrfToken);
     setWsTicket(ticket.ticket);
     setWsChannels(ticket.channels);
+  }
+
+  async function ensureActiveChatId(question: string) {
+    if (activeChatId) return activeChatId;
+    const created = await createChatSession.mutateAsync({ title: chatTitleFromQuestion(question) });
+    selectChat(created.chat.chat_id);
+    return created.chat.chat_id;
   }
 
   return (
@@ -162,4 +173,10 @@ function writeChatPath(chatId: string | null) {
   const nextPath = chatId ? `/chat/${encodeURIComponent(chatId)}` : "/chat";
   if (window.location.pathname === nextPath) return;
   window.history.pushState({}, "", nextPath);
+}
+
+function chatTitleFromQuestion(question: string) {
+  const title = question.trim().replace(/\s+/g, " ");
+  if (!title) return "新規チャット";
+  return title.length > 30 ? `${title.slice(0, 30)}...` : title;
 }

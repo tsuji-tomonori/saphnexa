@@ -61,7 +61,7 @@ export function ChatSessionNav(props: {
             </FormField>
           )}
         />
-        <p role="status">初回質問送信時の自動チャット作成、chat event append: 未接続</p>
+        <p role="status">chat event append: 未接続</p>
         <Button type="submit" disabled={!props.csrfToken || props.isMutating}>新規チャット</Button>
       </form>
       <form aria-label="チャットタイトル更新フォーム" onSubmit={form.handleSubmit(submit)}>
