@@ -1,5 +1,14 @@
 export type ApiClientPath = `/api/${string}` | `/auth/${string}`;
 export type ApiClientPathTemplate = `/${"api" | "auth"}/${string}`;
+export type {
+  ApiClientErrorResponse,
+  ApiClientGeneratedOperationId,
+  ApiClientJsonObject,
+  ApiClientOperationRequest,
+  ApiClientOperationResponse,
+  ApiClientOperationType,
+  ApiClientOperationTypes
+} from "./generated/operation-types";
 
 export const apiRouteTemplates = {
   loginStart: "/auth/login",
