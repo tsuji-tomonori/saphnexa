@@ -129,6 +129,7 @@ git diff --check
 - `npm run web:build` が Vite production build を実行し、Chat/Admin browser entrypoint を bundle できること。
 - `npm run web:build:check` が Vite production build output の `apps/web/dist/index.html`、hashed JS asset、JS sourcemap、gzip size 上限を検査すること。
 - Chat UI が React Hook Form + Zod validation、events payload 由来の Citation Drawer、AppSync Events / WebSocket client boundary を持ち、未接続時に架空 realtime event を生成しないこと。
+- Chat UI が `listMessages` route helper / generated operation helper を使い、参加中チャットのユーザー質問と assistant 回答を source/local gate で再表示できること。paging cursor、feedback state 復元、引用本文の完全 REST 復元、実ブラウザ E2E は別途確認する。
 - Chat UI が `listChatParticipants` route helper / generated operation helper を使い、参加中チャットの参加者、ロール、共有者、共有日時を source/local gate で確認できること。
 - Chat UI が `addChatParticipant` / `updateChatParticipant` / `removeChatParticipant` route helper / generated operation helper を使い、owner による viewer 共有、viewer 再有効化、共有解除を source/local gate で確認できること。owner 移譲、viewer の owner 昇格、実 AppSync Events fan-out、実ブラウザ E2E は別途確認する。
 - Chat UI が `createFeedback` route helper / generated operation helper を使い、閲覧可能な回答への高評価・低評価・コメント登録を source/local gate で確認できること。フィードバック一覧、取消、実ブラウザ E2E は別途確認する。
@@ -221,6 +222,7 @@ git diff --check
 - axe/Playwright の実 DOM accessibility report、Lighthouse CI、本番 bundler の analyzer report、AWS load test。
 - UI theme / recipe / Radix primitive 境界は source gate、`tsc --noEmit`、Vite production build で確認する。実ブラウザ visual regression、dark/density theme の実切替、全 shadcn/ui component 群の網羅は別途確認する。
 - Chat 参加者一覧の local gate は参加者による対象チャット参加者一覧取得と未参加者拒否を確認する。
+- Chat message history の local gate は参加者による対象チャットメッセージ一覧取得、ユーザー質問と assistant 回答の復元、未参加者拒否を確認する。paging cursor、feedback state 復元、引用本文の完全 REST 復元、実ブラウザ操作、実 Aurora DSQL での SQL 実行は別途確認する。
 - Chat 共有操作の local gate は owner による viewer 共有、viewer / outsider の共有操作拒否、viewer 解除後の閲覧拒否、viewer 再有効化、owner 昇格拒否、owner 削除拒否を確認する。owner 移譲、実 AppSync Events fan-out、実ブラウザ操作、実 Aurora DSQL での SQL 実行は別途確認する。
 - Chat フィードバックの local gate は参加者による対象回答への登録と未参加者拒否を確認する。フィードバック一覧、取消、分析集計、実ブラウザ操作、実 Aurora DSQL での SQL 実行は別途確認する。
 - Admin ユーザー取込の source gate は `adminListUsers`、JSON rows による `startUserImport`、`getUserImport` の結果集計と行別エラー、管理者ロール境界を確認する。CSV/Excel binary upload、S3 import file 配置、Cognito 実反映、AppSync 完了通知は別途実装・検証する。

@@ -11,6 +11,7 @@ checkFile("ChatPage", "apps/web/src/pages/ChatPage.tsx", [
   rule("main landmark", (body) => body.includes("className=\"sx-chat-shell\"")),
   rule("assistant runtime provider boundary", (body) => body.includes("AssistantRuntimeBoundary")),
   rule("participants panel", (body) => body.includes("ChatParticipantsPanel")),
+  rule("message history panel", (body) => body.includes("MessageHistoryPanel")),
   rule("feedback panel", (body) => body.includes("FeedbackPanel")),
   rule("favorite panel", (body) => body.includes("FavoritePanel"))
 ]);
@@ -41,6 +42,14 @@ checkFile("MessageComposer", "apps/web/src/features/chat/MessageComposer.tsx", [
   rule("question disabled state", (body) => body.includes("disabled={!props.csrfToken || !question}")),
   rule("validation error alert", (body) => body.includes("role=\"alert\"")),
   rule("button type", (body) => !/<button(?![^>]*\stype=)/.test(body))
+]);
+checkFile("MessageHistoryPanel", "apps/web/src/features/chat/MessageHistoryPanel.tsx", [
+  rule("message history label", (body) => body.includes("aria-label=\"メッセージ履歴\"")),
+  rule("empty message status", (body) => body.includes("メッセージはありません")),
+  rule("empty selected-chat state", (body) => body.includes("チャットを選択してください")),
+  rule("pending status", (body) => body.includes("<p role=\"status\">メッセージ履歴を確認しています</p>")),
+  rule("honest restore state", (body) => body.includes("paging cursor、feedback state、引用本文の完全 REST 復元: 未接続")),
+  rule("status badge", (body) => body.includes("StatusBadge"))
 ]);
 checkFile("CitationDrawerPanel", "apps/web/src/features/chat/CitationDrawerPanel.tsx", [
   rule("citation drawer organism", (body) => body.includes("CitationDrawer")),

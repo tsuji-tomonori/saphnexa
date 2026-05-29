@@ -9,10 +9,12 @@ import { FeedbackPanel } from "../features/chat/FeedbackPanel";
 import { FavoritePanel } from "../features/chat/FavoritePanel";
 import { MessageComposer } from "../features/chat/MessageComposer";
 import { MessageEventsPanel } from "../features/chat/MessageEventsPanel";
+import { MessageHistoryPanel } from "../features/chat/MessageHistoryPanel";
 import { useChatSessions } from "../hooks/useChatSessions";
 import { useAddFavorite, useDeleteFavorite, useFavorites } from "../hooks/useFavorites";
 import { useCreateFeedback } from "../hooks/useCreateFeedback";
 import { useMe } from "../hooks/useMe";
+import { useChatMessages } from "../hooks/useChatMessages";
 import { useMessageEvents } from "../hooks/useMessageEvents";
 import { useMessageRealtime } from "../hooks/useMessageRealtime";
 import { submitAssistantQuestion } from "../lib/assistantRuntime";
@@ -36,6 +38,7 @@ export function ChatPage() {
   const chats = chatSessions.data?.chats ?? [];
   const activeChatId = selectedChatId ?? chats[0]?.chat_id ?? null;
   const participants = useChatParticipants(activeChatId);
+  const messages = useChatMessages(activeChatId);
   const events = useMessageEvents(activeChatId, messageId);
   const refetchMessageEvents = useCallback(() => {
     void events.refetch();
@@ -51,6 +54,7 @@ export function ChatPage() {
     if (!activeChatId) return;
     const accepted = await submitAssistantQuestion({ chatId: activeChatId, question, csrfToken });
     setMessageId(accepted.message_id);
+    void messages.refetch();
     const ticket = await apiPostOperation("issueWsTicket", apiRoutes.issueWsTicket(), { chat_id: activeChatId, message_id: accepted.message_id }, csrfToken);
     setWsTicket(ticket.ticket);
     setWsChannels(ticket.channels);
@@ -90,6 +94,11 @@ export function ChatPage() {
           isPending={createFeedback.isPending}
           submittedRating={createFeedback.data?.feedback.rating}
           onSubmit={(input) => createFeedback.mutate({ chat_id: input.chatId, message_id: input.messageId, rating: input.rating, comment: input.comment })}
+        />
+        <MessageHistoryPanel
+          activeChatId={activeChatId}
+          messages={messages.data?.messages ?? []}
+          isLoading={messages.isFetching}
         />
         <MessageEventsPanel events={events.data?.events ?? []} />
         <CitationDrawerPanel open={Boolean(activeChatId && csrfToken)} events={events.data?.events ?? []} />

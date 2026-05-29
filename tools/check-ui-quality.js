@@ -19,6 +19,8 @@ for (const file of files) {
     assert(body.includes("useUpdateChatParticipant"), "ChatPage must use participant update mutation hook");
     assert(body.includes("useRemoveChatParticipant"), "ChatPage must use participant remove mutation hook");
     assert(body.includes("ChatParticipantsPanel"), "ChatPage must render participants panel through feature component");
+    assert(body.includes("useChatMessages"), "ChatPage must use TanStack Query messages hook");
+    assert(body.includes("MessageHistoryPanel"), "ChatPage must render message history panel through feature component");
     assert(body.includes("useMessageEvents"), "ChatPage must use TanStack Query message events hook");
     assert(body.includes("useCreateFeedback"), "ChatPage must use TanStack Query feedback hook");
     assert(body.includes("FeedbackPanel"), "ChatPage must render feedback panel through feature component");
@@ -54,6 +56,15 @@ for (const file of files) {
     assert(body.includes("aria-label=\"質問\""), "ChatApp textarea must have an accessible label");
     assert(body.includes("useForm") && body.includes("zodResolver") && body.includes("questionSchema"), "MessageComposer must use React Hook Form + Zod validation");
     assert(body.includes("disabled={!props.csrfToken || !question}"), "MessageComposer must disable submit without token or question");
+  }
+  if (file.includes("MessageHistoryPanel")) {
+    assert(body.includes("MessageThread"), "Chat message history must render through MessageThread");
+    assert(body.includes("aria-label=\"メッセージ履歴\""), "Chat message history must expose a labelled thread");
+    assert(body.includes("メッセージはありません"), "Chat message history must render an honest empty message state");
+    assert(body.includes("チャットを選択してください"), "Chat message history must render an honest no-chat state");
+    assert(body.includes("paging cursor、feedback state、引用本文の完全 REST 復元: 未接続"), "Chat message history must not imply paging/feedback/citation restoration is complete");
+    assert(body.includes("StatusBadge"), "Chat message history must show status through StatusBadge");
+    assert(!body.includes("msg-local"), "Chat message history must not hard-code local message ids");
   }
   if (file.includes("MessageEventsPanel")) {
     assert(body.includes("MessageThread") && body.includes("emptyLabel=\"イベントはありません\""), "ChatApp must render events through MessageThread with an honest empty state");

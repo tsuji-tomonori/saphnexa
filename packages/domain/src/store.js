@@ -56,6 +56,7 @@ export function createLocalStore() {
     updateParticipant,
     removeParticipant,
     listParticipants,
+    listMessages,
     listChats,
     getChat,
     submitQuestion,
@@ -171,6 +172,13 @@ export function createLocalStore() {
     return state.chat_participants
       .filter((item) => item.tenant_id === actor.tenant_id && item.chat_id === chat_id && item.status === statuses.ACTIVE)
       .sort((a, b) => a.added_at.localeCompare(b.added_at));
+  }
+
+  function listMessages(actor, chat_id) {
+    requireReader(actor, chat_id);
+    return state.chat_messages
+      .filter((item) => item.tenant_id === actor.tenant_id && item.chat_id === chat_id)
+      .sort((a, b) => a.created_at.localeCompare(b.created_at));
   }
 
   function listChats(actor) {

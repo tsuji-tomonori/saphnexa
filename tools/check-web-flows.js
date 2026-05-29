@@ -14,6 +14,7 @@ const chatPageSource = readText("apps/web/src/pages/ChatPage.tsx");
 const chatNavSource = readText("apps/web/src/features/chat/ChatSessionNav.tsx");
 const chatParticipantsPanelSource = readText("apps/web/src/features/chat/ChatParticipantsPanel.tsx");
 const composerSource = readText("apps/web/src/features/chat/MessageComposer.tsx");
+const messageHistoryPanelSource = readText("apps/web/src/features/chat/MessageHistoryPanel.tsx");
 const eventsPanelSource = readText("apps/web/src/features/chat/MessageEventsPanel.tsx");
 const citationDrawerSource = readText("apps/web/src/features/chat/CitationDrawerPanel.tsx");
 const feedbackPanelSource = readText("apps/web/src/features/chat/FeedbackPanel.tsx");
@@ -35,6 +36,7 @@ const assistantRuntimeSource = readText("apps/web/src/lib/assistantRuntime.ts");
 const meHookSource = readText("apps/web/src/hooks/useMe.ts");
 const chatSessionsHookSource = readText("apps/web/src/hooks/useChatSessions.ts");
 const chatParticipantsHookSource = readText("apps/web/src/hooks/useChatParticipants.ts");
+const chatMessagesHookSource = readText("apps/web/src/hooks/useChatMessages.ts");
 const feedbackHookSource = readText("apps/web/src/hooks/useCreateFeedback.ts");
 const favoritesHookSource = readText("apps/web/src/hooks/useFavorites.ts");
 const adminUsersHookSource = readText("apps/web/src/hooks/useAdminUsers.ts");
@@ -76,6 +78,7 @@ scenario("chat UI source contract", () => {
   for (const token of [
     "useChatSessions",
     "useChatParticipants",
+    "useChatMessages",
     "useAddChatParticipant",
     "useUpdateChatParticipant",
     "useRemoveChatParticipant",
@@ -86,12 +89,14 @@ scenario("chat UI source contract", () => {
     "useAddFavorite",
     "useDeleteFavorite",
     "ChatParticipantsPanel",
+    "MessageHistoryPanel",
     "CitationDrawerPanel",
     "FeedbackPanel",
     "FavoritePanel",
     "AssistantRuntimeBoundary",
     "submitAssistantQuestion",
     "setMessageId(accepted.message_id)",
+    "messages.refetch()",
     "setWsChannels(ticket.channels)",
     "events.refetch()"
   ]) {
@@ -112,6 +117,10 @@ scenario("chat UI source contract", () => {
   assert(chatParticipantsHookSource.includes("apiDeleteOperation(\"removeChatParticipant\""), "useRemoveChatParticipant hook must use generated removeChatParticipant helper");
   assert(chatParticipantsHookSource.includes("invalidateQueries({ queryKey: [\"chat-participants\", input.chat_id] })"), "participant mutations must refresh participants query");
   assert(apiClientSource.includes("/api/chat-sessions/{chat_id}/participants"), "API client participants helper must call participants path");
+  assert(chatMessagesHookSource.includes("apiRoutes.listMessages(chatId ?? \"\")"), "useChatMessages hook must use listMessages route helper");
+  assert(chatMessagesHookSource.includes("apiGetOperation(\"listMessages\""), "useChatMessages hook must use generated listMessages operation helper");
+  assert(chatMessagesHookSource.includes("enabled: Boolean(chatId)"), "useChatMessages hook must wait for active chat");
+  assert(apiClientSource.includes("/api/chat-sessions/{chat_id}/messages"), "API client listMessages helper must call messages path");
   assert(feedbackHookSource.includes("apiRoutes.createFeedback(input.chat_id, input.message_id)"), "useCreateFeedback hook must use createFeedback route helper");
   assert(feedbackHookSource.includes("apiPostOperation(\"createFeedback\""), "useCreateFeedback hook must use generated createFeedback helper");
   assert(apiClientSource.includes("/api/chat-sessions/{chat_id}/messages/{message_id}/feedback"), "API client feedback helper must call feedback path");
@@ -155,6 +164,18 @@ scenario("chat UI source contract", () => {
     "disabled={!props.csrfToken || !question}"
   ]) {
     assert(composerSource.includes(token), `MessageComposer missing token: ${token}`);
+  }
+  for (const token of [
+    "aria-label=\"メッセージ履歴\"",
+    "MessageThread",
+    "メッセージはありません",
+    "チャットを選択してください",
+    "メッセージ履歴を確認しています",
+    "paging cursor、feedback state、引用本文の完全 REST 復元: 未接続",
+    "StatusBadge",
+    "message.content_text || \"本文未確定\""
+  ]) {
+    assert(messageHistoryPanelSource.includes(token), `MessageHistoryPanel missing token: ${token}`);
   }
   for (const token of [
     "MessageThread",
@@ -255,6 +276,11 @@ scenario("chat local API flow", () => {
   assert(reenabledParticipant.status === 200 && reenabledParticipant.body.participant.status === "active", "owner must re-enable viewer participant");
   assert(api.request("user-owner", "updateChatParticipant", { csrf_token: csrf, chat_id: chat.body.chat.chat_id, user_id: "user-viewer", participant_role: "owner" }).status === 403, "owner promotion must stay unsupported");
   assert(api.request("user-owner", "removeChatParticipant", { csrf_token: csrf, chat_id: chat.body.chat.chat_id, user_id: "user-owner" }).status === 403, "owner participant must not be removable");
+  const messages = api.request("user-owner", "listMessages", { chat_id: chat.body.chat.chat_id });
+  assert(messages.status === 200, "chat messages fetch failed");
+  assert(messages.body.messages.some((message) => message.message_id === submit.body.message_id && message.sender_type === "assistant"), "assistant message missing from message history");
+  assert(messages.body.messages.some((message) => message.sender_user_id === "user-owner" && message.content_text.includes("Saphnexa")), "user message missing from message history");
+  assert(api.request("user-outsider", "listMessages", { chat_id: chat.body.chat.chat_id }).status === 403, "outsider must not list messages for unreadable chat");
   const feedback = api.request("user-owner", "createFeedback", {
     csrf_token: csrf,
     chat_id: chat.body.chat.chat_id,

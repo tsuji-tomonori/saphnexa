@@ -329,6 +329,43 @@ const dsqlOperationMappings = {
       return undefined;
     }
   },
+  listMessages: {
+    plan(request) {
+      return {
+        operationId: "listMessages",
+        resultTable: "chat_messages",
+        sql: `
+          SELECT
+            m.tenant_id,
+            m.chat_id,
+            m.message_id,
+            m.parent_message_id,
+            m.sender_user_id,
+            m.sender_type,
+            m.content_text,
+            m.run_id,
+            m.status,
+            m.created_at,
+            m.completed_at
+          FROM chat_messages m
+          JOIN chat_participants p
+            ON p.tenant_id = m.tenant_id
+           AND p.chat_id = m.chat_id
+           AND p.user_id = :actor_id
+           AND p.status = 'active'
+          WHERE m.chat_id = :chat_id
+          ORDER BY m.created_at ASC, m.message_id ASC
+        `,
+        params: {
+          actor_id: request.actorId,
+          chat_id: request.input.chat_id
+        }
+      };
+    },
+    map(rows) {
+      return { messages: rows };
+    }
+  },
   listMessageEvents: {
     plan(request) {
       return {

@@ -1,5 +1,6 @@
 export type Chat = { chat_id: string; title: string; status: string };
 export type ChatParticipant = { user_id: string; participant_role: "owner" | "viewer"; status: string; added_by_user_id: string; added_at: string; removed_at?: string | null };
+export type ChatMessage = { message_id: string; parent_message_id?: string | null; sender_user_id?: string | null; sender_type: "general_user" | "admin" | "assistant"; content_text: string; run_id?: string | null; status: string; created_at: string; completed_at?: string | null };
 export type EventRow = { event_seq: number; event_name: string; event_type: string; payload_json: Record<string, unknown> };
 export type Favorite = { favorite_id: string; user_id: string; chat_id?: string | null; message_id?: string | null; created_at: string };
 export type MessageFeedback = { feedback_id: string; user_id: string; chat_id?: string | null; message_id?: string | null; rating?: string; comment?: string | null; problem_type?: string | null; created_at: string };
