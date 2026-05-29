@@ -33,11 +33,11 @@ Vite production build の出力を検査する `web:build:check` を追加し、
 
 ## 受け入れ条件
 
-- [ ] `npm run web:build:check` が Vite build を実行し、`apps/web/dist/index.html` と JS asset を検査する。
-- [ ] build output check が JS sourcemap と gzip size の上限を検査する。
-- [ ] source gate が `web:build:check` script と check script の存在を検査する。
-- [ ] docs が Vite production build output と未検証の実ブラウザ/AWS 接続範囲を区別する。
-- [ ] 選定した検証コマンドが pass し、実ブラウザ streaming / AppSync Events 実接続を実施済み扱いしていない。
+- [x] `npm run web:build:check` が Vite build を実行し、`apps/web/dist/index.html` と JS asset を検査する。
+- [x] build output check が JS sourcemap と gzip size の上限を検査する。
+- [x] source gate が `web:build:check` script と check script の存在を検査する。
+- [x] docs が Vite production build output と未検証の実ブラウザ/AWS 接続範囲を区別する。
+- [x] 選定した検証コマンドが pass し、実ブラウザ streaming / AppSync Events 実接続を実施済み扱いしていない。
 
 ## 検証計画
 
@@ -58,6 +58,11 @@ Vite production build の出力を検査する `web:build:check` を追加し、
 - asset hash は Vite build ごとに変わるため、固定ファイル名ではなく `dist/assets/*.js` を検査する。
 - production analyzer / Lighthouse CI ではないため、性能検証は gzip size と route transition source report に留まる。
 
+## PR コメント
+
+- 受け入れ条件確認: https://github.com/tsuji-tomonori/saphnexa/pull/3#issuecomment-4570513988
+- セルフレビュー: https://github.com/tsuji-tomonori/saphnexa/pull/3#issuecomment-4570515377
+
 ## 状態
 
-do
+done
