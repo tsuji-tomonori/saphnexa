@@ -4,19 +4,54 @@ export interface RealtimeMessage {
 }
 
 export interface RealtimeClient {
-  connect(input: { chatId: string; messageId: string; ticket: string; onMessage: (message: RealtimeMessage) => void }): () => void;
+  connect(input: RealtimeConnectInput): () => void;
 }
 
-export function createAppSyncEventsClient(endpoint: string | undefined): RealtimeClient {
+export interface RealtimeConnectInput {
+  ticket: string;
+  channels: string[];
+  onMessage: (message: RealtimeMessage) => void;
+  onOpen?: () => void;
+  onError?: () => void;
+  onClose?: () => void;
+}
+
+export function createAppSyncEventsClient(endpoint = "/event/realtime"): RealtimeClient {
   return {
     connect(input) {
-      if (!endpoint) return () => undefined;
-      const socket = new WebSocket(`${endpoint}?ticket=${encodeURIComponent(input.ticket)}&chat_id=${encodeURIComponent(input.chatId)}&message_id=${encodeURIComponent(input.messageId)}`);
-      socket.addEventListener("message", (event) => {
-        const payload = JSON.parse(String(event.data)) as RealtimeMessage;
-        input.onMessage(payload);
+      if (!endpoint || input.channels.length === 0) return () => undefined;
+      const socket = new WebSocket(websocketUrl(endpoint));
+      socket.addEventListener("open", () => {
+        input.onOpen?.();
+        socket.send(JSON.stringify({ type: "subscribe", ticket: input.ticket, channels: input.channels }));
       });
+      socket.addEventListener("message", (event) => {
+        const payload = parseRealtimeMessage(event.data);
+        if (payload) input.onMessage(payload);
+      });
+      socket.addEventListener("error", () => input.onError?.());
+      socket.addEventListener("close", () => input.onClose?.());
       return () => socket.close();
     }
   };
+}
+
+function websocketUrl(endpoint: string) {
+  if (endpoint.startsWith("/")) {
+    const protocol = window.location.protocol === "https:" ? "wss:" : "ws:";
+    return `${protocol}//${window.location.host}${endpoint}`;
+  }
+  return endpoint;
+}
+
+function parseRealtimeMessage(data: unknown): RealtimeMessage | null {
+  try {
+    const parsed = typeof data === "string" ? JSON.parse(data) : JSON.parse(String(data));
+    if (typeof parsed?.event !== "string" || typeof parsed?.payload !== "object" || parsed.payload === null) {
+      return null;
+    }
+    return parsed as RealtimeMessage;
+  } catch {
+    return null;
+  }
 }

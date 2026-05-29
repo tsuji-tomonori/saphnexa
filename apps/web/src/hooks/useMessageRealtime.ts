@@ -1,30 +1,41 @@
 import { useEffect, useMemo, useState } from "react";
 import { createAppSyncEventsClient } from "../lib/realtimeClient";
 
-export function useMessageRealtime(chatId: string | null, messageId: string | null, ticket: string | null) {
-  const [status, setStatus] = useState<"disabled" | "connected">("disabled");
-  const client = useMemo(() => createAppSyncEventsClient(readViteEnv("VITE_APPSYNC_EVENTS_URL")), []);
+export type RealtimeStatus = "disabled" | "connecting" | "connected" | "closed" | "error";
+
+export function useMessageRealtime(input: {
+  messageId: string | null;
+  ticket: string | null;
+  channels: string[];
+  onNotification?: () => void;
+}) {
+  const [status, setStatus] = useState<RealtimeStatus>("disabled");
+  const client = useMemo(() => createAppSyncEventsClient(), []);
 
   useEffect(() => {
-    if (!chatId || !messageId || !ticket) {
+    if (!input.messageId || !input.ticket || input.channels.length === 0) {
       setStatus("disabled");
       return undefined;
     }
+    setStatus("connecting");
     const disconnect = client.connect({
-      chatId,
-      messageId,
-      ticket,
-      onMessage() {
+      ticket: input.ticket,
+      channels: input.channels,
+      onOpen() {
         setStatus("connected");
+      },
+      onMessage() {
+        input.onNotification?.();
+      },
+      onError() {
+        setStatus("error");
+      },
+      onClose() {
+        setStatus("closed");
       }
     });
     return disconnect;
-  }, [chatId, client, messageId, ticket]);
+  }, [client, input.channels, input.messageId, input.onNotification, input.ticket]);
 
   return { status };
-}
-
-function readViteEnv(name: string) {
-  const meta = import.meta as ImportMeta & { env?: Record<string, string | undefined> };
-  return meta.env?.[name];
 }

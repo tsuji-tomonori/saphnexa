@@ -169,6 +169,14 @@ for (const token of [
 ]) {
   assert(listFiles(["apps/web/src"], (path) => path.endsWith(".ts") || path.endsWith(".tsx")).some((file) => readText(file).includes(token)), `Web source missing operation-aware helper token ${token}`);
 }
+const webRealtimeClientTs = readText("apps/web/src/lib/realtimeClient.ts");
+const webRealtimeHookTs = readText("apps/web/src/hooks/useMessageRealtime.ts");
+const webChatPageTs = readText("apps/web/src/pages/ChatPage.tsx");
+assert(webRealtimeClientTs.includes("endpoint = \"/event/realtime\""), "Web realtime client must default to same-origin /event/realtime");
+assert(webRealtimeClientTs.includes("ticket: input.ticket") && webRealtimeClientTs.includes("channels: input.channels"), "Web realtime client must authorize subscriptions with payload ticket and channels");
+assert(!webRealtimeClientTs.includes("ticket="), "Web realtime client must not put ticket in WebSocket URL query");
+assert(!webRealtimeHookTs.includes("VITE_APPSYNC_EVENTS_URL"), "Web realtime hook must not require AWS service domain env");
+assert(webChatPageTs.includes("setWsChannels(ticket.channels)") && webChatPageTs.includes("events.refetch()"), "ChatPage must use ticket response channels and REST refetch after realtime notification");
 
 const toolContractTs = readText("packages/tool-contract/src/tools.ts");
 assert(toolContractTs.includes("export interface ToolContract"), "Tool contract TS source must export ToolContract");

@@ -60,7 +60,9 @@ scenario("chat UI source contract", () => {
     "useMessageRealtime",
     "CitationDrawerPanel",
     "createSaphnexaAssistantAdapter",
-    "setMessageId(accepted.message_id)"
+    "setMessageId(accepted.message_id)",
+    "setWsChannels(ticket.channels)",
+    "events.refetch()"
   ]) {
     assert(chatPageSource.includes(token), `ChatPage missing token: ${token}`);
   }
@@ -108,12 +110,18 @@ scenario("chat UI source contract", () => {
     assert(citationDrawerSource.includes(token), `CitationDrawerPanel missing token: ${token}`);
   }
   for (const token of [
-    "createAppSyncEventsClient",
-    "VITE_APPSYNC_EVENTS_URL"
+    "createAppSyncEventsClient()",
+    "onNotification"
   ]) {
     assert(realtimeHookSource.includes(token), `useMessageRealtime missing token: ${token}`);
   }
-  assert(realtimeClientSource.includes("if (!endpoint) return () => undefined"), "realtime client must not generate fake events when endpoint is missing");
+  assert(realtimeClientSource.includes("endpoint = \"/event/realtime\""), "realtime client must default to same-origin /event/realtime");
+  assert(realtimeClientSource.includes("socket.send(JSON.stringify({ type: \"subscribe\", ticket: input.ticket, channels: input.channels }))"), "realtime client must send ticket in subscribe payload");
+  assert(!realtimeClientSource.includes("ticket="), "realtime client must not put ticket in the WebSocket URL query");
+  assert(!realtimeClientSource.includes("chat_id="), "realtime client must not put chat_id in the WebSocket URL query");
+  assert(!realtimeClientSource.includes("message_id="), "realtime client must not put message_id in the WebSocket URL query");
+  assert(!realtimeHookSource.includes("VITE_APPSYNC_EVENTS_URL"), "web realtime hook must not depend on AWS service domain env");
+  assert(realtimeClientSource.includes("input.channels.length === 0"), "realtime client must not generate fake channels when none are authorized");
   assert(!/useState<Chat\[\]>\(\[[^\]]/.test(chatPageSource), "ChatPage must not seed fake chats");
   assert(!/useState<EventRow\[\]>\(\[[^\]]/.test(chatPageSource), "ChatPage must not seed fake events");
 });

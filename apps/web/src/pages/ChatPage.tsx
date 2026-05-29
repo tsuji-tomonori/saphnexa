@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useCallback, useMemo, useState } from "react";
 import { apiPostOperation, apiRoutes } from "@saphnexa/api-client";
 import { AppShell } from "@saphnexa/ui";
 import { CitationDrawerPanel } from "../features/chat/CitationDrawerPanel";
@@ -17,12 +17,21 @@ export function ChatPage() {
   const [selectedChatId, setSelectedChatId] = useState<string | null>(null);
   const [messageId, setMessageId] = useState<string | null>(null);
   const [wsTicket, setWsTicket] = useState<string | null>(null);
+  const [wsChannels, setWsChannels] = useState<string[]>([]);
   const chats = chatSessions.data?.chats ?? [];
   const activeChatId = selectedChatId ?? chats[0]?.chat_id ?? null;
   const events = useMessageEvents(activeChatId, messageId);
   const csrfToken = me.data?.csrf_token ?? "";
   const assistantAdapter = useMemo(() => (activeChatId ? createSaphnexaAssistantAdapter(csrfToken, activeChatId) : null), [activeChatId, csrfToken]);
-  const realtime = useMessageRealtime(activeChatId, messageId, wsTicket);
+  const refetchMessageEvents = useCallback(() => {
+    void events.refetch();
+  }, [events.refetch]);
+  const realtime = useMessageRealtime({
+    messageId,
+    ticket: wsTicket,
+    channels: wsChannels,
+    onNotification: refetchMessageEvents
+  });
 
   async function submit(question: string) {
     if (!activeChatId) return;
@@ -30,6 +39,7 @@ export function ChatPage() {
     setMessageId(accepted.message_id);
     const ticket = await apiPostOperation("issueWsTicket", apiRoutes.issueWsTicket(), { chat_id: activeChatId, message_id: accepted.message_id }, csrfToken);
     setWsTicket(ticket.ticket);
+    setWsChannels(ticket.channels);
   }
 
   return (
