@@ -290,6 +290,7 @@ export interface LocalStore {
   addParticipant(actor: LocalActor, chat_id: string, input: { user_id: string }): ChatParticipant;
   updateParticipant(actor: LocalActor, chat_id: string, user_id: string, input?: { participant_role?: ParticipantRole }): ChatParticipant;
   removeParticipant(actor: LocalActor, chat_id: string, user_id: string): boolean;
+  listParticipants(actor: LocalActor, chat_id: string): ChatParticipant[];
   listChats(actor: LocalActor): ChatSession[];
   getChat(actor: LocalActor, chat_id: string): ChatSession & { participants: ChatParticipant[]; messages: ChatMessage[] };
   submitQuestion(actor: LocalActor, chat_id: string, input: { question: string; retrieval_policy?: RetrievalPolicyJson; model_id?: string; failure_injection?: string }, ragAdapter?: RagAdapter): { message_id: string; run_id: string; status: Status };

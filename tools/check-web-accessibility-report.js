@@ -10,6 +10,7 @@ checkFile("ChatApp", "apps/web/src/chat/ChatApp.tsx", [
 checkFile("ChatPage", "apps/web/src/pages/ChatPage.tsx", [
   rule("main landmark", (body) => body.includes("className=\"sx-chat-shell\"")),
   rule("assistant runtime provider boundary", (body) => body.includes("AssistantRuntimeBoundary")),
+  rule("participants panel", (body) => body.includes("ChatParticipantsPanel")),
   rule("feedback panel", (body) => body.includes("FeedbackPanel")),
   rule("favorite panel", (body) => body.includes("FavoritePanel"))
 ]);
@@ -22,6 +23,13 @@ checkFile("ChatSessionNav", "apps/web/src/features/chat/ChatSessionNav.tsx", [
   rule("labelled navigation", (body) => body.includes("<nav aria-label=\"チャット一覧\">")),
   rule("empty chat status", (body) => body.includes("<p role=\"status\">チャットはありません</p>")),
   rule("button type", (body) => !/<button(?![^>]*\stype=)/.test(body))
+]);
+checkFile("ChatParticipantsPanel", "apps/web/src/features/chat/ChatParticipantsPanel.tsx", [
+  rule("section label", (body) => body.includes("aria-label=\"参加者\"")),
+  rule("participants table", (body) => body.includes("DataTable") && body.includes("caption=\"参加者一覧\"")),
+  rule("empty selected-chat state", (body) => body.includes("チャットを選択してください")),
+  rule("pending status", (body) => body.includes("<p role=\"status\">参加者を確認しています</p>")),
+  rule("status badge", (body) => body.includes("StatusBadge"))
 ]);
 checkFile("MessageComposer", "apps/web/src/features/chat/MessageComposer.tsx", [
   rule("question label", (body) => body.includes("aria-label=\"質問\"")),

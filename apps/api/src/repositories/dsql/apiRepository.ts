@@ -160,6 +160,41 @@ const dsqlOperationMappings = {
       return { chats: rows };
     }
   },
+  listChatParticipants: {
+    plan(request) {
+      return {
+        operationId: "listChatParticipants",
+        resultTable: "chat_participants",
+        sql: `
+          SELECT
+            target.tenant_id,
+            target.chat_id,
+            target.user_id,
+            target.participant_role,
+            target.status,
+            target.added_by_user_id,
+            target.added_at,
+            target.removed_at
+          FROM chat_participants requester
+          JOIN chat_participants target
+            ON target.tenant_id = requester.tenant_id
+           AND target.chat_id = requester.chat_id
+           AND target.status = 'active'
+          WHERE requester.user_id = :actor_id
+            AND requester.chat_id = :chat_id
+            AND requester.status = 'active'
+          ORDER BY target.added_at ASC
+        `,
+        params: {
+          actor_id: request.actorId,
+          chat_id: request.input.chat_id
+        }
+      };
+    },
+    map(rows) {
+      return { participants: rows };
+    }
+  },
   listMessageEvents: {
     plan(request) {
       return {

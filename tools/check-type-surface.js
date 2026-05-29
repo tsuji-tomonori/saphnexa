@@ -231,6 +231,7 @@ for (const file of listFiles(["apps/web/src"], (path) => path.endsWith(".ts") ||
 for (const token of [
   'apiGetOperation("getMe"',
   'apiGetOperation("listChatSessions"',
+  'apiGetOperation("listChatParticipants"',
   'apiGetOperation("listMessageEvents"',
   'apiGetOperation("listFavorites"',
   'apiGetOperation("adminListUsers"',
@@ -423,6 +424,7 @@ for (const token of [
   "submitQuestion",
   "issueWsTicket",
   "consumeWsTicket",
+  "listParticipants",
   "createFeedback",
   "addFavorite",
   "deleteFavorite",
@@ -486,6 +488,7 @@ assert(apiRepositorySource.includes("DSQL_OPERATION_NOT_MAPPED"), "API DSQL repo
 for (const token of [
   "getMe",
   "listChatSessions",
+  "listChatParticipants",
   "listMessageEvents",
   "createFeedback",
   "listFavorites",
@@ -502,6 +505,7 @@ for (const token of [
   "getIngestionJob",
   'resultTable: "users"',
   'resultTable: "chat_sessions"',
+  'resultTable: "chat_participants"',
   'resultTable: "chat_message_events"',
   'resultTable: "message_feedback"',
   'resultTable: "favorites"',

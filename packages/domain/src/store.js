@@ -55,6 +55,7 @@ export function createLocalStore() {
     addParticipant,
     updateParticipant,
     removeParticipant,
+    listParticipants,
     listChats,
     getChat,
     submitQuestion,
@@ -161,6 +162,13 @@ export function createLocalStore() {
     row.status = statuses.REMOVED;
     row.removed_at = now();
     return true;
+  }
+
+  function listParticipants(actor, chat_id) {
+    requireReader(actor, chat_id);
+    return state.chat_participants
+      .filter((item) => item.tenant_id === actor.tenant_id && item.chat_id === chat_id && item.status === statuses.ACTIVE)
+      .sort((a, b) => a.added_at.localeCompare(b.added_at));
   }
 
   function listChats(actor) {

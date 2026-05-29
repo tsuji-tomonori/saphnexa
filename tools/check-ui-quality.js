@@ -14,6 +14,8 @@ for (const file of files) {
   if (file.includes("ChatPage")) {
     assert(body.includes("className=\"sx-chat-shell\""), "ChatPage must expose chat shell landmark through AppShell");
     assert(body.includes("useChatSessions"), "ChatPage must use TanStack Query chat hook");
+    assert(body.includes("useChatParticipants"), "ChatPage must use TanStack Query participants hook");
+    assert(body.includes("ChatParticipantsPanel"), "ChatPage must render participants panel through feature component");
     assert(body.includes("useMessageEvents"), "ChatPage must use TanStack Query message events hook");
     assert(body.includes("useCreateFeedback"), "ChatPage must use TanStack Query feedback hook");
     assert(body.includes("FeedbackPanel"), "ChatPage must render feedback panel through feature component");
@@ -30,6 +32,13 @@ for (const file of files) {
   if (file.includes("ChatSessionNav")) {
     assert(body.includes("<nav") && body.includes("aria-label=\"チャット一覧\""), "ChatApp must expose labelled chat navigation");
     assert(body.includes("<p role=\"status\">チャットはありません</p>"), "ChatApp must render an honest empty chat state");
+  }
+  if (file.includes("ChatParticipantsPanel")) {
+    assert(body.includes("DataTable"), "Chat participants must render through DataTable");
+    assert(body.includes("参加者一覧"), "Chat participants must expose a table caption");
+    assert(body.includes("チャットを選択してください"), "Chat participants must render an honest no-chat state");
+    assert(body.includes("StatusBadge"), "Chat participants must show status through StatusBadge");
+    assert(!body.includes("user-local"), "Chat participants must not hard-code local user ids");
   }
   if (file.includes("MessageComposer")) {
     assert(body.includes("aria-label=\"質問\""), "ChatApp textarea must have an accessible label");

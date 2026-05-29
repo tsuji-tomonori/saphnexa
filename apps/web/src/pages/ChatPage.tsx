@@ -2,6 +2,7 @@ import { useCallback, useState } from "react";
 import { apiPostOperation, apiRoutes } from "@saphnexa/api-client";
 import { AppShell } from "@saphnexa/ui";
 import { AssistantRuntimeBoundary } from "../features/chat/AssistantRuntimeBoundary";
+import { ChatParticipantsPanel } from "../features/chat/ChatParticipantsPanel";
 import { CitationDrawerPanel } from "../features/chat/CitationDrawerPanel";
 import { ChatSessionNav } from "../features/chat/ChatSessionNav";
 import { FeedbackPanel } from "../features/chat/FeedbackPanel";
@@ -15,6 +16,7 @@ import { useMe } from "../hooks/useMe";
 import { useMessageEvents } from "../hooks/useMessageEvents";
 import { useMessageRealtime } from "../hooks/useMessageRealtime";
 import { submitAssistantQuestion } from "../lib/assistantRuntime";
+import { useChatParticipants } from "../hooks/useChatParticipants";
 
 export function ChatPage() {
   const me = useMe();
@@ -30,6 +32,7 @@ export function ChatPage() {
   const [wsChannels, setWsChannels] = useState<string[]>([]);
   const chats = chatSessions.data?.chats ?? [];
   const activeChatId = selectedChatId ?? chats[0]?.chat_id ?? null;
+  const participants = useChatParticipants(activeChatId);
   const events = useMessageEvents(activeChatId, messageId);
   const refetchMessageEvents = useCallback(() => {
     void events.refetch();
@@ -58,6 +61,11 @@ export function ChatPage() {
       <AssistantRuntimeBoundary csrfToken={csrfToken} chatId={activeChatId}>
         <MessageComposer csrfToken={csrfToken} onSubmit={submit} />
         <p role="status">リアルタイム接続: {realtime.status}</p>
+        <ChatParticipantsPanel
+          activeChatId={activeChatId}
+          participants={participants.data?.participants ?? []}
+          isLoading={participants.isFetching}
+        />
         <FavoritePanel
           activeChatId={activeChatId}
           csrfToken={csrfToken}

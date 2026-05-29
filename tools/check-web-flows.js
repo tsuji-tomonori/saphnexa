@@ -12,6 +12,7 @@ const mainSource = readText("apps/web/src/main.tsx");
 const chatSource = readText("apps/web/src/chat/ChatApp.tsx");
 const chatPageSource = readText("apps/web/src/pages/ChatPage.tsx");
 const chatNavSource = readText("apps/web/src/features/chat/ChatSessionNav.tsx");
+const chatParticipantsPanelSource = readText("apps/web/src/features/chat/ChatParticipantsPanel.tsx");
 const composerSource = readText("apps/web/src/features/chat/MessageComposer.tsx");
 const eventsPanelSource = readText("apps/web/src/features/chat/MessageEventsPanel.tsx");
 const citationDrawerSource = readText("apps/web/src/features/chat/CitationDrawerPanel.tsx");
@@ -33,6 +34,7 @@ const userTableSource = readText("apps/web/src/features/admin/UserTable.tsx");
 const assistantRuntimeSource = readText("apps/web/src/lib/assistantRuntime.ts");
 const meHookSource = readText("apps/web/src/hooks/useMe.ts");
 const chatSessionsHookSource = readText("apps/web/src/hooks/useChatSessions.ts");
+const chatParticipantsHookSource = readText("apps/web/src/hooks/useChatParticipants.ts");
 const feedbackHookSource = readText("apps/web/src/hooks/useCreateFeedback.ts");
 const favoritesHookSource = readText("apps/web/src/hooks/useFavorites.ts");
 const adminUsersHookSource = readText("apps/web/src/hooks/useAdminUsers.ts");
@@ -73,12 +75,14 @@ scenario("chat UI source contract", () => {
   }
   for (const token of [
     "useChatSessions",
+    "useChatParticipants",
     "useMessageEvents",
     "useMessageRealtime",
     "useCreateFeedback",
     "useFavorites",
     "useAddFavorite",
     "useDeleteFavorite",
+    "ChatParticipantsPanel",
     "CitationDrawerPanel",
     "FeedbackPanel",
     "FavoritePanel",
@@ -94,6 +98,10 @@ scenario("chat UI source contract", () => {
   assert(apiClientSource.includes("/api/me"), "API client getMe helper must call /api/me");
   assert(chatSessionsHookSource.includes("apiRoutes.listChatSessions()"), "useChatSessions hook must use listChatSessions route helper");
   assert(apiClientSource.includes("/api/chat-sessions"), "API client chat sessions helper must call /api/chat-sessions");
+  assert(chatParticipantsHookSource.includes("apiRoutes.listChatParticipants(chatId ?? \"\")"), "useChatParticipants hook must use listChatParticipants route helper");
+  assert(chatParticipantsHookSource.includes("apiGetOperation(\"listChatParticipants\""), "useChatParticipants hook must use generated listChatParticipants helper");
+  assert(chatParticipantsHookSource.includes("enabled: Boolean(chatId)"), "useChatParticipants hook must wait for active chat");
+  assert(apiClientSource.includes("/api/chat-sessions/{chat_id}/participants"), "API client participants helper must call participants path");
   assert(feedbackHookSource.includes("apiRoutes.createFeedback(input.chat_id, input.message_id)"), "useCreateFeedback hook must use createFeedback route helper");
   assert(feedbackHookSource.includes("apiPostOperation(\"createFeedback\""), "useCreateFeedback hook must use generated createFeedback helper");
   assert(apiClientSource.includes("/api/chat-sessions/{chat_id}/messages/{message_id}/feedback"), "API client feedback helper must call feedback path");
@@ -112,6 +120,16 @@ scenario("chat UI source contract", () => {
     "チャットはありません"
   ]) {
     assert(chatNavSource.includes(token), `ChatSessionNav missing token: ${token}`);
+  }
+  for (const token of [
+    "aria-label=\"参加者\"",
+    "DataTable",
+    "参加者一覧",
+    "チャットを選択してください",
+    "StatusBadge",
+    "added_by_user_id"
+  ]) {
+    assert(chatParticipantsPanelSource.includes(token), `ChatParticipantsPanel missing token: ${token}`);
   }
   for (const token of [
     "aria-label=\"質問\"",
@@ -206,6 +224,10 @@ scenario("chat local API flow", () => {
   assert(events.body.events.some((event) => event.event_name === "chat.message.final_ready"), "final event missing");
   const finalEvent = events.body.events.find((event) => event.event_name === "chat.message.final_ready");
   assert(Array.isArray(finalEvent.payload_json.citations), "final event citations missing");
+  const participants = api.request("user-owner", "listChatParticipants", { chat_id: chat.body.chat.chat_id });
+  assert(participants.status === 200, "chat participants fetch failed");
+  assert(participants.body.participants.some((item) => item.user_id === "user-owner" && item.participant_role === "owner"), "owner participant missing");
+  assert(api.request("user-outsider", "listChatParticipants", { chat_id: chat.body.chat.chat_id }).status === 403, "outsider must not list participants for unreadable chat");
   const feedback = api.request("user-owner", "createFeedback", {
     csrf_token: csrf,
     chat_id: chat.body.chat.chat_id,

@@ -129,6 +129,7 @@ git diff --check
 - `npm run web:build` が Vite production build を実行し、Chat/Admin browser entrypoint を bundle できること。
 - `npm run web:build:check` が Vite production build output の `apps/web/dist/index.html`、hashed JS asset、JS sourcemap、gzip size 上限を検査すること。
 - Chat UI が React Hook Form + Zod validation、events payload 由来の Citation Drawer、AppSync Events / WebSocket client boundary を持ち、未接続時に架空 realtime event を生成しないこと。
+- Chat UI が `listChatParticipants` route helper / generated operation helper を使い、参加中チャットの参加者、ロール、共有者、共有日時を source/local gate で確認できること。共有追加・解除 UI と実ブラウザ E2E は別途確認する。
 - Chat UI が `createFeedback` route helper / generated operation helper を使い、閲覧可能な回答への高評価・低評価・コメント登録を source/local gate で確認できること。フィードバック一覧、取消、実ブラウザ E2E は別途確認する。
 - Chat UI が `listFavorites` / `addFavorite` / `deleteFavorite` route helper / generated operation helper を使い、参加チャットのお気に入り登録、一覧、解除を source/local gate で確認できること。回答単位のお気に入り UI と実ブラウザ E2E は別途確認する。
 - Web realtime client が同一 origin の `/event/realtime` を default endpoint とし、ticket を WebSocket URL query に載せず subscribe payload で送り、API が返した channel と通知後の REST refetch に接続されていること。
@@ -218,6 +219,7 @@ git diff --check
 - GitHub issue tracker の最終再取得と、AC-153 の最終 PASS 判定。
 - axe/Playwright の実 DOM accessibility report、Lighthouse CI、本番 bundler の analyzer report、AWS load test。
 - UI theme / recipe / Radix primitive 境界は source gate、`tsc --noEmit`、Vite production build で確認する。実ブラウザ visual regression、dark/density theme の実切替、全 shadcn/ui component 群の網羅は別途確認する。
+- Chat 参加者一覧の local gate は参加者による対象チャット参加者一覧取得と未参加者拒否を確認する。共有追加・解除・ロール変更 UI、実ブラウザ操作、実 Aurora DSQL での SQL 実行は別途確認する。
 - Chat フィードバックの local gate は参加者による対象回答への登録と未参加者拒否を確認する。フィードバック一覧、取消、分析集計、実ブラウザ操作、実 Aurora DSQL での SQL 実行は別途確認する。
 - Admin ユーザー取込の source gate は `adminListUsers`、JSON rows による `startUserImport`、`getUserImport` の結果集計と行別エラー、管理者ロール境界を確認する。CSV/Excel binary upload、S3 import file 配置、Cognito 実反映、AppSync 完了通知は別途実装・検証する。
 - Admin Tabs の source gate は評価操作と公開成果物一覧の画面構造を確認する。CSV/Excel 実アップロード、実 PDF upload、取り込み監視の実 backend/API/UI は別途実装・検証する。
