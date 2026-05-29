@@ -1,6 +1,6 @@
 # Shared contract TypeScript types
 
-- 状態: doing
+- 状態: done
 - タスク種別: 機能追加
 - 作成日時: 2026-05-29 09:15 JST
 - 対象ブランチ: `codex/typescript-framework-implementation`
@@ -44,13 +44,20 @@ API / Tools / Model catalog / DB schema の共有境界に TypeScript source と
 
 ## 受け入れ条件
 
-- [ ] API route metadata の TypeScript source と export 型がある。
-- [ ] Tools API contract の TypeScript source と export 型がある。
-- [ ] Model catalog / cost estimate の TypeScript source と export 型がある。
-- [ ] DB required table list の TypeScript source と union 型がある。
-- [ ] source gate が TS source と JS runtime mirror の件数・主要 ID 同期を検査する。
-- [ ] 既存 contract / unit tests が pass する。
-- [ ] 自動 codegen や実 `tsc` compilation を実施済み扱いにしない。
+- [x] API route metadata の TypeScript source と export 型がある。
+- [x] Tools API contract の TypeScript source と export 型がある。
+- [x] Model catalog / cost estimate の TypeScript source と export 型がある。
+- [x] DB required table list の TypeScript source と union 型がある。
+- [x] source gate が TS source と JS runtime mirror の件数・主要 ID 同期を検査する。
+- [x] 既存 contract / unit tests が pass する。
+- [x] 自動 codegen や実 `tsc` compilation を実施済み扱いにしない。
+
+## 完了時確認
+
+- PR: https://github.com/tsuji-tomonori/saphnexa/pull/3
+- 受け入れ条件コメント: https://github.com/tsuji-tomonori/saphnexa/pull/3#issuecomment-4569366284
+- セルフレビューコメント: https://github.com/tsuji-tomonori/saphnexa/pull/3#issuecomment-4569367727
+- 作業レポート: `reports/working/20260529-0917-shared-contract-types.md`
 
 ## 検証計画
 
