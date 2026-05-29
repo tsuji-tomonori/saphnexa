@@ -34,9 +34,17 @@ for (const file of [
   "packages/model-catalog/src/cost-estimate.ts",
   "packages/db-schema/src/tables.ts",
   "apps/api/src/app.ts",
+  "apps/api/src/index.ts",
   "apps/api/src/hono-openapi-app.ts",
   "apps/api/src/openapi-document.ts",
   "apps/api/src/zod-openapi-schemas.ts",
+  "apps/api/src/middleware/csrf.ts",
+  "apps/api/src/middleware/error.ts",
+  "apps/api/src/middleware/origin.ts",
+  "apps/api/src/middleware/request-log.ts",
+  "apps/api/src/middleware/session.ts",
+  "apps/api/src/repositories/dsql/apiRepository.ts",
+  "apps/api/src/services/apiDispatchService.ts",
   "apps/agent/src/app.ts",
   "apps/agent/src/runtime/agentCoreHandler.ts",
   "apps/agent/src/clients/toolsApiClient.ts",
@@ -91,10 +99,22 @@ for (const table of requiredTables) {
 const apiAppSource = readText("apps/api/src/app.ts");
 assert(apiAppSource.includes("createSaphnexaHonoOpenApiApp"), "API app entry must use the TypeScript Hono/OpenAPI source");
 
+const apiLambdaSource = readText("apps/api/src/index.ts");
+assert(apiLambdaSource.includes("hono/aws-lambda"), "API Lambda entry must use Hono AWS Lambda adapter");
+assert(apiLambdaSource.includes("export const handler"), "API Lambda entry must export handler");
+
 const honoOpenApiSource = readText("apps/api/src/hono-openapi-app.ts");
 assert(honoOpenApiSource.includes("interface ApiDispatcher"), "API Hono source must type dispatcher boundary");
 assert(honoOpenApiSource.includes("buildRouteZodSchemas"), "API Hono source must use Zod route schemas");
 assert(honoOpenApiSource.includes("buildOpenApiDocument"), "API Hono source must use OpenAPI document builder");
+for (const middleware of ["errorMiddleware", "requestLogMiddleware", "originMiddleware", "sessionMiddleware", "csrfBoundaryMiddleware"]) {
+  assert(honoOpenApiSource.includes(middleware), `API Hono source must attach ${middleware}`);
+}
+
+const apiRepositorySource = readText("apps/api/src/repositories/dsql/apiRepository.ts");
+assert(apiRepositorySource.includes("export interface DsqlApiRepository"), "API must define DSQL repository boundary");
+const apiDispatchServiceSource = readText("apps/api/src/services/apiDispatchService.ts");
+assert(apiDispatchServiceSource.includes("createApiDispatchServiceFromEnvironment"), "API must expose environment-based dispatch service factory");
 
 const ragAgentSource = readText("apps/agent/src/agent/ragAgent.ts");
 for (const token of [

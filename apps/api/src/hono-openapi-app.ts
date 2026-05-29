@@ -1,5 +1,10 @@
 import { OpenAPIHono, createRoute } from "@hono/zod-openapi";
 import { createErrorResponse } from "@saphnexa/domain";
+import { csrfBoundaryMiddleware } from "./middleware/csrf";
+import { errorMiddleware } from "./middleware/error";
+import { originMiddleware } from "./middleware/origin";
+import { requestLogMiddleware } from "./middleware/request-log";
+import { sessionMiddleware } from "./middleware/session";
 import { buildHonoRouteDefinitions, buildOpenApiDocument, type HonoRouteDefinition } from "./openapi-document";
 import { buildRouteZodSchemas, errorResponseSchema } from "./zod-openapi-schemas";
 
@@ -10,6 +15,12 @@ export interface ApiDispatcher {
 export function createSaphnexaHonoOpenApiApp({ dispatcher }: { dispatcher?: ApiDispatcher } = {}) {
   const app = new OpenAPIHono();
   const routeSchemas = buildRouteZodSchemas();
+
+  app.use("*", errorMiddleware());
+  app.use("*", requestLogMiddleware());
+  app.use("*", originMiddleware());
+  app.use("*", sessionMiddleware());
+  app.use("*", csrfBoundaryMiddleware());
 
   app.doc("/openapi.json", buildOpenApiDocument());
 

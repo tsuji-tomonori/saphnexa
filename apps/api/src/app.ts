@@ -1,5 +1,5 @@
-import { createLocalApi } from "./local-api.js";
 import { createSaphnexaHonoOpenApiApp, type ApiDispatcher } from "./hono-openapi-app";
+import { createApiDispatchService } from "./services/apiDispatchService";
 
 export type ActorId = string | undefined;
 
@@ -9,7 +9,7 @@ export interface SaphnexaApiOptions {
 
 export function createSaphnexaApiApp(options: SaphnexaApiOptions = {}) {
   return createSaphnexaHonoOpenApiApp({
-    dispatcher: options.dispatcher ?? createLocalApi()
+    dispatcher: options.dispatcher ?? createApiDispatchService()
   });
 }
 

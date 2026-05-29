@@ -101,6 +101,7 @@ git diff --check
 - API route、Tools API、model catalog、required DB tables の TypeScript source が既存 JS runtime mirror と件数・主要 ID で同期していること。
 - `npm run typecheck` が source gate と `tsc --noEmit --project tsconfig.typecheck.json` の両方を実行し、API / Agent / Tools API / Web / UI / shared contract の TypeScript source を実コンパイルすること。
 - Hono/Zod/OpenAPI 実装 entrypoint が 38 route と `/openapi.json` を route contract から生成し、CSRF/role/Zod validation metadata を保持すること。
+- API が `hono/aws-lambda` handler entrypoint、request log / origin / error / session / CSRF middleware 境界、dispatch service、DSQL repository interface を TypeScript source として持つこと。
 - API の Hono app factory、OpenAPI document builder、Zod schema catalog が TypeScript source of record を持ち、既存 Node local tools 用の `.js` runtime mirror と同期していること。
 - `apps/api`、`apps/tools-api`、`apps/agent` が TypeScript entry を持ち、AgentCore Runtime 互換の `/ping` / `/invocations` contract を source-level で確認できること。
 - Agent TypeScript runtime が query rewrite、DSQL ACL scope 解決、BM25 / KB retrieve、ACL check、reference expand、evidence pack、context packing、answer generation、citation binding の責務境界を持ち、evidence 不足時は回答生成に進まず refusal とすること。
@@ -179,7 +180,7 @@ git diff --check
 ## ローカルでは完了扱いにしないこと
 
 - AWS dev/UAT での Cognito、DSQL、S3、CloudFront、AppSync Events、Bedrock KB、S3 Vectors、AgentCore の実接続。
-- Hono runtime の実 Lambda adapter 起動、依存 install、Cognito authorizer、CSRF cookie integration、CloudFront 経由の実 HTTP request。
+- Hono runtime の実 Lambda 起動、Cognito authorizer、CSRF cookie integration、CloudFront 経由の実 HTTP request。`apps/api/src/index.ts` は Lambda handler source を持つが、AWS 上での起動確認は別途行う。
 - API TypeScript source of record は source gate と実 `tsc --noEmit` で検査する。既存 local tools/tests は標準 `node` 実行のため `.js` runtime mirror を使う。`.ts` からの runtime bundle 生成は別途確認する。
 - `aws-cdk-lib` / `constructs` install 後の実 `cdk synth`、CDK bootstrap、CDK deploy、CloudFormation change set 実行。
 - CDK deploy、CloudFormation outputs、S3 inventory、CloudWatch logs、CloudFront/S3/Docusaurus/Allure 公開 URL。
