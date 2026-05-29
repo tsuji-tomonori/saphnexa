@@ -1,6 +1,6 @@
 # Admin 取り込みジョブ進捗 percentage 境界
 
-- 状態: do
+- 状態: done
 - タスク種別: 機能追加
 - 作成日時: 2026-05-29 20:37
 - 対象ブランチ: `codex/typescript-framework-implementation`
@@ -34,13 +34,13 @@ Admin 取り込みジョブ確認は `getIngestionJob` / `retryIngestionJob` rou
 
 ## 受け入れ条件
 
-- [ ] `getIngestionJob` / `retryIngestionJob` response が `progress_percent` を返す。
-- [ ] failed job は `progress_percent: 0`、queued job は `progress_percent: 10`、succeeded job は `progress_percent: 100` として扱う。
-- [ ] Web の取り込みジョブ確認 panel が API 由来の進捗 percentage を表示する。
-- [ ] general user は progress 付き ingestion job を取得・retry できない。
-- [ ] DSQL source plan でも status 由来の `progress_percent` を返す。
-- [ ] docs/source/UI/a11y gates 上で進捗 percentage は接続済みになり、実 Step Functions / S3 / KB ingestion と job 一覧 API は未接続として残る。
-- [ ] 選定した検証コマンドが pass する。
+- [x] `getIngestionJob` / `retryIngestionJob` response が `progress_percent` を返す。
+- [x] failed job は `progress_percent: 0`、queued job は `progress_percent: 10`、succeeded job は `progress_percent: 100` として扱う。
+- [x] Web の取り込みジョブ確認 panel が API 由来の進捗 percentage を表示する。
+- [x] general user は progress 付き ingestion job を取得・retry できない。
+- [x] DSQL source plan でも status 由来の `progress_percent` を返す。
+- [x] docs/source/UI/a11y gates 上で進捗 percentage は接続済みになり、実 Step Functions / S3 / KB ingestion と job 一覧 API は未接続として残る。
+- [x] 選定した検証コマンドが pass する。
 
 ## 実装計画
 
@@ -78,3 +78,26 @@ Admin 取り込みジョブ確認は `getIngestionJob` / `retryIngestionJob` rou
 - general user が ingestion job の progress を取得できないこと。
 - OpenAPI / Zod / generated client / Web type が同期していること。
 - 未接続の実 Step Functions / S3 / KB ingestion を完了扱いしていないこと。
+
+## 完了メモ
+
+- 実装 commit: `69bdffa`
+- 作業レポート: `reports/working/20260529-2037-admin-ingestion-progress.md`
+- PR 受け入れ条件コメント: https://github.com/tsuji-tomonori/saphnexa/pull/3#issuecomment-4574548927
+- PR セルフレビューコメント: https://github.com/tsuji-tomonori/saphnexa/pull/3#issuecomment-4574555498
+- 検証:
+  - `npm run api-client:operation-types:check`: pass
+  - `npm run api:openapi:check`: pass
+  - `npm run typecheck -w @saphnexa/api`: pass
+  - `npm run typecheck -w @saphnexa/web`: pass
+  - `npm run typecheck:source`: pass
+  - `npm run test:integration:local`: pass
+  - `npm run web:flow:check`: pass
+  - `npm run ui:check`: pass
+  - `npm run web:a11y:check`: pass
+  - `npm run admin:workflow:check`: pass
+  - `npm test`: pass
+  - `npm run docs:check`: pass
+  - `npm run test:contract`: pass
+  - `npm run web:build:check`: pass。Vite の 500 kB chunk warning は出た。
+  - `git diff --check`: pass
