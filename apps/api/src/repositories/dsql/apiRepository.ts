@@ -534,24 +534,69 @@ const dsqlOperationMappings = {
         resultTable: "chat_participants",
         sql: `
           WITH owner_participant AS (
-            SELECT tenant_id, chat_id
+            SELECT tenant_id, chat_id, user_id
             FROM chat_participants
             WHERE user_id = :actor_id
               AND chat_id = :chat_id
               AND participant_role = 'owner'
               AND status = 'active'
+          ),
+          target_viewer AS (
+            SELECT target.tenant_id, target.chat_id, target.user_id
+            FROM chat_participants target
+            JOIN owner_participant op
+              ON op.tenant_id = target.tenant_id
+             AND op.chat_id = target.chat_id
+            WHERE target.user_id = :user_id
+              AND target.user_id <> op.user_id
+              AND target.participant_role = 'viewer'
+              AND target.status = 'active'
+          ),
+          demoted_owner AS (
+            UPDATE chat_participants owner
+               SET participant_role = 'viewer',
+                   status = 'active',
+                   removed_at = NULL
+              FROM owner_participant op
+              JOIN target_viewer tv
+                ON tv.tenant_id = op.tenant_id
+               AND tv.chat_id = op.chat_id
+             WHERE owner.tenant_id = op.tenant_id
+               AND owner.chat_id = op.chat_id
+               AND owner.user_id = op.user_id
+               AND COALESCE(:participant_role, 'viewer') = 'owner'
+            RETURNING owner.*
+          ),
+          promoted_owner AS (
+            UPDATE chat_participants target
+               SET participant_role = 'owner',
+                   status = 'active',
+                   removed_at = NULL
+              FROM target_viewer tv
+             WHERE target.tenant_id = tv.tenant_id
+               AND target.chat_id = tv.chat_id
+               AND target.user_id = tv.user_id
+               AND COALESCE(:participant_role, 'viewer') = 'owner'
+            RETURNING target.*
+          ),
+          reactivated_viewer AS (
+            UPDATE chat_participants target
+               SET participant_role = 'viewer',
+                   status = 'active',
+                   removed_at = NULL
+              FROM owner_participant op
+             WHERE target.tenant_id = op.tenant_id
+               AND target.chat_id = op.chat_id
+               AND target.user_id = :user_id
+               AND target.participant_role <> 'owner'
+               AND COALESCE(:participant_role, 'viewer') = 'viewer'
+            RETURNING target.*
           )
-          UPDATE chat_participants target
-             SET participant_role = 'viewer',
-                 status = 'active',
-                 removed_at = NULL
-            FROM owner_participant op
-           WHERE target.tenant_id = op.tenant_id
-             AND target.chat_id = op.chat_id
-             AND target.user_id = :user_id
-             AND target.participant_role <> 'owner'
-             AND COALESCE(:participant_role, 'viewer') = 'viewer'
-          RETURNING target.*
+          SELECT *
+          FROM promoted_owner
+          UNION ALL
+          SELECT *
+          FROM reactivated_viewer
         `,
         params: {
           actor_id: request.actorId,

@@ -202,9 +202,25 @@ export function createLocalStore() {
   function updateParticipant(actor, chat_id, user_id, input = {}) {
     requireOwner(actor, chat_id);
     const row = participant(chat_id, user_id);
-    if (!row || row.participant_role === participantRoles.OWNER) throw forbidden("PARTICIPANT_NOT_FOUND", "参加者が存在しない。");
+    if (!row) throw forbidden("PARTICIPANT_NOT_FOUND", "参加者が存在しない。");
+    if (input.participant_role === participantRoles.OWNER) {
+      if (row.status !== statuses.ACTIVE || row.participant_role !== participantRoles.VIEWER || row.user_id === actor.user_id) {
+        throw forbidden("OWNER_TRANSFER_TARGET_INVALID", "owner 移譲先は active viewer に限定される。");
+      }
+      const currentOwner = participant(chat_id, actor.user_id);
+      currentOwner.participant_role = participantRoles.VIEWER;
+      row.participant_role = participantRoles.OWNER;
+      row.status = statuses.ACTIVE;
+      row.removed_at = null;
+      recordAuditEvent(actor, "chat.participant.owner_transferred", "chat_share", chat_id, {
+        previous_owner_user_id: actor.user_id,
+        new_owner_user_id: row.user_id
+      });
+      return row;
+    }
+    if (row.participant_role === participantRoles.OWNER) throw forbidden("PARTICIPANT_NOT_FOUND", "参加者が存在しない。");
     if (input.participant_role && input.participant_role !== participantRoles.VIEWER) {
-      throw forbidden("UNSUPPORTED_PARTICIPANT_ROLE", "初期構成では共有先は viewer 固定。");
+      throw forbidden("UNSUPPORTED_PARTICIPANT_ROLE", "共有先 role は viewer または owner 移譲に限定される。");
     }
     row.participant_role = participantRoles.VIEWER;
     row.status = statuses.ACTIVE;

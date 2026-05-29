@@ -134,7 +134,7 @@ git diff --check
 - Chat UI が `cancelAnswerGeneration` route helper / generated operation helper を使い、owner または投稿者本人による回答生成キャンセル要求、viewer/outsider の拒否、`chat.run.canceled` event と canceled status を source/local gate で確認できること。実 AgentCore Runtime 停止、SQS event-publish、AppSync fan-out、streaming 中断、実ブラウザ E2E は別途確認する。
 - Chat UI が `listChatParticipants` route helper / generated operation helper を使い、参加中チャットの参加者、ロール、共有者、共有日時を source/local gate で確認できること。
 - Chat UI が `updateChatSession` / `deleteChatSession` route helper / generated operation helper を使い、owner によるチャットタイトル更新と論理削除、viewer/outsider の拒否、削除後の一覧・通常取得からの除外、`audit_events` への `chat.session.title_updated` / `chat.session.deleted` 追記を source/local gate で確認できること。保持期間後の物理削除、SQS/AppSync publish、実ブラウザ E2E は別途確認する。
-- Chat UI が `addChatParticipant` / `updateChatParticipant` / `removeChatParticipant` route helper / generated operation helper を使い、owner による viewer 共有、viewer 再有効化、共有解除を source/local gate で確認できること。owner 移譲、viewer の owner 昇格、実 AppSync Events fan-out、実ブラウザ E2E は別途確認する。
+- Chat UI が `addChatParticipant` / `updateChatParticipant` / `removeChatParticipant` route helper / generated operation helper を使い、owner による viewer 共有、viewer 再有効化、共有解除、active viewer への owner 移譲を source/local gate で確認できること。任意 owner 昇格、実 AppSync Events fan-out、実ブラウザ E2E は別途確認する。
 - Chat UI が `createFeedback` route helper / generated operation helper を使い、閲覧可能な回答への高評価・低評価・コメント登録を source/local gate で確認できること。フィードバック一覧、取消、実ブラウザ E2E は別途確認する。
 - Chat UI が `listFavorites` / `addFavorite` / `deleteFavorite` route helper / generated operation helper を使い、参加チャットと回答単位のお気に入り登録、一覧、解除、重複排除を source/local gate で確認できること。実ブラウザ E2E は別途確認する。
 - Web realtime client が同一 origin の `/event/realtime` を default endpoint とし、ticket を WebSocket URL query に載せず subscribe payload で送り、API が返した channel と通知後の REST refetch に接続されていること。
@@ -226,7 +226,7 @@ git diff --check
 - UI theme / recipe / Radix primitive 境界は source gate、`tsc --noEmit`、Vite production build で確認する。実ブラウザ visual regression、dark/density theme の実切替、全 shadcn/ui component 群の網羅は別途確認する。
 - Chat 参加者一覧の local gate は参加者による対象チャット参加者一覧取得と未参加者拒否を確認する。
 - Chat message history の local gate は参加者による対象チャットメッセージ一覧取得、ユーザー質問と assistant 回答の復元、閲覧者本人の feedback state 復元、message paging cursor、message ごとの citation records 復元、他参加者 feedback 非開示、未参加者拒否を確認する。実ブラウザ操作、実 Aurora DSQL での SQL 実行は別途確認する。
-- Chat 共有操作の local gate は owner による viewer 共有、viewer / outsider の共有操作拒否、viewer 解除後の閲覧拒否、viewer 再有効化、owner 昇格拒否、owner 削除拒否を確認する。owner 移譲、実 AppSync Events fan-out、実ブラウザ操作、実 Aurora DSQL での SQL 実行は別途確認する。
+- Chat 共有操作の local gate は owner による viewer 共有、viewer / outsider の共有操作拒否、viewer 解除後の閲覧拒否、viewer 再有効化、active viewer への owner 移譲、旧 owner の viewer 降格、active owner が 1 人だけ残ること、viewer / outsider の owner 移譲拒否、owner 削除拒否を確認する。任意 owner 昇格、実 AppSync Events fan-out、実ブラウザ操作、実 Aurora DSQL での SQL 実行は別途確認する。
 - Chat フィードバックの local gate は参加者による対象回答への登録と未参加者拒否を確認する。フィードバック一覧、取消、分析集計、実ブラウザ操作、実 Aurora DSQL での SQL 実行は別途確認する。
 - Admin ユーザー取込の source gate は `adminListUsers`、JSON rows による `startUserImport`、`getUserImport` の結果集計と行別エラー、管理者ロール境界を確認する。CSV/Excel binary upload、S3 import file 配置、Cognito 実反映、AppSync 完了通知は別途実装・検証する。
 - Admin Tabs の source gate は評価操作と公開成果物一覧の画面構造を確認する。CSV/Excel 実アップロード、実 PDF upload、取り込み監視の実 backend/API/UI は別途実装・検証する。

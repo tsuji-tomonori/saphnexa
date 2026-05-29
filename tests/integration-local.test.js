@@ -24,19 +24,33 @@ test("chat is an independent resource with owner/viewer participant permissions"
   assert.equal(viewerWrite.status, 403);
   assert.equal(viewerWrite.body.error_code, "CHAT_WRITE_FORBIDDEN");
 
+  const transferred = api.request("user-owner", "updateChatParticipant", { csrf_token: ownerCsrf, chat_id: chatId, user_id: "user-viewer", participant_role: "owner" });
+  assert.equal(transferred.status, 200);
+  assert.equal(transferred.body.participant.participant_role, "owner");
+  const afterTransfer = api.request("user-viewer", "listChatParticipants", { chat_id: chatId });
+  assert.equal(afterTransfer.status, 200);
+  assert.equal(afterTransfer.body.participants.filter((participant) => participant.participant_role === "owner").length, 1);
+  assert.equal(afterTransfer.body.participants.find((participant) => participant.user_id === "user-owner").participant_role, "viewer");
+  assert.equal(api.store.state.audit_events.some((event) => event.event_name === "chat.participant.owner_transferred" && event.resource_id === chatId), true);
+
+  const oldOwnerWrite = api.request("user-owner", "updateChatSession", { csrf_token: ownerCsrf, chat_id: chatId, title: "旧owner title" });
+  assert.equal(oldOwnerWrite.status, 403);
+  assert.equal(api.request("user-owner", "updateChatParticipant", { csrf_token: ownerCsrf, chat_id: chatId, user_id: "user-owner", participant_role: "owner" }).status, 403);
+  assert.equal(api.request("user-outsider", "updateChatParticipant", { csrf_token: "csrf-user-outsider", chat_id: chatId, user_id: "user-owner", participant_role: "owner" }).status, 403);
+
   const outsiderRead = api.request("user-outsider", "getChatSession", { chat_id: chatId });
   assert.equal(outsiderRead.status, 403);
 
-  const renamed = api.request("user-owner", "updateChatSession", { csrf_token: ownerCsrf, chat_id: chatId, title: "検収チャット renamed" });
+  const renamed = api.request("user-viewer", "updateChatSession", { csrf_token: viewerCsrf, chat_id: chatId, title: "検収チャット renamed" });
   assert.equal(renamed.status, 200);
   assert.equal(api.store.state.audit_events.some((event) => event.event_name === "chat.session.title_updated" && event.resource_id === chatId), true);
 
   const auditCountBeforeViewerDelete = api.store.state.audit_events.length;
-  const viewerDelete = api.request("user-viewer", "deleteChatSession", { csrf_token: viewerCsrf, chat_id: chatId });
-  assert.equal(viewerDelete.status, 403);
+  const oldOwnerDelete = api.request("user-owner", "deleteChatSession", { csrf_token: ownerCsrf, chat_id: chatId });
+  assert.equal(oldOwnerDelete.status, 403);
   assert.equal(api.store.state.audit_events.length, auditCountBeforeViewerDelete);
 
-  const deleted = api.request("user-owner", "deleteChatSession", { csrf_token: ownerCsrf, chat_id: chatId });
+  const deleted = api.request("user-viewer", "deleteChatSession", { csrf_token: viewerCsrf, chat_id: chatId });
   assert.equal(deleted.status, 204);
   assert.equal(api.store.state.audit_events.some((event) => event.event_name === "chat.session.deleted" && event.resource_id === chatId && event.payload_json.physical_delete === false), true);
 });

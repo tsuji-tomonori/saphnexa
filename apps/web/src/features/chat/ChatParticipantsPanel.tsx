@@ -17,7 +17,7 @@ export function ChatParticipantsPanel(props: {
   isLoading: boolean;
   isMutating: boolean;
   onAdd: (input: { chat_id: string; user_id: string }) => Promise<unknown>;
-  onUpdate: (input: { chat_id: string; user_id: string }) => void;
+  onUpdate: (input: { chat_id: string; user_id: string; participant_role?: "owner" | "viewer" }) => void;
   onRemove: (input: { chat_id: string; user_id: string }) => void;
 }) {
   const form = useForm<ShareParticipantFormValues>({
@@ -44,7 +44,7 @@ export function ChatParticipantsPanel(props: {
             </FormField>
           )}
         />
-        <p role="status">owner移譲、owner昇格、実 AppSync Events fan-out: 未接続</p>
+        <p role="status">任意owner昇格、実 AppSync Events fan-out: 未接続</p>
         <Button type="submit" disabled={!props.csrfToken || !props.activeChatId || props.isMutating}>viewerとして共有</Button>
       </form>
       <DataTable
@@ -66,9 +66,17 @@ export function ChatParticipantsPanel(props: {
                   type="button"
                   tone="secondary"
                   disabled={!props.csrfToken || !props.activeChatId || props.isMutating}
-                  onClick={() => props.activeChatId ? props.onUpdate({ chat_id: props.activeChatId, user_id: participant.user_id }) : undefined}
+                  onClick={() => props.activeChatId ? props.onUpdate({ chat_id: props.activeChatId, user_id: participant.user_id, participant_role: "viewer" }) : undefined}
                 >
                   viewer再有効化
+                </Button>
+                <Button
+                  type="button"
+                  tone="secondary"
+                  disabled={!props.csrfToken || !props.activeChatId || participant.status !== "active" || props.isMutating}
+                  onClick={() => props.activeChatId ? props.onUpdate({ chat_id: props.activeChatId, user_id: participant.user_id, participant_role: "owner" }) : undefined}
+                >
+                  ownerを移譲
                 </Button>
                 <Button
                   type="button"

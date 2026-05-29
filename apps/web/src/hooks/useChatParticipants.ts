@@ -28,8 +28,8 @@ export function useAddChatParticipant(csrfToken: string) {
 export function useUpdateChatParticipant(csrfToken: string) {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: (input: { chat_id: string; user_id: string }) =>
-      apiPatchOperation("updateChatParticipant", apiRoutes.updateChatParticipant(input.chat_id, input.user_id), { participant_role: "viewer" }, csrfToken),
+    mutationFn: (input: { chat_id: string; user_id: string; participant_role?: "owner" | "viewer" }) =>
+      apiPatchOperation("updateChatParticipant", apiRoutes.updateChatParticipant(input.chat_id, input.user_id), { participant_role: input.participant_role ?? "viewer" }, csrfToken),
     onSuccess: async (_data, input) => {
       await queryClient.invalidateQueries({ queryKey: ["chat-participants", input.chat_id] });
       await queryClient.invalidateQueries({ queryKey: ["chat-sessions"] });

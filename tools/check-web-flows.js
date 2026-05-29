@@ -189,8 +189,10 @@ scenario("chat UI source contract", () => {
     "shareParticipantSchema",
     "viewerとして共有",
     "viewer再有効化",
+    "ownerを移譲",
+    "participant_role: \"owner\"",
     "共有解除",
-    "owner移譲、owner昇格、実 AppSync Events fan-out: 未接続"
+    "任意owner昇格、実 AppSync Events fan-out: 未接続"
   ]) {
     assert(chatParticipantsPanelSource.includes(token), `ChatParticipantsPanel missing token: ${token}`);
   }
@@ -337,7 +339,16 @@ scenario("chat local API flow", () => {
   assert(api.request("user-viewer", "listChatParticipants", { chat_id: chat.body.chat.chat_id }).status === 403, "removed viewer must not list participants");
   const reenabledParticipant = api.request("user-owner", "updateChatParticipant", { csrf_token: csrf, chat_id: chat.body.chat.chat_id, user_id: "user-viewer", participant_role: "viewer" });
   assert(reenabledParticipant.status === 200 && reenabledParticipant.body.participant.status === "active", "owner must re-enable viewer participant");
-  assert(api.request("user-owner", "updateChatParticipant", { csrf_token: csrf, chat_id: chat.body.chat.chat_id, user_id: "user-viewer", participant_role: "owner" }).status === 403, "owner promotion must stay unsupported");
+  const transferredOwner = api.request("user-owner", "updateChatParticipant", { csrf_token: csrf, chat_id: chat.body.chat.chat_id, user_id: "user-viewer", participant_role: "owner" });
+  assert(transferredOwner.status === 200 && transferredOwner.body.participant.participant_role === "owner", "owner must transfer ownership to an active viewer");
+  const afterOwnerTransfer = api.request("user-viewer", "listChatParticipants", { chat_id: chat.body.chat.chat_id });
+  assert(afterOwnerTransfer.body.participants.filter((item) => item.participant_role === "owner").length === 1, "owner transfer must keep exactly one active owner");
+  assert(afterOwnerTransfer.body.participants.some((item) => item.user_id === "user-owner" && item.participant_role === "viewer"), "previous owner must become viewer after transfer");
+  assert(api.store.state.audit_events.some((event) => event.event_name === "chat.participant.owner_transferred" && event.resource_id === chat.body.chat.chat_id), "owner transfer audit event missing");
+  assert(api.request("user-owner", "updateChatSession", { csrf_token: csrf, chat_id: chat.body.chat.chat_id, title: "old owner title" }).status === 403, "previous owner must not keep owner-only update permission");
+  assert(api.request("user-viewer", "updateChatSession", { csrf_token: "csrf-user-viewer", chat_id: chat.body.chat.chat_id, title: "new owner title" }).status === 200, "new owner must be able to update chat title");
+  assert(api.request("user-owner", "updateChatParticipant", { csrf_token: csrf, chat_id: chat.body.chat.chat_id, user_id: "user-owner", participant_role: "owner" }).status === 403, "viewer must not transfer ownership back");
+  assert(api.request("user-outsider", "updateChatParticipant", { csrf_token: "csrf-user-outsider", chat_id: chat.body.chat.chat_id, user_id: "user-owner", participant_role: "owner" }).status === 403, "outsider must not transfer ownership");
   assert(api.request("user-owner", "removeChatParticipant", { csrf_token: csrf, chat_id: chat.body.chat.chat_id, user_id: "user-owner" }).status === 403, "owner participant must not be removable");
   const messages = api.request("user-owner", "listMessages", { chat_id: chat.body.chat.chat_id });
   assert(messages.status === 200, "chat messages fetch failed");

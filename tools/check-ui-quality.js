@@ -67,8 +67,9 @@ for (const file of files) {
     assert(body.includes("aria-label=\"チャット共有フォーム\""), "Chat participants must expose a labelled share form");
     assert(body.includes("viewerとして共有"), "Chat participants must expose viewer share action");
     assert(body.includes("viewer再有効化"), "Chat participants must expose viewer re-enable action");
+    assert(body.includes("ownerを移譲") && body.includes("participant_role: \"owner\""), "Chat participants must expose owner transfer through the participant mutation");
     assert(body.includes("共有解除"), "Chat participants must expose remove share action");
-    assert(body.includes("owner移譲、owner昇格、実 AppSync Events fan-out: 未接続"), "Chat participants must not imply owner transfer or realtime fan-out is implemented");
+    assert(body.includes("任意owner昇格、実 AppSync Events fan-out: 未接続"), "Chat participants must not imply arbitrary owner promotion or realtime fan-out is implemented");
     assert(body.includes("disabled={!props.csrfToken || !props.activeChatId || props.isMutating}"), "Chat participants actions must require token and active chat");
     assert(!body.includes("user-local"), "Chat participants must not hard-code local user ids");
   }
