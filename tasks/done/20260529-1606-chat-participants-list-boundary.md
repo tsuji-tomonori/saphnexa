@@ -85,6 +85,11 @@ Chat UI から現在のチャット参加者一覧を表示できる API/UI 境�
 - pass: `npm test`
 - pass: `git diff --check`
 
+## PR コメント
+
+- 受け入れ条件確認: https://github.com/tsuji-tomonori/saphnexa/pull/3#issuecomment-4572055952
+- セルフレビュー: https://github.com/tsuji-tomonori/saphnexa/pull/3#issuecomment-4572058600
+
 ## 状態
 
-in_progress
+done
