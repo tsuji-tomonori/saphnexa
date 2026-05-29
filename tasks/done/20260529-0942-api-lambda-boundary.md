@@ -1,6 +1,6 @@
 # API Lambda boundary
 
-- 状態: doing
+- 状態: done
 - タスク種別: 機能追加
 - 作成日時: 2026-05-29 09:42 JST
 - 対象ブランチ: `codex/typescript-framework-implementation`
@@ -42,11 +42,11 @@
 
 ## 受け入れ条件
 
-- [ ] `apps/api/src/index.ts` が Hono AWS Lambda handler を export する。
-- [ ] API middleware 境界が TypeScript source として存在する。
-- [ ] API service/repository adapter 境界が TypeScript source として存在する。
-- [ ] 既存 local API behavior と OpenAPI checks が破壊されない。
-- [ ] 実 DSQL/Cognito/AWS deploy を完了扱いにしない。
+- [x] `apps/api/src/index.ts` が Hono AWS Lambda handler を export する。
+- [x] API middleware 境界が TypeScript source として存在する。
+- [x] API service/repository adapter 境界が TypeScript source として存在する。
+- [x] 既存 local API behavior と OpenAPI checks が破壊されない。
+- [x] 実 DSQL/Cognito/AWS deploy を完了扱いにしない。
 
 ## 検証計画
 
@@ -57,6 +57,21 @@
 - `npm test`
 - `npm run docs:check`
 - `git diff --check`
+
+## 検証結果
+
+- `npm run typecheck`: pass。
+- `npm run api:openapi:check`: pass。
+- `npm run test:contract`: pass。
+- `npm run test:integration:local`: pass。
+- `npm test`: pass。15 tests。
+- `npm run docs:check`: pass。
+- `git diff --check`: pass。
+
+## PR コメント
+
+- 受け入れ条件確認: https://github.com/tsuji-tomonori/saphnexa/pull/3#issuecomment-4569481761
+- セルフレビュー: https://github.com/tsuji-tomonori/saphnexa/pull/3#issuecomment-4569482848
 
 ## PR レビュー観点
 
