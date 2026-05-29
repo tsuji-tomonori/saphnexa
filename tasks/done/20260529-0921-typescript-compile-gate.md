@@ -1,6 +1,6 @@
 # TypeScript compile gate
 
-- 状態: doing
+- 状態: done
 - タスク種別: 機能追加
 - 作成日時: 2026-05-29 09:21 JST
 - 対象ブランチ: `codex/typescript-framework-implementation`
@@ -43,11 +43,11 @@
 
 ## 受け入れ条件
 
-- [ ] lockfile または依存解決結果がリポジトリに残る。
-- [ ] root `npm run typecheck` が source gate と実 TypeScript compilation を実行する。
-- [ ] `tsc` 実行時の型エラーが解消される。
-- [ ] 既存 contract / unit / docs checks が pass する。
-- [ ] Vite build、実 AWS 接続、codegen 未実施を完了扱いにしない。
+- [x] lockfile または依存解決結果がリポジトリに残る。
+- [x] root `npm run typecheck` が source gate と実 TypeScript compilation を実行する。
+- [x] `tsc` 実行時の型エラーが解消される。
+- [x] 既存 contract / unit / docs checks が pass する。
+- [x] Vite build、実 AWS 接続、codegen 未実施を完了扱いにしない。
 
 ## 検証計画
 
@@ -56,6 +56,23 @@
 - `npm test`
 - `npm run docs:check`
 - `git diff --check`
+
+## 検証結果
+
+- `npm run typecheck`: pass。
+- `npm run test:contract`: pass。
+- `npm run api:openapi:check`: pass。
+- `npm run ui:check`: pass。初回は `@saphnexa/ui` package import を checker が認識せず失敗し、checker 更新後に pass。
+- `npm run web:flow:check`: pass。
+- `npm run web:a11y:check`: pass。
+- `npm test`: pass。15 tests。
+- `npm run docs:check`: pass。
+- `git diff --check`: pass。
+
+## PR コメント
+
+- 受け入れ条件確認: https://github.com/tsuji-tomonori/saphnexa/pull/3#issuecomment-4569428402
+- セルフレビュー: https://github.com/tsuji-tomonori/saphnexa/pull/3#issuecomment-4569429452
 
 ## PR レビュー観点
 
