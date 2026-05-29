@@ -1,6 +1,6 @@
 # API client full route coverage
 
-- 状態: doing
+- 状態: done
 - タスク種別: 機能追加
 - 作成日時: 2026-05-29 11:02 JST
 - 対象ブランチ: `codex/typescript-framework-implementation`
@@ -66,6 +66,11 @@
 - `npm test`: pass。15 tests。
 - `npm run docs:check`: pass。
 - `git diff --check`: pass。
+
+## PR コメント
+
+- 受け入れ条件確認: https://github.com/tsuji-tomonori/saphnexa/pull/3#issuecomment-4569861514
+- セルフレビュー: https://github.com/tsuji-tomonori/saphnexa/pull/3#issuecomment-4569862388
 
 ## PR レビュー観点
 
