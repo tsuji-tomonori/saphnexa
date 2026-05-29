@@ -119,7 +119,7 @@ function response(status, route) {
     description: `${route.operationId} success response`,
     content: {
       "application/json": {
-        schema: { type: "object", additionalProperties: true }
+        schema: successResponseSchema(route)
       }
     }
   };
@@ -142,13 +142,76 @@ function jsonRequestBody(route) {
     content: {
       "application/json": {
         schema: {
-          type: "object",
-          additionalProperties: true,
+          ...requestBodySchema(route),
           description: `${route.operationId} request body. Zod runtime schema is defined in apps/api/src/zod-openapi-schemas.js.`
         }
       }
     }
   };
+}
+
+function requestBodySchema(route) {
+  const common = {
+    csrf_token: stringSchema(),
+    title: stringSchema(),
+    question: stringSchema(),
+    user_id: stringSchema(),
+    document_id: stringSchema(),
+    version_id: stringSchema(),
+    version_label: stringSchema(),
+    file_name: stringSchema(),
+    acl_scope_id: stringSchema(),
+    dataset_id: stringSchema(),
+    model_id: stringSchema(),
+    import_id: stringSchema(),
+    job_id: stringSchema(),
+    now_ms: integerSchema(),
+    rows: arrayOf(jsonObjectSchema()),
+    metadata: jsonObjectSchema(),
+    retrieval_policy: objectSchema([], {
+      top_k: integerSchema(),
+      allowed_acl_scope_ids: arrayOf(stringSchema())
+    })
+  };
+  return objectSchema(route.csrfRequired ? ["csrf_token"] : [], common, true);
+}
+
+function successResponseSchema(route) {
+  const schemas = {
+    getMe: objectSchema(["user", "csrf_token"], { user: jsonObjectSchema(), csrf_token: stringSchema() }),
+    listChatSessions: objectSchema(["chats"], { chats: arrayOf(jsonObjectSchema()) }),
+    createChatSession: objectSchema(["chat"], { chat: jsonObjectSchema() }),
+    getChatSession: objectSchema(["chat"], { chat: jsonObjectSchema() }),
+    updateChatSession: objectSchema(["chat"], { chat: jsonObjectSchema() }),
+    listChatParticipants: objectSchema(["participants"], { participants: arrayOf(jsonObjectSchema()) }),
+    addChatParticipant: objectSchema(["participant"], { participant: jsonObjectSchema() }),
+    updateChatParticipant: objectSchema(["participant"], { participant: jsonObjectSchema() }),
+    listMessages: objectSchema(["messages"], { messages: arrayOf(jsonObjectSchema()) }),
+    submitQuestion: objectSchema(["message_id", "run_id", "status"], { message_id: stringSchema(), run_id: stringSchema(), status: stringSchema() }),
+    listMessageEvents: objectSchema(["events"], { events: arrayOf(jsonObjectSchema()) }),
+    cancelAnswerGeneration: objectSchema(["message_id", "run_id", "status"], { message_id: stringSchema(), run_id: stringSchema(), status: stringSchema() }),
+    createFeedback: objectSchema(["feedback"], { feedback: jsonObjectSchema() }),
+    listFavorites: objectSchema(["favorites"], { favorites: arrayOf(jsonObjectSchema()) }),
+    addFavorite: objectSchema(["favorite"], { favorite: jsonObjectSchema() }),
+    issueWsTicket: objectSchema(["ticket", "expires_in_seconds", "channels"], { ticket: stringSchema(), expires_in_seconds: integerSchema(), channels: arrayOf(stringSchema()) }),
+    listLlmModels: objectSchema(["models"], { models: arrayOf(jsonObjectSchema()) }),
+    adminListUsers: objectSchema(["users"], { users: arrayOf(jsonObjectSchema()) }),
+    startUserImport: objectSchema(["import"], { import: jsonObjectSchema() }),
+    getUserImport: objectSchema(["import", "rows"], { import: jsonObjectSchema(), rows: arrayOf(jsonObjectSchema()) }),
+    adminListDocuments: objectSchema(["documents"], { documents: arrayOf(jsonObjectSchema()) }),
+    createDocument: objectSchema(["document_id", "version_id", "job_id", "raw_s3_uri"], { document_id: stringSchema(), version_id: stringSchema(), job_id: stringSchema(), raw_s3_uri: stringSchema(), idempotent: booleanSchema() }),
+    getDocument: objectSchema(["document"], { document: jsonObjectSchema() }),
+    createDocumentVersion: objectSchema(["document_id", "version_id", "job_id", "raw_s3_uri"], { document_id: stringSchema(), version_id: stringSchema(), job_id: stringSchema(), raw_s3_uri: stringSchema(), idempotent: booleanSchema() }),
+    activateDocumentVersion: objectSchema(["version"], { version: jsonObjectSchema() }),
+    getIngestionJob: objectSchema(["job"], { job: jsonObjectSchema() }),
+    retryIngestionJob: objectSchema(["job"], { job: jsonObjectSchema() }),
+    listEvaluationDatasets: objectSchema(["datasets"], { datasets: arrayOf(jsonObjectSchema()) }),
+    startEvaluationRun: objectSchema(["evaluation_run"], { evaluation_run: jsonObjectSchema() }),
+    getEvaluationRun: objectSchema(["evaluation_run"], { evaluation_run: jsonObjectSchema() }),
+    listPublishedArtifacts: objectSchema(["artifacts"], { artifacts: arrayOf(jsonObjectSchema()) }),
+    issueArtifactAccessCookie: objectSchema(["cookie_issued", "expires_in_seconds"], { cookie_issued: booleanSchema(), expires_in_seconds: integerSchema() })
+  };
+  return schemas[route.operationId] ?? jsonObjectSchema();
 }
 
 function tag(route) {
@@ -167,13 +230,33 @@ function toHonoPath(path) {
   return path.replace(/\{([^}]+)\}/g, ":$1");
 }
 
-function objectSchema(required, properties) {
+function objectSchema(required, properties, additionalProperties = false) {
   return {
     type: "object",
     required,
     properties,
-    additionalProperties: false
+    additionalProperties
   };
+}
+
+function jsonObjectSchema() {
+  return { type: "object", additionalProperties: true };
+}
+
+function arrayOf(items) {
+  return { type: "array", items };
+}
+
+function stringSchema() {
+  return { type: "string" };
+}
+
+function integerSchema() {
+  return { type: "integer" };
+}
+
+function booleanSchema() {
+  return { type: "boolean" };
 }
 
 function removeUndefined(value) {

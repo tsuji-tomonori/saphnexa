@@ -41,7 +41,7 @@ export interface ApiClientOperationTypes {
     query: ApiClientEmptyObject;
     requestBody: never;
     successStatus: 302 | 400;
-    successResponse: ApiClientJsonObject;
+    successResponse: void;
     errorResponse: ApiClientErrorResponse;
   };
   logout: {
@@ -53,7 +53,7 @@ export interface ApiClientOperationTypes {
     csrfRequired: true;
     params: ApiClientEmptyObject;
     query: ApiClientEmptyObject;
-    requestBody: ApiClientJsonObject;
+    requestBody: { csrf_token: string; title?: string; question?: string; user_id?: string; document_id?: string; version_id?: string; version_label?: string; file_name?: string; acl_scope_id?: string; dataset_id?: string; model_id?: string; import_id?: string; job_id?: string; now_ms?: number; rows?: ApiClientJsonObject[]; metadata?: ApiClientJsonObject; retrieval_policy?: { top_k?: number; allowed_acl_scope_ids?: string[] } } & ApiClientJsonObject;
     successStatus: 204;
     successResponse: void;
     errorResponse: ApiClientErrorResponse;
@@ -69,7 +69,7 @@ export interface ApiClientOperationTypes {
     query: ApiClientEmptyObject;
     requestBody: never;
     successStatus: 200;
-    successResponse: ApiClientJsonObject;
+    successResponse: { user: ApiClientJsonObject; csrf_token: string };
     errorResponse: ApiClientErrorResponse;
   };
   listChatSessions: {
@@ -83,7 +83,7 @@ export interface ApiClientOperationTypes {
     query: ApiClientEmptyObject;
     requestBody: never;
     successStatus: 200;
-    successResponse: ApiClientJsonObject;
+    successResponse: { chats: ApiClientJsonObject[] };
     errorResponse: ApiClientErrorResponse;
   };
   createChatSession: {
@@ -95,9 +95,9 @@ export interface ApiClientOperationTypes {
     csrfRequired: true;
     params: ApiClientEmptyObject;
     query: ApiClientEmptyObject;
-    requestBody: ApiClientJsonObject;
+    requestBody: { csrf_token: string; title?: string; question?: string; user_id?: string; document_id?: string; version_id?: string; version_label?: string; file_name?: string; acl_scope_id?: string; dataset_id?: string; model_id?: string; import_id?: string; job_id?: string; now_ms?: number; rows?: ApiClientJsonObject[]; metadata?: ApiClientJsonObject; retrieval_policy?: { top_k?: number; allowed_acl_scope_ids?: string[] } } & ApiClientJsonObject;
     successStatus: 201;
-    successResponse: ApiClientJsonObject;
+    successResponse: { chat: ApiClientJsonObject };
     errorResponse: ApiClientErrorResponse;
   };
   getChatSession: {
@@ -111,7 +111,7 @@ export interface ApiClientOperationTypes {
     query: ApiClientEmptyObject;
     requestBody: never;
     successStatus: 200;
-    successResponse: ApiClientJsonObject;
+    successResponse: { chat: ApiClientJsonObject };
     errorResponse: ApiClientErrorResponse;
   };
   updateChatSession: {
@@ -123,9 +123,9 @@ export interface ApiClientOperationTypes {
     csrfRequired: true;
     params: { chat_id: string };
     query: ApiClientEmptyObject;
-    requestBody: ApiClientJsonObject;
+    requestBody: { csrf_token: string; title?: string; question?: string; user_id?: string; document_id?: string; version_id?: string; version_label?: string; file_name?: string; acl_scope_id?: string; dataset_id?: string; model_id?: string; import_id?: string; job_id?: string; now_ms?: number; rows?: ApiClientJsonObject[]; metadata?: ApiClientJsonObject; retrieval_policy?: { top_k?: number; allowed_acl_scope_ids?: string[] } } & ApiClientJsonObject;
     successStatus: 200;
-    successResponse: ApiClientJsonObject;
+    successResponse: { chat: ApiClientJsonObject };
     errorResponse: ApiClientErrorResponse;
   };
   deleteChatSession: {
@@ -153,7 +153,7 @@ export interface ApiClientOperationTypes {
     query: ApiClientEmptyObject;
     requestBody: never;
     successStatus: 200;
-    successResponse: ApiClientJsonObject;
+    successResponse: { participants: ApiClientJsonObject[] };
     errorResponse: ApiClientErrorResponse;
   };
   addChatParticipant: {
@@ -165,9 +165,9 @@ export interface ApiClientOperationTypes {
     csrfRequired: true;
     params: { chat_id: string };
     query: ApiClientEmptyObject;
-    requestBody: ApiClientJsonObject;
+    requestBody: { csrf_token: string; title?: string; question?: string; user_id?: string; document_id?: string; version_id?: string; version_label?: string; file_name?: string; acl_scope_id?: string; dataset_id?: string; model_id?: string; import_id?: string; job_id?: string; now_ms?: number; rows?: ApiClientJsonObject[]; metadata?: ApiClientJsonObject; retrieval_policy?: { top_k?: number; allowed_acl_scope_ids?: string[] } } & ApiClientJsonObject;
     successStatus: 201;
-    successResponse: ApiClientJsonObject;
+    successResponse: { participant: ApiClientJsonObject };
     errorResponse: ApiClientErrorResponse;
   };
   updateChatParticipant: {
@@ -179,9 +179,9 @@ export interface ApiClientOperationTypes {
     csrfRequired: true;
     params: { chat_id: string; user_id: string };
     query: ApiClientEmptyObject;
-    requestBody: ApiClientJsonObject;
+    requestBody: { csrf_token: string; title?: string; question?: string; user_id?: string; document_id?: string; version_id?: string; version_label?: string; file_name?: string; acl_scope_id?: string; dataset_id?: string; model_id?: string; import_id?: string; job_id?: string; now_ms?: number; rows?: ApiClientJsonObject[]; metadata?: ApiClientJsonObject; retrieval_policy?: { top_k?: number; allowed_acl_scope_ids?: string[] } } & ApiClientJsonObject;
     successStatus: 200;
-    successResponse: ApiClientJsonObject;
+    successResponse: { participant: ApiClientJsonObject };
     errorResponse: ApiClientErrorResponse;
   };
   removeChatParticipant: {
@@ -209,7 +209,7 @@ export interface ApiClientOperationTypes {
     query: ApiClientEmptyObject;
     requestBody: never;
     successStatus: 200;
-    successResponse: ApiClientJsonObject;
+    successResponse: { messages: ApiClientJsonObject[] };
     errorResponse: ApiClientErrorResponse;
   };
   submitQuestion: {
@@ -221,9 +221,9 @@ export interface ApiClientOperationTypes {
     csrfRequired: true;
     params: { chat_id: string };
     query: ApiClientEmptyObject;
-    requestBody: ApiClientJsonObject;
+    requestBody: { csrf_token: string; title?: string; question?: string; user_id?: string; document_id?: string; version_id?: string; version_label?: string; file_name?: string; acl_scope_id?: string; dataset_id?: string; model_id?: string; import_id?: string; job_id?: string; now_ms?: number; rows?: ApiClientJsonObject[]; metadata?: ApiClientJsonObject; retrieval_policy?: { top_k?: number; allowed_acl_scope_ids?: string[] } } & ApiClientJsonObject;
     successStatus: 202;
-    successResponse: ApiClientJsonObject;
+    successResponse: { message_id: string; run_id: string; status: string };
     errorResponse: ApiClientErrorResponse;
   };
   listMessageEvents: {
@@ -237,7 +237,7 @@ export interface ApiClientOperationTypes {
     query: { after_seq?: number };
     requestBody: never;
     successStatus: 200;
-    successResponse: ApiClientJsonObject;
+    successResponse: { events: ApiClientJsonObject[] };
     errorResponse: ApiClientErrorResponse;
   };
   cancelAnswerGeneration: {
@@ -249,9 +249,9 @@ export interface ApiClientOperationTypes {
     csrfRequired: true;
     params: { chat_id: string; message_id: string };
     query: ApiClientEmptyObject;
-    requestBody: ApiClientJsonObject;
+    requestBody: { csrf_token: string; title?: string; question?: string; user_id?: string; document_id?: string; version_id?: string; version_label?: string; file_name?: string; acl_scope_id?: string; dataset_id?: string; model_id?: string; import_id?: string; job_id?: string; now_ms?: number; rows?: ApiClientJsonObject[]; metadata?: ApiClientJsonObject; retrieval_policy?: { top_k?: number; allowed_acl_scope_ids?: string[] } } & ApiClientJsonObject;
     successStatus: 202;
-    successResponse: ApiClientJsonObject;
+    successResponse: { message_id: string; run_id: string; status: string };
     errorResponse: ApiClientErrorResponse;
   };
   createFeedback: {
@@ -263,9 +263,9 @@ export interface ApiClientOperationTypes {
     csrfRequired: true;
     params: { chat_id: string; message_id: string };
     query: ApiClientEmptyObject;
-    requestBody: ApiClientJsonObject;
+    requestBody: { csrf_token: string; title?: string; question?: string; user_id?: string; document_id?: string; version_id?: string; version_label?: string; file_name?: string; acl_scope_id?: string; dataset_id?: string; model_id?: string; import_id?: string; job_id?: string; now_ms?: number; rows?: ApiClientJsonObject[]; metadata?: ApiClientJsonObject; retrieval_policy?: { top_k?: number; allowed_acl_scope_ids?: string[] } } & ApiClientJsonObject;
     successStatus: 201;
-    successResponse: ApiClientJsonObject;
+    successResponse: { feedback: ApiClientJsonObject };
     errorResponse: ApiClientErrorResponse;
   };
   listFavorites: {
@@ -279,7 +279,7 @@ export interface ApiClientOperationTypes {
     query: ApiClientEmptyObject;
     requestBody: never;
     successStatus: 200;
-    successResponse: ApiClientJsonObject;
+    successResponse: { favorites: ApiClientJsonObject[] };
     errorResponse: ApiClientErrorResponse;
   };
   addFavorite: {
@@ -291,9 +291,9 @@ export interface ApiClientOperationTypes {
     csrfRequired: true;
     params: ApiClientEmptyObject;
     query: ApiClientEmptyObject;
-    requestBody: ApiClientJsonObject;
+    requestBody: { csrf_token: string; title?: string; question?: string; user_id?: string; document_id?: string; version_id?: string; version_label?: string; file_name?: string; acl_scope_id?: string; dataset_id?: string; model_id?: string; import_id?: string; job_id?: string; now_ms?: number; rows?: ApiClientJsonObject[]; metadata?: ApiClientJsonObject; retrieval_policy?: { top_k?: number; allowed_acl_scope_ids?: string[] } } & ApiClientJsonObject;
     successStatus: 201;
-    successResponse: ApiClientJsonObject;
+    successResponse: { favorite: ApiClientJsonObject };
     errorResponse: ApiClientErrorResponse;
   };
   deleteFavorite: {
@@ -319,9 +319,9 @@ export interface ApiClientOperationTypes {
     csrfRequired: true;
     params: ApiClientEmptyObject;
     query: ApiClientEmptyObject;
-    requestBody: ApiClientJsonObject;
+    requestBody: { csrf_token: string; title?: string; question?: string; user_id?: string; document_id?: string; version_id?: string; version_label?: string; file_name?: string; acl_scope_id?: string; dataset_id?: string; model_id?: string; import_id?: string; job_id?: string; now_ms?: number; rows?: ApiClientJsonObject[]; metadata?: ApiClientJsonObject; retrieval_policy?: { top_k?: number; allowed_acl_scope_ids?: string[] } } & ApiClientJsonObject;
     successStatus: 201;
-    successResponse: ApiClientJsonObject;
+    successResponse: { ticket: string; expires_in_seconds: number; channels: string[] };
     errorResponse: ApiClientErrorResponse;
   };
   listLlmModels: {
@@ -335,7 +335,7 @@ export interface ApiClientOperationTypes {
     query: ApiClientEmptyObject;
     requestBody: never;
     successStatus: 200;
-    successResponse: ApiClientJsonObject;
+    successResponse: { models: ApiClientJsonObject[] };
     errorResponse: ApiClientErrorResponse;
   };
   adminListUsers: {
@@ -349,7 +349,7 @@ export interface ApiClientOperationTypes {
     query: ApiClientEmptyObject;
     requestBody: never;
     successStatus: 200;
-    successResponse: ApiClientJsonObject;
+    successResponse: { users: ApiClientJsonObject[] };
     errorResponse: ApiClientErrorResponse;
   };
   startUserImport: {
@@ -361,9 +361,9 @@ export interface ApiClientOperationTypes {
     csrfRequired: true;
     params: ApiClientEmptyObject;
     query: ApiClientEmptyObject;
-    requestBody: ApiClientJsonObject;
+    requestBody: { csrf_token: string; title?: string; question?: string; user_id?: string; document_id?: string; version_id?: string; version_label?: string; file_name?: string; acl_scope_id?: string; dataset_id?: string; model_id?: string; import_id?: string; job_id?: string; now_ms?: number; rows?: ApiClientJsonObject[]; metadata?: ApiClientJsonObject; retrieval_policy?: { top_k?: number; allowed_acl_scope_ids?: string[] } } & ApiClientJsonObject;
     successStatus: 202;
-    successResponse: ApiClientJsonObject;
+    successResponse: { import: ApiClientJsonObject };
     errorResponse: ApiClientErrorResponse;
   };
   getUserImport: {
@@ -377,7 +377,7 @@ export interface ApiClientOperationTypes {
     query: ApiClientEmptyObject;
     requestBody: never;
     successStatus: 200;
-    successResponse: ApiClientJsonObject;
+    successResponse: { import: ApiClientJsonObject; rows: ApiClientJsonObject[] };
     errorResponse: ApiClientErrorResponse;
   };
   adminListDocuments: {
@@ -391,7 +391,7 @@ export interface ApiClientOperationTypes {
     query: ApiClientEmptyObject;
     requestBody: never;
     successStatus: 200;
-    successResponse: ApiClientJsonObject;
+    successResponse: { documents: ApiClientJsonObject[] };
     errorResponse: ApiClientErrorResponse;
   };
   createDocument: {
@@ -403,9 +403,9 @@ export interface ApiClientOperationTypes {
     csrfRequired: true;
     params: ApiClientEmptyObject;
     query: ApiClientEmptyObject;
-    requestBody: ApiClientJsonObject;
+    requestBody: { csrf_token: string; title?: string; question?: string; user_id?: string; document_id?: string; version_id?: string; version_label?: string; file_name?: string; acl_scope_id?: string; dataset_id?: string; model_id?: string; import_id?: string; job_id?: string; now_ms?: number; rows?: ApiClientJsonObject[]; metadata?: ApiClientJsonObject; retrieval_policy?: { top_k?: number; allowed_acl_scope_ids?: string[] } } & ApiClientJsonObject;
     successStatus: 202;
-    successResponse: ApiClientJsonObject;
+    successResponse: { document_id: string; version_id: string; job_id: string; raw_s3_uri: string; idempotent?: boolean };
     errorResponse: ApiClientErrorResponse;
   };
   getDocument: {
@@ -419,7 +419,7 @@ export interface ApiClientOperationTypes {
     query: ApiClientEmptyObject;
     requestBody: never;
     successStatus: 200;
-    successResponse: ApiClientJsonObject;
+    successResponse: { document: ApiClientJsonObject };
     errorResponse: ApiClientErrorResponse;
   };
   createDocumentVersion: {
@@ -431,9 +431,9 @@ export interface ApiClientOperationTypes {
     csrfRequired: true;
     params: { document_id: string };
     query: ApiClientEmptyObject;
-    requestBody: ApiClientJsonObject;
+    requestBody: { csrf_token: string; title?: string; question?: string; user_id?: string; document_id?: string; version_id?: string; version_label?: string; file_name?: string; acl_scope_id?: string; dataset_id?: string; model_id?: string; import_id?: string; job_id?: string; now_ms?: number; rows?: ApiClientJsonObject[]; metadata?: ApiClientJsonObject; retrieval_policy?: { top_k?: number; allowed_acl_scope_ids?: string[] } } & ApiClientJsonObject;
     successStatus: 202;
-    successResponse: ApiClientJsonObject;
+    successResponse: { document_id: string; version_id: string; job_id: string; raw_s3_uri: string; idempotent?: boolean };
     errorResponse: ApiClientErrorResponse;
   };
   activateDocumentVersion: {
@@ -445,9 +445,9 @@ export interface ApiClientOperationTypes {
     csrfRequired: true;
     params: { document_id: string; version_id: string };
     query: ApiClientEmptyObject;
-    requestBody: ApiClientJsonObject;
+    requestBody: { csrf_token: string; title?: string; question?: string; user_id?: string; document_id?: string; version_id?: string; version_label?: string; file_name?: string; acl_scope_id?: string; dataset_id?: string; model_id?: string; import_id?: string; job_id?: string; now_ms?: number; rows?: ApiClientJsonObject[]; metadata?: ApiClientJsonObject; retrieval_policy?: { top_k?: number; allowed_acl_scope_ids?: string[] } } & ApiClientJsonObject;
     successStatus: 200;
-    successResponse: ApiClientJsonObject;
+    successResponse: { version: ApiClientJsonObject };
     errorResponse: ApiClientErrorResponse;
   };
   getIngestionJob: {
@@ -461,7 +461,7 @@ export interface ApiClientOperationTypes {
     query: ApiClientEmptyObject;
     requestBody: never;
     successStatus: 200;
-    successResponse: ApiClientJsonObject;
+    successResponse: { job: ApiClientJsonObject };
     errorResponse: ApiClientErrorResponse;
   };
   retryIngestionJob: {
@@ -473,9 +473,9 @@ export interface ApiClientOperationTypes {
     csrfRequired: true;
     params: { job_id: string };
     query: ApiClientEmptyObject;
-    requestBody: ApiClientJsonObject;
+    requestBody: { csrf_token: string; title?: string; question?: string; user_id?: string; document_id?: string; version_id?: string; version_label?: string; file_name?: string; acl_scope_id?: string; dataset_id?: string; model_id?: string; import_id?: string; job_id?: string; now_ms?: number; rows?: ApiClientJsonObject[]; metadata?: ApiClientJsonObject; retrieval_policy?: { top_k?: number; allowed_acl_scope_ids?: string[] } } & ApiClientJsonObject;
     successStatus: 202;
-    successResponse: ApiClientJsonObject;
+    successResponse: { job: ApiClientJsonObject };
     errorResponse: ApiClientErrorResponse;
   };
   listEvaluationDatasets: {
@@ -489,7 +489,7 @@ export interface ApiClientOperationTypes {
     query: ApiClientEmptyObject;
     requestBody: never;
     successStatus: 200;
-    successResponse: ApiClientJsonObject;
+    successResponse: { datasets: ApiClientJsonObject[] };
     errorResponse: ApiClientErrorResponse;
   };
   startEvaluationRun: {
@@ -501,9 +501,9 @@ export interface ApiClientOperationTypes {
     csrfRequired: true;
     params: ApiClientEmptyObject;
     query: ApiClientEmptyObject;
-    requestBody: ApiClientJsonObject;
+    requestBody: { csrf_token: string; title?: string; question?: string; user_id?: string; document_id?: string; version_id?: string; version_label?: string; file_name?: string; acl_scope_id?: string; dataset_id?: string; model_id?: string; import_id?: string; job_id?: string; now_ms?: number; rows?: ApiClientJsonObject[]; metadata?: ApiClientJsonObject; retrieval_policy?: { top_k?: number; allowed_acl_scope_ids?: string[] } } & ApiClientJsonObject;
     successStatus: 202;
-    successResponse: ApiClientJsonObject;
+    successResponse: { evaluation_run: ApiClientJsonObject };
     errorResponse: ApiClientErrorResponse;
   };
   getEvaluationRun: {
@@ -517,7 +517,7 @@ export interface ApiClientOperationTypes {
     query: ApiClientEmptyObject;
     requestBody: never;
     successStatus: 200;
-    successResponse: ApiClientJsonObject;
+    successResponse: { evaluation_run: ApiClientJsonObject };
     errorResponse: ApiClientErrorResponse;
   };
   listPublishedArtifacts: {
@@ -531,7 +531,7 @@ export interface ApiClientOperationTypes {
     query: ApiClientEmptyObject;
     requestBody: never;
     successStatus: 200;
-    successResponse: ApiClientJsonObject;
+    successResponse: { artifacts: ApiClientJsonObject[] };
     errorResponse: ApiClientErrorResponse;
   };
   issueArtifactAccessCookie: {
@@ -543,9 +543,9 @@ export interface ApiClientOperationTypes {
     csrfRequired: true;
     params: ApiClientEmptyObject;
     query: ApiClientEmptyObject;
-    requestBody: ApiClientJsonObject;
+    requestBody: { csrf_token: string; title?: string; question?: string; user_id?: string; document_id?: string; version_id?: string; version_label?: string; file_name?: string; acl_scope_id?: string; dataset_id?: string; model_id?: string; import_id?: string; job_id?: string; now_ms?: number; rows?: ApiClientJsonObject[]; metadata?: ApiClientJsonObject; retrieval_policy?: { top_k?: number; allowed_acl_scope_ids?: string[] } } & ApiClientJsonObject;
     successStatus: 201;
-    successResponse: ApiClientJsonObject;
+    successResponse: { cookie_issued: boolean; expires_in_seconds: number };
     errorResponse: ApiClientErrorResponse;
   };
 }

@@ -49,8 +49,27 @@ for (const route of publicApiRoutes) {
   if (route.csrfRequired) {
     assert(JSON.stringify(operation.security).includes("csrfHeader"), `${route.id} state-changing route must require csrfHeader`);
   }
+  if (route.csrfRequired && route.requestContentTypes.includes("application/json")) {
+    assert(
+      operation.requestBody?.content?.["application/json"]?.schema?.properties?.csrf_token?.type === "string",
+      `${route.id} state-changing JSON route must expose csrf_token request body schema`
+    );
+  }
   operationIds.push(operation.operationId);
 }
+
+assert(
+  document.paths["/v1/chat-sessions/{chat_id}/messages"].post.responses["202"].content["application/json"].schema.properties.message_id.type === "string",
+  "submitQuestion response schema must expose message_id"
+);
+assert(
+  document.paths["/v1/chat-sessions/{chat_id}/messages/{message_id}/events"].get.responses["200"].content["application/json"].schema.properties.events.type === "array",
+  "listMessageEvents response schema must expose events array"
+);
+assert(
+  document.paths["/v1/admin/artifacts"].get.responses["200"].content["application/json"].schema.properties.artifacts.type === "array",
+  "listPublishedArtifacts response schema must expose artifacts array"
+);
 
 assert(new Set(operationIds).size === publicApiRoutes.length, "OpenAPI operationIds must be unique");
 for (const definition of definitions) {

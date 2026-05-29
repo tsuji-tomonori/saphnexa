@@ -59,9 +59,9 @@ function buildOperationTypesSource() {
     lines.push(`    csrfRequired: ${route.csrfRequired};`);
     lines.push(`    params: ${paramsType(route.viewerPath)};`);
     lines.push(`    query: ${queryType(route.operationId)};`);
-    lines.push(`    requestBody: ${requestBodyType(route)};`);
+    lines.push(`    requestBody: ${requestBodyType(operation)};`);
     lines.push(`    successStatus: ${route.successStatuses.join(" | ")};`);
-    lines.push(`    successResponse: ${successResponseType(route)};`);
+    lines.push(`    successResponse: ${successResponseType(route, operation)};`);
     lines.push("    errorResponse: ApiClientErrorResponse;");
     lines.push("  };");
   }
@@ -86,14 +86,41 @@ function queryType(operationId) {
   return "ApiClientEmptyObject";
 }
 
-function requestBodyType(route) {
-  if (route.requestContentTypes.length === 0) return "never";
-  return "ApiClientJsonObject";
+function requestBodyType(operation) {
+  const schema = operation.requestBody?.content?.["application/json"]?.schema;
+  if (!schema) return "never";
+  return schemaToType(schema);
 }
 
-function successResponseType(route) {
+function successResponseType(route, operation) {
   if (route.successStatuses.every((status) => status === 204 || status === 302)) return "void";
-  return "ApiClientJsonObject";
+  const status = route.successStatuses.find((item) => item >= 200 && item < 300 && item !== 204 && item !== 302);
+  const schema = status ? operation.responses?.[String(status)]?.content?.["application/json"]?.schema : undefined;
+  if (!schema) return "void";
+  return schemaToType(schema);
+}
+
+function schemaToType(schema) {
+  if (schema.$ref === "#/components/schemas/ErrorResponse") return "ApiClientErrorResponse";
+  if (schema.type === "string") return "string";
+  if (schema.type === "integer" || schema.type === "number") return "number";
+  if (schema.type === "boolean") return "boolean";
+  if (schema.type === "array") return `${schemaToType(schema.items || { type: "object", additionalProperties: true })}[]`;
+  if (schema.type === "object") return objectSchemaToType(schema);
+  return "unknown";
+}
+
+function objectSchemaToType(schema) {
+  const entries = Object.entries(schema.properties || {});
+  if (entries.length === 0) return schema.additionalProperties ? "ApiClientJsonObject" : "ApiClientEmptyObject";
+  const required = new Set(schema.required || []);
+  const fields = entries.map(([name, fieldSchema]) => `${propertyName(name)}${required.has(name) ? "" : "?"}: ${schemaToType(fieldSchema)}`);
+  const base = `{ ${fields.join("; ")} }`;
+  return schema.additionalProperties ? `${base} & ApiClientJsonObject` : base;
+}
+
+function propertyName(name) {
+  return /^[A-Za-z_$][A-Za-z0-9_$]*$/.test(name) ? name : literal(name);
 }
 
 function union(values) {
