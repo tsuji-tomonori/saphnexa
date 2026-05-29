@@ -26,6 +26,7 @@ const meHookSource = readText("apps/web/src/hooks/useMe.ts");
 const chatSessionsHookSource = readText("apps/web/src/hooks/useChatSessions.ts");
 const artifactsHookSource = readText("apps/web/src/hooks/useAdminArtifacts.ts");
 const startEvaluationHookSource = readText("apps/web/src/hooks/useStartEvaluationRun.ts");
+const apiClientSource = readText("packages/api-client/src/client.ts");
 
 const scenarios = [];
 scenario("route role metadata", () => {
@@ -63,8 +64,10 @@ scenario("chat UI source contract", () => {
   ]) {
     assert(chatPageSource.includes(token), `ChatPage missing token: ${token}`);
   }
-  assert(meHookSource.includes("/api/me"), "useMe hook must call /api/me");
-  assert(chatSessionsHookSource.includes("/api/chat-sessions"), "useChatSessions hook must call /api/chat-sessions");
+  assert(meHookSource.includes("apiRoutes.getMe()"), "useMe hook must use getMe route helper");
+  assert(apiClientSource.includes("/api/me"), "API client getMe helper must call /api/me");
+  assert(chatSessionsHookSource.includes("apiRoutes.listChatSessions()"), "useChatSessions hook must use listChatSessions route helper");
+  assert(apiClientSource.includes("/api/chat-sessions"), "API client chat sessions helper must call /api/chat-sessions");
   for (const token of [
     "aria-label=\"チャット一覧\"",
     "role=\"status\"",
@@ -90,8 +93,7 @@ scenario("chat UI source contract", () => {
   }
   for (const token of [
     "@assistant-ui/react",
-    "/api/chat-sessions/",
-    "/messages"
+    "apiRoutes.submitQuestion"
   ]) {
     assert(assistantRuntimeSource.includes(token), `assistant runtime missing token: ${token}`);
   }
@@ -143,8 +145,9 @@ scenario("admin UI source contract", () => {
   ]) {
     assert(adminPageSource.includes(token), `AdminDashboardPage missing token: ${token}`);
   }
-  assert(meHookSource.includes("/api/me"), "useMe hook must call /api/me");
-  assert(artifactsHookSource.includes("/api/admin/artifacts"), "useAdminArtifacts hook must call /api/admin/artifacts");
+  assert(meHookSource.includes("apiRoutes.getMe()"), "useMe hook must use getMe route helper");
+  assert(artifactsHookSource.includes("apiRoutes.listPublishedArtifacts()"), "useAdminArtifacts hook must use listPublishedArtifacts route helper");
+  assert(apiClientSource.includes("/api/admin/artifacts"), "API client artifacts helper must call /api/admin/artifacts");
   for (const token of [
     "aria-label=\"管理操作\"",
     "role=\"status\"",
@@ -153,7 +156,8 @@ scenario("admin UI source contract", () => {
   ]) {
     assert(adminActionsSource.includes(token), `AdminActions missing token: ${token}`);
   }
-  assert(startEvaluationHookSource.includes("/api/admin/evaluation-runs"), "useStartEvaluationRun hook must call /api/admin/evaluation-runs");
+  assert(startEvaluationHookSource.includes("apiRoutes.startEvaluationRun()"), "useStartEvaluationRun hook must use startEvaluationRun route helper");
+  assert(apiClientSource.includes("/api/admin/evaluation-runs"), "API client evaluation run helper must call /api/admin/evaluation-runs");
   for (const token of [
     "DataTable",
     "Drawer",
