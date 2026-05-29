@@ -61,7 +61,7 @@ export function createLocalApi() {
           case "listFavorites":
             return ok({ favorites: store.listFavorites(actor) });
           case "listLlmModels":
-            return ok({ models: store.listLlmModels() });
+            return ok({ models: store.listLlmModels(actor) });
           case "adminListUsers":
             return ok({ users: store.listAdminUsers(actor) });
           case "startUserImport":

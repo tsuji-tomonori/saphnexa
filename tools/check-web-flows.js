@@ -633,8 +633,14 @@ scenario("admin local API flow", () => {
   assert(datasets.status === 200 && datasets.body.datasets.some((dataset) => dataset.dataset_id === "dataset-local-golden"), "admin evaluation dataset list failed");
   assert(api.request("user-owner", "listEvaluationDatasets").status === 403, "general user must not list evaluation datasets");
   const models = api.request("admin-1", "listLlmModels");
-  assert(models.status === 200 && models.body.models.some((model) => model.model_id === "logical-evaluation-judge"), "admin model list failed");
-  assert(api.request("user-owner", "listLlmModels").status === 200, "general user must list available models");
+  assert(models.status === 200 && models.body.models.some((model) => model.model_id === "logical-chat-default"), "admin model list must include general chat model");
+  assert(models.body.models.some((model) => model.model_id === "logical-evaluation-judge"), "admin model list must include evaluation judge");
+  assert(!models.body.models.some((model) => model.model_id === "logical-embedding-default"), "admin model list must not expose system embedding model");
+  const userModels = api.request("user-owner", "listLlmModels");
+  assert(userModels.status === 200, "general user must list available models");
+  assert(userModels.body.models.some((model) => model.model_id === "logical-chat-default"), "general user model list must include visible chat model");
+  assert(!userModels.body.models.some((model) => model.model_id === "logical-evaluation-judge"), "general user model list must not expose admin judge model");
+  assert(!userModels.body.models.some((model) => model.model_id === "logical-embedding-default"), "general user model list must not expose system embedding model");
   assert(api.request("user-owner", "startEvaluationRun", { csrf_token: "csrf-user-owner", dataset_id: "dataset-local-golden", model_id: "logical-evaluation-judge" }).status === 403, "general user must not start evaluation runs");
   const evaluation = api.request("admin-1", "startEvaluationRun", { csrf_token: csrf, dataset_id: "dataset-local-golden", model_id: "logical-evaluation-judge" });
   assert(evaluation.status === 202, "evaluation run failed");

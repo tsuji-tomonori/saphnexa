@@ -62,7 +62,13 @@ assert(suspended.body.document.versions.every((version) => version.status === "d
 
 const models = api.request("admin-1", "listLlmModels");
 assert(models.status === 200, "model list must be available");
+assert(models.body.models.some((model) => model.model_id === "logical-chat-default"), "general chat model missing for admin");
 assert(models.body.models.some((model) => model.model_id === "logical-evaluation-judge"), "evaluation judge model missing");
+assert(!models.body.models.some((model) => model.model_id === "logical-embedding-default"), "system embedding model must not be listed to admin");
+const ownerModels = api.request("user-owner", "listLlmModels");
+assert(ownerModels.status === 200, "model list must be available to general user");
+assert(ownerModels.body.models.some((model) => model.model_id === "logical-chat-default"), "general chat model missing for general user");
+assert(!ownerModels.body.models.some((model) => model.model_id === "logical-evaluation-judge"), "admin judge model must not be listed to general user");
 for (let index = 0; index < 3; index += 1) {
   const evaluation = api.request("admin-1", "startEvaluationRun", { csrf_token: adminCsrf, dataset_id: "dataset-local-golden", model_id: "logical-evaluation-judge" });
   assert(evaluation.status === 202, "evaluation run must be accepted");

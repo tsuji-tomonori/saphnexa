@@ -20,6 +20,20 @@ export interface LocalUser extends LocalActor {
   display_name: string;
 }
 
+export interface LlmModelRecord {
+  tenant_id: string;
+  model_id: string;
+  display_name: string;
+  provider: string;
+  model_type: string;
+  capability_json: Record<string, unknown>;
+  status: Status;
+  visible_to_user: boolean;
+  allowed_role: Role | "system";
+  default_for_task: string;
+  catalog_version: string;
+}
+
 export interface ChatSession {
   tenant_id: string;
   chat_id: string;
@@ -315,6 +329,7 @@ export interface LocalStore {
   addFavorite(actor: LocalActor, input: { chat_id?: string; message_id?: string }): FavoriteRecord;
   deleteFavorite(actor: LocalActor, favorite_id: string): boolean;
   listFavorites(actor: LocalActor): FavoriteRecord[];
+  listLlmModels(actor: LocalActor): LlmModelRecord[];
   listAdminUsers(actor: LocalActor): LocalUser[];
   listDocuments(actor: LocalActor): DocumentRecord[];
   getDocument(actor: LocalActor, document_id: string): DocumentDetail;

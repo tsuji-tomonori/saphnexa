@@ -86,11 +86,21 @@ export function createLocalStore() {
     startEvaluationRun,
     getEvaluationRun,
     listAdminArtifacts,
-    listLlmModels: () => llmModels.filter((item) => item.status === statuses.ACTIVE)
+    listLlmModels
   };
 
   function getCurrentUser(user_id) {
     return state.users.find((item) => item.user_id === user_id && item.status === statuses.ACTIVE);
+  }
+
+  function listLlmModels(actor) {
+    requireActiveUser(actor);
+    return llmModels.filter((item) => {
+      if (item.status !== statuses.ACTIVE) return false;
+      if (item.allowed_role === "system") return false;
+      if (actor.role === roles.ADMIN) return item.visible_to_user || item.allowed_role === roles.ADMIN || item.allowed_role === roles.GENERAL_USER;
+      return item.visible_to_user && item.allowed_role === actor.role;
+    });
   }
 
   function createChat(actor, input = {}) {

@@ -12,6 +12,11 @@ const requests = [
   () => api.request("user-owner", "getChatSession", { chat_id: chat.chat_id }),
   () => api.request("user-owner", "listFavorites"),
   () => api.request("user-owner", "listLlmModels"),
+  () => {
+    const response = api.request("user-owner", "listLlmModels");
+    assert(!response.body.models.some((model) => model.model_id === "logical-evaluation-judge"), "general user model list leaked admin judge model");
+    return response;
+  },
   () => api.request("admin-1", "adminListUsers"),
   () => api.request("admin-1", "listPublishedArtifacts"),
   () => api.request("admin-1", "issueArtifactAccessCookie", { csrf_token: adminCsrf })
