@@ -1,6 +1,6 @@
 # Chat UI organism atomicity
 
-- 状態: doing
+- 状態: done
 - タスク種別: 機能追加
 - 作成日時: 2026-05-29 12:08 JST
 - 対象ブランチ: `codex/typescript-framework-implementation`
@@ -59,6 +59,11 @@ UI挙動の外部契約は変えない。local verification docs には Chat UI 
 - Chat UI の navigation/event 表示が共通 organism へ移っていること。
 - 空状態や realtime 未接続時に架空データを生成していないこと。
 - visual/runtime E2E を過大に完了扱いしていないこと。
+
+## PR コメント
+
+- 受け入れ条件確認: https://github.com/tsuji-tomonori/saphnexa/pull/3#issuecomment-4570122364
+- セルフレビュー: https://github.com/tsuji-tomonori/saphnexa/pull/3#issuecomment-4570124266
 
 ## 検証結果
 
