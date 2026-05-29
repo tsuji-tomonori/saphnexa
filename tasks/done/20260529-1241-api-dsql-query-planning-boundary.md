@@ -1,6 +1,6 @@
 # API DSQL query planning boundary
 
-- 状態: doing
+- 状態: done
 - タスク種別: 機能追加
 - 作成日時: 2026-05-29 12:41 JST
 - 対象ブランチ: `codex/typescript-framework-implementation`
@@ -71,3 +71,8 @@ Hono API の DSQL 接続へ向けて、operation ごとの SQL plan と executor
 - `git diff --check`: pass。
 - `npm run docs:check`: pass。
 - `npm run typecheck`: pass。
+
+## PR コメント
+
+- 受け入れ条件確認: https://github.com/tsuji-tomonori/saphnexa/pull/3#issuecomment-4570311584
+- セルフレビュー: https://github.com/tsuji-tomonori/saphnexa/pull/3#issuecomment-4570313249
