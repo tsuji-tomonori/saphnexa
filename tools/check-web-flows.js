@@ -22,11 +22,13 @@ const adminSource = readText("apps/web/src/admin/AdminApp.tsx");
 const adminPageSource = readText("apps/web/src/pages/AdminDashboardPage.tsx");
 const adminActionsSource = readText("apps/web/src/features/admin/AdminActions.tsx");
 const artifactTableSource = readText("apps/web/src/features/admin/ArtifactTable.tsx");
+const documentRegistrationFormSource = readText("apps/web/src/features/admin/DocumentRegistrationForm.tsx");
 const documentTableSource = readText("apps/web/src/features/admin/DocumentTable.tsx");
 const assistantRuntimeSource = readText("apps/web/src/lib/assistantRuntime.ts");
 const meHookSource = readText("apps/web/src/hooks/useMe.ts");
 const chatSessionsHookSource = readText("apps/web/src/hooks/useChatSessions.ts");
 const artifactsHookSource = readText("apps/web/src/hooks/useAdminArtifacts.ts");
+const createDocumentHookSource = readText("apps/web/src/hooks/useCreateDocument.ts");
 const documentsHookSource = readText("apps/web/src/hooks/useAdminDocuments.ts");
 const startEvaluationHookSource = readText("apps/web/src/hooks/useStartEvaluationRun.ts");
 const apiClientSource = readText("packages/api-client/src/client.ts");
@@ -166,6 +168,7 @@ scenario("admin UI source contract", () => {
   for (const token of [
     "useAdminArtifacts",
     "useAdminDocuments",
+    "DocumentRegistrationForm",
     "DocumentTable",
     "aria-label=\"成果物\""
   ]) {
@@ -178,7 +181,22 @@ scenario("admin UI source contract", () => {
   assert(apiClientSource.includes("/api/admin/artifacts"), "API client artifacts helper must call /api/admin/artifacts");
   assert(documentsHookSource.includes("apiRoutes.adminListDocuments()"), "useAdminDocuments hook must use adminListDocuments route helper");
   assert(documentsHookSource.includes("apiGetOperation(\"adminListDocuments\""), "useAdminDocuments hook must use generated documents operation helper");
+  assert(createDocumentHookSource.includes("apiRoutes.createDocument()"), "useCreateDocument hook must use createDocument route helper");
+  assert(createDocumentHookSource.includes("apiPostOperation(\"createDocument\""), "useCreateDocument hook must use generated createDocument operation helper");
+  assert(createDocumentHookSource.includes("invalidateQueries({ queryKey: [\"admin-documents\"] })"), "useCreateDocument hook must refresh admin documents query");
   assert(apiClientSource.includes("/api/admin/documents"), "API client documents helper must call /api/admin/documents");
+  for (const token of [
+    "useForm",
+    "zodResolver",
+    "documentRegistrationSchema",
+    "FormField",
+    "Dialog",
+    "disabled={!props.csrfToken || createDocument.isPending}",
+    "PDF実アップロード: 未接続",
+    "role=\"alert\""
+  ]) {
+    assert(documentRegistrationFormSource.includes(token), `DocumentRegistrationForm missing token: ${token}`);
+  }
   for (const token of [
     "aria-label=\"管理操作\"",
     "role=\"status\"",
@@ -222,9 +240,13 @@ scenario("admin local API flow", () => {
   const emptyDocuments = api.request("admin-1", "adminListDocuments");
   assert(emptyDocuments.status === 200, "admin documents list failed");
   assert(Array.isArray(emptyDocuments.body.documents), "admin documents list must return documents array");
+  const registered = api.request("admin-1", "createDocument", { csrf_token: csrf, title: "form document", file_name: "flow-form.pdf", acl_scope_id: "group:admin" });
+  assert(registered.status === 202, "admin document registration failed");
+  assert(registered.body.raw_s3_uri.endsWith("/flow-form.pdf"), "admin document registration must preserve file name in raw S3 URI");
   api.request("admin-1", "createDocument", { csrf_token: csrf, title: "flow document", document_id: "doc-flow", version_id: "ver-flow" });
   const documents = api.request("admin-1", "adminListDocuments");
   assert(documents.body.documents.some((document) => document.document_id === "doc-flow"), "created document missing from admin documents list");
+  assert(documents.body.documents.some((document) => document.document_id === registered.body.document_id), "registered document missing from admin documents list");
   const evaluation = api.request("admin-1", "startEvaluationRun", { csrf_token: csrf, dataset_id: "dataset-local-golden" });
   assert(evaluation.status === 202, "evaluation run failed");
   const cookie = api.request("admin-1", "issueArtifactAccessCookie", { csrf_token: csrf });

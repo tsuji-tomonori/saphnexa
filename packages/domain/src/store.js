@@ -371,9 +371,15 @@ export function createLocalStore() {
 
   function createDocument(actor, input) {
     requireAdmin(actor);
-    const metadataError = validateDocumentMetadata(input.metadata || {});
     const document_id = input.document_id || nextId("doc");
     const version_id = input.version_id || nextId("ver");
+    const metadata = input.metadata || {
+      document_id,
+      version: version_id,
+      acl_scope: input.acl_scope_id || `user:${actor.user_id}`,
+      status: "uploaded"
+    };
+    const metadataError = validateDocumentMetadata(metadata);
     const existingVersion = state.document_versions.find((item) => item.document_id === document_id && item.version_id === version_id);
     if (existingVersion) {
       return {
@@ -389,7 +395,7 @@ export function createLocalStore() {
     if (!state.documents.find((item) => item.document_id === document_id)) {
       state.documents.push({ tenant_id: actor.tenant_id, document_id, title: input.title, status: statuses.ACTIVE, created_by_user_id: actor.user_id, created_at: now(), updated_at: now() });
     }
-    state.document_versions.push({ tenant_id: actor.tenant_id, document_id, version_id, version_label: input.version_label || "v1", status: metadataError ? statuses.FAILED : "uploaded", raw_s3_uri, metadata_json: input.metadata || {}, created_at: now() });
+    state.document_versions.push({ tenant_id: actor.tenant_id, document_id, version_id, version_label: input.version_label || "v1", status: metadataError ? statuses.FAILED : "uploaded", raw_s3_uri, metadata_json: metadata, created_at: now() });
     if (!metadataError) {
       state.document_acl_entries.push({ tenant_id: actor.tenant_id, document_id, version_id, acl_scope_id: input.acl_scope_id || `user:${actor.user_id}`, effect: "allow" });
     }

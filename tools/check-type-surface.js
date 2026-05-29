@@ -85,7 +85,9 @@ for (const file of [
   "apps/web/src/main.tsx",
   "apps/web/src/pages/ChatPage.tsx",
   "apps/web/src/features/chat/AssistantRuntimeBoundary.tsx",
+  "apps/web/src/features/admin/DocumentRegistrationForm.tsx",
   "apps/web/src/features/admin/DocumentTable.tsx",
+  "apps/web/src/hooks/useCreateDocument.ts",
   "apps/web/src/hooks/useAdminDocuments.ts",
   "apps/web/src/pages/AdminDashboardPage.tsx",
   "packages/ui/src/theme.css.ts",
@@ -224,6 +226,7 @@ for (const token of [
   'apiGetOperation("listMessageEvents"',
   'apiGetOperation("listPublishedArtifacts"',
   'apiGetOperation("adminListDocuments"',
+  'apiPostOperation("createDocument"',
   'apiPostOperation("issueWsTicket"',
   'apiPostOperation("startEvaluationRun"'
 ]) {

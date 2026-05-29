@@ -42,7 +42,8 @@ checkFile("AdminDashboardPage", "apps/web/src/pages/AdminDashboardPage.tsx", [
   rule("main landmark", (body) => body.includes("className=\"sx-admin-shell\"")),
   rule("admin tabs", (body) => body.includes("Tabs") && body.includes("aria-label=\"管理領域\"")),
   rule("artifact panel label", (body) => body.includes("aria-label=\"成果物\"")),
-  rule("document panel label", (body) => body.includes("aria-label=\"文書\""))
+  rule("document panel label", (body) => body.includes("aria-label=\"文書\"")),
+  rule("document registration form", (body) => body.includes("DocumentRegistrationForm"))
 ]);
 checkFile("AdminActions", "apps/web/src/features/admin/AdminActions.tsx", [
   rule("admin action label", (body) => body.includes("aria-label=\"管理操作\"")),
@@ -58,6 +59,14 @@ checkFile("DocumentTable", "apps/web/src/features/admin/DocumentTable.tsx", [
   rule("empty document status", (body) => body.includes("文書はありません")),
   rule("document rows from API data", (body) => body.includes("document.title") && body.includes("document.document_id")),
   rule("status badge", (body) => body.includes("StatusBadge"))
+]);
+checkFile("DocumentRegistrationForm", "apps/web/src/features/admin/DocumentRegistrationForm.tsx", [
+  rule("form label", (body) => body.includes("aria-label=\"文書登録フォーム\"")),
+  rule("field labels", (body) => body.includes("label=\"文書名\"") && body.includes("label=\"PDFファイル名\"")),
+  rule("pending status", (body) => body.includes("<p role=\"status\">文書登録を開始しています</p>")),
+  rule("honest upload state", (body) => body.includes("PDF実アップロード: 未接続")),
+  rule("error alert", (body) => body.includes("role=\"alert\"")),
+  rule("button disabled state", (body) => body.includes("disabled={!props.csrfToken || createDocument.isPending}"))
 ]);
 checkFile("UI components", "packages/ui/src/components.tsx", [
   rule("data table export", (body) => body.includes("export { DataTable }")),

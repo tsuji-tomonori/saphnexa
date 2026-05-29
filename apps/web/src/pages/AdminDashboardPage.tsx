@@ -2,6 +2,7 @@ import { QueryClientProvider } from "@tanstack/react-query";
 import { AppShell, Panel, Tabs } from "@saphnexa/ui";
 import { AdminActions } from "../features/admin/AdminActions";
 import { ArtifactTable } from "../features/admin/ArtifactTable";
+import { DocumentRegistrationForm } from "../features/admin/DocumentRegistrationForm";
 import { DocumentTable } from "../features/admin/DocumentTable";
 import { useAdminArtifacts } from "../hooks/useAdminArtifacts";
 import { useAdminDocuments } from "../hooks/useAdminDocuments";
@@ -39,6 +40,7 @@ export function AdminDashboardContent() {
             label: "文書",
             content: (
               <Panel aria-label="文書">
+                <DocumentRegistrationForm csrfToken={csrfToken} />
                 <DocumentTable documents={documents.data?.documents ?? []} />
               </Panel>
             )
