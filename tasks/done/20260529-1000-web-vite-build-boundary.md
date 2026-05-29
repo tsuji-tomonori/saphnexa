@@ -1,6 +1,6 @@
 # Web Vite build boundary
 
-- 状態: doing
+- 状態: done
 - タスク種別: 機能追加
 - 作成日時: 2026-05-29 10:00 JST
 - 対象ブランチ: `codex/typescript-framework-implementation`
@@ -30,11 +30,11 @@
 
 ## 受け入れ条件
 
-- [ ] `npm run build -w @saphnexa/web` が pass する。
-- [ ] Vite config / HTML / browser entrypoint が TypeScript source として存在する。
-- [ ] Chat/Admin app が build entry から到達できる。
-- [ ] 既存 type/Web/docs checks が pass する。
-- [ ] 実 CloudFront 配信・実ブラウザ streaming を完了扱いにしない。
+- [x] `npm run build -w @saphnexa/web` が pass する。
+- [x] Vite config / HTML / browser entrypoint が TypeScript source として存在する。
+- [x] Chat/Admin app が build entry から到達できる。
+- [x] 既存 type/Web/docs checks が pass する。
+- [x] 実 CloudFront 配信・実ブラウザ streaming を完了扱いにしない。
 
 ## 検証計画
 
@@ -45,6 +45,21 @@
 - `npm run web:a11y:check`
 - `npm run docs:check`
 - `git diff --check`
+
+## 検証結果
+
+- `npm run build -w @saphnexa/web`: pass。
+- `npm run typecheck`: pass。
+- `npm run ui:check`: pass。
+- `npm run web:flow:check`: pass。
+- `npm run web:a11y:check`: pass。
+- `npm run docs:check`: pass。
+- `git diff --check`: pass。
+
+## PR コメント
+
+- 受け入れ条件確認: https://github.com/tsuji-tomonori/saphnexa/pull/3#issuecomment-4569583637
+- セルフレビュー: https://github.com/tsuji-tomonori/saphnexa/pull/3#issuecomment-4569584763
 
 ## PR レビュー観点
 
