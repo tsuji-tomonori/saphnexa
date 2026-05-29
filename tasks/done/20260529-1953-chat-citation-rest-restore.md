@@ -1,6 +1,6 @@
 # Chat citation REST 復元境界
 
-- 状態: do
+- 状態: done
 - タスク種別: 機能追加
 - 作成日時: 2026-05-29 19:53
 - 対象ブランチ: `codex/typescript-framework-implementation`
@@ -32,13 +32,21 @@ Chat の citation は RAG 実行時に `citation_records` へ保存され、`cha
 
 ## 受け入れ条件
 
-- [ ] `listMessages` が各 message に `citations` array を返す。
-- [ ] `citations` は参加者境界内でのみ返り、outsider は取得できない。
-- [ ] DSQL `listMessages` plan が `citation_records` を message 単位に集約して返す。
-- [ ] OpenAPI / Zod / generated API client type / Web type が `citations` を同期する。
-- [ ] Citation Drawer が REST message history 由来の citation を表示でき、event payload 由来も維持する。
-- [ ] UI/source gate/docs 上で citation REST 復元は接続済み範囲になり、実 AppSync subscribe / 実ブラウザ / 実 Aurora DSQL は未接続として残る。
-- [ ] 選定した検証コマンドが pass する。
+- [x] `listMessages` が各 message に `citations` array を返す。
+- [x] `citations` は参加者境界内でのみ返り、outsider は取得できない。
+- [x] DSQL `listMessages` plan が `citation_records` を message 単位に集約して返す。
+- [x] OpenAPI / Zod / generated API client type / Web type が `citations` を同期する。
+- [x] Citation Drawer が REST message history 由来の citation を表示でき、event payload 由来も維持する。
+- [x] UI/source gate/docs 上で citation REST 復元は接続済み範囲になり、実 AppSync subscribe / 実ブラウザ / 実 Aurora DSQL は未接続として残る。
+- [x] 選定した検証コマンドが pass する。
+
+## 完了メモ
+
+- `listMessages` / `getChatSession` の message に `citations` array を追加し、local store、DSQL plan、OpenAPI/Zod、generated client type、Web type を同期した。
+- Citation Drawer は REST message history 由来と event payload 由来の citation を統合し、`citation_id` で重複排除する。
+- `citation_records` は actor participant 境界内でのみ復元し、outsider の `listMessages` 拒否を local gate で確認した。
+- 実 AppSync Events subscribe、実 Aurora DSQL SQL 実行、実ブラウザ E2E は未接続として残した。
+- PR #3 に受け入れ条件確認コメントとセルフレビューコメントを投稿した。
 
 ## 検証計画
 
