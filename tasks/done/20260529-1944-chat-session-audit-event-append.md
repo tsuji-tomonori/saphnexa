@@ -1,6 +1,6 @@
 # Chat session audit event append 境界
 
-- 状態: do
+- 状態: done
 - タスク種別: 機能追加
 - 作成日時: 2026-05-29 19:44
 - 対象ブランチ: `codex/typescript-framework-implementation`
@@ -31,13 +31,20 @@ Chat session 作成、タイトル更新、削除を append-only な `audit_even
 
 ## 受け入れ条件
 
-- [ ] `createChatSession` が `audit_events` に `chat.session.created` を追記する。
-- [ ] `updateChatSession` が owner 境界を維持したまま `audit_events` に `chat.session.title_updated` を追記する。
-- [ ] `deleteChatSession` が owner 境界と参加者 removed 化を維持したまま `audit_events` に `chat.session.deleted` を追記する。
-- [ ] outsider/viewer の失敗操作では lifecycle audit event が追加されない。
-- [ ] DSQL plan が lifecycle 操作と `audit_events` insert を同じ CTE plan 内で表現する。
-- [ ] UI/source gate/docs で `chat event append` は接続済み範囲になり、保持期間後物理削除・SQS/AppSync publish は未接続として残る。
-- [ ] 選定した検証コマンドが pass する。
+- [x] `createChatSession` が `audit_events` に `chat.session.created` を追記する。
+- [x] `updateChatSession` が owner 境界を維持したまま `audit_events` に `chat.session.title_updated` を追記する。
+- [x] `deleteChatSession` が owner 境界と参加者 removed 化を維持したまま `audit_events` に `chat.session.deleted` を追記する。
+- [x] outsider/viewer の失敗操作では lifecycle audit event が追加されない。
+- [x] DSQL plan が lifecycle 操作と `audit_events` insert を同じ CTE plan 内で表現する。
+- [x] UI/source gate/docs で `chat event append` は接続済み範囲になり、保持期間後物理削除・SQS/AppSync publish は未接続として残る。
+- [x] 選定した検証コマンドが pass する。
+
+## 完了メモ
+
+- Chat session lifecycle は `chat_message_events` に混在させず、既存 `audit_events` に `chat.session.created` / `chat.session.title_updated` / `chat.session.deleted` として追記する方針で実装した。
+- local store と DSQL source plan の両方で lifecycle 操作と audit insert の境界を同期した。
+- UI/docs/source/local gates を更新し、保持期間後物理削除、SQS/AppSync publish、実 Aurora DSQL SQL 実行、実ブラウザ E2E は未接続として残した。
+- PR #3 に受け入れ条件確認コメントとセルフレビューコメントを投稿した。
 
 ## 検証計画
 
