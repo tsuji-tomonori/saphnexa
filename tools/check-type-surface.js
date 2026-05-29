@@ -279,6 +279,7 @@ assert(!webRealtimeClientTs.includes("ticket="), "Web realtime client must not p
 assert(!webRealtimeHookTs.includes("VITE_APPSYNC_EVENTS_URL"), "Web realtime hook must not require AWS service domain env");
 assert(webChatPageTs.includes("setWsChannels(ticket.channels)") && webChatPageTs.includes("events.refetch()"), "ChatPage must use ticket response channels and REST refetch after realtime notification");
 assert(webChatPageTs.includes("AssistantRuntimeBoundary") && webChatPageTs.includes("submitAssistantQuestion"), "ChatPage must connect assistant runtime provider and route helper submit boundary");
+assert(webChatPageTs.includes("chatIdFromPath") && webChatPageTs.includes("window.history.pushState") && webChatPageTs.includes("popstate"), "ChatPage must synchronize selected chat with /chat/:chat_id routing");
 assert(webAssistantRuntimeTs.includes("submitAssistantQuestion") && webAssistantRuntimeTs.includes("apiPostOperation(") && webAssistantRuntimeTs.includes("\"submitQuestion\""), "assistant runtime must submit through generated operation helper");
 assert(webAssistantRuntimeBoundaryTs.includes("AssistantRuntimeProvider") && webAssistantRuntimeBoundaryTs.includes("useLocalRuntime"), "assistant runtime boundary must provide local assistant-ui runtime");
 assert(webAssistantRuntimeBoundaryTs.includes("createSaphnexaAssistantAdapter"), "assistant runtime boundary must bind the Saphnexa chat model adapter");

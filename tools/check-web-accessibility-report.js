@@ -10,6 +10,7 @@ checkFile("ChatApp", "apps/web/src/chat/ChatApp.tsx", [
 checkFile("ChatPage", "apps/web/src/pages/ChatPage.tsx", [
   rule("main landmark", (body) => body.includes("className=\"sx-chat-shell\"")),
   rule("assistant runtime provider boundary", (body) => body.includes("AssistantRuntimeBoundary")),
+  rule("chat route selection", (body) => body.includes("chatIdFromPath") && body.includes("window.history.pushState") && body.includes("popstate")),
   rule("participants panel", (body) => body.includes("ChatParticipantsPanel")),
   rule("message history panel", (body) => body.includes("MessageHistoryPanel")),
   rule("feedback panel", (body) => body.includes("FeedbackPanel")),
@@ -25,7 +26,7 @@ checkFile("ChatSessionNav", "apps/web/src/features/chat/ChatSessionNav.tsx", [
   rule("empty chat status", (body) => body.includes("<p role=\"status\">チャットはありません</p>")),
   rule("create form label", (body) => body.includes("aria-label=\"新規チャット作成フォーム\"")),
   rule("create field label", (body) => body.includes("label=\"新規チャット名\"")),
-  rule("honest create state", (body) => body.includes("初回質問送信時の自動チャット作成、/chat/:chat_id routing、chat event append: 未接続")),
+  rule("honest create state", (body) => body.includes("初回質問送信時の自動チャット作成、chat event append: 未接続")),
   rule("create action disabled state", (body) => body.includes("disabled={!props.csrfToken || props.isMutating}")),
   rule("title update form label", (body) => body.includes("aria-label=\"チャットタイトル更新フォーム\"")),
   rule("title field label", (body) => body.includes("label=\"チャットタイトル\"")),

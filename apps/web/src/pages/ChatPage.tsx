@@ -1,4 +1,4 @@
-import { useCallback, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { apiPostOperation, apiRoutes } from "@saphnexa/api-client";
 import { AppShell } from "@saphnexa/ui";
 import { AssistantRuntimeBoundary } from "../features/chat/AssistantRuntimeBoundary";
@@ -35,7 +35,7 @@ export function ChatPage() {
   const addChatParticipant = useAddChatParticipant(csrfToken);
   const updateChatParticipant = useUpdateChatParticipant(csrfToken);
   const removeChatParticipant = useRemoveChatParticipant(csrfToken);
-  const [selectedChatId, setSelectedChatId] = useState<string | null>(null);
+  const [selectedChatId, setSelectedChatId] = useState<string | null>(() => chatIdFromPath());
   const [messageId, setMessageId] = useState<string | null>(null);
   const [wsTicket, setWsTicket] = useState<string | null>(null);
   const [wsChannels, setWsChannels] = useState<string[]>([]);
@@ -53,6 +53,21 @@ export function ChatPage() {
     channels: wsChannels,
     onNotification: refetchMessageEvents
   });
+
+  useEffect(() => {
+    function syncFromLocation() {
+      setSelectedChatId(chatIdFromPath());
+      setMessageId(null);
+    }
+    window.addEventListener("popstate", syncFromLocation);
+    return () => window.removeEventListener("popstate", syncFromLocation);
+  }, []);
+
+  function selectChat(chatId: string) {
+    setSelectedChatId(chatId);
+    setMessageId(null);
+    writeChatPath(chatId);
+  }
 
   async function submit(question: string) {
     if (!activeChatId) return;
@@ -73,16 +88,18 @@ export function ChatPage() {
           selectedChatId={activeChatId}
           csrfToken={csrfToken}
           isMutating={createChatSession.isPending || updateChatSession.isPending || deleteChatSession.isPending}
-          onSelect={setSelectedChatId}
+          onSelect={selectChat}
           onCreate={async (input) => {
             const created = await createChatSession.mutateAsync(input);
-            setSelectedChatId(created.chat.chat_id);
+            selectChat(created.chat.chat_id);
           }}
           onUpdate={(input) => updateChatSession.mutateAsync(input)}
           onDelete={(chatId) => {
             deleteChatSession.mutate({ chat_id: chatId });
             if (activeChatId === chatId) {
               setSelectedChatId(null);
+              setMessageId(null);
+              writeChatPath(null);
             }
           }}
         />
@@ -132,4 +149,17 @@ export function ChatPage() {
       </AssistantRuntimeBoundary>
     </AppShell>
   );
+}
+
+function chatIdFromPath() {
+  if (typeof window === "undefined") return null;
+  const match = /^\/chat\/([^/?#]+)\/?$/.exec(window.location.pathname);
+  return match?.[1] ? decodeURIComponent(match[1]) : null;
+}
+
+function writeChatPath(chatId: string | null) {
+  if (typeof window === "undefined") return;
+  const nextPath = chatId ? `/chat/${encodeURIComponent(chatId)}` : "/chat";
+  if (window.location.pathname === nextPath) return;
+  window.history.pushState({}, "", nextPath);
 }

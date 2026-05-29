@@ -32,6 +32,7 @@ for (const file of files) {
     assert(body.includes("FavoritePanel"), "ChatPage must render favorite panel through feature component");
     assert(body.includes("AssistantRuntimeBoundary"), "ChatPage must bind assistant-ui runtime provider boundary");
     assert(body.includes("submitAssistantQuestion"), "ChatPage must submit through assistant route helper boundary");
+    assert(body.includes("chatIdFromPath") && body.includes("window.history.pushState") && body.includes("popstate"), "ChatPage must synchronize chat selection with route path");
   }
   if (file.includes("AssistantRuntimeBoundary")) {
     assert(body.includes("AssistantRuntimeProvider"), "AssistantRuntimeBoundary must provide assistant-ui runtime");
@@ -45,7 +46,7 @@ for (const file of files) {
     assert(body.includes("aria-label=\"新規チャット作成フォーム\""), "Chat session create form must expose a labelled form");
     assert(body.includes("label=\"新規チャット名\""), "Chat session create form must expose a field label");
     assert(body.includes("新規チャット"), "Chat session nav must expose create action");
-    assert(body.includes("初回質問送信時の自動チャット作成、/chat/:chat_id routing、chat event append: 未接続"), "Chat session nav must not imply route or event append is implemented");
+    assert(body.includes("初回質問送信時の自動チャット作成、chat event append: 未接続"), "Chat session nav must not imply automatic chat creation or event append is implemented");
     assert(body.includes("disabled={!props.csrfToken || props.isMutating}"), "Chat session create action must require token");
     assert(body.includes("useForm") && body.includes("zodResolver") && body.includes("chatTitleSchema"), "Chat session title form must use React Hook Form + Zod validation");
     assert(body.includes("aria-label=\"チャットタイトル更新フォーム\""), "Chat session title form must expose a labelled form");

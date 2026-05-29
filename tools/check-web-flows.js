@@ -58,6 +58,7 @@ scenario("route role metadata", () => {
   assert(mainSource.includes("<AdminApp />") && mainSource.includes("<ChatApp />"), "browser entrypoint must reach Chat and Admin apps");
   for (const [path, role] of [
     ["/chat", "general_user"],
+    ["/chat/:chat_id", "general_user"],
     ["/admin", "admin"],
     ["/admin/docs/latest/", "admin"],
     ["/admin/docs/versions/v0.17/", "admin"],
@@ -102,7 +103,10 @@ scenario("chat UI source contract", () => {
     "setMessageId(accepted.message_id)",
     "messages.refetch()",
     "setWsChannels(ticket.channels)",
-    "events.refetch()"
+    "events.refetch()",
+    "chatIdFromPath",
+    "window.history.pushState",
+    "popstate"
   ]) {
     assert(chatPageSource.includes(token), `ChatPage missing token: ${token}`);
   }
@@ -155,7 +159,7 @@ scenario("chat UI source contract", () => {
     "newChatSchema",
     "新規チャット名",
     "新規チャット",
-    "初回質問送信時の自動チャット作成、/chat/:chat_id routing、chat event append: 未接続",
+    "初回質問送信時の自動チャット作成、chat event append: 未接続",
     "disabled={!props.csrfToken || props.isMutating}",
     "aria-label=\"チャットタイトル更新フォーム\"",
     "chatTitleSchema",
