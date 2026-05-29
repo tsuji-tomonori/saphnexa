@@ -1335,6 +1335,45 @@ const dsqlOperationMappings = {
       };
     }
   },
+  listLlmModels: {
+    plan(request) {
+      return {
+        operationId: "listLlmModels",
+        resultTable: "llm_models",
+        sql: `
+          SELECT
+            m.tenant_id,
+            m.model_id,
+            m.display_name,
+            m.provider,
+            m.model_type,
+            m.capability_json,
+            m.status,
+            m.visible_to_user,
+            m.allowed_role,
+            m.default_for_task,
+            m.catalog_version
+          FROM llm_models m
+          JOIN users u
+            ON u.user_id = :actor_id
+           AND u.status = 'active'
+          WHERE m.status = 'active'
+            AND (m.visible_to_user = true OR u.role = 'admin')
+            AND (m.tenant_id = 'global' OR m.tenant_id = u.tenant_id)
+            AND (
+              m.allowed_role = u.role
+              OR m.allowed_role = 'general_user'
+              OR (u.role = 'admin' AND m.allowed_role IN ('admin', 'system'))
+            )
+          ORDER BY m.default_for_task ASC, m.model_type ASC, m.model_id ASC
+        `,
+        params: { actor_id: request.actorId }
+      };
+    },
+    map(rows) {
+      return { models: rows };
+    }
+  },
   listEvaluationDatasets: {
     plan(request) {
       return {

@@ -250,6 +250,7 @@ for (const token of [
   'apiGetOperation("adminListDocuments"',
   'apiGetOperation("getDocument"',
   'apiGetOperation("getIngestionJob"',
+  'apiGetOperation("listLlmModels"',
   'apiGetOperation("listEvaluationDatasets"',
   'apiGetOperation("getEvaluationRun"',
   'apiPostOperation("startUserImport"',
@@ -322,6 +323,7 @@ for (const tableName of [
   "evaluation_datasets",
   "evaluation_runs",
   "evaluation_run_items",
+  "llm_models",
   "published_artifacts"
 ]) {
   assert(dbTableMetadataTs.includes(`"${tableName}"`), `DB table metadata TS source missing ${tableName}`);
@@ -351,7 +353,13 @@ for (const columnName of [
   "metrics_json",
   "retrieved_context_json",
   "judge_result_json",
-  "artifact_s3_prefix"
+  "artifact_s3_prefix",
+  "model_type",
+  "capability_json",
+  "visible_to_user",
+  "allowed_role",
+  "default_for_task",
+  "catalog_version"
 ]) {
   assert(dbTableMetadataTs.includes(`"${columnName}"`), `DB table metadata TS source missing ${columnName}`);
   assert(dbMigrationSql.includes(columnName), `DB migration missing column ${columnName}`);
@@ -540,6 +548,7 @@ for (const token of [
   "updateDocumentAcl",
   "suspendDocument",
   "getIngestionJob",
+  "listLlmModels",
   "listEvaluationDatasets",
   "startEvaluationRun",
   "getEvaluationRun",
@@ -554,6 +563,7 @@ for (const token of [
   'resultTable: "documents"',
   'resultTable: "document_versions"',
   'resultTable: "ingestion_jobs"',
+  'resultTable: "llm_models"',
   'resultTable: "evaluation_datasets"',
   'resultTable: "evaluation_runs"',
   "FROM users",
@@ -565,6 +575,7 @@ for (const token of [
   "FROM documents",
   "FROM document_versions",
   "FROM ingestion_jobs",
+  "FROM llm_models",
   "FROM evaluation_datasets",
   "FROM evaluation_runs",
   "JOIN evaluation_run_items",

@@ -186,6 +186,21 @@ export interface DbRowByTable {
     judge_result_json: DbJson | null;
     metrics_json: DbJson | null;
   };
+  llm_models: {
+    tenant_id: string;
+    model_id: string;
+    display_name: string;
+    provider: string;
+    model_type: string;
+    capability_json: DbJson;
+    status: string;
+    visible_to_user: boolean;
+    allowed_role: string | null;
+    default_for_task: string | null;
+    catalog_version: string;
+    created_at: DbTimestamp;
+    updated_at: DbTimestamp;
+  };
   ws_tickets: {
     tenant_id: string;
     ticket_id: string;

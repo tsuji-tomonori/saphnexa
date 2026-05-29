@@ -118,10 +118,12 @@ for (const file of files) {
   }
   if (file.includes("AdminActions")) {
     assert(body.includes("aria-label=\"管理操作\""), "AdminApp must label admin actions");
-    assert(body.includes("useEvaluationDatasets") && body.includes("useEvaluationRun"), "Admin evaluation must use route-backed query hooks");
+    assert(body.includes("useEvaluationDatasets") && body.includes("useLlmModels") && body.includes("useEvaluationRun"), "Admin evaluation must use route-backed query hooks");
     assert(body.includes("DataTable") && body.includes("評価データセット一覧"), "Admin evaluation must render datasets through DataTable");
     assert(body.includes("評価データセットはありません"), "Admin evaluation must render an honest empty dataset state");
-    assert(body.includes("disabled={!props.csrfToken || !datasetId}"), "Admin evaluation must require csrf token and dataset id");
+    assert(body.includes("DataTable") && body.includes("評価モデル一覧"), "Admin evaluation must render models through DataTable");
+    assert(body.includes("評価モデルはありません"), "Admin evaluation must render an honest empty model state");
+    assert(body.includes("disabled={!props.csrfToken || !datasetId || !modelId}"), "Admin evaluation must require csrf token, dataset id, and model id");
     assert(body.includes("評価run詳細") && body.includes("metrics_json"), "Admin evaluation must render run details and metrics from API data");
     assert(body.includes("評価case別結果") && body.includes("evaluationRun.data?.items"), "Admin evaluation must render case-level items from API data");
     assert(body.includes("評価case別結果はありません"), "Admin evaluation must render an honest empty case result state");

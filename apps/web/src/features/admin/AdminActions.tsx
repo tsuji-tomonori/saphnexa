@@ -1,17 +1,19 @@
 import { useState } from "react";
 import { Button, DataTable, Dialog, FormField, Input, Panel, StatusBadge } from "@saphnexa/ui";
-import { useEvaluationDatasets, useEvaluationRun, useStartEvaluationRun } from "../../hooks/useStartEvaluationRun";
+import { useEvaluationDatasets, useEvaluationRun, useLlmModels, useStartEvaluationRun } from "../../hooks/useStartEvaluationRun";
 
 export function AdminActions(props: { csrfToken: string }) {
   const [datasetId, setDatasetId] = useState("");
+  const [modelId, setModelId] = useState("");
   const [evaluationRunId, setEvaluationRunId] = useState<string | null>(null);
   const [jobStatus, setJobStatus] = useState("idle");
   const datasets = useEvaluationDatasets();
+  const models = useLlmModels();
   const evaluationRun = useEvaluationRun(evaluationRunId);
   const evaluation = useStartEvaluationRun(props.csrfToken);
 
   async function startEvaluation() {
-    const response = await evaluation.mutateAsync(datasetId);
+    const response = await evaluation.mutateAsync({ datasetId, modelId });
     setEvaluationRunId(response.evaluation_run.evaluation_run_id);
     setJobStatus(response.evaluation_run.status);
   }
@@ -42,7 +44,32 @@ export function AdminActions(props: { csrfToken: string }) {
       <FormField label="評価データセットID" htmlFor="evaluation-dataset-id">
         <Input id="evaluation-dataset-id" value={datasetId} onChange={setDatasetId} />
       </FormField>
-      <Button onClick={startEvaluation} disabled={!props.csrfToken || !datasetId}>評価実行</Button>
+      {models.isFetching ? <p role="status">評価モデルを確認しています</p> : null}
+      <DataTable
+        caption="評価モデル一覧"
+        empty="評価モデルはありません"
+        rows={(models.data?.models ?? []).map((model) => ({ ...model, id: model.model_id }))}
+        columns={[
+          { key: "model_id", header: "モデルID", render: (model) => model.model_id },
+          { key: "display_name", header: "名称", render: (model) => model.display_name },
+          { key: "model_type", header: "種別", render: (model) => model.model_type },
+          { key: "default_for_task", header: "用途", render: (model) => model.default_for_task },
+          { key: "status", header: "状態", render: (model) => <StatusBadge status={model.status} /> },
+          {
+            key: "actions",
+            header: "操作",
+            render: (model) => (
+              <Button type="button" tone="secondary" disabled={!props.csrfToken || evaluation.isPending} onClick={() => setModelId(model.model_id)}>
+                選択
+              </Button>
+            )
+          }
+        ]}
+      />
+      <FormField label="評価モデルID" htmlFor="evaluation-model-id">
+        <Input id="evaluation-model-id" value={modelId} onChange={setModelId} />
+      </FormField>
+      <Button onClick={startEvaluation} disabled={!props.csrfToken || !datasetId || !modelId}>評価実行</Button>
       <StatusBadge status={jobStatus} />
       <FormField label="評価run ID" htmlFor="evaluation-run-id">
         <Input id="evaluation-run-id" value={evaluationRunId ?? ""} onChange={(value) => setEvaluationRunId(value || null)} />

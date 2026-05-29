@@ -1,6 +1,16 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { apiGetOperation, apiPostOperation, apiRoutes } from "@saphnexa/api-client";
-import type { EvaluationDataset, EvaluationRun, EvaluationRunItem } from "../types";
+import type { EvaluationDataset, EvaluationRun, EvaluationRunItem, LlmModel } from "../types";
+
+export function useLlmModels() {
+  return useQuery({
+    queryKey: ["llm-models"],
+    queryFn: async () => {
+      const response = await apiGetOperation("listLlmModels", apiRoutes.listLlmModels());
+      return { models: response.models satisfies LlmModel[] };
+    }
+  });
+}
 
 export function useEvaluationDatasets() {
   return useQuery({
@@ -29,8 +39,8 @@ export function useEvaluationRun(evaluationRunId: string | null) {
 export function useStartEvaluationRun(csrfToken: string) {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: (datasetId: string) =>
-      apiPostOperation("startEvaluationRun", apiRoutes.startEvaluationRun(), { dataset_id: datasetId }, csrfToken),
+    mutationFn: (input: { datasetId: string; modelId: string }) =>
+      apiPostOperation("startEvaluationRun", apiRoutes.startEvaluationRun(), { dataset_id: input.datasetId, model_id: input.modelId }, csrfToken),
     onSuccess: async (data) => {
       await queryClient.invalidateQueries({ queryKey: ["evaluation-run", data.evaluation_run.evaluation_run_id] });
     }

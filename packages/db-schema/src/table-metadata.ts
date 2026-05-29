@@ -184,6 +184,21 @@ export const dbTableMetadata = [
     column("judge_result_json", "json", true),
     column("metrics_json", "json", true)
   ]),
+  table("llm_models", ["tenant_id", "model_id"], [
+    column("tenant_id", "string", false),
+    column("model_id", "string", false),
+    column("display_name", "string", false),
+    column("provider", "string", false),
+    column("model_type", "string", false),
+    column("capability_json", "json", false),
+    column("status", "string", false),
+    column("visible_to_user", "boolean", false),
+    column("allowed_role", "string", true),
+    column("default_for_task", "string", true),
+    column("catalog_version", "string", false),
+    column("created_at", "timestamp", false),
+    column("updated_at", "timestamp", false)
+  ]),
   table("published_artifacts", ["tenant_id", "artifact_id"], [
     column("tenant_id", "string", false),
     column("artifact_id", "string", false),

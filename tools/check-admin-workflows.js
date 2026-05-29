@@ -60,9 +60,13 @@ assert(suspended.status === 200, "document suspension must succeed");
 assert(suspended.body.document.status === "deleted", "suspended document must be deleted");
 assert(suspended.body.document.versions.every((version) => version.status === "deleted"), "suspended document versions must be deleted");
 
+const models = api.request("admin-1", "listLlmModels");
+assert(models.status === 200, "model list must be available");
+assert(models.body.models.some((model) => model.model_id === "logical-evaluation-judge"), "evaluation judge model missing");
 for (let index = 0; index < 3; index += 1) {
-  const evaluation = api.request("admin-1", "startEvaluationRun", { csrf_token: adminCsrf, dataset_id: "dataset-local-golden" });
+  const evaluation = api.request("admin-1", "startEvaluationRun", { csrf_token: adminCsrf, dataset_id: "dataset-local-golden", model_id: "logical-evaluation-judge" });
   assert(evaluation.status === 202, "evaluation run must be accepted");
+  assert(evaluation.body.evaluation_run.model_id === "logical-evaluation-judge", "evaluation run must preserve selected model");
   const metrics = evaluation.body.evaluation_run.metrics_json;
   assert(metrics.retrieval && metrics.generation && metrics.end_to_end, "evaluation metrics must include three categories");
   assert(evaluation.body.evaluation_run.artifact_s3_prefix.startsWith("s3://saphnexa-local/evaluation/"), "evaluation artifact prefix missing");

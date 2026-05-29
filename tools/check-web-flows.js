@@ -472,8 +472,12 @@ scenario("admin UI source contract", () => {
     "評価データセット一覧",
     "評価データセットはありません",
     "useEvaluationDatasets",
+    "useLlmModels",
     "useEvaluationRun",
-    "disabled={!props.csrfToken || !datasetId}",
+    "評価モデル一覧",
+    "評価モデルはありません",
+    "評価モデルID",
+    "disabled={!props.csrfToken || !datasetId || !modelId}",
     "setJobStatus(response.evaluation_run.status)",
     "評価run ID",
     "評価run詳細",
@@ -485,8 +489,11 @@ scenario("admin UI source contract", () => {
   }
   assert(startEvaluationHookSource.includes("apiRoutes.listEvaluationDatasets()"), "useEvaluationDatasets hook must use listEvaluationDatasets route helper");
   assert(startEvaluationHookSource.includes("apiGetOperation(\"listEvaluationDatasets\""), "useEvaluationDatasets hook must use generated dataset operation helper");
+  assert(startEvaluationHookSource.includes("apiRoutes.listLlmModels()"), "useLlmModels hook must use listLlmModels route helper");
+  assert(startEvaluationHookSource.includes("apiGetOperation(\"listLlmModels\""), "useLlmModels hook must use generated model operation helper");
   assert(startEvaluationHookSource.includes("apiRoutes.startEvaluationRun()"), "useStartEvaluationRun hook must use startEvaluationRun route helper");
   assert(startEvaluationHookSource.includes("apiPostOperation(\"startEvaluationRun\""), "useStartEvaluationRun hook must use generated evaluation operation helper");
+  assert(startEvaluationHookSource.includes("model_id: input.modelId"), "useStartEvaluationRun hook must send selected model_id");
   assert(startEvaluationHookSource.includes("apiRoutes.getEvaluationRun(evaluationRunId ?? \"\")"), "useEvaluationRun hook must use getEvaluationRun route helper");
   assert(startEvaluationHookSource.includes("apiGetOperation(\"getEvaluationRun\""), "useEvaluationRun hook must use generated evaluation run operation helper");
   assert(startEvaluationHookSource.includes("items: response.items satisfies EvaluationRunItem[]"), "useEvaluationRun hook must expose evaluation run items");
@@ -625,11 +632,16 @@ scenario("admin local API flow", () => {
   const datasets = api.request("admin-1", "listEvaluationDatasets");
   assert(datasets.status === 200 && datasets.body.datasets.some((dataset) => dataset.dataset_id === "dataset-local-golden"), "admin evaluation dataset list failed");
   assert(api.request("user-owner", "listEvaluationDatasets").status === 403, "general user must not list evaluation datasets");
-  assert(api.request("user-owner", "startEvaluationRun", { csrf_token: "csrf-user-owner", dataset_id: "dataset-local-golden" }).status === 403, "general user must not start evaluation runs");
-  const evaluation = api.request("admin-1", "startEvaluationRun", { csrf_token: csrf, dataset_id: "dataset-local-golden" });
+  const models = api.request("admin-1", "listLlmModels");
+  assert(models.status === 200 && models.body.models.some((model) => model.model_id === "logical-evaluation-judge"), "admin model list failed");
+  assert(api.request("user-owner", "listLlmModels").status === 200, "general user must list available models");
+  assert(api.request("user-owner", "startEvaluationRun", { csrf_token: "csrf-user-owner", dataset_id: "dataset-local-golden", model_id: "logical-evaluation-judge" }).status === 403, "general user must not start evaluation runs");
+  const evaluation = api.request("admin-1", "startEvaluationRun", { csrf_token: csrf, dataset_id: "dataset-local-golden", model_id: "logical-evaluation-judge" });
   assert(evaluation.status === 202, "evaluation run failed");
+  assert(evaluation.body.evaluation_run.model_id === "logical-evaluation-judge", "evaluation run must preserve selected model_id");
   const evaluationDetail = api.request("admin-1", "getEvaluationRun", { evaluation_run_id: evaluation.body.evaluation_run.evaluation_run_id });
   assert(evaluationDetail.status === 200 && evaluationDetail.body.evaluation_run.metrics_json.retrieval.recall_at_10 === 0.86, "admin evaluation run detail failed");
+  assert(evaluationDetail.body.evaluation_run.model_id === "logical-evaluation-judge", "evaluation run detail must expose selected model_id");
   assert(evaluationDetail.body.items.length >= 2, "admin evaluation run items missing");
   assert(evaluationDetail.body.items.every((item) => item.evaluation_run_id === evaluation.body.evaluation_run.evaluation_run_id), "evaluation run items must belong to requested run");
   assert(evaluationDetail.body.items.some((item) => item.metrics_json.retrieval || item.metrics_json.end_to_end), "evaluation run item metrics missing");
