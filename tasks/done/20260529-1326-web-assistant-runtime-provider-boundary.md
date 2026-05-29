@@ -34,11 +34,11 @@ Chat UI に assistant-ui の runtime provider 境界を追加し、既存の RES
 
 ## 受け入れ条件
 
-- [ ] Chat UI が `AssistantRuntimeProvider` と `useLocalRuntime` を React tree に持つ。
-- [ ] assistant adapter が `submitQuestion` route helper / generated operation helper を使い、架空 message id を生成しない。
-- [ ] 既存の REST submit、WS ticket issue、message events refetch 経路が残る。
-- [ ] source/UI/web flow/docs gate が assistant runtime provider 境界を検査する。
-- [ ] 選定した検証コマンドが pass し、実ブラウザ streaming / AppSync Events 実接続を実施済み扱いしていない。
+- [x] Chat UI が `AssistantRuntimeProvider` と `useLocalRuntime` を React tree に持つ。
+- [x] assistant adapter が `submitQuestion` route helper / generated operation helper を使い、架空 message id を生成しない。
+- [x] 既存の REST submit、WS ticket issue、message events refetch 経路が残る。
+- [x] source/UI/web flow/docs gate が assistant runtime provider 境界を検査する。
+- [x] 選定した検証コマンドが pass し、実ブラウザ streaming / AppSync Events 実接続を実施済み扱いしていない。
 
 ## 検証計画
 
@@ -63,4 +63,20 @@ Chat UI に assistant-ui の runtime provider 境界を追加し、既存の RES
 
 ## 状態
 
-do
+done
+
+## PR コメント
+
+- 受け入れ条件確認: https://github.com/tsuji-tomonori/saphnexa/pull/3#issuecomment-4570600667
+- セルフレビュー: https://github.com/tsuji-tomonori/saphnexa/pull/3#issuecomment-4570600665
+
+## 完了時検証
+
+- PASS: `npm run typecheck -w @saphnexa/web`
+- PASS: `npm run web:flow:check`
+- PASS: `npm run ui:check`
+- PASS: `npm run web:a11y:check`
+- PASS: `npm run typecheck:source`
+- PASS: `npm run docs:check`
+- PASS: `npm run web:build:check`
+- PASS: `git diff --check`
