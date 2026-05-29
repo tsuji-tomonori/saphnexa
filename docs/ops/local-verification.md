@@ -25,6 +25,7 @@ npm run ui:check
 npm run web:flow:check
 npm run web:a11y:check
 npm run web:build
+npm run web:build:check
 npm run web:perf:local
 npm run web:bundle:check
 npm run perf:api:local
@@ -117,6 +118,7 @@ git diff --check
 - Agent TypeScript runtime が query rewrite、DSQL ACL scope 解決、BM25 / KB retrieve、ACL check、reference expand、evidence pack、context packing、answer generation、citation binding の責務境界を持ち、evidence 不足時は回答生成に進まず refusal とすること。
 - `apps/web` が React + Vite + TypeScript package として成立し、TanStack Query hook、assistant-ui runtime adapter 境界、Atomic Design UI package を通して chat/admin source gate を満たすこと。Chat UI は `Sidebar` / `MessageThread` organism を通して navigation と event thread を表示すること。
 - `npm run web:build` が Vite production build を実行し、Chat/Admin browser entrypoint を bundle できること。
+- `npm run web:build:check` が Vite production build output の `apps/web/dist/index.html`、hashed JS asset、JS sourcemap、gzip size 上限を検査すること。
 - Chat UI が React Hook Form + Zod validation、events payload 由来の Citation Drawer、AppSync Events / WebSocket client boundary を持ち、未接続時に架空 realtime event を生成しないこと。
 - Web realtime client が同一 origin の `/event/realtime` を default endpoint とし、ticket を WebSocket URL query に載せず subscribe payload で送り、API が返した channel と通知後の REST refetch に接続されていること。
 - CDK 実 Construct source が 7 Construct class を持ち、DSQL、CloudFront、Cognito、AppSync Events、S3 Vectors、Bedrock KB、AgentCore、admin artifacts 公開基盤の CloudFormation resource type inventory と同期していること。
@@ -206,7 +208,7 @@ git diff --check
 - axe/Playwright の実 DOM accessibility report、Lighthouse CI、本番 bundler の analyzer report、AWS load test。
 - 実ブラウザ操作による chat/admin E2E、CloudFront 経由のロール別導線確認。
 - Bedrock KB、S3 Vectors、AgentCore Runtime、Bedrock Evaluations を使った実 RAG 品質評価。
-- TypeScript framework 境界は local/source gate、実 `tsc --noEmit`、Vite production build で確認する。assistant-ui runtime の実ブラウザ streaming 挙動、AppSync Events の実 subscribe は、実 runtime が揃った環境で別途確認する。`/event/realtime` の browser source contract は検査するが、実 AppSync Events 接続成功の証跡ではない。
+- TypeScript framework 境界は local/source gate、実 `tsc --noEmit`、Vite production build と build output check で確認する。assistant-ui runtime の実ブラウザ streaming 挙動、AppSync Events の実 subscribe は、実 runtime が揃った環境で別途確認する。`/event/realtime` の browser source contract は検査するが、実 AppSync Events 接続成功の証跡ではない。
 - Shared contract TypeScript source は source gate で確認する。DB introspection/codegen、`.ts` source からの runtime artifact 生成は別途確認する。
 - API client route helper、generated operation type map、operation-aware Web request helper は source gate と実 `tsc --noEmit` で全 public route の operation/path/request/response、主要 outer field、代表的な chat/event/artifact/evaluation の nested object / array item field 同期を確認する。全 route 全 field の完全 schema 化、実 CloudFront/Cognito 経由 HTTP request は別途確認する。
 - DB table metadata TypeScript source は migration source 由来の static metadata として検査する。実 DSQL introspection、生成 DB types、Flyway 実適用は別途確認する。

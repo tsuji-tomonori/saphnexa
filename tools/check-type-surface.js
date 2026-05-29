@@ -30,6 +30,20 @@ for (const [pkgFile, script] of [
   assert(pkg.scripts?.[script]?.includes("tsc --noEmit --project tsconfig.json"), `${pkgFile} must define TypeScript typecheck script`);
 }
 
+const rootPackageJson = readJson("package.json");
+assert(rootPackageJson.scripts?.["web:build"] === "npm run build -w @saphnexa/web", "root package must expose web:build");
+assert(rootPackageJson.scripts?.["web:build:check"] === "npm run web:build && node tools/check-web-build-output.js", "root package must expose web:build:check");
+const webBuildOutputCheckSource = readText("tools/check-web-build-output.js");
+for (const token of [
+  "apps/web/dist/index.html",
+  "apps/web/dist",
+  "gzipLimitBytes",
+  ".js.map",
+  "Vite build output"
+]) {
+  assert(webBuildOutputCheckSource.includes(token), `web build output check source missing ${token}`);
+}
+
 for (const file of [
   "packages/api-contract/src/routes.ts",
   "packages/api-client/src/client.ts",

@@ -35,6 +35,7 @@
     "ui:check": "node tools/check-ui-quality.js",
     "web:flow:check": "node tools/check-web-flows.js",
     "web:build": "npm run build -w @saphnexa/web",
+    "web:build:check": "npm run web:build && node tools/check-web-build-output.js",
     "web:a11y:check": "node tools/check-web-accessibility-report.js",
     "web:perf:local": "node tools/check-web-performance.js",
     "web:bundle:check": "node tools/check-web-bundle-report.js",

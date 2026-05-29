@@ -44,6 +44,7 @@ for (const command of [
   "npm run ui:check",
   "npm run web:flow:check",
   "npm run web:a11y:check",
+  "npm run web:build:check",
   "npm run web:perf:local",
   "npm run web:bundle:check",
   "npm run perf:api:local",
