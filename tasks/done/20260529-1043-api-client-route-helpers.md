@@ -1,6 +1,6 @@
 # API client route helpers
 
-- 状態: doing
+- 状態: done
 - タスク種別: 機能追加
 - 作成日時: 2026-05-29 10:43 JST
 - 対象ブランチ: `codex/typescript-framework-implementation`
@@ -61,6 +61,11 @@ API contract 由来の route helper を `@saphnexa/api-client` に追加し、We
 - `npm test`: pass。15 tests。
 - `npm run docs:check`: pass。
 - `git diff --check`: pass。
+
+## PR コメント
+
+- 受け入れ条件確認: https://github.com/tsuji-tomonori/saphnexa/pull/3#issuecomment-4569789732
+- セルフレビュー: https://github.com/tsuji-tomonori/saphnexa/pull/3#issuecomment-4569791171
 
 ## PR レビュー観点
 
