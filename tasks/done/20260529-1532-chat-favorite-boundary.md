@@ -64,6 +64,11 @@ Chat UI から現在のチャットをお気に入り登録・解除できる AP
 
 2026-05-29 に上記コマンドをすべて実行し pass。`web:build:check` は Vite の 500 kB chunk warning を出したが、既存の build output gate は gzip 145995 bytes で pass。
 
+## PR コメント
+
+- 受け入れ条件確認: https://github.com/tsuji-tomonori/saphnexa/pull/3#issuecomment-4571667369
+- セルフレビュー: https://github.com/tsuji-tomonori/saphnexa/pull/3#issuecomment-4571667338
+
 ## PR レビュー観点
 
 - favorite 追加が参加チャット境界を越えていないこと。
@@ -78,4 +83,4 @@ Chat UI から現在のチャットをお気に入り登録・解除できる AP
 
 ## 状態
 
-ready_for_pr_comment
+done
