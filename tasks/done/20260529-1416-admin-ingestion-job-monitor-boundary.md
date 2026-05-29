@@ -37,11 +37,11 @@ Admin Dashboard の文書タブから、既存 `getIngestionJob` / `retryIngesti
 
 ## 受け入れ条件
 
-- [ ] Admin UI が `getIngestionJob` / `retryIngestionJob` route helper / generated operation helper 経由で取り込みジョブを取得・再実行する。
-- [ ] 取り込みジョブ UI が React Hook Form + Zod と共通 UI components を使い、empty/error/pending/status/retryable state を表示する。
-- [ ] retry 操作は CSRF token と retryable job がない状態では実行できず、成功後に対象 job query を再取得する。
-- [ ] local API / DSQL repository / source/UI/web/docs gate が Admin 取り込みジョブ確認境界を検査する。
-- [ ] 選定した検証コマンドが pass し、実 Step Functions / S3 / KB / S3 Vectors ingestion や job 一覧 API を実施済み扱いしない。
+- [x] Admin UI が `getIngestionJob` / `retryIngestionJob` route helper / generated operation helper 経由で取り込みジョブを取得・再実行する。
+- [x] 取り込みジョブ UI が React Hook Form + Zod と共通 UI components を使い、empty/error/pending/status/retryable state を表示する。
+- [x] retry 操作は CSRF token と retryable job がない状態では実行できず、成功後に対象 job query を再取得する。
+- [x] local API / DSQL repository / source/UI/web/docs gate が Admin 取り込みジョブ確認境界を検査する。
+- [x] 選定した検証コマンドが pass し、実 Step Functions / S3 / KB / S3 Vectors ingestion や job 一覧 API を実施済み扱いしない。
 
 ## 検証計画
 
@@ -55,6 +55,25 @@ Admin Dashboard の文書タブから、既存 `getIngestionJob` / `retryIngesti
 - `npm run web:build:check`
 - `npm run test:integration:local`
 - `git diff --check`
+
+## 検証結果
+
+- `npm run typecheck -w @saphnexa/api`: fail -> 修正後 pass
+- `npm run typecheck -w @saphnexa/web`: pass
+- `npm run typecheck -w @saphnexa/db-types`: pass
+- `npm run ui:check`: pass
+- `npm run web:flow:check`: pass
+- `npm run web:a11y:check`: pass
+- `npm run typecheck:source`: pass
+- `npm run docs:check`: pass
+- `npm run web:build:check`: pass
+- `npm run test:integration:local`: pass
+- `git diff --check`: pass
+
+## PR コメント
+
+- 受け入れ条件確認: https://github.com/tsuji-tomonori/saphnexa/pull/3#issuecomment-4570938685
+- セルフレビュー結果: https://github.com/tsuji-tomonori/saphnexa/pull/3#issuecomment-4570938678
 
 ## PR レビュー観点
 
@@ -70,4 +89,4 @@ Admin Dashboard の文書タブから、既存 `getIngestionJob` / `retryIngesti
 
 ## 状態
 
-do
+done
