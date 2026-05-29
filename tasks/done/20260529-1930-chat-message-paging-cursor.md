@@ -1,6 +1,6 @@
 # Chat メッセージ履歴 paging cursor 境界
 
-- 状態: do
+- 状態: done
 - タスク種別: 機能追加
 - 作成日時: 2026-05-29 19:30
 - 対象ブランチ: `codex/typescript-framework-implementation`
@@ -44,13 +44,21 @@ Chat メッセージ履歴はユーザー質問、assistant 回答、閲覧者�
 
 ## 受け入れ条件
 
-- [ ] `listMessages` が `limit` 件を返し、続きがある場合に `next_cursor` を返す。
-- [ ] `after_message_id` 指定時、指定 message より後の message だけを返す。
-- [ ] 参加者境界は維持され、未参加者は paging 付きでも message を取得できない。
-- [ ] DSQL `listMessages` plan が actor 参加者境界と cursor 条件を併用する。
-- [ ] Web Message history が `next_cursor` を表示する。
-- [ ] UI/source gate/docs 上で `paging cursor` は接続済み範囲になり、引用本文の完全 REST 復元は未接続として残る。
-- [ ] 選定した検証コマンドが pass する。
+- [x] `listMessages` が `limit` 件を返し、続きがある場合に `next_cursor` を返す。
+- [x] `after_message_id` 指定時、指定 message より後の message だけを返す。
+- [x] 参加者境界は維持され、未参加者は paging 付きでも message を取得できない。
+- [x] DSQL `listMessages` plan が actor 参加者境界と cursor 条件を併用する。
+- [x] Web Message history が `next_cursor` を表示する。
+- [x] UI/source gate/docs 上で `paging cursor` は接続済み範囲になり、引用本文の完全 REST 復元は未接続として残る。
+- [x] 選定した検証コマンドが pass する。
+
+## 完了メモ
+
+- `listMessages` に `limit` / `after_message_id` query と `next_cursor` response を追加した。
+- DSQL plan は actor の active participant join と cursor 条件を併用し、`limit + 1` で続き有無を判定する。
+- Web message history は page limit 50 で取得し、返却された `next_cursor` を表示する。
+- `paging cursor` は接続済み範囲へ移し、引用本文の完全 REST 復元、実 Aurora DSQL SQL 実行、実ブラウザ E2E は未接続として残した。
+- PR #3 に受け入れ条件確認コメントとセルフレビューコメントを投稿した。
 
 ## 検証計画
 
