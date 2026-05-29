@@ -214,12 +214,20 @@ export function createLocalStore() {
       .sort((a, b) => a.added_at.localeCompare(b.added_at));
   }
 
-  function listMessages(actor, chat_id) {
+  function listMessages(actor, chat_id, input = {}) {
     requireReader(actor, chat_id);
-    return state.chat_messages
+    const limit = messagePageLimit(input.limit);
+    const ordered = state.chat_messages
       .filter((item) => item.tenant_id === actor.tenant_id && item.chat_id === chat_id)
       .map((message) => withOwnFeedback(message, actor.user_id))
-      .sort((a, b) => a.created_at.localeCompare(b.created_at));
+      .sort((a, b) => a.created_at.localeCompare(b.created_at) || a.message_id.localeCompare(b.message_id));
+    const cursorIndex = input.after_message_id ? ordered.findIndex((message) => message.message_id === input.after_message_id) : -1;
+    const pageSource = input.after_message_id && cursorIndex < 0 ? [] : cursorIndex >= 0 ? ordered.slice(cursorIndex + 1) : ordered;
+    const page = pageSource.slice(0, limit);
+    return {
+      messages: page,
+      next_cursor: pageSource.length > limit ? page.at(-1)?.message_id ?? null : null
+    };
   }
 
   function listChats(actor) {
@@ -251,6 +259,11 @@ export function createLocalStore() {
       item.user_id === user_id
     );
     return feedback ? { ...message, feedback } : { ...message, feedback: null };
+  }
+
+  function messagePageLimit(limit) {
+    if (!Number.isFinite(limit)) return 50;
+    return Math.max(1, Math.min(100, Math.trunc(limit)));
   }
 
   function submitQuestion(actor, chat_id, input, ragAdapter) {

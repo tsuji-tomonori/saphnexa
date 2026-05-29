@@ -71,7 +71,7 @@ function responseSchema(route: HonoRouteDefinition) {
     listChatParticipants: z.object({ participants: z.array(chatParticipantSchema()) }),
     addChatParticipant: z.object({ participant: chatParticipantSchema() }),
     updateChatParticipant: z.object({ participant: chatParticipantSchema() }),
-    listMessages: z.object({ messages: z.array(chatMessageSchema()) }),
+    listMessages: z.object({ messages: z.array(chatMessageSchema()), next_cursor: z.string().nullable() }),
     submitQuestion: z.object({ message_id: z.string(), run_id: z.string(), status: z.string() }),
     listMessageEvents: z.object({ events: z.array(messageEventSchema()) }),
     cancelAnswerGeneration: z.object({ message_id: z.string(), run_id: z.string(), status: z.string() }),

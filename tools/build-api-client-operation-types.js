@@ -83,6 +83,7 @@ function paramsType(path) {
 
 function queryType(operationId) {
   if (operationId === "listMessageEvents") return "{ after_seq?: number }";
+  if (operationId === "listMessages") return "{ after_message_id?: string; limit?: number }";
   return "ApiClientEmptyObject";
 }
 

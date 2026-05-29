@@ -151,6 +151,7 @@ export function ChatPage() {
           activeMessageId={messageId}
           csrfToken={csrfToken}
           messages={messages.data?.messages ?? []}
+          nextCursor={messages.data?.next_cursor ?? null}
           isLoading={messages.isFetching}
           isCanceling={cancelAnswerGeneration.isPending}
           onCancel={(input) => cancelAnswerGeneration.mutate(input)}

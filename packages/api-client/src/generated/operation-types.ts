@@ -206,10 +206,10 @@ export interface ApiClientOperationTypes {
     roles: "general_user" | "admin";
     csrfRequired: false;
     params: { chat_id: string };
-    query: ApiClientEmptyObject;
+    query: { after_message_id?: string; limit?: number };
     requestBody: never;
     successStatus: 200;
-    successResponse: { messages: { tenant_id: string; chat_id: string; message_id: string; parent_message_id?: string | null; sender_user_id?: string | null; sender_type: "general_user" | "admin" | "assistant"; content_text: string; run_id?: string | null; status: "active" | "archived" | "deleted" | "removed" | "queued" | "running" | "streaming" | "succeeded" | "failed" | "canceled"; created_at: string; completed_at?: string | null; feedback?: { tenant_id: string; feedback_id: string; user_id: string; chat_id?: string | null; message_id?: string | null; rating?: string; comment?: string | null; problem_type?: string | null; created_at: string } & ApiClientJsonObject | null }[] };
+    successResponse: { messages: { tenant_id: string; chat_id: string; message_id: string; parent_message_id?: string | null; sender_user_id?: string | null; sender_type: "general_user" | "admin" | "assistant"; content_text: string; run_id?: string | null; status: "active" | "archived" | "deleted" | "removed" | "queued" | "running" | "streaming" | "succeeded" | "failed" | "canceled"; created_at: string; completed_at?: string | null; feedback?: { tenant_id: string; feedback_id: string; user_id: string; chat_id?: string | null; message_id?: string | null; rating?: string; comment?: string | null; problem_type?: string | null; created_at: string } & ApiClientJsonObject | null }[]; next_cursor: string | null };
     errorResponse: ApiClientErrorResponse;
   };
   submitQuestion: {

@@ -37,7 +37,7 @@ export function createLocalApi() {
           case "listChatParticipants":
             return ok({ participants: store.listParticipants(actor, input.chat_id) });
           case "listMessages":
-            return ok({ messages: store.listMessages(actor, input.chat_id) });
+            return ok(store.listMessages(actor, input.chat_id, input));
           case "addChatParticipant":
             return created({ participant: store.addParticipant(actor, input.chat_id, input) });
           case "updateChatParticipant":

@@ -577,16 +577,35 @@ const dsqlOperationMappings = {
            AND f.message_id = m.message_id
            AND f.user_id = :actor_id
           WHERE m.chat_id = :chat_id
+            AND (
+              :after_message_id IS NULL
+              OR (m.created_at, m.message_id) > (
+                SELECT cursor_message.created_at, cursor_message.message_id
+                FROM chat_messages cursor_message
+                WHERE cursor_message.tenant_id = m.tenant_id
+                  AND cursor_message.chat_id = m.chat_id
+                  AND cursor_message.message_id = :after_message_id
+              )
+            )
           ORDER BY m.created_at ASC, m.message_id ASC
+          LIMIT :page_limit_plus_one
         `,
         params: {
           actor_id: request.actorId,
-          chat_id: request.input.chat_id
+          chat_id: request.input.chat_id,
+          after_message_id: request.input.after_message_id ?? null,
+          page_limit_plus_one: messagePageLimit(request.input.limit) + 1
         }
       };
     },
-    map(rows) {
-      return { messages: rows };
+    map(rows, request) {
+      const limit = messagePageLimit(request.input.limit);
+      const messages = rows.slice(0, limit);
+      const lastMessage = messages.at(-1) as { message_id?: string } | undefined;
+      return {
+        messages,
+        next_cursor: rows.length > limit ? lastMessage?.message_id ?? null : null
+      };
     }
   },
   listMessageEvents: {
@@ -1613,6 +1632,11 @@ function repositoryError(status: number, error_code: string, message: string, de
 
 function firstRow(rows: Array<DbRow<DbTableName>>): DbRow<DbTableName> {
   return rows[0] as DbRow<DbTableName>;
+}
+
+function messagePageLimit(limit: unknown): number {
+  if (typeof limit !== "number" || !Number.isFinite(limit)) return 50;
+  return Math.max(1, Math.min(100, Math.trunc(limit)));
 }
 
 function arrayValue(value: unknown): unknown[] {

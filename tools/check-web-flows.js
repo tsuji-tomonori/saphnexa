@@ -137,8 +137,9 @@ scenario("chat UI source contract", () => {
   assert(chatParticipantsHookSource.includes("apiDeleteOperation(\"removeChatParticipant\""), "useRemoveChatParticipant hook must use generated removeChatParticipant helper");
   assert(chatParticipantsHookSource.includes("invalidateQueries({ queryKey: [\"chat-participants\", input.chat_id] })"), "participant mutations must refresh participants query");
   assert(apiClientSource.includes("/api/chat-sessions/{chat_id}/participants"), "API client participants helper must call participants path");
-  assert(chatMessagesHookSource.includes("apiRoutes.listMessages(chatId ?? \"\")"), "useChatMessages hook must use listMessages route helper");
+  assert(chatMessagesHookSource.includes("apiRoutes.listMessages(chatId ?? \"\", \"\", \"50\")"), "useChatMessages hook must use listMessages route helper with page limit");
   assert(chatMessagesHookSource.includes("apiGetOperation(\"listMessages\""), "useChatMessages hook must use generated listMessages operation helper");
+  assert(chatMessagesHookSource.includes("next_cursor: response.next_cursor"), "useChatMessages hook must expose message next cursor");
   assert(chatMessagesHookSource.includes("enabled: Boolean(chatId)"), "useChatMessages hook must wait for active chat");
   assert(chatMessagesHookSource.includes("apiRoutes.cancelAnswerGeneration(input.chat_id, input.message_id)"), "useCancelAnswerGeneration hook must use cancelAnswerGeneration route helper");
   assert(chatMessagesHookSource.includes("apiPostOperation(\"cancelAnswerGeneration\""), "useCancelAnswerGeneration hook must use generated cancelAnswerGeneration helper");
@@ -208,7 +209,8 @@ scenario("chat UI source contract", () => {
     "メッセージはありません",
     "チャットを選択してください",
     "メッセージ履歴を確認しています",
-    "paging cursor、引用本文の完全 REST 復元: 未接続",
+    "引用本文の完全 REST 復元: 未接続",
+    "次ページcursor:",
     "実 AgentCore Runtime 停止、SQS event-publish、stream中断: 未接続",
     "message.feedback",
     "フィードバック:",
@@ -329,6 +331,10 @@ scenario("chat local API flow", () => {
   assert(messages.status === 200, "chat messages fetch failed");
   assert(messages.body.messages.some((message) => message.message_id === submit.body.message_id && message.sender_type === "assistant"), "assistant message missing from message history");
   assert(messages.body.messages.some((message) => message.sender_user_id === "user-owner" && message.content_text.includes("Saphnexa")), "user message missing from message history");
+  const pagedMessages = api.request("user-owner", "listMessages", { chat_id: chat.body.chat.chat_id, limit: 1 });
+  assert(pagedMessages.body.messages.length === 1 && pagedMessages.body.next_cursor, "message history must return first page cursor");
+  const nextMessages = api.request("user-owner", "listMessages", { chat_id: chat.body.chat.chat_id, after_message_id: pagedMessages.body.next_cursor, limit: 1 });
+  assert(nextMessages.body.messages.length === 1 && nextMessages.body.messages[0].message_id !== pagedMessages.body.messages[0].message_id, "message history cursor must return non-overlapping next page");
   assert(api.request("user-outsider", "listMessages", { chat_id: chat.body.chat.chat_id }).status === 403, "outsider must not list messages for unreadable chat");
   const cancelTarget = api.request("user-owner", "createChatSession", { csrf_token: csrf, title: "cancel target" });
   const cancelSubmit = api.request("user-owner", "submitQuestion", {

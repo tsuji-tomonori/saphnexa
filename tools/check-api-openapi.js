@@ -76,6 +76,15 @@ assert(
   "listMessages response schema must expose nullable feedback state"
 );
 assert(
+  document.paths["/v1/chat-sessions/{chat_id}/messages"].get.responses["200"].content["application/json"].schema.properties.next_cursor.type.includes("null"),
+  "listMessages response schema must expose nullable next_cursor"
+);
+assert(
+  document.paths["/v1/chat-sessions/{chat_id}/messages"].get.parameters.some((parameter) => parameter.name === "after_message_id") &&
+    document.paths["/v1/chat-sessions/{chat_id}/messages"].get.parameters.some((parameter) => parameter.name === "limit"),
+  "listMessages must expose cursor query parameters"
+);
+assert(
   document.paths["/v1/chat-sessions/{chat_id}/messages/{message_id}/events"].get.responses["200"].content["application/json"].schema.properties.events.type === "array",
   "listMessageEvents response schema must expose events array"
 );

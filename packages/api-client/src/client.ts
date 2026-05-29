@@ -88,7 +88,8 @@ export const apiRoutes = {
     pathFromTemplate(apiRouteTemplates.updateChatParticipant, { chat_id: chatId, user_id: userId }),
   removeChatParticipant: (chatId: string, userId: string) =>
     pathFromTemplate(apiRouteTemplates.removeChatParticipant, { chat_id: chatId, user_id: userId }),
-  listMessages: (chatId: string) => pathFromTemplate(apiRouteTemplates.listMessages, { chat_id: chatId }),
+  listMessages: (chatId: string, afterMessageId = "", limit = "") =>
+    withQuery(pathFromTemplate(apiRouteTemplates.listMessages, { chat_id: chatId }), { after_message_id: afterMessageId || undefined, limit: limit || undefined }),
   submitQuestion: (chatId: string) => pathFromTemplate(apiRouteTemplates.submitQuestion, { chat_id: chatId }),
   listMessageEvents: (chatId: string, messageId: string) =>
     pathFromTemplate(apiRouteTemplates.listMessageEvents, { chat_id: chatId, message_id: messageId }),
@@ -214,6 +215,15 @@ function pathFromTemplate(template: ApiClientPathTemplate, params: Record<string
     throw new Error(`Invalid API route template ${template}`);
   }
   return path as ApiClientPath;
+}
+
+function withQuery(path: ApiClientPath, query: Record<string, string | number | undefined>): ApiClientPath {
+  const params = new URLSearchParams();
+  for (const [key, value] of Object.entries(query)) {
+    if (value !== undefined) params.set(key, String(value));
+  }
+  const suffix = params.toString();
+  return suffix ? `${path}?${suffix}` as ApiClientPath : path;
 }
 
 async function request<T>(path: ApiClientPath, init: RequestInit): Promise<T> {

@@ -84,6 +84,22 @@ function operation(route) {
       schema: { type: "integer", minimum: 0 }
     });
   }
+  if (route.operationId === "listMessages") {
+    parameters.push(
+      {
+        name: "after_message_id",
+        in: "query",
+        required: false,
+        schema: { type: "string", minLength: 1 }
+      },
+      {
+        name: "limit",
+        in: "query",
+        required: false,
+        schema: { type: "integer", minimum: 1, maximum: 100 }
+      }
+    );
+  }
 
   const responses = Object.fromEntries([
     ...route.successStatuses.map((status) => [String(status), response(status, route)]),
@@ -186,7 +202,7 @@ function successResponseSchema(route) {
     listChatParticipants: objectSchema(["participants"], { participants: arrayOf(chatParticipantSchema()) }),
     addChatParticipant: objectSchema(["participant"], { participant: chatParticipantSchema() }),
     updateChatParticipant: objectSchema(["participant"], { participant: chatParticipantSchema() }),
-    listMessages: objectSchema(["messages"], { messages: arrayOf(chatMessageSchema()) }),
+    listMessages: objectSchema(["messages", "next_cursor"], { messages: arrayOf(chatMessageSchema()), next_cursor: nullableStringSchema() }),
     submitQuestion: objectSchema(["message_id", "run_id", "status"], { message_id: stringSchema(), run_id: stringSchema(), status: stringSchema() }),
     listMessageEvents: objectSchema(["events"], { events: arrayOf(messageEventSchema()) }),
     cancelAnswerGeneration: objectSchema(["message_id", "run_id", "status"], { message_id: stringSchema(), run_id: stringSchema(), status: stringSchema() }),

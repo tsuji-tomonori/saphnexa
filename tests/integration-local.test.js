@@ -82,6 +82,13 @@ test("message history restores only the viewer own feedback state", () => {
   const ownerAnswer = ownerMessages.body.messages.find((message) => message.message_id === accepted.body.message_id);
   assert.equal(ownerAnswer.feedback.rating, "positive");
   assert.equal(ownerAnswer.feedback.comment, "履歴で確認");
+  const firstPage = api.request("user-owner", "listMessages", { chat_id: chatId, limit: 1 });
+  assert.equal(firstPage.body.messages.length, 1);
+  assert.equal(typeof firstPage.body.next_cursor, "string");
+  const secondPage = api.request("user-owner", "listMessages", { chat_id: chatId, after_message_id: firstPage.body.next_cursor, limit: 1 });
+  assert.equal(secondPage.body.messages.length, 1);
+  assert.notEqual(secondPage.body.messages[0].message_id, firstPage.body.messages[0].message_id);
+  assert.equal(secondPage.body.next_cursor, null);
 
   const viewerMessages = api.request("user-viewer", "listMessages", { chat_id: chatId });
   const viewerAnswer = viewerMessages.body.messages.find((message) => message.message_id === accepted.body.message_id);

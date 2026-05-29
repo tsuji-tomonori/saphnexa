@@ -6,6 +6,7 @@ export function MessageHistoryPanel(props: {
   activeMessageId: string | null;
   csrfToken: string;
   messages: ChatMessage[];
+  nextCursor: string | null;
   isLoading: boolean;
   isCanceling: boolean;
   onCancel: (input: { chat_id: string; message_id: string }) => void;
@@ -13,7 +14,8 @@ export function MessageHistoryPanel(props: {
   return (
     <>
       {props.isLoading ? <p role="status">メッセージ履歴を確認しています</p> : null}
-      <p role="status">paging cursor、引用本文の完全 REST 復元: 未接続</p>
+      <p role="status">引用本文の完全 REST 復元: 未接続</p>
+      {props.nextCursor ? <p role="status">次ページcursor: {props.nextCursor}</p> : null}
       <p role="status">実 AgentCore Runtime 停止、SQS event-publish、stream中断: 未接続</p>
       <Button
         type="button"

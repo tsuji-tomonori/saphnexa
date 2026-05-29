@@ -7,8 +7,8 @@ export function useChatMessages(chatId: string | null) {
     queryKey: ["chat-messages", chatId],
     enabled: Boolean(chatId),
     queryFn: async () => {
-      const response = await apiGetOperation("listMessages", apiRoutes.listMessages(chatId ?? ""));
-      return { messages: response.messages satisfies ChatMessage[] };
+      const response = await apiGetOperation("listMessages", apiRoutes.listMessages(chatId ?? "", "", "50"));
+      return { messages: response.messages satisfies ChatMessage[], next_cursor: response.next_cursor };
     }
   });
 }
