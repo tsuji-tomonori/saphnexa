@@ -18,8 +18,13 @@ checkFile("ChatSessionNav", "apps/web/src/features/chat/ChatSessionNav.tsx", [
 ]);
 checkFile("MessageComposer", "apps/web/src/features/chat/MessageComposer.tsx", [
   rule("question label", (body) => body.includes("aria-label=\"質問\"")),
-  rule("question disabled state", (body) => body.includes("disabled={!props.csrfToken || !props.question}")),
+  rule("question disabled state", (body) => body.includes("disabled={!props.csrfToken || !question}")),
+  rule("validation error alert", (body) => body.includes("role=\"alert\"")),
   rule("button type", (body) => !/<button(?![^>]*\stype=)/.test(body))
+]);
+checkFile("CitationDrawerPanel", "apps/web/src/features/chat/CitationDrawerPanel.tsx", [
+  rule("citation drawer organism", (body) => body.includes("CitationDrawer")),
+  rule("citations from event payload", (body) => body.includes("event.payload_json.citations"))
 ]);
 checkFile("MessageEventsPanel", "apps/web/src/features/chat/MessageEventsPanel.tsx", [
   rule("event panel label", (body) => body.includes("aria-label=\"イベント\"")),
@@ -45,7 +50,8 @@ checkFile("ArtifactTable", "apps/web/src/features/admin/ArtifactTable.tsx", [
 checkFile("UI components", "packages/ui/src/components.tsx", [
   rule("data table export", (body) => body.includes("export { DataTable }")),
   rule("dialog export", (body) => body.includes("export { Dialog }")),
-  rule("drawer export", (body) => body.includes("export { Drawer }"))
+  rule("drawer export", (body) => body.includes("export { Drawer }")),
+  rule("citation drawer export", (body) => body.includes("export { CitationDrawer"))
 ]);
 checkFile("UI atoms", "packages/ui/src/atoms/Button.tsx", [
   rule("button type default", (body) => body.includes("type={props.type || \"button\"}")),

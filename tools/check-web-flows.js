@@ -11,6 +11,9 @@ const chatPageSource = readText("apps/web/src/pages/ChatPage.tsx");
 const chatNavSource = readText("apps/web/src/features/chat/ChatSessionNav.tsx");
 const composerSource = readText("apps/web/src/features/chat/MessageComposer.tsx");
 const eventsPanelSource = readText("apps/web/src/features/chat/MessageEventsPanel.tsx");
+const citationDrawerSource = readText("apps/web/src/features/chat/CitationDrawerPanel.tsx");
+const realtimeHookSource = readText("apps/web/src/hooks/useMessageRealtime.ts");
+const realtimeClientSource = readText("apps/web/src/lib/realtimeClient.ts");
 const adminSource = readText("apps/web/src/admin/AdminApp.tsx");
 const adminPageSource = readText("apps/web/src/pages/AdminDashboardPage.tsx");
 const adminActionsSource = readText("apps/web/src/features/admin/AdminActions.tsx");
@@ -45,6 +48,8 @@ scenario("chat UI source contract", () => {
   for (const token of [
     "useChatSessions",
     "useMessageEvents",
+    "useMessageRealtime",
+    "CitationDrawerPanel",
     "createSaphnexaAssistantAdapter",
     "setMessageId(accepted.message_id)"
   ]) {
@@ -61,7 +66,10 @@ scenario("chat UI source contract", () => {
   }
   for (const token of [
     "aria-label=\"質問\"",
-    "disabled={!props.csrfToken || !props.question}"
+    "useForm",
+    "zodResolver",
+    "questionSchema",
+    "disabled={!props.csrfToken || !question}"
   ]) {
     assert(composerSource.includes(token), `MessageComposer missing token: ${token}`);
   }
@@ -79,6 +87,20 @@ scenario("chat UI source contract", () => {
   ]) {
     assert(assistantRuntimeSource.includes(token), `assistant runtime missing token: ${token}`);
   }
+  for (const token of [
+    "CitationDrawer",
+    "extractCitations",
+    "event.payload_json.citations"
+  ]) {
+    assert(citationDrawerSource.includes(token), `CitationDrawerPanel missing token: ${token}`);
+  }
+  for (const token of [
+    "createAppSyncEventsClient",
+    "VITE_APPSYNC_EVENTS_URL"
+  ]) {
+    assert(realtimeHookSource.includes(token), `useMessageRealtime missing token: ${token}`);
+  }
+  assert(realtimeClientSource.includes("if (!endpoint) return () => undefined"), "realtime client must not generate fake events when endpoint is missing");
   assert(!/useState<Chat\[\]>\(\[[^\]]/.test(chatPageSource), "ChatPage must not seed fake chats");
   assert(!/useState<EventRow\[\]>\(\[[^\]]/.test(chatPageSource), "ChatPage must not seed fake events");
 });
@@ -97,6 +119,8 @@ scenario("chat local API flow", () => {
   const events = api.request("user-owner", "listMessageEvents", { chat_id: chat.body.chat.chat_id, message_id: submit.body.message_id });
   assert(events.status === 200, "chat events fetch failed");
   assert(events.body.events.some((event) => event.event_name === "chat.message.final_ready"), "final event missing");
+  const finalEvent = events.body.events.find((event) => event.event_name === "chat.message.final_ready");
+  assert(Array.isArray(finalEvent.payload_json.citations), "final event citations missing");
 });
 
 scenario("admin UI source contract", () => {

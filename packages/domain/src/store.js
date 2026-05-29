@@ -279,6 +279,13 @@ export function createLocalStore() {
           run_id: run.run_id,
           answer_available: true,
           citation_count: result.citations.length,
+          citations: result.citations.map((citation) => ({
+            citation_id: citation.citation_id,
+            document_id: citation.document_id,
+            version_id: citation.version_id,
+            chunk_id: citation.chunk_id,
+            display: citation.display
+          })),
           refusal: false
         });
       }

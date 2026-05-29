@@ -23,7 +23,8 @@ for (const file of files) {
   }
   if (file.includes("MessageComposer")) {
     assert(body.includes("aria-label=\"質問\""), "ChatApp textarea must have an accessible label");
-    assert(body.includes("disabled={!props.csrfToken || !props.question}"), "MessageComposer must disable submit without token or question");
+    assert(body.includes("useForm") && body.includes("zodResolver") && body.includes("questionSchema"), "MessageComposer must use React Hook Form + Zod validation");
+    assert(body.includes("disabled={!props.csrfToken || !question}"), "MessageComposer must disable submit without token or question");
   }
   if (file.includes("MessageEventsPanel")) {
     assert(body.includes("<p role=\"status\">イベントはありません</p>"), "ChatApp must render an honest empty event state");
@@ -47,6 +48,7 @@ const statusSource = readText("packages/ui/src/molecules/StatusBadge.tsx");
 const tableSource = readText("packages/ui/src/organisms/DataTable.tsx");
 assert(statusSource.includes("aria-label={`状態: ${props.status}`}"), "StatusBadge must expose an accessible status label");
 assert(componentsSource.includes("export { DataTable }"), "UI barrel must export DataTable organism");
+assert(componentsSource.includes("export { CitationDrawer"), "UI barrel must export CitationDrawer organism");
 assert(tableSource.includes("<table") && tableSource.includes("<caption>"), "DataTable must render a labelled table");
 
 const usageRate = componentCandidates === 0 ? 0 : commonUiUsers / componentCandidates;

@@ -4,6 +4,7 @@ export { Textarea } from "./atoms/Textarea";
 export { EmptyState } from "./molecules/EmptyState";
 export { FormField } from "./molecules/FormField";
 export { StatusBadge } from "./molecules/StatusBadge";
+export { CitationDrawer, type CitationDrawerItem } from "./organisms/CitationDrawer";
 export { DataTable } from "./organisms/DataTable";
 export { Dialog } from "./organisms/Dialog";
 export { Drawer } from "./organisms/Drawer";
