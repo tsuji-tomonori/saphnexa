@@ -1,6 +1,6 @@
 # Web flow route helper gate fix
 
-- 状態: doing
+- 状態: done
 - タスク種別: 修正
 - 作成日時: 2026-05-29 10:52 JST
 - 対象ブランチ: `codex/typescript-framework-implementation`
@@ -49,7 +49,7 @@ API client route helper 追加後、GitHub Actions の `quality gates` が失敗
 - [x] API path literal の同期確認は `packages/api-client/src/client.ts` 側を見る。
 - [x] `npm run web:flow:check` が pass する。
 - [x] 関連 quality gate checks が pass する。
-- [ ] CI の `quality gates` が pass する。
+- [x] CI の `quality gates` が pass する。
 
 ## 検証計画
 
@@ -78,7 +78,12 @@ API client route helper 追加後、GitHub Actions の `quality gates` が失敗
 - `npm run rag:perf:local`: pass。
 - `npm run docs:check`: pass。
 - `git diff --check`: pass。
-- CI `quality gates`: fix push 前のため未確認。
+- CI `quality gates`: pass。
+
+## PR コメント
+
+- 受け入れ条件確認: https://github.com/tsuji-tomonori/saphnexa/pull/3#issuecomment-4569813978
+- セルフレビュー: https://github.com/tsuji-tomonori/saphnexa/pull/3#issuecomment-4569815358
 
 ## PR レビュー観点
 
