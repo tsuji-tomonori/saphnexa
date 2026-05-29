@@ -1,6 +1,6 @@
 # API TypeScript source of record
 
-- 状態: doing
+- 状態: done
 - タスク種別: 機能追加
 - 作成日時: 2026-05-29 09:08 JST
 - 対象ブランチ: `codex/typescript-framework-implementation`
@@ -44,14 +44,21 @@ API の Hono/OpenAPI/Zod schema 実装を TypeScript source of record に移し�
 
 ## 受け入れ条件
 
-- [ ] Hono app factory の実体が `apps/api/src/hono-openapi-app.ts` にある。
-- [ ] OpenAPI document builder の実体が `apps/api/src/openapi-document.ts` にある。
-- [ ] Zod schema catalog の実体が `apps/api/src/zod-openapi-schemas.ts` にある。
-- [ ] 既存 `.js` files は TypeScript source への互換 wrapper になっている。
-- [ ] OpenAPI/source gate が `.ts` source of record を検査する。
-- [ ] 公開 API 38 route と OpenAPI operation count が維持される。
-- [ ] 既存 contract / integration / unit tests が pass する。
-- [ ] 実 Lambda / DSQL / Cognito 接続や実 `tsc` compilation は実施済み扱いにしない。
+- [x] Hono app factory の実体が `apps/api/src/hono-openapi-app.ts` にある。
+- [x] OpenAPI document builder の実体が `apps/api/src/openapi-document.ts` にある。
+- [x] Zod schema catalog の実体が `apps/api/src/zod-openapi-schemas.ts` にある。
+- [x] 既存 `.js` files は既存 Node local tools/tests の runtime mirror として互換を維持している。
+- [x] OpenAPI/source gate が `.ts` source of record を検査する。
+- [x] 公開 API 38 route と OpenAPI operation count が維持される。
+- [x] 既存 contract / integration / unit tests が pass する。
+- [x] 実 Lambda / DSQL / Cognito 接続や実 `tsc` compilation は実施済み扱いにしない。
+
+## 完了時確認
+
+- PR: https://github.com/tsuji-tomonori/saphnexa/pull/3
+- 受け入れ条件コメント: https://github.com/tsuji-tomonori/saphnexa/pull/3#issuecomment-4569341104
+- セルフレビューコメント: https://github.com/tsuji-tomonori/saphnexa/pull/3#issuecomment-4569342693
+- 作業レポート: `reports/working/20260529-0911-api-ts-source-of-record.md`
 
 ## 検証計画
 
