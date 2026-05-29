@@ -345,8 +345,27 @@ for (const middleware of ["errorMiddleware", "requestLogMiddleware", "originMidd
 
 const apiRepositorySource = readText("apps/api/src/repositories/dsql/apiRepository.ts");
 assert(apiRepositorySource.includes("export interface DsqlApiRepository"), "API must define DSQL repository boundary");
+assert(apiRepositorySource.includes("export interface DsqlQueryExecutor"), "API must define DSQL query executor boundary");
+assert(apiRepositorySource.includes("createDsqlApiRepository"), "API must expose DSQL repository factory");
+assert(apiRepositorySource.includes("DSQL_EXECUTOR_NOT_BOUND"), "API DSQL repository must distinguish missing executor");
+assert(apiRepositorySource.includes("DSQL_OPERATION_NOT_MAPPED"), "API DSQL repository must distinguish unmapped operations");
+for (const token of [
+  "getMe",
+  "listChatSessions",
+  "listMessageEvents",
+  "listPublishedArtifacts",
+  "FROM users",
+  "FROM chat_sessions",
+  "FROM chat_message_events",
+  "FROM published_artifacts",
+  "JOIN chat_participants",
+  "u.role = 'admin'"
+]) {
+  assert(apiRepositorySource.includes(token), `API DSQL repository source missing ${token}`);
+}
 const apiDispatchServiceSource = readText("apps/api/src/services/apiDispatchService.ts");
 assert(apiDispatchServiceSource.includes("createApiDispatchServiceFromEnvironment"), "API must expose environment-based dispatch service factory");
+assert(apiDispatchServiceSource.includes("createDsqlApiRepository"), "API dispatch service must use DSQL repository factory in dsql mode");
 
 const ragAgentSource = readText("apps/agent/src/agent/ragAgent.ts");
 const agentCoreAppSource = readText("apps/agent/src/app.ts");
