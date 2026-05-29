@@ -100,6 +100,7 @@ git diff --check
 
 - 公開 API 38 件と Tools API 6 件の contract metadata。
 - API route、Tools API、model catalog、required DB tables の TypeScript source が既存 JS runtime mirror と件数・主要 ID で同期していること。
+- Tools API 6 件が `toolContracts` の operationId / path に沿った Zod request/response schema を持ち、invalid request は 400、handler response schema drift は 500 として分離されること。
 - `@saphnexa/api-client` が API contract 由来の全 38 public route helper と viewer path template を TypeScript source として持ち、Web の主要 fetch が `/api/*` typed route helper を使うこと。
 - `@saphnexa/api-client` が API contract / OpenAPI document 由来の generated operation type map を持ち、method、viewer path、internal path、params、query、request body、success response、error response、主要 outer fields、代表的な nested object / array item fields を drift check で同期確認すること。
 - Web の主要 API 呼び出しが `apiGetOperation` / `apiPostOperation` を使い、手書き response generic や配列要素 cast ではなく generated operation response 型から受け取ること。
@@ -111,7 +112,7 @@ git diff --check
 - Hono/Zod/OpenAPI 実装 entrypoint が 38 route と `/openapi.json` を route contract から生成し、CSRF/role/Zod validation metadata と主要 success response の runtime validation 境界を保持すること。
 - API が `hono/aws-lambda` handler entrypoint、request log / origin / error / session / CSRF middleware 境界、dispatch service、DSQL repository interface、operation-level SQL plan、DSQL query executor interface を TypeScript source として持つこと。
 - API の Hono app factory、OpenAPI document builder、Zod schema catalog が TypeScript source of record を持ち、主要 success response の concrete Zod schema と既存 Node local tools 用の `.js` runtime mirror が同期していること。
-- `apps/api`、`apps/tools-api`、`apps/agent` が TypeScript entry を持ち、AgentCore Runtime 互換の `/ping` / `/invocations` contract、invocation input/output validation、runtime failure containment を source-level で確認できること。
+- `apps/api`、`apps/tools-api`、`apps/agent` が TypeScript entry を持ち、AgentCore Runtime 互換の `/ping` / `/invocations` contract、invocation input/output validation、runtime failure containment、Agent から Tools API HTTP endpoint への client boundary を source-level で確認できること。
 - Agent TypeScript runtime が query rewrite、DSQL ACL scope 解決、BM25 / KB retrieve、ACL check、reference expand、evidence pack、context packing、answer generation、citation binding の責務境界を持ち、evidence 不足時は回答生成に進まず refusal とすること。
 - `apps/web` が React + Vite + TypeScript package として成立し、TanStack Query hook、assistant-ui runtime adapter 境界、Atomic Design UI package を通して chat/admin source gate を満たすこと。Chat UI は `Sidebar` / `MessageThread` organism を通して navigation と event thread を表示すること。
 - `npm run web:build` が Vite production build を実行し、Chat/Admin browser entrypoint を bundle できること。
@@ -138,7 +139,7 @@ git diff --check
 - retrieval、generation、worker notify の failure injection で failed 状態、error event、retryable が残ること。
 - local RAG golden dataset で品質 metrics と参照展開が基準を満たすこと。
 - prompt injection attack 20件で policy violation と tool invocation が発生しないこと。
-- Bedrock KB / S3 Vectors / AgentCore Runtime / AgentCore Gateway Target が Tools API、ACL precheck、S3 Vectors metadata、DSQL endpoint と source-level で接続されていること。
+- Bedrock KB / S3 Vectors / AgentCore Runtime / AgentCore Gateway Target が Tools API、ACL precheck、S3 Vectors metadata、DSQL endpoint と source-level で接続されていること。実 AgentCore Gateway 認可、実 Bedrock KB Retrieve、実 DSQL ACL query、実 HTTP logs による結合確認は AWS dev/UAT 検証で別途実施する。
 - local RAG timing smoke で初回通知と最終回答の p95 が基準を満たすこと。
 - Flyway versioned SQL migration の命名、schema_migrations、required tables、checksum、自動 migration 不採用。
 - local DB-like store の主要ドメイン整合性と chat event append-only invariant。

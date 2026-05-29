@@ -370,6 +370,7 @@ assert(apiDispatchServiceSource.includes("createDsqlApiRepository"), "API dispat
 const ragAgentSource = readText("apps/agent/src/agent/ragAgent.ts");
 const agentCoreAppSource = readText("apps/agent/src/app.ts");
 const agentCoreHandlerSource = readText("apps/agent/src/runtime/agentCoreHandler.ts");
+const agentToolsClientSource = readText("apps/agent/src/clients/toolsApiClient.ts");
 assert(agentCoreAppSource.includes('app.get("/ping"'), "Agent app must expose /ping");
 assert(agentCoreAppSource.includes('app.post("/invocations"'), "Agent app must expose /invocations");
 assert(agentCoreAppSource.includes("agentCoreHttpStatus(result.status)"), "Agent app must use handler status for invocation responses");
@@ -400,6 +401,23 @@ assert(answerGenerationSource.includes("packedContext.evidence.length === 0"), "
 const citationBindingSource = readText("apps/agent/src/agent/citationBinding.ts");
 assert(citationBindingSource.includes("citationFormat"), "citation binding must use citation formatter");
 assert(citationBindingSource.includes("evidence: input.evidence"), "citation binding must bind citations to evidence");
+
+assert(agentToolsClientSource.includes("createHttpToolsApiClient"), "Agent Tools client must expose HTTP Tools API client");
+assert(agentToolsClientSource.includes("toolPathByOperation"), "Agent Tools client must use contract paths by operation");
+assert(agentToolsClientSource.includes("ToolsApiHttpError"), "Agent Tools client must distinguish HTTP tool failures");
+for (const tool of toolContracts) {
+  assert(agentToolsClientSource.includes(`"${tool.operationId}"`), `Agent Tools client source missing ${tool.operationId}`);
+}
+
+const toolsApiSource = readText("apps/tools-api/src/app.ts");
+assert(toolsApiSource.includes("toolsApiOperationSchemas"), "Tools API must export operation schemas");
+assert(toolsApiSource.includes("TOOL_REQUEST_INVALID"), "Tools API must map invalid requests to explicit 400 errors");
+assert(toolsApiSource.includes("TOOL_RESPONSE_INVALID"), "Tools API must map invalid handler responses to explicit 500 errors");
+for (const tool of toolContracts) {
+  assert(toolsApiSource.includes(tool.requestSchema), `Tools API source missing ${tool.requestSchema}`);
+  assert(toolsApiSource.includes(tool.responseSchema), `Tools API source missing ${tool.responseSchema}`);
+  assert(toolsApiSource.includes(tool.operationId), `Tools API source missing ${tool.operationId}`);
+}
 
 const workerEventPublisherTs = readText("apps/workers/src/event-publisher.ts");
 const workerEventPublisherJs = readText("apps/workers/src/event-publisher.js");

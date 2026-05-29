@@ -2,7 +2,12 @@
   "extends": "../../tsconfig.base.json",
   "compilerOptions": {
     "composite": true,
-    "rootDir": "src"
+    "rootDir": "../.."
   },
-  "include": ["src/**/*.ts", "src/**/*.js"]
+  "include": [
+    "src/**/*.ts",
+    "src/**/*.js",
+    "../../packages/rag-core/src/**/*.ts",
+    "../../packages/tool-contract/src/**/*.ts"
+  ]
 }
