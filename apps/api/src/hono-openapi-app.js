@@ -16,6 +16,8 @@ export function createSaphnexaHonoOpenApiApp({ dispatcher } = {}) {
         return context.json(createErrorResponse("API_DISPATCHER_NOT_BOUND", "Hono API dispatcher is not configured", { operationId: definition.operationId }), 501);
       }
       const result = await dispatchRequest(context, dispatcher, definition);
+      const validationError = validateSuccessResponse(result, schemas.response, definition);
+      if (validationError) return context.json(validationError, 500);
       return result.status === 204 ? context.body(null, 204) : context.json(result.body, result.status);
     });
   }
@@ -69,6 +71,20 @@ async function dispatchRequest(context, dispatcher, definition) {
   const csrf = context.req.header("x-csrf-token");
   if (csrf && input.csrf_token === undefined) input.csrf_token = csrf;
   return dispatcher.request(actorId, definition.operationId, input);
+}
+
+function validateSuccessResponse(result, schema, definition) {
+  if (result.status < 200 || result.status >= 300 || result.status === 204) return null;
+  const parsed = schema.safeParse(result.body);
+  if (parsed.success) return null;
+  return createErrorResponse("RESPONSE_VALIDATION_FAILED", "API response did not match the route Zod schema", {
+    operationId: definition.operationId,
+    issues: parsed.error.issues.map((issue) => ({
+      path: issue.path.join("."),
+      code: issue.code,
+      message: issue.message
+    }))
+  });
 }
 
 function errorResponse() {

@@ -329,6 +329,8 @@ const honoOpenApiSource = readText("apps/api/src/hono-openapi-app.ts");
 assert(honoOpenApiSource.includes("interface ApiDispatcher"), "API Hono source must type dispatcher boundary");
 assert(honoOpenApiSource.includes("buildRouteZodSchemas"), "API Hono source must use Zod route schemas");
 assert(honoOpenApiSource.includes("buildOpenApiDocument"), "API Hono source must use OpenAPI document builder");
+assert(honoOpenApiSource.includes("validateSuccessResponse"), "API Hono source must validate successful dispatcher responses");
+assert(honoOpenApiSource.includes("RESPONSE_VALIDATION_FAILED"), "API Hono source must map response validation failures to standard errors");
 for (const middleware of ["errorMiddleware", "requestLogMiddleware", "originMiddleware", "sessionMiddleware", "csrfBoundaryMiddleware"]) {
   assert(honoOpenApiSource.includes(middleware), `API Hono source must attach ${middleware}`);
 }

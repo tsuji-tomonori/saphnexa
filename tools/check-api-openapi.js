@@ -1,4 +1,5 @@
 import { readJson, readText, assert } from "./lib.js";
+import { createSaphnexaHonoOpenApiApp } from "../apps/api/src/hono-openapi-app.js";
 import { buildHonoRouteDefinitions, buildOpenApiDocument } from "../apps/api/src/openapi-document.js";
 import { publicApiRoutes } from "../packages/api-contract/src/routes.js";
 
@@ -25,9 +26,16 @@ assert(appSource.includes("interface ApiDispatcher"), "Hono app TypeScript sourc
 assert(openApiSource.includes("export type HonoRouteDefinition"), "OpenAPI TypeScript source must export HonoRouteDefinition");
 assert(zodSource.includes("@hono/zod-openapi"), "Zod schema catalog must use @hono/zod-openapi");
 assert(zodSource.includes("buildRouteZodSchemas"), "Zod schema catalog must export route schemas");
+assert(zodSource.includes("function responseSchema"), "Zod schema catalog must define concrete success response schemas");
+assert(zodSource.includes("listMessageEvents: z.object({ events: z.array(messageEventSchema()) })"), "Zod schema catalog must validate message event response items");
+assert(zodSource.includes("listPublishedArtifacts: z.object({ artifacts: z.array(publishedArtifactSchema()) })"), "Zod schema catalog must validate published artifact response items");
+assert(zodSource.includes("startEvaluationRun: z.object({ evaluation_run: evaluationRunSchema() })"), "Zod schema catalog must validate evaluation run response");
+assert(appSource.includes("validateSuccessResponse"), "Hono app must validate dispatcher success responses at runtime");
+assert(appSource.includes("RESPONSE_VALIDATION_FAILED"), "Hono response validation failures must use a standard error response");
 assert(appWrapperSource.includes("OpenAPIHono"), "Hono JS runtime mirror must keep OpenAPIHono compatibility");
 assert(openApiWrapperSource.includes("buildOpenApiDocument"), "OpenAPI JS runtime mirror must keep existing Node compatibility");
 assert(zodWrapperSource.includes("buildRouteZodSchemas"), "Zod JS runtime mirror must keep existing Node compatibility");
+assert(zodWrapperSource.includes("function responseSchema"), "Zod JS runtime mirror must keep response schema compatibility");
 
 assert(document.openapi === "3.1.0", "OpenAPI version mismatch");
 assert(document.info.title === "Saphnexa Hono API", "OpenAPI title mismatch");
@@ -77,6 +85,20 @@ for (const definition of definitions) {
   assert(!definition.honoPath.includes("{"), `${definition.id} Hono path must use :param syntax`);
   assert(definition.zodSchemaNames.error === "errorResponseSchema", `${definition.id} must map error schema`);
 }
+
+const invalidResponseApp = createSaphnexaHonoOpenApiApp({
+  dispatcher: {
+    request() {
+      return { status: 200, body: { artifacts: [{ artifact_id: 123 }] } };
+    }
+  }
+});
+const invalidResponse = await invalidResponseApp.request("/v1/admin/artifacts", {
+  headers: { "x-saphnexa-actor-id": "admin-1" }
+});
+const invalidResponseBody = await invalidResponse.json();
+assert(invalidResponse.status === 500, "Hono runtime must reject invalid dispatcher success responses");
+assert(invalidResponseBody.error_code === "RESPONSE_VALIDATION_FAILED", "Hono runtime must return response validation error code");
 
 console.log("Hono/Zod/OpenAPI check passed");
 
