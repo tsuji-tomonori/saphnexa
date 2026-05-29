@@ -95,4 +95,4 @@ Chat UI から owner が現在のチャットタイトルを更新し、チャ�
 
 ## 状態
 
-in_progress
+done
