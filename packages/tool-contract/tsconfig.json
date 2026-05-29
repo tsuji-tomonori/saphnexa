@@ -4,5 +4,5 @@
     "composite": true,
     "rootDir": "src"
   },
-  "include": ["src/**/*.ts", "src/**/*.js"]
+  "include": ["src/**/*.ts"]
 }

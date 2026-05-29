@@ -7,6 +7,7 @@
 ## コマンド
 
 ```bash
+npm run typecheck
 npm run test:contract
 npm run api:openapi:check
 npm run test:integration:local
@@ -98,6 +99,7 @@ git diff --check
 
 - 公開 API 38 件と Tools API 6 件の contract metadata。
 - API route、Tools API、model catalog、required DB tables の TypeScript source が既存 JS runtime mirror と件数・主要 ID で同期していること。
+- `npm run typecheck` が source gate と `tsc --noEmit --project tsconfig.typecheck.json` の両方を実行し、API / Agent / Tools API / Web / UI / shared contract の TypeScript source を実コンパイルすること。
 - Hono/Zod/OpenAPI 実装 entrypoint が 38 route と `/openapi.json` を route contract から生成し、CSRF/role/Zod validation metadata を保持すること。
 - API の Hono app factory、OpenAPI document builder、Zod schema catalog が TypeScript source of record を持ち、既存 Node local tools 用の `.js` runtime mirror と同期していること。
 - `apps/api`、`apps/tools-api`、`apps/agent` が TypeScript entry を持ち、AgentCore Runtime 互換の `/ping` / `/invocations` contract を source-level で確認できること。
@@ -178,7 +180,7 @@ git diff --check
 
 - AWS dev/UAT での Cognito、DSQL、S3、CloudFront、AppSync Events、Bedrock KB、S3 Vectors、AgentCore の実接続。
 - Hono runtime の実 Lambda adapter 起動、依存 install、Cognito authorizer、CSRF cookie integration、CloudFront 経由の実 HTTP request。
-- API TypeScript source of record は source gate で検査する。既存 local tools/tests は標準 `node` 実行のため `.js` runtime mirror を使う。依存 install 後の実 `tsc` compilation と `.ts` からの runtime bundle 生成は別途確認する。
+- API TypeScript source of record は source gate と実 `tsc --noEmit` で検査する。既存 local tools/tests は標準 `node` 実行のため `.js` runtime mirror を使う。`.ts` からの runtime bundle 生成は別途確認する。
 - `aws-cdk-lib` / `constructs` install 後の実 `cdk synth`、CDK bootstrap、CDK deploy、CloudFormation change set 実行。
 - CDK deploy、CloudFormation outputs、S3 inventory、CloudWatch logs、CloudFront/S3/Docusaurus/Allure 公開 URL。
 - `aws s3 sync dist/admin/docs/versions/v0.17/ ...` と Allure run別 publish の実行結果。
@@ -187,7 +189,7 @@ git diff --check
 - axe/Playwright の実 DOM accessibility report、Lighthouse CI、本番 bundler の analyzer report、AWS load test。
 - 実ブラウザ操作による chat/admin E2E、CloudFront 経由のロール別導線確認。
 - Bedrock KB、S3 Vectors、AgentCore Runtime、Bedrock Evaluations を使った実 RAG 品質評価。
-- TypeScript framework 境界は local/source gate で確認する。`tsc` 実行、Vite production build、assistant-ui runtime の実ブラウザ streaming 挙動は、依存 install と実 runtime が揃った環境で別途確認する。
+- TypeScript framework 境界は local/source gate と実 `tsc --noEmit` で確認する。Vite production build、assistant-ui runtime の実ブラウザ streaming 挙動は、実 runtime が揃った環境で別途確認する。
 - Shared contract TypeScript source は source gate で確認する。OpenAPI からの自動型生成、DB introspection/codegen、`.ts` source からの runtime artifact 生成は別途確認する。
 - Agent runtime pipeline は source-level の責務境界と local fixture tests で確認する。実 Bedrock Runtime 生成、AgentCore Gateway Target 経由の Tools API 呼び出し、Aurora DSQL ACL query は AWS 接続後に別途確認する。
 - Aurora DSQL への Flyway 実適用、CloudWatch metrics/alarms、S3 lifecycle、DSQL retention settings の実リソース確認。

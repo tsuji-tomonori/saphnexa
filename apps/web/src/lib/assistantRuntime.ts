@@ -1,5 +1,5 @@
 import type { ChatModelAdapter } from "@assistant-ui/react";
-import { apiPost } from "../../../../packages/api-client/src/client";
+import { apiPost } from "@saphnexa/api-client";
 
 export function createSaphnexaAssistantAdapter(csrfToken: string, chatId: string): ChatModelAdapter {
   return {

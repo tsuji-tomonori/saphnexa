@@ -1,4 +1,4 @@
-import { DataTable, Drawer, StatusBadge } from "../../../../../packages/ui/src/components";
+import { DataTable, Drawer, StatusBadge } from "@saphnexa/ui";
 import type { Artifact } from "../../types";
 
 export function ArtifactTable(props: { artifacts: Artifact[] }) {

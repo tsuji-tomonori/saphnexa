@@ -1,5 +1,5 @@
 import { useQuery } from "@tanstack/react-query";
-import { apiGet } from "../../../../packages/api-client/src/client";
+import { apiGet } from "@saphnexa/api-client";
 import type { Artifact } from "../types";
 
 export function useAdminArtifacts() {

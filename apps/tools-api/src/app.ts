@@ -1,6 +1,6 @@
 import { OpenAPIHono, createRoute, z } from "@hono/zod-openapi";
-import { toolContracts } from "../../../packages/tool-contract/src/tools.js";
-import { createLocalTools } from "../../../packages/rag-core/src/fixture-rag.js";
+import { createLocalTools } from "@saphnexa/rag-core";
+import { toolContracts } from "@saphnexa/tool-contract";
 
 export interface ToolsApiOptions {
   store: unknown;
@@ -51,6 +51,10 @@ export function createSaphnexaToolsApiApp(options: ToolsApiOptions) {
         },
         403: {
           description: `${contract.toolName} denied`,
+          content: { "application/json": { schema: ToolError } }
+        },
+        404: {
+          description: `${contract.toolName} handler not found`,
           content: { "application/json": { schema: ToolError } }
         },
         500: {

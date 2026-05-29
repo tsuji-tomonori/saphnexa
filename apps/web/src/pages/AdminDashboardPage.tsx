@@ -1,5 +1,5 @@
 import { QueryClientProvider } from "@tanstack/react-query";
-import { AppShell, Panel } from "../../../../packages/ui/src/components";
+import { AppShell, Panel } from "@saphnexa/ui";
 import { AdminActions } from "../features/admin/AdminActions";
 import { ArtifactTable } from "../features/admin/ArtifactTable";
 import { useAdminArtifacts } from "../hooks/useAdminArtifacts";

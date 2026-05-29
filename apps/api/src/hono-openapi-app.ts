@@ -1,5 +1,5 @@
 import { OpenAPIHono, createRoute } from "@hono/zod-openapi";
-import { createErrorResponse } from "../../../packages/domain/src/index.js";
+import { createErrorResponse } from "@saphnexa/domain";
 import { buildHonoRouteDefinitions, buildOpenApiDocument, type HonoRouteDefinition } from "./openapi-document";
 import { buildRouteZodSchemas, errorResponseSchema } from "./zod-openapi-schemas";
 
@@ -15,9 +15,10 @@ export function createSaphnexaHonoOpenApiApp({ dispatcher }: { dispatcher?: ApiD
 
   for (const definition of buildHonoRouteDefinitions()) {
     const schemas = routeSchemas[definition.operationId];
-    app.openapi(honoRoute(definition, schemas), async (context) => {
+    if (!schemas) throw new Error(`missing zod schemas for ${definition.operationId}`);
+    app.openapi(honoRoute(definition, schemas) as any, async (context: any) => {
       if (!dispatcher) {
-        return context.json(createErrorResponse("API_DISPATCHER_NOT_BOUND", "Hono API dispatcher is not configured", { operationId: definition.operationId }), 501);
+        return context.json(createErrorResponse("API_DISPATCHER_NOT_BOUND", "Hono API dispatcher is not configured", { operationId: definition.operationId }), 500);
       }
       const result = await dispatchRequest(context, dispatcher, definition);
       return result.status === 204 ? context.body(null, 204) : context.json(result.body, result.status as 200);
@@ -28,25 +29,27 @@ export function createSaphnexaHonoOpenApiApp({ dispatcher }: { dispatcher?: ApiD
 }
 
 function honoRoute(definition: HonoRouteDefinition, schemas: ReturnType<typeof buildRouteZodSchemas>[string]) {
+  const request = {
+    params: schemas.params,
+    query: schemas.query,
+    headers: schemas.headers,
+    ...(definition.requestContentTypes.length > 0
+      ? {
+          body: {
+            content: {
+              "application/json": {
+                schema: schemas.body
+              }
+            }
+          }
+        }
+      : {})
+  };
   return createRoute({
     method: definition.method.toLowerCase() as "get" | "post" | "patch" | "delete",
     path: definition.honoPath,
     operationId: definition.operationId,
-    request: {
-      params: schemas.params,
-      query: schemas.query,
-      headers: schemas.headers,
-      body:
-        definition.requestContentTypes.length > 0
-          ? {
-              content: {
-                "application/json": {
-                  schema: schemas.body
-                }
-              }
-            }
-          : undefined
-    },
+    request,
     responses: Object.fromEntries([
       ...definition.successStatuses.map((status) => [
         status,

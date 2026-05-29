@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Button, Dialog, FormField, Input, Panel, StatusBadge } from "../../../../../packages/ui/src/components";
+import { Button, Dialog, FormField, Input, Panel, StatusBadge } from "@saphnexa/ui";
 import { useStartEvaluationRun } from "../../hooks/useStartEvaluationRun";
 
 export function AdminActions(props: { csrfToken: string }) {

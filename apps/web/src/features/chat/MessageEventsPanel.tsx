@@ -1,4 +1,4 @@
-import { Panel } from "../../../../../packages/ui/src/components";
+import { Panel } from "@saphnexa/ui";
 import type { EventRow } from "../../types";
 
 export function MessageEventsPanel(props: { events: EventRow[] }) {

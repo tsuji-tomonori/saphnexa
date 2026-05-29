@@ -1,6 +1,6 @@
 import { useMemo, useState } from "react";
-import { apiPost } from "../../../../packages/api-client/src/client";
-import { AppShell, Drawer } from "../../../../packages/ui/src/components";
+import { apiPost } from "@saphnexa/api-client";
+import { AppShell, Drawer } from "@saphnexa/ui";
 import { ChatSessionNav } from "../features/chat/ChatSessionNav";
 import { MessageComposer } from "../features/chat/MessageComposer";
 import { MessageEventsPanel } from "../features/chat/MessageEventsPanel";

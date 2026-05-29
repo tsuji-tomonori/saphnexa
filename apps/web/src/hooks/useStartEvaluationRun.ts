@@ -1,5 +1,5 @@
 import { useMutation } from "@tanstack/react-query";
-import { apiPost } from "../../../../packages/api-client/src/client";
+import { apiPost } from "@saphnexa/api-client";
 
 export function useStartEvaluationRun(csrfToken: string) {
   return useMutation({

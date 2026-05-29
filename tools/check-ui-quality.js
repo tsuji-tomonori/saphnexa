@@ -8,7 +8,7 @@ let componentCandidates = 0;
 for (const file of files) {
   const body = readText(file);
   if (/export function [A-Z]/.test(body)) componentCandidates += 1;
-  if (body.includes("packages/ui/src/components")) commonUiUsers += 1;
+  if (body.includes("packages/ui/src/components") || body.includes("@saphnexa/ui")) commonUiUsers += 1;
   assert(!/\sstyle=\{/.test(body), `${file} contains inline style prop`);
   assert(!/<button(?![^>]*\stype=)/.test(body), `${file} contains button without explicit type`);
   if (file.includes("ChatPage")) {

@@ -1,4 +1,4 @@
-import { Button, FormField, Panel, Textarea } from "../../../../../packages/ui/src/components";
+import { Button, FormField, Panel, Textarea } from "@saphnexa/ui";
 
 export function MessageComposer(props: {
   question: string;

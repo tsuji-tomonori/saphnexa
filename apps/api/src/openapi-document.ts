@@ -1,4 +1,4 @@
-import { errorResponseSchema, publicApiRoutes } from "../../../packages/api-contract/src/routes.js";
+import { errorResponseSchema, publicApiRoutes } from "@saphnexa/api-contract";
 
 export const openApiVersion = "3.1.0";
 
@@ -51,8 +51,8 @@ export function buildOpenApiDocument() {
 function buildPaths() {
   const paths: Record<string, Record<string, JsonObject>> = {};
   for (const route of publicApiRoutes) {
-    paths[route.internalPath] ||= {};
-    paths[route.internalPath][route.method.toLowerCase()] = operation(route);
+    const pathItem = (paths[route.internalPath] ||= {});
+    pathItem[route.method.toLowerCase()] = operation(route);
   }
   return paths;
 }
@@ -75,7 +75,7 @@ export function buildHonoRouteDefinitions() {
 export type HonoRouteDefinition = ReturnType<typeof buildHonoRouteDefinitions>[number];
 
 function operation(route: ApiRoute) {
-  const parameters = pathParameters(route.internalPath).map((name) => ({
+  const parameters: JsonObject[] = pathParameters(route.internalPath).map((name) => ({
     name,
     in: "path",
     required: true,
