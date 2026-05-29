@@ -175,6 +175,7 @@ for (const token of [
   "participants: { tenant_id: string; chat_id: string; user_id: string;",
   "metrics_json: { retrieval?: { recall_at_10?: number }",
   "items: { tenant_id: string; evaluation_run_id: string; case_id: string; status:",
+  "progress_percent: number",
   "successResponse: { cookie_issued: boolean; expires_in_seconds: number }"
 ]) {
   assert(apiClientOperationTypesTs.includes(token), `API client generated operation types missing field-level token ${token}`);
@@ -549,6 +550,7 @@ for (const token of [
   "updateDocumentAcl",
   "suspendDocument",
   "getIngestionJob",
+  "retryIngestionJob",
   "listLlmModels",
   "listEvaluationDatasets",
   "startEvaluationRun",
@@ -594,6 +596,8 @@ for (const token of [
   "JOIN evaluation_run_items",
   "JOIN ingestion_jobs",
   "JOIN chat_participants",
+  "progress_percent",
+  "10 AS progress_percent",
   "target_viewer",
   "demoted_owner",
   "promoted_owner",

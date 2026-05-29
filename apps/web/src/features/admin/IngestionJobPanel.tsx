@@ -42,6 +42,8 @@ export function IngestionJobPanel(props: { csrfToken: string }) {
         <dl>
           <dt>状態</dt>
           <dd><StatusBadge status={job.status} /></dd>
+          <dt>進捗</dt>
+          <dd>{job.progress_percent}%</dd>
           <dt>文書</dt>
           <dd>{job.document_id}</dd>
           <dt>版</dt>

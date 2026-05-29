@@ -1766,6 +1766,12 @@ const dsqlOperationMappings = {
             j.document_id,
             j.version_id,
             j.status,
+            CASE
+              WHEN j.status IN ('succeeded', 'active') THEN 100
+              WHEN j.status IN ('running', 'streaming') THEN 50
+              WHEN j.status = 'queued' THEN 10
+              ELSE 0
+            END AS progress_percent,
             j.raw_s3_uri,
             j.parsed_s3_prefix,
             j.error_code,
@@ -1783,7 +1789,48 @@ const dsqlOperationMappings = {
       };
     },
     map(rows) {
-      const job = firstRow(rows) as DbRow<"ingestion_jobs">;
+      const job = firstRow(rows) as DbRow<"ingestion_jobs"> & { progress_percent?: number };
+      return { job: { ...job, retryable: job.status === "failed" } };
+    }
+  },
+  retryIngestionJob: {
+    notFoundErrorCode: "DSQL_INGESTION_JOB_NOT_FOUND",
+    plan(request) {
+      return {
+        operationId: "retryIngestionJob",
+        resultTable: "ingestion_jobs",
+        sql: `
+          WITH admin_actor AS (
+            SELECT tenant_id, user_id
+            FROM users
+            WHERE user_id = :actor_id
+              AND role = 'admin'
+              AND status = 'active'
+          )
+          UPDATE ingestion_jobs j
+             SET status = 'queued',
+                 error_code = NULL
+            FROM admin_actor a
+           WHERE j.tenant_id = a.tenant_id
+             AND j.job_id = :job_id
+             AND j.status = 'failed'
+          RETURNING
+            j.tenant_id,
+            j.job_id,
+            j.document_id,
+            j.version_id,
+            j.status,
+            10 AS progress_percent,
+            j.raw_s3_uri,
+            j.parsed_s3_prefix,
+            j.error_code,
+            j.created_at
+        `,
+        params: { actor_id: request.actorId, job_id: request.input.job_id }
+      };
+    },
+    map(rows) {
+      const job = firstRow(rows) as DbRow<"ingestion_jobs"> & { progress_percent?: number };
       return { job: { ...job, retryable: job.status === "failed" } };
     }
   }

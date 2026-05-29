@@ -623,6 +623,7 @@ export function createLocalStore() {
       document_id,
       version_id,
       status: metadataError ? statuses.FAILED : acceptedJobStatus,
+      progress_percent: ingestionProgressPercent(metadataError ? statuses.FAILED : acceptedJobStatus),
       raw_s3_uri,
       parsed_s3_prefix: `s3://saphnexa-local/parsed/${document_id}/${version_id}/`,
       error_code: metadataError?.error_code || null,
@@ -653,7 +654,7 @@ export function createLocalStore() {
 
   function getIngestionJob(actor, job_id) {
     requireAdmin(actor);
-    return state.ingestion_jobs.find((item) => item.tenant_id === actor.tenant_id && item.job_id === job_id);
+    return withIngestionProgress(state.ingestion_jobs.find((item) => item.tenant_id === actor.tenant_id && item.job_id === job_id));
   }
 
   function createDocumentVersion(actor, document_id, input) {
@@ -718,7 +719,7 @@ export function createLocalStore() {
     return {
       ...document,
       versions: state.document_versions.filter((item) => item.tenant_id === actor.tenant_id && item.document_id === document.document_id),
-      ingestion_jobs: state.ingestion_jobs.filter((item) => item.tenant_id === actor.tenant_id && item.document_id === document.document_id),
+      ingestion_jobs: state.ingestion_jobs.filter((item) => item.tenant_id === actor.tenant_id && item.document_id === document.document_id).map((item) => withIngestionProgress(item)),
       acl_entries: state.document_acl_entries.filter((item) => item.tenant_id === actor.tenant_id && item.document_id === document.document_id)
     };
   }
@@ -729,11 +730,23 @@ export function createLocalStore() {
     if (!job) throw forbidden("INGESTION_JOB_NOT_FOUND", "取り込みジョブが存在しない。", 404);
     if (!job.retryable && job.status !== statuses.FAILED) throw forbidden("INGESTION_RETRY_NOT_ALLOWED", "再実行できる状態ではない。");
     job.status = statuses.QUEUED;
+    job.progress_percent = ingestionProgressPercent(statuses.QUEUED);
     job.retryable = false;
     job.error_code = null;
     recordAdminEvent(actor, "admin.ingestion.updated", { job_id, status: statuses.QUEUED });
     recordAuditEvent(actor, "document.ingestion.retried", "admin_operation", job_id, { document_id: job.document_id, version_id: job.version_id });
     return job;
+  }
+
+  function withIngestionProgress(job) {
+    return job ? { ...job, progress_percent: ingestionProgressPercent(job.status) } : job;
+  }
+
+  function ingestionProgressPercent(status) {
+    if (status === statuses.SUCCEEDED || status === statuses.ACTIVE) return 100;
+    if (status === statuses.RUNNING || status === statuses.STREAMING) return 50;
+    if (status === statuses.QUEUED) return 10;
+    return 0;
   }
 
   function issueWsTicket(actor, input = {}) {

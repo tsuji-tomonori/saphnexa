@@ -43,6 +43,7 @@ assert(api.store.state.ingestion_jobs.length === 5, "document registration must 
 for (const job of api.store.state.ingestion_jobs) {
   assert(job.raw_s3_uri.startsWith("s3://saphnexa-local/raw/"), `raw URI missing: ${job.job_id}`);
   assert(job.parsed_s3_prefix.startsWith("s3://saphnexa-local/parsed/"), `parsed prefix missing: ${job.job_id}`);
+  assert(typeof job.progress_percent === "number", `progress percent missing: ${job.job_id}`);
   const version = api.store.state.document_versions.find((item) => item.document_id === job.document_id && item.version_id === job.version_id);
   assert(version?.metadata_json?.document_id === job.document_id, `metadata document_id mismatch: ${job.job_id}`);
 }

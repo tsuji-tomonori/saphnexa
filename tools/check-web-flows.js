@@ -574,6 +574,8 @@ scenario("admin UI source contract", () => {
     "ingestionJobLookupSchema",
     "取り込みジョブ確認フォーム",
     "StatusBadge",
+    "job.progress_percent",
+    "進捗",
     "disabled={!props.csrfToken || !job?.retryable || retry.isPending}",
     "role=\"alert\""
   ]) {
@@ -683,10 +685,21 @@ scenario("admin local API flow", () => {
   const failedJob = api.request("admin-1", "getIngestionJob", { job_id: invalid.body.job_id });
   assert(failedJob.status === 200, "admin ingestion job fetch failed");
   assert(failedJob.body.job.status === "failed" && failedJob.body.job.retryable === true, "failed ingestion job must expose retryable state");
+  assert(failedJob.body.job.progress_percent === 0, "failed ingestion job must expose 0 percent progress");
   assert(api.request("user-owner", "getIngestionJob", { job_id: invalid.body.job_id }).status === 403, "general user must not fetch ingestion jobs");
   assert(api.request("user-owner", "retryIngestionJob", { csrf_token: "csrf-user-owner", job_id: invalid.body.job_id }).status === 403, "general user must not retry ingestion jobs");
   const retried = api.request("admin-1", "retryIngestionJob", { csrf_token: csrf, job_id: invalid.body.job_id });
   assert(retried.status === 202 && retried.body.job.status === "queued", "admin ingestion retry failed");
+  assert(retried.body.job.progress_percent === 10, "retried queued ingestion job must expose 10 percent progress");
+  const completedJob = api.request("admin-1", "createDocument", {
+    csrf_token: csrf,
+    title: "complete flow document",
+    document_id: "doc-flow-complete-progress",
+    version_id: "ver-flow-complete-progress",
+    metadata: { document_id: "doc-flow-complete-progress", version: "ver-flow-complete-progress", acl_scope: "admin", status: "succeeded" }
+  });
+  const fetchedCompletedJob = api.request("admin-1", "getIngestionJob", { job_id: completedJob.body.job_id });
+  assert(fetchedCompletedJob.body.job.progress_percent === 100, "succeeded ingestion job must expose 100 percent progress");
   api.request("admin-1", "createDocument", { csrf_token: csrf, title: "flow document", document_id: "doc-flow", version_id: "ver-flow" });
   const documents = api.request("admin-1", "adminListDocuments");
   assert(documents.body.documents.some((document) => document.document_id === "doc-flow"), "created document missing from admin documents list");

@@ -168,6 +168,7 @@ for (const file of files) {
     assert(body.includes("useForm"), "Admin ingestion job monitor must use React Hook Form");
     assert(body.includes("zodResolver"), "Admin ingestion job monitor must use Zod validation");
     assert(body.includes("retryable"), "Admin ingestion retry must depend on retryable state");
+    assert(body.includes("進捗") && body.includes("job.progress_percent"), "Admin ingestion job monitor must render API progress percentage");
     assert(!body.includes("ing-local"), "Admin ingestion job monitor must not hard-code local job ids");
   }
   if (file.includes("UserImportPanel")) {

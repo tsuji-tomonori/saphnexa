@@ -223,18 +223,35 @@ test("document ingestion validates metadata, retries failures, and is idempotent
   assert.equal(invalid.status, 202);
   const failedJob = api.store.state.ingestion_jobs.find((item) => item.job_id === invalid.body.job_id);
   assert.equal(failedJob.status, "failed");
+  assert.equal(failedJob.progress_percent, 0);
   assert.equal(failedJob.retryable, true);
+  const fetchedFailedJob = api.request("admin-1", "getIngestionJob", { job_id: invalid.body.job_id });
+  assert.equal(fetchedFailedJob.status, 200);
+  assert.equal(fetchedFailedJob.body.job.progress_percent, 0);
+  assert.equal(api.request("user-owner", "getIngestionJob", { job_id: invalid.body.job_id }).status, 403);
+  assert.equal(api.request("user-owner", "retryIngestionJob", { csrf_token: "csrf-user-owner", job_id: invalid.body.job_id }).status, 403);
   assert.equal(api.store.state.admin_events.at(-1).event_name, "admin.ingestion.updated");
 
   const retried = api.request("admin-1", "retryIngestionJob", { csrf_token: adminCsrf, job_id: invalid.body.job_id });
   assert.equal(retried.status, 202);
   assert.equal(retried.body.job.status, "queued");
+  assert.equal(retried.body.job.progress_percent, 10);
 
   const metadata = { document_id: "doc-idempotent", version: "v1", acl_scope: "admin", status: "uploaded" };
   const first = api.request("admin-1", "createDocument", { csrf_token: adminCsrf, title: "idempotent", document_id: "doc-idempotent", version_id: "ver-1", metadata });
   const second = api.request("admin-1", "createDocument", { csrf_token: adminCsrf, title: "idempotent", document_id: "doc-idempotent", version_id: "ver-1", metadata });
   assert.equal(second.body.idempotent, true);
   assert.equal(api.store.state.document_versions.filter((item) => item.document_id === first.body.document_id && item.version_id === first.body.version_id).length, 1);
+
+  const succeeded = api.request("admin-1", "createDocument", {
+    csrf_token: adminCsrf,
+    title: "complete document",
+    document_id: "doc-complete",
+    version_id: "ver-complete",
+    metadata: { document_id: "doc-complete", version: "ver-complete", acl_scope: "admin", status: "succeeded" }
+  });
+  const fetchedSucceededJob = api.request("admin-1", "getIngestionJob", { job_id: succeeded.body.job_id });
+  assert.equal(fetchedSucceededJob.body.job.progress_percent, 100);
 });
 
 test("retrieval policy cannot be relaxed by agent-side code", () => {

@@ -185,6 +185,7 @@ export interface IngestionJob {
   document_id: string;
   version_id: string;
   status: Status;
+  progress_percent: number;
   raw_s3_uri: string;
   parsed_s3_prefix: string;
   error_code: string | null;

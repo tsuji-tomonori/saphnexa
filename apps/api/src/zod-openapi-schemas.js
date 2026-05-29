@@ -315,6 +315,7 @@ function ingestionJobSchema() {
     document_id: z.string(),
     version_id: z.string(),
     status: z.string(),
+    progress_percent: z.number(),
     raw_s3_uri: z.string(),
     parsed_s3_prefix: z.string(),
     error_code: z.string().nullable().optional(),

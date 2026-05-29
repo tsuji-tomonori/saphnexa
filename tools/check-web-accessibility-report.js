@@ -177,6 +177,7 @@ checkFile("IngestionJobPanel", "apps/web/src/features/admin/IngestionJobPanel.ts
   rule("field label", (body) => body.includes("label=\"取り込みジョブID\"")),
   rule("empty status", (body) => body.includes("取り込みジョブを選択してください")),
   rule("pending status", (body) => body.includes("<p role=\"status\">取り込みジョブを確認しています</p>")),
+  rule("progress percentage", (body) => body.includes("進捗") && body.includes("job.progress_percent")),
   rule("retry disabled state", (body) => body.includes("disabled={!props.csrfToken || !job?.retryable || retry.isPending}")),
   rule("error alert", (body) => body.includes("role=\"alert\""))
 ]);

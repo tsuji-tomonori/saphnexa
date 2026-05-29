@@ -442,12 +442,13 @@ function documentAclEntrySchema() {
 }
 
 function ingestionJobSchema() {
-  return objectSchema(["tenant_id", "job_id", "document_id", "version_id", "status", "raw_s3_uri", "parsed_s3_prefix", "retryable"], {
+  return objectSchema(["tenant_id", "job_id", "document_id", "version_id", "status", "progress_percent", "raw_s3_uri", "parsed_s3_prefix", "retryable"], {
     tenant_id: stringSchema(),
     job_id: stringSchema(),
     document_id: stringSchema(),
     version_id: stringSchema(),
     status: statusSchema(),
+    progress_percent: numberSchema(),
     raw_s3_uri: stringSchema(),
     parsed_s3_prefix: stringSchema(),
     error_code: nullableStringSchema(),
