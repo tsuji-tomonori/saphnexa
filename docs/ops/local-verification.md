@@ -131,6 +131,7 @@ git diff --check
 - Chat UI が React Hook Form + Zod validation、events payload 由来の Citation Drawer、AppSync Events / WebSocket client boundary を持ち、未接続時に架空 realtime event を生成しないこと。
 - Chat UI が `listMessages` route helper / generated operation helper を使い、参加中チャットのユーザー質問と assistant 回答を source/local gate で再表示できること。paging cursor、feedback state 復元、引用本文の完全 REST 復元、実ブラウザ E2E は別途確認する。
 - Chat UI が `listChatParticipants` route helper / generated operation helper を使い、参加中チャットの参加者、ロール、共有者、共有日時を source/local gate で確認できること。
+- Chat UI が `updateChatSession` / `deleteChatSession` route helper / generated operation helper を使い、owner によるチャットタイトル更新と論理削除、viewer/outsider の拒否、削除後の一覧・通常取得からの除外を source/local gate で確認できること。chat event table の完全追記 lifecycle、保持期間後の物理削除、実ブラウザ E2E は別途確認する。
 - Chat UI が `addChatParticipant` / `updateChatParticipant` / `removeChatParticipant` route helper / generated operation helper を使い、owner による viewer 共有、viewer 再有効化、共有解除を source/local gate で確認できること。owner 移譲、viewer の owner 昇格、実 AppSync Events fan-out、実ブラウザ E2E は別途確認する。
 - Chat UI が `createFeedback` route helper / generated operation helper を使い、閲覧可能な回答への高評価・低評価・コメント登録を source/local gate で確認できること。フィードバック一覧、取消、実ブラウザ E2E は別途確認する。
 - Chat UI が `listFavorites` / `addFavorite` / `deleteFavorite` route helper / generated operation helper を使い、参加チャットのお気に入り登録、一覧、解除を source/local gate で確認できること。回答単位のお気に入り UI と実ブラウザ E2E は別途確認する。

@@ -23,6 +23,11 @@ checkFile("AssistantRuntimeBoundary", "apps/web/src/features/chat/AssistantRunti
 checkFile("ChatSessionNav", "apps/web/src/features/chat/ChatSessionNav.tsx", [
   rule("labelled navigation", (body) => body.includes("<nav aria-label=\"チャット一覧\">")),
   rule("empty chat status", (body) => body.includes("<p role=\"status\">チャットはありません</p>")),
+  rule("title update form label", (body) => body.includes("aria-label=\"チャットタイトル更新フォーム\"")),
+  rule("title field label", (body) => body.includes("label=\"チャットタイトル\"")),
+  rule("honest lifecycle state", (body) => body.includes("chat event table完全追記、保持期間後物理削除: 未接続")),
+  rule("title action disabled state", (body) => body.includes("disabled={!props.csrfToken || !props.selectedChatId || props.isMutating}")),
+  rule("delete action disabled state", (body) => body.includes("disabled={!props.csrfToken || chat.chat_id !== props.selectedChatId || props.isMutating}")),
   rule("button type", (body) => !/<button(?![^>]*\stype=)/.test(body))
 ]);
 checkFile("ChatParticipantsPanel", "apps/web/src/features/chat/ChatParticipantsPanel.tsx", [

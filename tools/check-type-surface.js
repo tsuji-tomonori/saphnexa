@@ -232,6 +232,8 @@ for (const file of listFiles(["apps/web/src"], (path) => path.endsWith(".ts") ||
 for (const token of [
   'apiGetOperation("getMe"',
   'apiGetOperation("listChatSessions"',
+  'apiPatchOperation("updateChatSession"',
+  'apiDeleteOperation("deleteChatSession"',
   'apiGetOperation("listChatParticipants"',
   'apiGetOperation("listMessages"',
   'apiPostOperation("addChatParticipant"',
@@ -427,6 +429,8 @@ const storeJs = readText("packages/domain/src/store.js");
 for (const token of [
   "createLocalStore",
   "submitQuestion",
+  "updateChat",
+  "deleteChat",
   "issueWsTicket",
   "consumeWsTicket",
   "listParticipants",
@@ -494,6 +498,8 @@ assert(apiRepositorySource.includes("DSQL_OPERATION_NOT_MAPPED"), "API DSQL repo
 for (const token of [
   "getMe",
   "listChatSessions",
+  "updateChatSession",
+  "deleteChatSession",
   "listChatParticipants",
   "addChatParticipant",
   "updateChatParticipant",

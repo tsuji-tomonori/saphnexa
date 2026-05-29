@@ -29,6 +29,11 @@ export function createLocalApi() {
             return ok({ chats: store.listChats(actor) });
           case "getChatSession":
             return ok({ chat: store.getChat(actor, input.chat_id) });
+          case "updateChatSession":
+            return ok({ chat: store.updateChat(actor, input.chat_id, input) });
+          case "deleteChatSession":
+            store.deleteChat(actor, input.chat_id);
+            return noContent();
           case "listChatParticipants":
             return ok({ participants: store.listParticipants(actor, input.chat_id) });
           case "listMessages":

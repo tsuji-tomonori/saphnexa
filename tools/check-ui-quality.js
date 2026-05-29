@@ -14,6 +14,8 @@ for (const file of files) {
   if (file.includes("ChatPage")) {
     assert(body.includes("className=\"sx-chat-shell\""), "ChatPage must expose chat shell landmark through AppShell");
     assert(body.includes("useChatSessions"), "ChatPage must use TanStack Query chat hook");
+    assert(body.includes("useUpdateChatSession"), "ChatPage must use chat session update mutation hook");
+    assert(body.includes("useDeleteChatSession"), "ChatPage must use chat session delete mutation hook");
     assert(body.includes("useChatParticipants"), "ChatPage must use TanStack Query participants hook");
     assert(body.includes("useAddChatParticipant"), "ChatPage must use participant share mutation hook");
     assert(body.includes("useUpdateChatParticipant"), "ChatPage must use participant update mutation hook");
@@ -37,6 +39,14 @@ for (const file of files) {
   if (file.includes("ChatSessionNav")) {
     assert(body.includes("<nav") && body.includes("aria-label=\"チャット一覧\""), "ChatApp must expose labelled chat navigation");
     assert(body.includes("<p role=\"status\">チャットはありません</p>"), "ChatApp must render an honest empty chat state");
+    assert(body.includes("useForm") && body.includes("zodResolver") && body.includes("chatTitleSchema"), "Chat session title form must use React Hook Form + Zod validation");
+    assert(body.includes("aria-label=\"チャットタイトル更新フォーム\""), "Chat session title form must expose a labelled form");
+    assert(body.includes("label=\"チャットタイトル\""), "Chat session title form must expose a field label");
+    assert(body.includes("タイトル更新"), "Chat session nav must expose title update action");
+    assert(body.includes("削除"), "Chat session nav must expose delete action");
+    assert(body.includes("chat event table完全追記、保持期間後物理削除: 未接続"), "Chat session nav must not imply append-only event lifecycle or retention deletion is complete");
+    assert(body.includes("disabled={!props.csrfToken || !props.selectedChatId || props.isMutating}"), "Chat session update action must require token and selected chat");
+    assert(body.includes("disabled={!props.csrfToken || chat.chat_id !== props.selectedChatId || props.isMutating}"), "Chat session delete action must require token and selected chat");
   }
   if (file.includes("ChatParticipantsPanel")) {
     assert(body.includes("useForm") && body.includes("zodResolver") && body.includes("shareParticipantSchema"), "Chat participants share form must use React Hook Form + Zod validation");

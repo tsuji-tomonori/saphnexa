@@ -52,6 +52,8 @@ export function createLocalStore() {
     state,
     getCurrentUser,
     createChat,
+    updateChat,
+    deleteChat,
     addParticipant,
     updateParticipant,
     removeParticipant,
@@ -114,6 +116,31 @@ export function createLocalStore() {
       removed_at: null
     });
     return chat;
+  }
+
+  function updateChat(actor, chat_id, input = {}) {
+    requireOwner(actor, chat_id);
+    const chat = activeChat(actor, chat_id);
+    const title = typeof input.title === "string" ? input.title.trim() : "";
+    if (title) {
+      chat.title = title;
+    }
+    chat.updated_at = now();
+    return chat;
+  }
+
+  function deleteChat(actor, chat_id) {
+    requireOwner(actor, chat_id);
+    const chat = activeChat(actor, chat_id);
+    const deletedAt = now();
+    chat.status = statuses.DELETED;
+    chat.deleted_at = deletedAt;
+    chat.updated_at = deletedAt;
+    for (const row of state.chat_participants.filter((item) => item.tenant_id === actor.tenant_id && item.chat_id === chat_id && item.status === statuses.ACTIVE)) {
+      row.status = statuses.REMOVED;
+      row.removed_at = deletedAt;
+    }
+    return true;
   }
 
   function addParticipant(actor, chat_id, input) {
@@ -191,7 +218,8 @@ export function createLocalStore() {
 
   function getChat(actor, chat_id) {
     requireReader(actor, chat_id);
-    const chat = state.chat_sessions.find((item) => item.chat_id === chat_id && item.status !== statuses.DELETED);
+    const chat = state.chat_sessions.find((item) => item.tenant_id === actor.tenant_id && item.chat_id === chat_id && item.status !== statuses.DELETED);
+    if (!chat) throw forbidden("CHAT_NOT_FOUND", "チャットが存在しない。", 404);
     return {
       ...chat,
       participants: state.chat_participants.filter((item) => item.chat_id === chat_id && item.status === statuses.ACTIVE),
@@ -691,12 +719,19 @@ export function createLocalStore() {
 
   function requireReader(actor, chat_id) {
     requireActiveUser(actor);
+    activeChat(actor, chat_id);
     if (!canReadChat(participant(chat_id, actor.user_id))) throw forbidden("CHAT_READ_FORBIDDEN", "チャット参加者のみ参照できる。");
   }
 
   function requireOwner(actor, chat_id) {
     requireActiveUser(actor);
     if (!canWriteChat(participant(chat_id, actor.user_id))) throw forbidden("CHAT_WRITE_FORBIDDEN", "owner のみ操作できる。");
+  }
+
+  function activeChat(actor, chat_id) {
+    const chat = state.chat_sessions.find((item) => item.tenant_id === actor.tenant_id && item.chat_id === chat_id && item.status !== statuses.DELETED);
+    if (!chat) throw forbidden("CHAT_NOT_FOUND", "チャットが存在しない。", 404);
+    return chat;
   }
 
   function nextId(prefix) {

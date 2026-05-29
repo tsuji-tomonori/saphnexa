@@ -10,7 +10,7 @@ import { FavoritePanel } from "../features/chat/FavoritePanel";
 import { MessageComposer } from "../features/chat/MessageComposer";
 import { MessageEventsPanel } from "../features/chat/MessageEventsPanel";
 import { MessageHistoryPanel } from "../features/chat/MessageHistoryPanel";
-import { useChatSessions } from "../hooks/useChatSessions";
+import { useChatSessions, useDeleteChatSession, useUpdateChatSession } from "../hooks/useChatSessions";
 import { useAddFavorite, useDeleteFavorite, useFavorites } from "../hooks/useFavorites";
 import { useCreateFeedback } from "../hooks/useCreateFeedback";
 import { useMe } from "../hooks/useMe";
@@ -28,6 +28,8 @@ export function ChatPage() {
   const addFavorite = useAddFavorite(csrfToken);
   const deleteFavorite = useDeleteFavorite(csrfToken);
   const createFeedback = useCreateFeedback(csrfToken);
+  const updateChatSession = useUpdateChatSession(csrfToken);
+  const deleteChatSession = useDeleteChatSession(csrfToken);
   const addChatParticipant = useAddChatParticipant(csrfToken);
   const updateChatParticipant = useUpdateChatParticipant(csrfToken);
   const removeChatParticipant = useRemoveChatParticipant(csrfToken);
@@ -63,7 +65,22 @@ export function ChatPage() {
   return (
     <AppShell
       className="sx-chat-shell"
-      navigation={<ChatSessionNav chats={chats} selectedChatId={activeChatId} onSelect={setSelectedChatId} />}
+      navigation={
+        <ChatSessionNav
+          chats={chats}
+          selectedChatId={activeChatId}
+          csrfToken={csrfToken}
+          isMutating={updateChatSession.isPending || deleteChatSession.isPending}
+          onSelect={setSelectedChatId}
+          onUpdate={(input) => updateChatSession.mutateAsync(input)}
+          onDelete={(chatId) => {
+            deleteChatSession.mutate({ chat_id: chatId });
+            if (activeChatId === chatId) {
+              setSelectedChatId(null);
+            }
+          }}
+        />
+      }
     >
       <AssistantRuntimeBoundary csrfToken={csrfToken} chatId={activeChatId}>
         <MessageComposer csrfToken={csrfToken} onSubmit={submit} />

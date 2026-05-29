@@ -160,6 +160,86 @@ const dsqlOperationMappings = {
       return { chats: rows };
     }
   },
+  updateChatSession: {
+    notFoundErrorCode: "DSQL_CHAT_OWNER_OR_SESSION_NOT_FOUND",
+    plan(request) {
+      return {
+        operationId: "updateChatSession",
+        resultTable: "chat_sessions",
+        sql: `
+          WITH owner_participant AS (
+            SELECT tenant_id, chat_id
+            FROM chat_participants
+            WHERE user_id = :actor_id
+              AND chat_id = :chat_id
+              AND participant_role = 'owner'
+              AND status = 'active'
+          )
+          UPDATE chat_sessions c
+             SET title = COALESCE(NULLIF(:title, ''), c.title),
+                 updated_at = now()
+            FROM owner_participant op
+           WHERE c.tenant_id = op.tenant_id
+             AND c.chat_id = op.chat_id
+             AND c.status <> 'deleted'
+          RETURNING c.*
+        `,
+        params: {
+          actor_id: request.actorId,
+          chat_id: request.input.chat_id,
+          title: request.input.title ?? ""
+        }
+      };
+    },
+    map(rows) {
+      return { chat: firstRow(rows) };
+    }
+  },
+  deleteChatSession: {
+    notFoundErrorCode: "DSQL_CHAT_OWNER_OR_SESSION_NOT_FOUND",
+    plan(request) {
+      return {
+        operationId: "deleteChatSession",
+        resultTable: "chat_sessions",
+        sql: `
+          WITH owner_participant AS (
+            SELECT tenant_id, chat_id
+            FROM chat_participants
+            WHERE user_id = :actor_id
+              AND chat_id = :chat_id
+              AND participant_role = 'owner'
+              AND status = 'active'
+          ),
+          removed_participants AS (
+            UPDATE chat_participants p
+               SET status = 'removed',
+                   removed_at = now()
+              FROM owner_participant op
+             WHERE p.tenant_id = op.tenant_id
+               AND p.chat_id = op.chat_id
+               AND p.status = 'active'
+             RETURNING p.chat_id
+          )
+          UPDATE chat_sessions c
+             SET status = 'deleted',
+                 deleted_at = now(),
+                 updated_at = now()
+            FROM owner_participant op
+           WHERE c.tenant_id = op.tenant_id
+             AND c.chat_id = op.chat_id
+             AND c.status <> 'deleted'
+          RETURNING c.*
+        `,
+        params: {
+          actor_id: request.actorId,
+          chat_id: request.input.chat_id
+        }
+      };
+    },
+    map() {
+      return undefined;
+    }
+  },
   listChatParticipants: {
     plan(request) {
       return {

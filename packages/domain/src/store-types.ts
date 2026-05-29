@@ -287,6 +287,8 @@ export interface LocalStore {
   state: LocalDomainState;
   getCurrentUser(user_id: string): LocalUser | undefined;
   createChat(actor: LocalActor, input?: { title?: string }): ChatSession;
+  updateChat(actor: LocalActor, chat_id: string, input?: { title?: string }): ChatSession;
+  deleteChat(actor: LocalActor, chat_id: string): boolean;
   addParticipant(actor: LocalActor, chat_id: string, input: { user_id: string }): ChatParticipant;
   updateParticipant(actor: LocalActor, chat_id: string, user_id: string, input?: { participant_role?: ParticipantRole }): ChatParticipant;
   removeParticipant(actor: LocalActor, chat_id: string, user_id: string): boolean;

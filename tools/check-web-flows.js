@@ -77,6 +77,8 @@ scenario("chat UI source contract", () => {
   }
   for (const token of [
     "useChatSessions",
+    "useUpdateChatSession",
+    "useDeleteChatSession",
     "useChatParticipants",
     "useChatMessages",
     "useAddChatParticipant",
@@ -105,6 +107,11 @@ scenario("chat UI source contract", () => {
   assert(meHookSource.includes("apiRoutes.getMe()"), "useMe hook must use getMe route helper");
   assert(apiClientSource.includes("/api/me"), "API client getMe helper must call /api/me");
   assert(chatSessionsHookSource.includes("apiRoutes.listChatSessions()"), "useChatSessions hook must use listChatSessions route helper");
+  assert(chatSessionsHookSource.includes("apiRoutes.updateChatSession(input.chat_id)"), "useUpdateChatSession hook must use updateChatSession route helper");
+  assert(chatSessionsHookSource.includes("apiPatchOperation(\"updateChatSession\""), "useUpdateChatSession hook must use generated updateChatSession helper");
+  assert(chatSessionsHookSource.includes("apiRoutes.deleteChatSession(input.chat_id)"), "useDeleteChatSession hook must use deleteChatSession route helper");
+  assert(chatSessionsHookSource.includes("apiDeleteOperation(\"deleteChatSession\""), "useDeleteChatSession hook must use generated deleteChatSession helper");
+  assert(chatSessionsHookSource.includes("invalidateQueries({ queryKey: [\"chat-sessions\"] })"), "chat session mutations must refresh chat sessions query");
   assert(apiClientSource.includes("/api/chat-sessions"), "API client chat sessions helper must call /api/chat-sessions");
   assert(chatParticipantsHookSource.includes("apiRoutes.listChatParticipants(chatId ?? \"\")"), "useChatParticipants hook must use listChatParticipants route helper");
   assert(chatParticipantsHookSource.includes("apiGetOperation(\"listChatParticipants\""), "useChatParticipants hook must use generated listChatParticipants helper");
@@ -136,7 +143,15 @@ scenario("chat UI source contract", () => {
     "Sidebar",
     "aria-label=\"チャット一覧\"",
     "role=\"status\"",
-    "チャットはありません"
+    "チャットはありません",
+    "aria-label=\"チャットタイトル更新フォーム\"",
+    "chatTitleSchema",
+    "チャットタイトル",
+    "タイトル更新",
+    "削除",
+    "chat event table完全追記、保持期間後物理削除: 未接続",
+    "disabled={!props.csrfToken || !props.selectedChatId || props.isMutating}",
+    "disabled={!props.csrfToken || chat.chat_id !== props.selectedChatId || props.isMutating}"
   ]) {
     assert(chatNavSource.includes(token), `ChatSessionNav missing token: ${token}`);
   }
@@ -249,6 +264,9 @@ scenario("chat local API flow", () => {
   const csrf = api.request("user-owner", "getMe").body.csrf_token;
   const chat = api.request("user-owner", "createChatSession", { csrf_token: csrf, title: "flow chat" });
   assert(chat.status === 201, "chat creation failed");
+  const renamed = api.request("user-owner", "updateChatSession", { csrf_token: csrf, chat_id: chat.body.chat.chat_id, title: "renamed flow chat" });
+  assert(renamed.status === 200 && renamed.body.chat.title === "renamed flow chat", "owner must update chat title");
+  assert(api.request("user-outsider", "updateChatSession", { csrf_token: "csrf-user-outsider", chat_id: chat.body.chat.chat_id, title: "outsider title" }).status === 403, "outsider must not update unreadable chat");
   const submit = api.request("user-owner", "submitQuestion", {
     csrf_token: csrf,
     chat_id: chat.body.chat.chat_id,
@@ -267,6 +285,7 @@ scenario("chat local API flow", () => {
   assert(api.request("user-outsider", "listChatParticipants", { chat_id: chat.body.chat.chat_id }).status === 403, "outsider must not list participants for unreadable chat");
   const shared = api.request("user-owner", "addChatParticipant", { csrf_token: csrf, chat_id: chat.body.chat.chat_id, user_id: "user-viewer" });
   assert(shared.status === 201 && shared.body.participant.participant_role === "viewer", "owner must share chat with viewer");
+  assert(api.request("user-viewer", "updateChatSession", { csrf_token: "csrf-user-viewer", chat_id: chat.body.chat.chat_id, title: "viewer title" }).status === 403, "viewer must not update chat title");
   assert(api.request("user-viewer", "addChatParticipant", { csrf_token: "csrf-user-viewer", chat_id: chat.body.chat.chat_id, user_id: "user-outsider" }).status === 403, "viewer must not share chat");
   assert(api.request("user-outsider", "addChatParticipant", { csrf_token: "csrf-user-outsider", chat_id: chat.body.chat.chat_id, user_id: "user-viewer" }).status === 403, "outsider must not share unreadable chat");
   const removedParticipant = api.request("user-owner", "removeChatParticipant", { csrf_token: csrf, chat_id: chat.body.chat.chat_id, user_id: "user-viewer" });
@@ -308,6 +327,17 @@ scenario("chat local API flow", () => {
   assert(deleted.status === 204, "favorite deletion failed");
   const favoritesAfterDelete = api.request("user-owner", "listFavorites");
   assert(!favoritesAfterDelete.body.favorites.some((item) => item.favorite_id === favorite.body.favorite.favorite_id), "deleted favorite leaked into list");
+  const deleteTarget = api.request("user-owner", "createChatSession", { csrf_token: csrf, title: "delete target" });
+  const deleteTargetId = deleteTarget.body.chat.chat_id;
+  const deleteShare = api.request("user-owner", "addChatParticipant", { csrf_token: csrf, chat_id: deleteTargetId, user_id: "user-viewer" });
+  assert(deleteShare.status === 201, "delete target share failed");
+  assert(api.request("user-viewer", "deleteChatSession", { csrf_token: "csrf-user-viewer", chat_id: deleteTargetId }).status === 403, "viewer must not delete chat");
+  assert(api.request("user-outsider", "deleteChatSession", { csrf_token: "csrf-user-outsider", chat_id: deleteTargetId }).status === 403, "outsider must not delete unreadable chat");
+  const deletedChat = api.request("user-owner", "deleteChatSession", { csrf_token: csrf, chat_id: deleteTargetId });
+  assert(deletedChat.status === 204, "owner must delete chat");
+  const chatsAfterDelete = api.request("user-owner", "listChatSessions");
+  assert(!chatsAfterDelete.body.chats.some((item) => item.chat_id === deleteTargetId), "deleted chat leaked into list");
+  assert(api.request("user-owner", "getChatSession", { chat_id: deleteTargetId }).status === 404, "deleted chat must not be readable through normal get");
 });
 
 scenario("admin UI source contract", () => {
