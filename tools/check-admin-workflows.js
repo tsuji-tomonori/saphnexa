@@ -102,7 +102,7 @@ assert(api.request("admin-1", "issueArtifactAccessCookie", { csrf_token: adminCs
 for (const eventName of ["admin.user_import.updated", "admin.ingestion.updated", "admin.evaluation.updated", "admin.artifact.published"]) {
   assert(api.store.state.admin_events.some((event) => event.event_name === eventName), `admin event missing: ${eventName}`);
 }
-for (const category of ["admin_operation", "document_publish", "document_acl", "artifact_access", "chat_share", "tools_execution", "evaluation"]) {
+for (const category of ["admin_operation", "document_publish", "document_acl", "artifact_access", "chat_session", "chat_share", "tools_execution", "evaluation"]) {
   assert(api.store.state.audit_events.some((event) => event.category === category), `audit category missing: ${category}`);
 }
 

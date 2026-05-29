@@ -205,11 +205,31 @@ const dsqlOperationMappings = {
               NULL
             FROM created_chat c
             RETURNING chat_id
+          ),
+          audit_event AS (
+            INSERT INTO audit_events (
+              tenant_id, audit_event_id, actor_user_id, event_name, category, resource_id, payload_json, created_at
+            )
+            SELECT
+              c.tenant_id,
+              gen_random_uuid(),
+              c.created_by_user_id,
+              'chat.session.created',
+              'chat_session',
+              c.chat_id::varchar,
+              json_build_object('chat_id', c.chat_id, 'title', c.title, 'participant_role', 'owner'),
+              now()
+            FROM created_chat c
+            JOIN owner_participant op
+              ON op.chat_id = c.chat_id
+            RETURNING resource_id
           )
           SELECT c.*
           FROM created_chat c
           JOIN owner_participant op
             ON op.chat_id = c.chat_id
+          JOIN audit_event ae
+            ON ae.resource_id = c.chat_id::varchar
         `,
         params: {
           actor_id: request.actorId,
@@ -298,15 +318,37 @@ const dsqlOperationMappings = {
               AND chat_id = :chat_id
               AND participant_role = 'owner'
               AND status = 'active'
+          ),
+          updated_chat AS (
+            UPDATE chat_sessions c
+               SET title = COALESCE(NULLIF(:title, ''), c.title),
+                   updated_at = now()
+              FROM owner_participant op
+             WHERE c.tenant_id = op.tenant_id
+               AND c.chat_id = op.chat_id
+               AND c.status <> 'deleted'
+            RETURNING c.*
+          ),
+          audit_event AS (
+            INSERT INTO audit_events (
+              tenant_id, audit_event_id, actor_user_id, event_name, category, resource_id, payload_json, created_at
+            )
+            SELECT
+              uc.tenant_id,
+              gen_random_uuid(),
+              :actor_id,
+              'chat.session.title_updated',
+              'chat_session',
+              uc.chat_id::varchar,
+              json_build_object('chat_id', uc.chat_id, 'title', uc.title),
+              now()
+            FROM updated_chat uc
+            RETURNING resource_id
           )
-          UPDATE chat_sessions c
-             SET title = COALESCE(NULLIF(:title, ''), c.title),
-                 updated_at = now()
-            FROM owner_participant op
-           WHERE c.tenant_id = op.tenant_id
-             AND c.chat_id = op.chat_id
-             AND c.status <> 'deleted'
-          RETURNING c.*
+          SELECT uc.*
+          FROM updated_chat uc
+          JOIN audit_event ae
+            ON ae.resource_id = uc.chat_id::varchar
         `,
         params: {
           actor_id: request.actorId,
@@ -343,16 +385,43 @@ const dsqlOperationMappings = {
                AND p.chat_id = op.chat_id
                AND p.status = 'active'
              RETURNING p.chat_id
+          ),
+          deleted_chat AS (
+            UPDATE chat_sessions c
+               SET status = 'deleted',
+                   deleted_at = now(),
+                   updated_at = now()
+              FROM owner_participant op
+             WHERE c.tenant_id = op.tenant_id
+               AND c.chat_id = op.chat_id
+               AND c.status <> 'deleted'
+            RETURNING c.*
+          ),
+          audit_event AS (
+            INSERT INTO audit_events (
+              tenant_id, audit_event_id, actor_user_id, event_name, category, resource_id, payload_json, created_at
+            )
+            SELECT
+              dc.tenant_id,
+              gen_random_uuid(),
+              :actor_id,
+              'chat.session.deleted',
+              'chat_session',
+              dc.chat_id::varchar,
+              json_build_object(
+                'chat_id', dc.chat_id,
+                'deleted_at', dc.deleted_at,
+                'physical_delete', false,
+                'removed_participants', (SELECT count(*) FROM removed_participants)
+              ),
+              now()
+            FROM deleted_chat dc
+            RETURNING resource_id
           )
-          UPDATE chat_sessions c
-             SET status = 'deleted',
-                 deleted_at = now(),
-                 updated_at = now()
-            FROM owner_participant op
-           WHERE c.tenant_id = op.tenant_id
-             AND c.chat_id = op.chat_id
-             AND c.status <> 'deleted'
-          RETURNING c.*
+          SELECT dc.*
+          FROM deleted_chat dc
+          JOIN audit_event ae
+            ON ae.resource_id = dc.chat_id::varchar
         `,
         params: {
           actor_id: request.actorId,

@@ -27,11 +27,11 @@ checkFile("ChatSessionNav", "apps/web/src/features/chat/ChatSessionNav.tsx", [
   rule("empty chat status", (body) => body.includes("<p role=\"status\">チャットはありません</p>")),
   rule("create form label", (body) => body.includes("aria-label=\"新規チャット作成フォーム\"")),
   rule("create field label", (body) => body.includes("label=\"新規チャット名\"")),
-  rule("honest create state", (body) => body.includes("chat event append: 未接続")),
+  rule("honest create state", (body) => body.includes("chat session audit event append: 接続済み")),
   rule("create action disabled state", (body) => body.includes("disabled={!props.csrfToken || props.isMutating}")),
   rule("title update form label", (body) => body.includes("aria-label=\"チャットタイトル更新フォーム\"")),
   rule("title field label", (body) => body.includes("label=\"チャットタイトル\"")),
-  rule("honest lifecycle state", (body) => body.includes("chat event table完全追記、保持期間後物理削除: 未接続")),
+  rule("honest lifecycle state", (body) => body.includes("保持期間後物理削除、SQS/AppSync publish: 未接続")),
   rule("title action disabled state", (body) => body.includes("disabled={!props.csrfToken || !props.selectedChatId || props.isMutating}")),
   rule("delete action disabled state", (body) => body.includes("disabled={!props.csrfToken || chat.chat_id !== props.selectedChatId || props.isMutating}")),
   rule("button type", (body) => !/<button(?![^>]*\stype=)/.test(body))

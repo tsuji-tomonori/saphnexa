@@ -128,17 +128,26 @@ export function createLocalStore() {
       added_at: now(),
       removed_at: null
     });
+    recordAuditEvent(actor, "chat.session.created", "chat_session", chat_id, {
+      title: chat.title,
+      participant_role: participantRoles.OWNER
+    });
     return chat;
   }
 
   function updateChat(actor, chat_id, input = {}) {
     requireOwner(actor, chat_id);
     const chat = activeChat(actor, chat_id);
+    const previousTitle = chat.title;
     const title = typeof input.title === "string" ? input.title.trim() : "";
     if (title) {
       chat.title = title;
     }
     chat.updated_at = now();
+    recordAuditEvent(actor, "chat.session.title_updated", "chat_session", chat_id, {
+      previous_title: previousTitle,
+      title: chat.title
+    });
     return chat;
   }
 
@@ -153,6 +162,11 @@ export function createLocalStore() {
       row.status = statuses.REMOVED;
       row.removed_at = deletedAt;
     }
+    recordAuditEvent(actor, "chat.session.deleted", "chat_session", chat_id, {
+      deleted_at: deletedAt,
+      removed_participants: state.chat_participants.filter((item) => item.tenant_id === actor.tenant_id && item.chat_id === chat_id && item.status === statuses.REMOVED).length,
+      physical_delete: false
+    });
     return true;
   }
 

@@ -11,6 +11,7 @@ test("chat is an independent resource with owner/viewer participant permissions"
   const created = api.request("user-owner", "createChatSession", { csrf_token: ownerCsrf, title: "検収チャット" });
   assert.equal(created.status, 201);
   const chatId = created.body.chat.chat_id;
+  assert.equal(api.store.state.audit_events.some((event) => event.event_name === "chat.session.created" && event.resource_id === chatId), true);
 
   const shared = api.request("user-owner", "addChatParticipant", { csrf_token: ownerCsrf, chat_id: chatId, user_id: "user-viewer" });
   assert.equal(shared.status, 201);
@@ -25,6 +26,19 @@ test("chat is an independent resource with owner/viewer participant permissions"
 
   const outsiderRead = api.request("user-outsider", "getChatSession", { chat_id: chatId });
   assert.equal(outsiderRead.status, 403);
+
+  const renamed = api.request("user-owner", "updateChatSession", { csrf_token: ownerCsrf, chat_id: chatId, title: "検収チャット renamed" });
+  assert.equal(renamed.status, 200);
+  assert.equal(api.store.state.audit_events.some((event) => event.event_name === "chat.session.title_updated" && event.resource_id === chatId), true);
+
+  const auditCountBeforeViewerDelete = api.store.state.audit_events.length;
+  const viewerDelete = api.request("user-viewer", "deleteChatSession", { csrf_token: viewerCsrf, chat_id: chatId });
+  assert.equal(viewerDelete.status, 403);
+  assert.equal(api.store.state.audit_events.length, auditCountBeforeViewerDelete);
+
+  const deleted = api.request("user-owner", "deleteChatSession", { csrf_token: ownerCsrf, chat_id: chatId });
+  assert.equal(deleted.status, 204);
+  assert.equal(api.store.state.audit_events.some((event) => event.event_name === "chat.session.deleted" && event.resource_id === chatId && event.payload_json.physical_delete === false), true);
 });
 
 test("question submission creates run/message ids, events, citations, and audited tool invocations", () => {

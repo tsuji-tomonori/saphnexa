@@ -165,14 +165,14 @@ scenario("chat UI source contract", () => {
     "newChatSchema",
     "新規チャット名",
     "新規チャット",
-    "chat event append: 未接続",
+    "chat session audit event append: 接続済み",
     "disabled={!props.csrfToken || props.isMutating}",
     "aria-label=\"チャットタイトル更新フォーム\"",
     "chatTitleSchema",
     "チャットタイトル",
     "タイトル更新",
     "削除",
-    "chat event table完全追記、保持期間後物理削除: 未接続",
+    "保持期間後物理削除、SQS/AppSync publish: 未接続",
     "disabled={!props.csrfToken || !props.selectedChatId || props.isMutating}",
     "disabled={!props.csrfToken || chat.chat_id !== props.selectedChatId || props.isMutating}"
   ]) {
@@ -293,12 +293,16 @@ scenario("chat local API flow", () => {
   const csrf = api.request("user-owner", "getMe").body.csrf_token;
   const chat = api.request("user-owner", "createChatSession", { csrf_token: csrf, title: "flow chat" });
   assert(chat.status === 201, "chat creation failed");
+  assert(api.store.state.audit_events.some((event) => event.event_name === "chat.session.created" && event.resource_id === chat.body.chat.chat_id), "chat creation audit event missing");
   const createdDetail = api.request("user-owner", "getChatSession", { chat_id: chat.body.chat.chat_id });
   assert(createdDetail.status === 200 && createdDetail.body.chat.participants.some((item) => item.user_id === "user-owner" && item.participant_role === "owner"), "created chat detail must include owner participant");
   assert(api.request("user-outsider", "getChatSession", { chat_id: chat.body.chat.chat_id }).status === 403, "outsider must not get unreadable chat detail");
   const renamed = api.request("user-owner", "updateChatSession", { csrf_token: csrf, chat_id: chat.body.chat.chat_id, title: "renamed flow chat" });
   assert(renamed.status === 200 && renamed.body.chat.title === "renamed flow chat", "owner must update chat title");
+  assert(api.store.state.audit_events.some((event) => event.event_name === "chat.session.title_updated" && event.resource_id === chat.body.chat.chat_id), "chat title update audit event missing");
+  const auditCountBeforeOutsiderUpdate = api.store.state.audit_events.length;
   assert(api.request("user-outsider", "updateChatSession", { csrf_token: "csrf-user-outsider", chat_id: chat.body.chat.chat_id, title: "outsider title" }).status === 403, "outsider must not update unreadable chat");
+  assert(api.store.state.audit_events.length === auditCountBeforeOutsiderUpdate, "failed outsider update must not append audit event");
   const submit = api.request("user-owner", "submitQuestion", {
     csrf_token: csrf,
     chat_id: chat.body.chat.chat_id,
@@ -393,8 +397,11 @@ scenario("chat local API flow", () => {
   assert(deleteShare.status === 201, "delete target share failed");
   assert(api.request("user-viewer", "deleteChatSession", { csrf_token: "csrf-user-viewer", chat_id: deleteTargetId }).status === 403, "viewer must not delete chat");
   assert(api.request("user-outsider", "deleteChatSession", { csrf_token: "csrf-user-outsider", chat_id: deleteTargetId }).status === 403, "outsider must not delete unreadable chat");
+  const auditCountBeforeDelete = api.store.state.audit_events.length;
   const deletedChat = api.request("user-owner", "deleteChatSession", { csrf_token: csrf, chat_id: deleteTargetId });
   assert(deletedChat.status === 204, "owner must delete chat");
+  assert(api.store.state.audit_events.length === auditCountBeforeDelete + 1, "chat deletion must append one audit event");
+  assert(api.store.state.audit_events.some((event) => event.event_name === "chat.session.deleted" && event.resource_id === deleteTargetId && event.payload_json.physical_delete === false), "chat deletion audit event missing");
   const chatsAfterDelete = api.request("user-owner", "listChatSessions");
   assert(!chatsAfterDelete.body.chats.some((item) => item.chat_id === deleteTargetId), "deleted chat leaked into list");
   assert(api.request("user-owner", "getChatSession", { chat_id: deleteTargetId }).status === 404, "deleted chat must not be readable through normal get");

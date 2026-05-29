@@ -61,7 +61,7 @@ export function ChatSessionNav(props: {
             </FormField>
           )}
         />
-        <p role="status">chat event append: 未接続</p>
+        <p role="status">chat session audit event append: 接続済み</p>
         <Button type="submit" disabled={!props.csrfToken || props.isMutating}>新規チャット</Button>
       </form>
       <form aria-label="チャットタイトル更新フォーム" onSubmit={form.handleSubmit(submit)}>
@@ -74,7 +74,7 @@ export function ChatSessionNav(props: {
             </FormField>
           )}
         />
-        <p role="status">chat event table完全追記、保持期間後物理削除: 未接続</p>
+        <p role="status">保持期間後物理削除、SQS/AppSync publish: 未接続</p>
         <Button type="submit" disabled={!props.csrfToken || !props.selectedChatId || props.isMutating}>タイトル更新</Button>
       </form>
       <nav aria-label="チャット一覧">

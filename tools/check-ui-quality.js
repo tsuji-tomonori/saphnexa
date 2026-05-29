@@ -47,14 +47,14 @@ for (const file of files) {
     assert(body.includes("aria-label=\"新規チャット作成フォーム\""), "Chat session create form must expose a labelled form");
     assert(body.includes("label=\"新規チャット名\""), "Chat session create form must expose a field label");
     assert(body.includes("新規チャット"), "Chat session nav must expose create action");
-    assert(body.includes("chat event append: 未接続"), "Chat session nav must not imply event append is implemented");
+    assert(body.includes("chat session audit event append: 接続済み"), "Chat session nav must show chat lifecycle audit append is connected");
     assert(body.includes("disabled={!props.csrfToken || props.isMutating}"), "Chat session create action must require token");
     assert(body.includes("useForm") && body.includes("zodResolver") && body.includes("chatTitleSchema"), "Chat session title form must use React Hook Form + Zod validation");
     assert(body.includes("aria-label=\"チャットタイトル更新フォーム\""), "Chat session title form must expose a labelled form");
     assert(body.includes("label=\"チャットタイトル\""), "Chat session title form must expose a field label");
     assert(body.includes("タイトル更新"), "Chat session nav must expose title update action");
     assert(body.includes("削除"), "Chat session nav must expose delete action");
-    assert(body.includes("chat event table完全追記、保持期間後物理削除: 未接続"), "Chat session nav must not imply append-only event lifecycle or retention deletion is complete");
+    assert(body.includes("保持期間後物理削除、SQS/AppSync publish: 未接続"), "Chat session nav must not imply retention deletion or publish is complete");
     assert(body.includes("disabled={!props.csrfToken || !props.selectedChatId || props.isMutating}"), "Chat session update action must require token and selected chat");
     assert(body.includes("disabled={!props.csrfToken || chat.chat_id !== props.selectedChatId || props.isMutating}"), "Chat session delete action must require token and selected chat");
   }
