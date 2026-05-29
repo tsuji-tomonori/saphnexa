@@ -1,6 +1,6 @@
 # Web realtime contract hardening
 
-- 状態: doing
+- 状態: done
 - タスク種別: 機能追加
 - 作成日時: 2026-05-29 12:21 JST
 - 対象ブランチ: `codex/typescript-framework-implementation`
@@ -80,3 +80,8 @@ Web realtime client のブラウザ側契約を基本設計に近づける。
 - `npm run docs:check`: pass。
 - `npm run typecheck`: pass。
 - `git diff --check`: pass。
+
+## PR コメント
+
+- 受け入れ条件確認: https://github.com/tsuji-tomonori/saphnexa/pull/3#issuecomment-4570210077
+- セルフレビュー: https://github.com/tsuji-tomonori/saphnexa/pull/3#issuecomment-4570211557
