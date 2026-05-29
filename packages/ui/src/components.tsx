@@ -11,4 +11,5 @@ export { Drawer } from "./organisms/Drawer";
 export { MessageThread, type MessageThreadItem } from "./organisms/MessageThread";
 export { Panel } from "./organisms/Panel";
 export { Sidebar } from "./organisms/Sidebar";
+export { Tabs, type TabsItem } from "./organisms/Tabs";
 export { AppShell } from "./templates/AppShell";

@@ -40,6 +40,7 @@ checkFile("AdminApp", "apps/web/src/admin/AdminApp.tsx", [
 ]);
 checkFile("AdminDashboardPage", "apps/web/src/pages/AdminDashboardPage.tsx", [
   rule("main landmark", (body) => body.includes("className=\"sx-admin-shell\"")),
+  rule("admin tabs", (body) => body.includes("Tabs") && body.includes("aria-label=\"管理領域\"")),
   rule("artifact panel label", (body) => body.includes("aria-label=\"成果物\""))
 ]);
 checkFile("AdminActions", "apps/web/src/features/admin/AdminActions.tsx", [
@@ -73,6 +74,10 @@ checkFile("UI dialog", "packages/ui/src/organisms/Dialog.tsx", [
 checkFile("UI drawer", "packages/ui/src/organisms/Drawer.tsx", [
   rule("radix drawer primitive", (body) => body.includes("@radix-ui/react-dialog") && body.includes("RadixDialog.Content")),
   rule("drawer title", (body) => body.includes("RadixDialog.Title"))
+]);
+checkFile("UI tabs", "packages/ui/src/organisms/Tabs.tsx", [
+  rule("radix tabs primitive", (body) => body.includes("@radix-ui/react-tabs") && body.includes("RadixTabs.List")),
+  rule("labelled tabs list", (body) => body.includes("aria-label={props[\"aria-label\"]}"))
 ]);
 checkFile("UI panel", "packages/ui/src/organisms/Panel.tsx", [
   rule("panel labelled section", (body) => body.includes("<section") && body.includes("aria-label={props[\"aria-label\"]}")),

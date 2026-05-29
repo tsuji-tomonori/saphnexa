@@ -57,6 +57,7 @@ const textareaSource = readText("packages/ui/src/atoms/Textarea.tsx");
 const statusSource = readText("packages/ui/src/molecules/StatusBadge.tsx");
 const dialogSource = readText("packages/ui/src/organisms/Dialog.tsx");
 const drawerSource = readText("packages/ui/src/organisms/Drawer.tsx");
+const tabsSource = readText("packages/ui/src/organisms/Tabs.tsx");
 const tableSource = readText("packages/ui/src/organisms/DataTable.tsx");
 const sidebarSource = readText("packages/ui/src/organisms/Sidebar.tsx");
 const messageThreadSource = readText("packages/ui/src/organisms/MessageThread.tsx");
@@ -66,7 +67,9 @@ for (const token of [
   "@vanilla-extract/recipes",
   "buttonRecipe",
   "controlRecipe",
-  "statusBadgeRecipe"
+  "statusBadgeRecipe",
+  "tabsListClass",
+  "tabsTriggerClass"
 ]) {
   assert(themeSource.includes(token), `UI theme source missing ${token}`);
 }
@@ -76,10 +79,12 @@ assert(statusSource.includes("aria-label={`状態: ${props.status}`}"), "StatusB
 assert(statusSource.includes("statusBadgeRecipe"), "StatusBadge must use vanilla-extract recipe classes");
 assert(dialogSource.includes("@radix-ui/react-dialog") && dialogSource.includes("RadixDialog.Content"), "Dialog must use Radix Dialog primitives");
 assert(drawerSource.includes("@radix-ui/react-dialog") && drawerSource.includes("RadixDialog.Content"), "Drawer must use Radix Dialog primitives");
+assert(tabsSource.includes("@radix-ui/react-tabs") && tabsSource.includes("RadixTabs.List") && tabsSource.includes("RadixTabs.Trigger"), "Tabs must use Radix Tabs primitives");
 assert(componentsSource.includes("export { DataTable }"), "UI barrel must export DataTable organism");
 assert(componentsSource.includes("export { CitationDrawer"), "UI barrel must export CitationDrawer organism");
 assert(componentsSource.includes("export { Sidebar }"), "UI barrel must export Sidebar organism");
 assert(componentsSource.includes("export { MessageThread"), "UI barrel must export MessageThread organism");
+assert(componentsSource.includes("export { Tabs"), "UI barrel must export Tabs organism");
 assert(tableSource.includes("<table") && tableSource.includes("<caption>"), "DataTable must render a labelled table");
 assert(sidebarSource.includes("<aside") && sidebarSource.includes("aria-label={props[\"aria-label\"]}"), "Sidebar must render a labelled aside");
 assert(messageThreadSource.includes("<ol") && messageThreadSource.includes("emptyLabel"), "MessageThread must render a labelled ordered event thread with empty state");

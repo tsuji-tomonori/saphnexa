@@ -92,6 +92,7 @@ for (const file of [
   "packages/ui/src/atoms/Textarea.tsx",
   "packages/ui/src/organisms/Dialog.tsx",
   "packages/ui/src/organisms/Drawer.tsx",
+  "packages/ui/src/organisms/Tabs.tsx",
   "packages/ui/src/templates/AppShell.tsx"
 ]) {
   const body = readText(file);
@@ -105,8 +106,11 @@ const uiThemeTs = readText("packages/ui/src/theme.css.ts");
 const uiButtonTs = readText("packages/ui/src/atoms/Button.tsx");
 const uiDialogTs = readText("packages/ui/src/organisms/Dialog.tsx");
 const uiDrawerTs = readText("packages/ui/src/organisms/Drawer.tsx");
+const uiTabsTs = readText("packages/ui/src/organisms/Tabs.tsx");
+const webAdminDashboardTs = readText("apps/web/src/pages/AdminDashboardPage.tsx");
 assert(uiPackageJson.dependencies?.["@vanilla-extract/recipes"], "UI package must depend on vanilla-extract recipes");
 assert(uiPackageJson.dependencies?.["@radix-ui/react-dialog"], "UI package must depend on Radix Dialog primitives");
+assert(uiPackageJson.dependencies?.["@radix-ui/react-tabs"], "UI package must depend on Radix Tabs primitives");
 assert(webPackageJson.devDependencies?.["@vanilla-extract/vite-plugin"], "Web package must install vanilla-extract Vite plugin");
 assert(webViteConfigTs.includes("vanillaExtractPlugin()"), "Vite config must enable vanilla-extract plugin");
 for (const token of [
@@ -115,13 +119,17 @@ for (const token of [
   "@vanilla-extract/recipes",
   "buttonRecipe",
   "controlRecipe",
-  "statusBadgeRecipe"
+  "statusBadgeRecipe",
+  "tabsListClass",
+  "tabsTriggerClass"
 ]) {
   assert(uiThemeTs.includes(token), `UI theme TS source missing ${token}`);
 }
 assert(uiButtonTs.includes("buttonRecipe"), "Button TS source must use vanilla-extract recipe");
 assert(uiDialogTs.includes("@radix-ui/react-dialog") && uiDialogTs.includes("RadixDialog.Content"), "Dialog TS source must use Radix Dialog primitive");
 assert(uiDrawerTs.includes("@radix-ui/react-dialog") && uiDrawerTs.includes("RadixDialog.Content"), "Drawer TS source must use Radix Dialog primitive");
+assert(uiTabsTs.includes("@radix-ui/react-tabs") && uiTabsTs.includes("RadixTabs.List") && uiTabsTs.includes("RadixTabs.Trigger"), "Tabs TS source must use Radix Tabs primitive");
+assert(webAdminDashboardTs.includes("Tabs") && webAdminDashboardTs.includes("AdminActions") && webAdminDashboardTs.includes("ArtifactTable"), "Admin dashboard must organize evaluation and artifacts with Tabs");
 
 const apiContractTs = readText("packages/api-contract/src/routes.ts");
 assert(apiContractTs.includes("export interface PublicApiRoute"), "API contract TS source must export PublicApiRoute");

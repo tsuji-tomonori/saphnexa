@@ -168,6 +168,38 @@ export const panelRecipe = recipe({
   }
 });
 
+export const tabsListClass = style({
+  display: "inline-flex",
+  gap: vars.space[1],
+  alignItems: "center",
+  border: `1px solid ${vars.color.border}`,
+  borderRadius: vars.radius.control,
+  background: vars.color.surfaceMuted,
+  padding: vars.space[1]
+});
+
+export const tabsTriggerClass = style({
+  border: 0,
+  borderRadius: vars.radius.control,
+  padding: `${vars.space[2]} ${vars.space[3]}`,
+  font: "inherit",
+  fontWeight: 600,
+  color: vars.color.textMuted,
+  background: "transparent",
+  cursor: "pointer",
+  selectors: {
+    '&[data-state="active"]': {
+      color: vars.color.text,
+      background: vars.color.surface,
+      boxShadow: "0 1px 2px rgb(23 33 27 / 10%)"
+    }
+  }
+});
+
+export const tabsContentClass = style({
+  marginTop: vars.space[4]
+});
+
 export const overlayClass = style({
   position: "fixed",
   inset: 0,

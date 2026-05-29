@@ -1,5 +1,5 @@
 import { QueryClientProvider } from "@tanstack/react-query";
-import { AppShell, Panel } from "@saphnexa/ui";
+import { AppShell, Panel, Tabs } from "@saphnexa/ui";
 import { AdminActions } from "../features/admin/AdminActions";
 import { ArtifactTable } from "../features/admin/ArtifactTable";
 import { useAdminArtifacts } from "../hooks/useAdminArtifacts";
@@ -13,10 +13,26 @@ export function AdminDashboardContent() {
 
   return (
     <AppShell className="sx-admin-shell">
-      <AdminActions csrfToken={csrfToken} />
-      <Panel aria-label="成果物">
-        <ArtifactTable artifacts={artifacts.data?.artifacts ?? []} />
-      </Panel>
+      <Tabs
+        aria-label="管理領域"
+        defaultValue="evaluation"
+        items={[
+          {
+            id: "evaluation",
+            label: "評価",
+            content: <AdminActions csrfToken={csrfToken} />
+          },
+          {
+            id: "artifacts",
+            label: "成果物",
+            content: (
+              <Panel aria-label="成果物">
+                <ArtifactTable artifacts={artifacts.data?.artifacts ?? []} />
+              </Panel>
+            )
+          }
+        ]}
+      />
     </AppShell>
   );
 }
