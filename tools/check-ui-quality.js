@@ -40,6 +40,7 @@ for (const file of files) {
     assert(body.includes("useAdminArtifacts"), "Admin page must use TanStack Query artifact hook");
     assert(body.includes("useAdminDocuments"), "Admin page must use TanStack Query document hook");
     assert(body.includes("DocumentRegistrationForm"), "Admin page must render document registration form through feature component");
+    assert(body.includes("IngestionJobPanel"), "Admin page must render ingestion job monitor through feature component");
     assert(body.includes("DocumentTable"), "Admin page must render document table through feature component");
   }
   if (file.includes("AdminActions")) {
@@ -60,6 +61,12 @@ for (const file of files) {
     assert(body.includes("zodResolver"), "Admin document registration must use Zod validation");
     assert(body.includes("PDF実アップロード: 未接続"), "Admin document registration must not imply PDF binary upload is implemented");
     assert(!body.includes("doc-local"), "Admin document registration must not hard-code local document ids");
+  }
+  if (file.includes("IngestionJobPanel")) {
+    assert(body.includes("useForm"), "Admin ingestion job monitor must use React Hook Form");
+    assert(body.includes("zodResolver"), "Admin ingestion job monitor must use Zod validation");
+    assert(body.includes("retryable"), "Admin ingestion retry must depend on retryable state");
+    assert(!body.includes("ing-local"), "Admin ingestion job monitor must not hard-code local job ids");
   }
 }
 

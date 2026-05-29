@@ -4,6 +4,7 @@ import { AdminActions } from "../features/admin/AdminActions";
 import { ArtifactTable } from "../features/admin/ArtifactTable";
 import { DocumentRegistrationForm } from "../features/admin/DocumentRegistrationForm";
 import { DocumentTable } from "../features/admin/DocumentTable";
+import { IngestionJobPanel } from "../features/admin/IngestionJobPanel";
 import { useAdminArtifacts } from "../hooks/useAdminArtifacts";
 import { useAdminDocuments } from "../hooks/useAdminDocuments";
 import { useMe } from "../hooks/useMe";
@@ -41,6 +42,7 @@ export function AdminDashboardContent() {
             content: (
               <Panel aria-label="文書">
                 <DocumentRegistrationForm csrfToken={csrfToken} />
+                <IngestionJobPanel csrfToken={csrfToken} />
                 <DocumentTable documents={documents.data?.documents ?? []} />
               </Panel>
             )

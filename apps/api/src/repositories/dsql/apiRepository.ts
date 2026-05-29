@@ -263,6 +263,40 @@ const dsqlOperationMappings = {
     map(rows) {
       return { documents: rows };
     }
+  },
+  getIngestionJob: {
+    notFoundErrorCode: "DSQL_INGESTION_JOB_NOT_FOUND",
+    plan(request) {
+      return {
+        operationId: "getIngestionJob",
+        resultTable: "ingestion_jobs",
+        sql: `
+          SELECT
+            j.tenant_id,
+            j.job_id,
+            j.document_id,
+            j.version_id,
+            j.status,
+            j.raw_s3_uri,
+            j.parsed_s3_prefix,
+            j.error_code,
+            j.created_at
+          FROM ingestion_jobs j
+          JOIN users u
+            ON u.tenant_id = j.tenant_id
+           AND u.user_id = :actor_id
+           AND u.role = 'admin'
+           AND u.status = 'active'
+          WHERE j.job_id = :job_id
+          LIMIT 1
+        `,
+        params: { actor_id: request.actorId, job_id: request.input.job_id }
+      };
+    },
+    map(rows) {
+      const job = firstRow(rows) as DbRow<"ingestion_jobs">;
+      return { job: { ...job, retryable: job.status === "failed" } };
+    }
   }
 } satisfies Partial<Record<ApiOperationId, DsqlOperationMapping>>;
 

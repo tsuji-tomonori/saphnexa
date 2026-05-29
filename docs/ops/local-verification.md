@@ -121,6 +121,7 @@ git diff --check
 - Admin Dashboard が Saphnexa UI package の Radix Tabs organism を使い、評価操作と公開成果物一覧を実データ由来の管理領域として分割すること。ユーザー取込、実 PDF upload、取り込み監視の未実装 backend を架空 UI で実装済みに見せないこと。
 - Admin Dashboard の文書タブが `adminListDocuments` route helper / generated operation helper を使い、local API と DSQL query plan の管理者限定文書一覧境界を source gate で確認できること。文書がない場合は正直な empty state を表示すること。
 - Admin Dashboard の文書登録フォームが React Hook Form + Zod と `createDocument` route helper / generated operation helper を使い、登録後に文書一覧 query を再取得する境界を source gate で確認できること。実 PDF upload は未接続であることを表示すること。
+- Admin Dashboard の取り込みジョブ確認が React Hook Form + Zod と `getIngestionJob` / `retryIngestionJob` route helper / generated operation helper を使い、retryable な失敗ジョブだけを再実行できる境界を source gate で確認できること。実 Step Functions / S3 / KB ingestion は未接続であること。
 - `npm run web:build` が Vite production build を実行し、Chat/Admin browser entrypoint を bundle できること。
 - `npm run web:build:check` が Vite production build output の `apps/web/dist/index.html`、hashed JS asset、JS sourcemap、gzip size 上限を検査すること。
 - Chat UI が React Hook Form + Zod validation、events payload 由来の Citation Drawer、AppSync Events / WebSocket client boundary を持ち、未接続時に架空 realtime event を生成しないこと。
@@ -214,6 +215,7 @@ git diff --check
 - Admin Tabs の source gate は評価操作と公開成果物一覧の画面構造を確認する。ユーザー取込、実 PDF upload、取り込み監視の実 backend/API/UI は別途実装・検証する。
 - Admin 文書一覧の source gate は既存文書の表示と `adminListDocuments` 境界を確認する。実 PDF upload、ACL 編集、取り込みジョブ詳細は別途実装・検証する。
 - Admin 文書登録フォームの source gate は `createDocument` API 境界、CSRF disabled state、local ingestion job 受付、文書一覧再取得を確認する。実 S3 PDF upload、文書種別、有効期間、ACL 編集、取り込みジョブ詳細は別途実装・検証する。
+- Admin 取り込みジョブ確認の source gate は job ID 指定の `getIngestionJob`、retryable state、`retryIngestionJob`、管理者ロール境界を確認する。実 Step Functions 実行、S3 raw/parsed 実配置、Bedrock KB / S3 Vectors ingestion、進捗 percentage、job 一覧 API は別途実装・検証する。
 - 実ブラウザ操作による chat/admin E2E、CloudFront 経由のロール別導線確認。
 - Bedrock KB、S3 Vectors、AgentCore Runtime、Bedrock Evaluations を使った実 RAG 品質評価。
 - TypeScript framework 境界は local/source gate、実 `tsc --noEmit`、Vite production build と build output check で確認する。assistant-ui runtime provider は source gate と Vite production build で React tree への接続を確認するが、assistant-ui runtime の実ブラウザ streaming 挙動、AppSync Events の実 subscribe は、実 runtime が揃った環境で別途確認する。`/event/realtime` の browser source contract は検査するが、実 AppSync Events 接続成功の証跡ではない。

@@ -64,6 +64,7 @@ export function createLocalStore() {
     startUserImport,
     listDocuments,
     getDocument,
+    getIngestionJob,
     createDocument,
     createDocumentVersion,
     activateDocumentVersion,
@@ -431,6 +432,11 @@ export function createLocalStore() {
     return state.documents.find((item) => item.tenant_id === actor.tenant_id && item.document_id === document_id && item.status !== statuses.DELETED);
   }
 
+  function getIngestionJob(actor, job_id) {
+    requireAdmin(actor);
+    return state.ingestion_jobs.find((item) => item.tenant_id === actor.tenant_id && item.job_id === job_id);
+  }
+
   function createDocumentVersion(actor, document_id, input) {
     requireAdmin(actor);
     if (!state.documents.find((item) => item.document_id === document_id)) throw forbidden("DOCUMENT_NOT_FOUND", "文書が存在しない。");
@@ -449,7 +455,7 @@ export function createLocalStore() {
 
   function retryIngestionJob(actor, job_id) {
     requireAdmin(actor);
-    const job = state.ingestion_jobs.find((item) => item.job_id === job_id);
+    const job = state.ingestion_jobs.find((item) => item.tenant_id === actor.tenant_id && item.job_id === job_id);
     if (!job) throw forbidden("INGESTION_JOB_NOT_FOUND", "取り込みジョブが存在しない。", 404);
     if (!job.retryable && job.status !== statuses.FAILED) throw forbidden("INGESTION_RETRY_NOT_ALLOWED", "再実行できる状態ではない。");
     job.status = statuses.QUEUED;

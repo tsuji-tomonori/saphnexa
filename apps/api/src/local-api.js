@@ -68,8 +68,7 @@ export function createLocalApi() {
           case "activateDocumentVersion":
             return ok({ version: store.activateDocumentVersion(actor, input.document_id, input.version_id) });
           case "getIngestionJob":
-            requireAdmin(actor);
-            return ok({ job: store.state.ingestion_jobs.find((item) => item.job_id === input.job_id) });
+            return ok({ job: store.getIngestionJob(actor, input.job_id) });
           case "retryIngestionJob":
             return accepted({ job: store.retryIngestionJob(actor, input.job_id) });
           case "listEvaluationDatasets":

@@ -24,12 +24,14 @@ const adminActionsSource = readText("apps/web/src/features/admin/AdminActions.ts
 const artifactTableSource = readText("apps/web/src/features/admin/ArtifactTable.tsx");
 const documentRegistrationFormSource = readText("apps/web/src/features/admin/DocumentRegistrationForm.tsx");
 const documentTableSource = readText("apps/web/src/features/admin/DocumentTable.tsx");
+const ingestionJobPanelSource = readText("apps/web/src/features/admin/IngestionJobPanel.tsx");
 const assistantRuntimeSource = readText("apps/web/src/lib/assistantRuntime.ts");
 const meHookSource = readText("apps/web/src/hooks/useMe.ts");
 const chatSessionsHookSource = readText("apps/web/src/hooks/useChatSessions.ts");
 const artifactsHookSource = readText("apps/web/src/hooks/useAdminArtifacts.ts");
 const createDocumentHookSource = readText("apps/web/src/hooks/useCreateDocument.ts");
 const documentsHookSource = readText("apps/web/src/hooks/useAdminDocuments.ts");
+const ingestionJobHookSource = readText("apps/web/src/hooks/useIngestionJob.ts");
 const startEvaluationHookSource = readText("apps/web/src/hooks/useStartEvaluationRun.ts");
 const apiClientSource = readText("packages/api-client/src/client.ts");
 
@@ -169,6 +171,7 @@ scenario("admin UI source contract", () => {
     "useAdminArtifacts",
     "useAdminDocuments",
     "DocumentRegistrationForm",
+    "IngestionJobPanel",
     "DocumentTable",
     "aria-label=\"成果物\""
   ]) {
@@ -184,7 +187,13 @@ scenario("admin UI source contract", () => {
   assert(createDocumentHookSource.includes("apiRoutes.createDocument()"), "useCreateDocument hook must use createDocument route helper");
   assert(createDocumentHookSource.includes("apiPostOperation(\"createDocument\""), "useCreateDocument hook must use generated createDocument operation helper");
   assert(createDocumentHookSource.includes("invalidateQueries({ queryKey: [\"admin-documents\"] })"), "useCreateDocument hook must refresh admin documents query");
+  assert(ingestionJobHookSource.includes("apiRoutes.getIngestionJob(jobId)"), "useIngestionJob hook must use getIngestionJob route helper");
+  assert(ingestionJobHookSource.includes("apiGetOperation(\"getIngestionJob\""), "useIngestionJob hook must use generated getIngestionJob operation helper");
+  assert(ingestionJobHookSource.includes("apiRoutes.retryIngestionJob(jobId)"), "useRetryIngestionJob hook must use retryIngestionJob route helper");
+  assert(ingestionJobHookSource.includes("apiPostOperation(\"retryIngestionJob\""), "useRetryIngestionJob hook must use generated retryIngestionJob operation helper");
+  assert(ingestionJobHookSource.includes("invalidateQueries({ queryKey: [\"ingestion-job\", jobId] })"), "useRetryIngestionJob hook must refresh ingestion job query");
   assert(apiClientSource.includes("/api/admin/documents"), "API client documents helper must call /api/admin/documents");
+  assert(apiClientSource.includes("/api/admin/ingestion-jobs/{job_id}"), "API client ingestion job helper must call /api/admin/ingestion-jobs/{job_id}");
   for (const token of [
     "useForm",
     "zodResolver",
@@ -217,6 +226,17 @@ scenario("admin UI source contract", () => {
     assert(documentTableSource.includes(token), `DocumentTable missing token: ${token}`);
   }
   for (const token of [
+    "useForm",
+    "zodResolver",
+    "ingestionJobLookupSchema",
+    "取り込みジョブ確認フォーム",
+    "StatusBadge",
+    "disabled={!props.csrfToken || !job?.retryable || retry.isPending}",
+    "role=\"alert\""
+  ]) {
+    assert(ingestionJobPanelSource.includes(token), `IngestionJobPanel missing token: ${token}`);
+  }
+  for (const token of [
     "DataTable",
     "Drawer",
     "成果物はありません",
@@ -243,6 +263,14 @@ scenario("admin local API flow", () => {
   const registered = api.request("admin-1", "createDocument", { csrf_token: csrf, title: "form document", file_name: "flow-form.pdf", acl_scope_id: "group:admin" });
   assert(registered.status === 202, "admin document registration failed");
   assert(registered.body.raw_s3_uri.endsWith("/flow-form.pdf"), "admin document registration must preserve file name in raw S3 URI");
+  const invalid = api.request("admin-1", "createDocument", { csrf_token: csrf, title: "invalid metadata", document_id: "doc-invalid-flow", version_id: "ver-invalid-flow", metadata: { document_id: "doc-invalid-flow" } });
+  const failedJob = api.request("admin-1", "getIngestionJob", { job_id: invalid.body.job_id });
+  assert(failedJob.status === 200, "admin ingestion job fetch failed");
+  assert(failedJob.body.job.status === "failed" && failedJob.body.job.retryable === true, "failed ingestion job must expose retryable state");
+  assert(api.request("user-owner", "getIngestionJob", { job_id: invalid.body.job_id }).status === 403, "general user must not fetch ingestion jobs");
+  assert(api.request("user-owner", "retryIngestionJob", { csrf_token: "csrf-user-owner", job_id: invalid.body.job_id }).status === 403, "general user must not retry ingestion jobs");
+  const retried = api.request("admin-1", "retryIngestionJob", { csrf_token: csrf, job_id: invalid.body.job_id });
+  assert(retried.status === 202 && retried.body.job.status === "queued", "admin ingestion retry failed");
   api.request("admin-1", "createDocument", { csrf_token: csrf, title: "flow document", document_id: "doc-flow", version_id: "ver-flow" });
   const documents = api.request("admin-1", "adminListDocuments");
   assert(documents.body.documents.some((document) => document.document_id === "doc-flow"), "created document missing from admin documents list");

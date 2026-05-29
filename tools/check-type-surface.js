@@ -86,9 +86,11 @@ for (const file of [
   "apps/web/src/pages/ChatPage.tsx",
   "apps/web/src/features/chat/AssistantRuntimeBoundary.tsx",
   "apps/web/src/features/admin/DocumentRegistrationForm.tsx",
+  "apps/web/src/features/admin/IngestionJobPanel.tsx",
   "apps/web/src/features/admin/DocumentTable.tsx",
   "apps/web/src/hooks/useCreateDocument.ts",
   "apps/web/src/hooks/useAdminDocuments.ts",
+  "apps/web/src/hooks/useIngestionJob.ts",
   "apps/web/src/pages/AdminDashboardPage.tsx",
   "packages/ui/src/theme.css.ts",
   "packages/ui/src/atoms/Button.tsx",
@@ -226,7 +228,9 @@ for (const token of [
   'apiGetOperation("listMessageEvents"',
   'apiGetOperation("listPublishedArtifacts"',
   'apiGetOperation("adminListDocuments"',
+  'apiGetOperation("getIngestionJob"',
   'apiPostOperation("createDocument"',
+  'apiPostOperation("retryIngestionJob"',
   'apiPostOperation("issueWsTicket"',
   'apiPostOperation("startEvaluationRun"'
 ]) {
@@ -402,7 +406,8 @@ for (const token of [
 }
 for (const token of [
   "listDocuments",
-  "getDocument"
+  "getDocument",
+  "getIngestionJob"
 ]) {
   assert(storeTypesTs.includes(token), `Domain store TS source missing ${token}`);
   assert(storeJs.includes(token), `Domain store JS runtime mirror missing ${token}`);
@@ -452,16 +457,19 @@ for (const token of [
   "listMessageEvents",
   "listPublishedArtifacts",
   "adminListDocuments",
+  "getIngestionJob",
   'resultTable: "users"',
   'resultTable: "chat_sessions"',
   'resultTable: "chat_message_events"',
   'resultTable: "published_artifacts"',
   'resultTable: "documents"',
+  'resultTable: "ingestion_jobs"',
   "FROM users",
   "FROM chat_sessions",
   "FROM chat_message_events",
   "FROM published_artifacts",
   "FROM documents",
+  "FROM ingestion_jobs",
   "JOIN chat_participants",
   "u.role = 'admin'"
 ]) {

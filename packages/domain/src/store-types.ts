@@ -269,6 +269,7 @@ export interface LocalStore {
   listEvents(actor: LocalActor, chat_id: string, message_id: string, after_seq?: number): ChatMessageEvent[];
   listDocuments(actor: LocalActor): DocumentRecord[];
   getDocument(actor: LocalActor, document_id: string): DocumentRecord | undefined;
+  getIngestionJob(actor: LocalActor, job_id: string): IngestionJob | undefined;
   issueWsTicket(actor: LocalActor, input?: { now_ms?: number }): { ticket: string; expires_in_seconds: number; channels: string[] };
   consumeWsTicket(actor: LocalActor, ticket_id: string, now_ms?: number): { ticket_id: string; channels: string[]; status: string };
   startEvaluationRun(actor: LocalActor, input?: { dataset_id?: string; model_id?: string }): EvaluationRun;

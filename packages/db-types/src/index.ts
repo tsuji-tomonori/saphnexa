@@ -116,6 +116,17 @@ export interface DbRowByTable {
     acl_scope_id: string;
     effect: string;
   };
+  ingestion_jobs: {
+    tenant_id: string;
+    job_id: string;
+    document_id: string;
+    version_id: string;
+    status: string;
+    raw_s3_uri: string;
+    parsed_s3_prefix: string;
+    error_code: string | null;
+    created_at: DbTimestamp;
+  };
   ws_tickets: {
     tenant_id: string;
     ticket_id: string;

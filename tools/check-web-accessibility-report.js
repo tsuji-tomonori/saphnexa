@@ -43,7 +43,8 @@ checkFile("AdminDashboardPage", "apps/web/src/pages/AdminDashboardPage.tsx", [
   rule("admin tabs", (body) => body.includes("Tabs") && body.includes("aria-label=\"管理領域\"")),
   rule("artifact panel label", (body) => body.includes("aria-label=\"成果物\"")),
   rule("document panel label", (body) => body.includes("aria-label=\"文書\"")),
-  rule("document registration form", (body) => body.includes("DocumentRegistrationForm"))
+  rule("document registration form", (body) => body.includes("DocumentRegistrationForm")),
+  rule("ingestion job panel", (body) => body.includes("IngestionJobPanel"))
 ]);
 checkFile("AdminActions", "apps/web/src/features/admin/AdminActions.tsx", [
   rule("admin action label", (body) => body.includes("aria-label=\"管理操作\"")),
@@ -67,6 +68,15 @@ checkFile("DocumentRegistrationForm", "apps/web/src/features/admin/DocumentRegis
   rule("honest upload state", (body) => body.includes("PDF実アップロード: 未接続")),
   rule("error alert", (body) => body.includes("role=\"alert\"")),
   rule("button disabled state", (body) => body.includes("disabled={!props.csrfToken || createDocument.isPending}"))
+]);
+checkFile("IngestionJobPanel", "apps/web/src/features/admin/IngestionJobPanel.tsx", [
+  rule("section label", (body) => body.includes("aria-label=\"取り込みジョブ確認\"")),
+  rule("form label", (body) => body.includes("aria-label=\"取り込みジョブ確認フォーム\"")),
+  rule("field label", (body) => body.includes("label=\"取り込みジョブID\"")),
+  rule("empty status", (body) => body.includes("取り込みジョブを選択してください")),
+  rule("pending status", (body) => body.includes("<p role=\"status\">取り込みジョブを確認しています</p>")),
+  rule("retry disabled state", (body) => body.includes("disabled={!props.csrfToken || !job?.retryable || retry.isPending}")),
+  rule("error alert", (body) => body.includes("role=\"alert\""))
 ]);
 checkFile("UI components", "packages/ui/src/components.tsx", [
   rule("data table export", (body) => body.includes("export { DataTable }")),
