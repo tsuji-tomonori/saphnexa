@@ -151,10 +151,14 @@ export function ChatPage() {
           activeMessageId={messageId}
           csrfToken={csrfToken}
           messages={messages.data?.messages ?? []}
+          favorites={favorites.data?.favorites ?? []}
           nextCursor={messages.data?.next_cursor ?? null}
           isLoading={messages.isFetching}
           isCanceling={cancelAnswerGeneration.isPending}
+          isFavoriteMutating={addFavorite.isPending || deleteFavorite.isPending}
           onCancel={(input) => cancelAnswerGeneration.mutate(input)}
+          onAddMessageFavorite={(input) => addFavorite.mutate(input)}
+          onDeleteFavorite={(favoriteId) => deleteFavorite.mutate({ favorite_id: favoriteId })}
         />
         <MessageEventsPanel events={events.data?.events ?? []} />
         <CitationDrawerPanel open={Boolean(activeChatId && csrfToken)} events={events.data?.events ?? []} messages={messages.data?.messages ?? []} />

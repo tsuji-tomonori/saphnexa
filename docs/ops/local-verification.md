@@ -136,7 +136,7 @@ git diff --check
 - Chat UI が `updateChatSession` / `deleteChatSession` route helper / generated operation helper を使い、owner によるチャットタイトル更新と論理削除、viewer/outsider の拒否、削除後の一覧・通常取得からの除外、`audit_events` への `chat.session.title_updated` / `chat.session.deleted` 追記を source/local gate で確認できること。保持期間後の物理削除、SQS/AppSync publish、実ブラウザ E2E は別途確認する。
 - Chat UI が `addChatParticipant` / `updateChatParticipant` / `removeChatParticipant` route helper / generated operation helper を使い、owner による viewer 共有、viewer 再有効化、共有解除を source/local gate で確認できること。owner 移譲、viewer の owner 昇格、実 AppSync Events fan-out、実ブラウザ E2E は別途確認する。
 - Chat UI が `createFeedback` route helper / generated operation helper を使い、閲覧可能な回答への高評価・低評価・コメント登録を source/local gate で確認できること。フィードバック一覧、取消、実ブラウザ E2E は別途確認する。
-- Chat UI が `listFavorites` / `addFavorite` / `deleteFavorite` route helper / generated operation helper を使い、参加チャットのお気に入り登録、一覧、解除を source/local gate で確認できること。回答単位のお気に入り UI と実ブラウザ E2E は別途確認する。
+- Chat UI が `listFavorites` / `addFavorite` / `deleteFavorite` route helper / generated operation helper を使い、参加チャットと回答単位のお気に入り登録、一覧、解除、重複排除を source/local gate で確認できること。実ブラウザ E2E は別途確認する。
 - Web realtime client が同一 origin の `/event/realtime` を default endpoint とし、ticket を WebSocket URL query に載せず subscribe payload で送り、API が返した channel と通知後の REST refetch に接続されていること。
 - CDK 実 Construct source が 7 Construct class を持ち、DSQL、CloudFront、Cognito、AppSync Events、S3 Vectors、Bedrock KB、AgentCore、admin artifacts 公開基盤の CloudFormation resource type inventory と同期していること。
 - CloudFront / Cognito / AppSync Events binding source が、SPA/API/AppSync/admin artifacts origin、`/api/*` と `/auth/*` の versioned API rewrite、Cognito OAuth code flow、AppSync Events `chat` / `admin` namespace、admin artifacts signed cookie KeyGroup と同期していること。
@@ -230,7 +230,7 @@ git diff --check
 - Chat フィードバックの local gate は参加者による対象回答への登録と未参加者拒否を確認する。フィードバック一覧、取消、分析集計、実ブラウザ操作、実 Aurora DSQL での SQL 実行は別途確認する。
 - Admin ユーザー取込の source gate は `adminListUsers`、JSON rows による `startUserImport`、`getUserImport` の結果集計と行別エラー、管理者ロール境界を確認する。CSV/Excel binary upload、S3 import file 配置、Cognito 実反映、AppSync 完了通知は別途実装・検証する。
 - Admin Tabs の source gate は評価操作と公開成果物一覧の画面構造を確認する。CSV/Excel 実アップロード、実 PDF upload、取り込み監視の実 backend/API/UI は別途実装・検証する。
-- Chat お気に入りの local gate は参加チャット単位の登録、一覧、解除と所有者境界を確認する。回答単位の UI 操作、重複排除、実ブラウザ操作、実 Aurora DSQL での SQL 実行は別途確認する。
+- Chat お気に入りの local gate は参加チャット単位と回答単位の登録、一覧、解除、重複排除、所有者境界、assistant message 以外の拒否を確認する。実ブラウザ操作、実 Aurora DSQL での SQL 実行は別途確認する。
 - Admin 文書一覧の source gate は既存文書の表示と `adminListDocuments` 境界を確認する。実 PDF upload、ACL 編集、取り込みジョブ詳細は別途実装・検証する。
 - Admin 文書登録フォームの source gate は `createDocument` API 境界、CSRF disabled state、local ingestion job 受付、文書一覧再取得を確認する。実 S3 PDF upload、文書種別、有効期間、ACL 編集、取り込みジョブ詳細は別途実装・検証する。
 - Admin 文書版 lifecycle の source gate は `getDocument` の versions / ingestion jobs / ACL entries、`createDocumentVersion` による local 版追加、`activateDocumentVersion` の取り込み完了条件、管理者ロール境界を確認する。文書停止・削除、実 S3 PDF upload、実 Step Functions 実行、Bedrock KB / S3 Vectors ingestion は別途実装・検証する。

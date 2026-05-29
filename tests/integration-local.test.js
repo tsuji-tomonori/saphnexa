@@ -114,6 +114,16 @@ test("message history restores only the viewer own feedback state", () => {
   const viewerAnswer = viewerMessages.body.messages.find((message) => message.message_id === accepted.body.message_id);
   assert.equal(viewerAnswer.feedback, null);
   assert.equal(viewerAnswer.citations.length >= 1, true);
+
+  const messageFavorite = api.request("user-owner", "addFavorite", { csrf_token: ownerCsrf, chat_id: chatId, message_id: accepted.body.message_id });
+  assert.equal(messageFavorite.status, 201);
+  const duplicateFavorite = api.request("user-owner", "addFavorite", { csrf_token: ownerCsrf, chat_id: chatId, message_id: accepted.body.message_id });
+  assert.equal(duplicateFavorite.status, 201);
+  assert.equal(duplicateFavorite.body.favorite.favorite_id, messageFavorite.body.favorite.favorite_id);
+  assert.equal(api.store.state.favorites.filter((favorite) => favorite.chat_id === chatId && favorite.message_id === accepted.body.message_id).length, 1);
+  const userMessage = api.store.state.chat_messages.find((message) => message.chat_id === chatId && message.sender_user_id === "user-owner");
+  assert.equal(api.request("user-owner", "addFavorite", { csrf_token: ownerCsrf, chat_id: chatId, message_id: userMessage.message_id }).status, 404);
+  assert.equal(api.request("user-outsider", "addFavorite", { csrf_token: "csrf-user-outsider", chat_id: chatId, message_id: accepted.body.message_id }).status, 403);
 });
 
 test("fixture RAG refuses ungrounded questions without fake citations", () => {

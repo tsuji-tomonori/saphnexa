@@ -1,15 +1,19 @@
 import { Button, MessageThread, StatusBadge } from "@saphnexa/ui";
-import type { ChatMessage } from "../../types";
+import type { ChatMessage, Favorite } from "../../types";
 
 export function MessageHistoryPanel(props: {
   activeChatId: string | null;
   activeMessageId: string | null;
   csrfToken: string;
   messages: ChatMessage[];
+  favorites: Favorite[];
   nextCursor: string | null;
   isLoading: boolean;
   isCanceling: boolean;
+  isFavoriteMutating: boolean;
   onCancel: (input: { chat_id: string; message_id: string }) => void;
+  onAddMessageFavorite: (input: { chat_id: string; message_id: string }) => void;
+  onDeleteFavorite: (favoriteId: string) => void;
 }) {
   return (
     <>
@@ -42,6 +46,23 @@ export function MessageHistoryPanel(props: {
                 </p>
               ) : null}
               {message.citations?.length ? <p role="status">引用: {message.citations.length}件</p> : null}
+              {message.sender_type === "assistant" && props.activeChatId ? (
+                <Button
+                  type="button"
+                  tone="secondary"
+                  disabled={!props.csrfToken || props.isFavoriteMutating}
+                  onClick={() => {
+                    const favorite = props.favorites.find((item) => item.chat_id === props.activeChatId && item.message_id === message.message_id);
+                    if (favorite) {
+                      props.onDeleteFavorite(favorite.favorite_id);
+                    } else if (props.activeChatId) {
+                      props.onAddMessageFavorite({ chat_id: props.activeChatId, message_id: message.message_id });
+                    }
+                  }}
+                >
+                  {props.favorites.some((item) => item.chat_id === props.activeChatId && item.message_id === message.message_id) ? "回答お気に入り解除" : "回答お気に入り登録"}
+                </Button>
+              ) : null}
               <StatusBadge status={message.status} />
               <small>{message.created_at}</small>
             </>

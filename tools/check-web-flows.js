@@ -215,6 +215,10 @@ scenario("chat UI source contract", () => {
     "実 AgentCore Runtime 停止、SQS event-publish、stream中断: 未接続",
     "message.feedback",
     "フィードバック:",
+    "回答お気に入り登録",
+    "回答お気に入り解除",
+    "onAddMessageFavorite",
+    "onDeleteFavorite",
     "回答生成キャンセル要求",
     "disabled={!props.csrfToken || !props.activeChatId || !props.activeMessageId || props.isCanceling}",
     "StatusBadge",
@@ -390,6 +394,13 @@ scenario("chat local API flow", () => {
   assert(outsiderFeedback.status === 403, "outsider must not create feedback for unreadable chat");
   const favorite = api.request("user-owner", "addFavorite", { csrf_token: csrf, chat_id: chat.body.chat.chat_id });
   assert(favorite.status === 201, "favorite creation failed");
+  const messageFavorite = api.request("user-owner", "addFavorite", { csrf_token: csrf, chat_id: chat.body.chat.chat_id, message_id: submit.body.message_id });
+  assert(messageFavorite.status === 201, "message favorite creation failed");
+  const duplicateMessageFavorite = api.request("user-owner", "addFavorite", { csrf_token: csrf, chat_id: chat.body.chat.chat_id, message_id: submit.body.message_id });
+  assert(duplicateMessageFavorite.body.favorite.favorite_id === messageFavorite.body.favorite.favorite_id, "message favorite must be deduplicated");
+  assert(api.store.state.favorites.filter((item) => item.chat_id === chat.body.chat.chat_id && item.message_id === submit.body.message_id).length === 1, "duplicate message favorite leaked into store");
+  const userMessage = messages.body.messages.find((message) => message.sender_user_id === "user-owner");
+  assert(api.request("user-owner", "addFavorite", { csrf_token: csrf, chat_id: chat.body.chat.chat_id, message_id: userMessage.message_id }).status === 404, "user message favorite must be rejected");
   const outsiderFavorite = api.request("user-outsider", "addFavorite", { csrf_token: "csrf-user-outsider", chat_id: chat.body.chat.chat_id });
   assert(outsiderFavorite.status === 403, "outsider must not favorite unreadable chat");
   const favorites = api.request("user-owner", "listFavorites");

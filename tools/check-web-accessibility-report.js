@@ -63,6 +63,7 @@ checkFile("MessageHistoryPanel", "apps/web/src/features/chat/MessageHistoryPanel
   rule("citation count", (body) => body.includes("message.citations") && body.includes("引用:")),
   rule("next cursor status", (body) => body.includes("props.nextCursor") && body.includes("次ページcursor:")),
   rule("feedback state", (body) => body.includes("message.feedback") && body.includes("フィードバック:")),
+  rule("answer favorite action", (body) => body.includes("回答お気に入り登録") && body.includes("回答お気に入り解除")),
   rule("honest cancel state", (body) => body.includes("実 AgentCore Runtime 停止、SQS event-publish、stream中断: 未接続")),
   rule("cancel action", (body) => body.includes("回答生成キャンセル要求")),
   rule("cancel disabled state", (body) => body.includes("disabled={!props.csrfToken || !props.activeChatId || !props.activeMessageId || props.isCanceling}")),

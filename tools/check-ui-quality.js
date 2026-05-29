@@ -86,6 +86,8 @@ for (const file of files) {
     assert(body.includes("message.citations") && body.includes("引用:"), "Chat message history must render restored citation count");
     assert(body.includes("props.nextCursor") && body.includes("次ページcursor:"), "Chat message history must render next page cursor");
     assert(body.includes("message.feedback") && body.includes("フィードバック:"), "Chat message history must render restored feedback state");
+    assert(body.includes("回答お気に入り登録") && body.includes("回答お気に入り解除"), "Chat message history must render answer favorite actions");
+    assert(body.includes("props.favorites.find") && body.includes("onAddMessageFavorite") && body.includes("onDeleteFavorite"), "Chat message history must wire answer favorite state to mutations");
     assert(body.includes("実 AgentCore Runtime 停止、SQS event-publish、stream中断: 未接続"), "Chat message history must not imply real runtime stop or event publish is complete");
     assert(body.includes("回答生成キャンセル要求"), "Chat message history must expose answer cancel request action");
     assert(body.includes("disabled={!props.csrfToken || !props.activeChatId || !props.activeMessageId || props.isCanceling}"), "Chat answer cancel action must require token, chat, and message");

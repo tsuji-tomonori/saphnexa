@@ -940,21 +940,61 @@ const dsqlOperationMappings = {
              AND a.user_id = p.user_id
             WHERE p.chat_id = :chat_id
               AND p.status = 'active'
+          ),
+          target_message AS (
+            SELECT m.tenant_id, m.chat_id, m.message_id
+            FROM chat_messages m
+            JOIN readable_chat rc
+              ON rc.tenant_id = m.tenant_id
+             AND rc.chat_id = m.chat_id
+            WHERE m.message_id = :message_id
+              AND m.sender_type = 'assistant'
+          ),
+          favorite_scope AS (
+            SELECT rc.tenant_id, rc.chat_id, a.user_id
+            FROM readable_chat rc
+            JOIN actor a
+              ON a.tenant_id = rc.tenant_id
+            WHERE :message_id IS NULL
+               OR EXISTS (
+                 SELECT 1
+                 FROM target_message tm
+                 WHERE tm.tenant_id = rc.tenant_id
+                   AND tm.chat_id = rc.chat_id
+               )
+          ),
+          existing_favorite AS (
+            SELECT f.*
+            FROM favorites f
+            JOIN favorite_scope fs
+              ON fs.tenant_id = f.tenant_id
+             AND fs.user_id = f.user_id
+             AND fs.chat_id = f.chat_id
+             AND (
+               (fs.chat_id IS NOT NULL AND :message_id IS NULL AND f.message_id IS NULL)
+               OR f.message_id = :message_id
+             )
+          ),
+          inserted_favorite AS (
+            INSERT INTO favorites (
+              tenant_id, favorite_id, user_id, chat_id, message_id, created_at
+            )
+            SELECT
+              fs.tenant_id,
+              gen_random_uuid(),
+              fs.user_id,
+              fs.chat_id,
+              :message_id,
+              now()
+            FROM favorite_scope fs
+            WHERE NOT EXISTS (SELECT 1 FROM existing_favorite)
+            RETURNING *
           )
-          INSERT INTO favorites (
-            tenant_id, favorite_id, user_id, chat_id, message_id, created_at
-          )
-          SELECT
-            a.tenant_id,
-            gen_random_uuid(),
-            a.user_id,
-            rc.chat_id,
-            :message_id,
-            now()
-          FROM actor a
-          JOIN readable_chat rc
-            ON rc.tenant_id = a.tenant_id
-          RETURNING *
+          SELECT *
+          FROM existing_favorite
+          UNION ALL
+          SELECT *
+          FROM inserted_favorite
         `,
         params: {
           actor_id: request.actorId,

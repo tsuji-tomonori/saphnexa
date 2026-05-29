@@ -492,6 +492,22 @@ export function createLocalStore() {
     requireActiveUser(actor);
     if (input.chat_id) requireReader(actor, input.chat_id);
     if (!input.chat_id && input.message_id) throw forbidden("FAVORITE_CHAT_REQUIRED", "回答のお気に入りにはチャットIDが必要。", 400);
+    if (input.message_id) {
+      const message = state.chat_messages.find((item) =>
+        item.tenant_id === actor.tenant_id &&
+        item.chat_id === input.chat_id &&
+        item.message_id === input.message_id &&
+        item.sender_type === "assistant"
+      );
+      if (!message) throw forbidden("FAVORITE_MESSAGE_NOT_FOUND", "お気に入り対象の回答が存在しない。", 404);
+    }
+    const existing = state.favorites.find((item) =>
+      item.tenant_id === actor.tenant_id &&
+      item.user_id === actor.user_id &&
+      item.chat_id === (input.chat_id || null) &&
+      item.message_id === (input.message_id || null)
+    );
+    if (existing) return existing;
     const favorite = {
       tenant_id: actor.tenant_id,
       favorite_id: nextId("fav"),
