@@ -1,6 +1,6 @@
 # Workers TypeScript source
 
-- 状態: doing
+- 状態: done
 - タスク種別: 機能追加
 - 作成日時: 2026-05-29 10:30 JST
 - 対象ブランチ: `codex/typescript-framework-implementation`
@@ -59,6 +59,11 @@ Workers package に TypeScript source と package typecheck を追加し、chat 
 - `npm test`: pass。15 tests。
 - `npm run docs:check`: pass。
 - `git diff --check`: pass。
+
+## PR コメント
+
+- 受け入れ条件確認: https://github.com/tsuji-tomonori/saphnexa/pull/3#issuecomment-4569713870
+- セルフレビュー: https://github.com/tsuji-tomonori/saphnexa/pull/3#issuecomment-4569715067
 
 ## PR レビュー観点
 
