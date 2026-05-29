@@ -18,6 +18,7 @@
     "packages/domain/src/**/*.js",
     "packages/model-catalog/src/**/*.ts",
     "packages/rag-core/src/**/*.js",
+    "packages/rag-core/src/**/*.ts",
     "packages/tool-contract/src/**/*.ts",
     "packages/ui/src/**/*.ts",
     "packages/ui/src/**/*.tsx"

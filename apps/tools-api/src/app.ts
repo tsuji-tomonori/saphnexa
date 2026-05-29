@@ -1,9 +1,9 @@
 import { OpenAPIHono, createRoute, z } from "@hono/zod-openapi";
-import { createLocalTools } from "@saphnexa/rag-core";
+import { createLocalTools, type ToolInvocationStore } from "@saphnexa/rag-core";
 import { toolContracts } from "@saphnexa/tool-contract";
 
 export interface ToolsApiOptions {
-  store: unknown;
+  store: ToolInvocationStore;
 }
 
 const ToolBody = z.record(z.unknown()).openapi("ToolRequest");

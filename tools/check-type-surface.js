@@ -33,6 +33,7 @@ for (const file of [
   "packages/model-catalog/src/models.ts",
   "packages/model-catalog/src/cost-estimate.ts",
   "packages/db-schema/src/tables.ts",
+  "packages/rag-core/src/fixture-rag.ts",
   "apps/api/src/app.ts",
   "apps/api/src/index.ts",
   "apps/api/src/hono-openapi-app.ts",
@@ -96,6 +97,27 @@ assert(extractStringArray(dbSchemaTs, "requiredTableNames").length === requiredT
 for (const table of requiredTables) {
   assert(dbSchemaTs.includes(`"${table}"`), `DB schema TS source missing ${table}`);
 }
+
+const ragCoreTs = readText("packages/rag-core/src/fixture-rag.ts");
+const ragCoreJs = readText("packages/rag-core/src/fixture-rag.js");
+for (const token of [
+  "createFixtureRagAdapter",
+  "createLocalTools",
+  "isPromptInjectionAttempt",
+  "kbRetrieve",
+  "bm25Search",
+  "aclCheck",
+  "referenceExpand",
+  "evidencePack",
+  "citationFormat",
+  "disable citation",
+  "chunk-acl-denied"
+]) {
+  assert(ragCoreTs.includes(token), `RAG core TS source missing ${token}`);
+  assert(ragCoreJs.includes(token), `RAG core JS runtime mirror missing ${token}`);
+}
+assert(ragCoreTs.includes("export interface LocalRagTools"), "RAG core TS source must type LocalRagTools");
+assert(ragCoreTs.includes("export interface RagCitation"), "RAG core TS source must type RagCitation");
 
 const apiAppSource = readText("apps/api/src/app.ts");
 assert(apiAppSource.includes("createSaphnexaHonoOpenApiApp"), "API app entry must use the TypeScript Hono/OpenAPI source");
