@@ -1,6 +1,6 @@
 # Web citation realtime form
 
-- 状態: doing
+- 状態: done
 - タスク種別: 機能追加
 - 作成日時: 2026-05-29 09:49 JST
 - 対象ブランチ: `codex/typescript-framework-implementation`
@@ -30,11 +30,11 @@ Chat UI を、実データ由来の citation drawer、realtime client 境界、R
 
 ## 受け入れ条件
 
-- [ ] MessageComposer が React Hook Form + Zod validation を使う。
-- [ ] Chat UI が citation drawer を共通 UI / feature component として持ち、表示値は events payload 由来である。
-- [ ] Web realtime client boundary が TypeScript source として存在し、実接続未設定時に架空イベントを返さない。
-- [ ] Web/UI/type checks が pass する。
-- [ ] AppSync Events 実接続と assistant-ui streaming 実ブラウザ挙動を完了扱いにしない。
+- [x] MessageComposer が React Hook Form + Zod validation を使う。
+- [x] Chat UI が citation drawer を共通 UI / feature component として持ち、表示値は events payload 由来である。
+- [x] Web realtime client boundary が TypeScript source として存在し、実接続未設定時に架空イベントを返さない。
+- [x] Web/UI/type checks が pass する。
+- [x] AppSync Events 実接続と assistant-ui streaming 実ブラウザ挙動を完了扱いにしない。
 
 ## 検証計画
 
@@ -45,6 +45,21 @@ Chat UI を、実データ由来の citation drawer、realtime client 境界、R
 - `npm run web:a11y:check`
 - `npm run docs:check`
 - `git diff --check`
+
+## 検証結果
+
+- `npm install react-hook-form@^7.53.0 @hookform/resolvers@^3.9.0 -w @saphnexa/web`: pass。
+- `npm run typecheck`: pass。
+- `npm run ui:check`: pass。
+- `npm run web:flow:check`: pass。
+- `npm run web:a11y:check`: pass。
+- `npm run docs:check`: pass。
+- `git diff --check`: pass。
+
+## PR コメント
+
+- 受け入れ条件確認: https://github.com/tsuji-tomonori/saphnexa/pull/3#issuecomment-4569533161
+- セルフレビュー: https://github.com/tsuji-tomonori/saphnexa/pull/3#issuecomment-4569534372
 
 ## PR レビュー観点
 
