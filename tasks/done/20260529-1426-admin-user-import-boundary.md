@@ -37,11 +37,11 @@ Admin Dashboard にユーザー管理タブを追加し、既存 `adminListUsers
 
 ## 受け入れ条件
 
-- [ ] Admin UI が `adminListUsers` / `startUserImport` / `getUserImport` route helper / generated operation helper 経由でユーザー一覧・取込開始・結果確認を行う。
-- [ ] ユーザー取込 UI が React Hook Form + Zod と共通 UI components を使い、JSON rows の empty/error/pending/result state を表示する。
-- [ ] 取込成功後に `adminListUsers` と対象 `user-import` query が再取得され、架空ユーザーや固定件数を表示しない。
-- [ ] local API / DSQL repository / source/UI/web/docs gate が Admin ユーザー取込境界を検査する。
-- [ ] 選定した検証コマンドが pass し、CSV/Excel binary upload、S3 import file 配置、Cognito 実反映、AppSync 通知を実施済み扱いしない。
+- [x] Admin UI が `adminListUsers` / `startUserImport` / `getUserImport` route helper / generated operation helper 経由でユーザー一覧・取込開始・結果確認を行う。
+- [x] ユーザー取込 UI が React Hook Form + Zod と共通 UI components を使い、JSON rows の empty/error/pending/result state を表示する。
+- [x] 取込成功後に `adminListUsers` と対象 `user-import` query が再取得され、架空ユーザーや固定件数を表示しない。
+- [x] local API / DSQL repository / source/UI/web/docs gate が Admin ユーザー取込境界を検査する。
+- [x] 選定した検証コマンドが pass し、CSV/Excel binary upload、S3 import file 配置、Cognito 実反映、AppSync 通知を実施済み扱いしない。
 
 ## 検証計画
 
@@ -57,6 +57,25 @@ Admin Dashboard にユーザー管理タブを追加し、既存 `adminListUsers
 - `npm run test:integration:local`
 - `git diff --check`
 
+## 検証結果
+
+- `npm run typecheck -w @saphnexa/api`: fail -> 修正後 pass
+- `npm run typecheck -w @saphnexa/web`: pass
+- `npm run typecheck -w @saphnexa/db-types`: pass
+- `npm run ui:check`: pass
+- `npm run web:flow:check`: pass
+- `npm run web:a11y:check`: pass
+- `npm run typecheck:source`: pass
+- `npm run docs:check`: pass
+- `npm run web:build:check`: pass
+- `npm run test:integration:local`: pass
+- `git diff --check`: pass
+
+## PR コメント
+
+- 受け入れ条件確認: https://github.com/tsuji-tomonori/saphnexa/pull/3#issuecomment-4571027055
+- セルフレビュー結果: https://github.com/tsuji-tomonori/saphnexa/pull/3#issuecomment-4571027061
+
 ## PR レビュー観点
 
 - Web UI が架空ユーザーや固定件数を表示していないこと。
@@ -71,4 +90,4 @@ Admin Dashboard にユーザー管理タブを追加し、既存 `adminListUsers
 
 ## 状態
 
-do
+done
