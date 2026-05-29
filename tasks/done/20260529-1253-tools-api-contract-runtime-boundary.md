@@ -34,12 +34,12 @@ Tools API と Agent 境界の検証範囲が変わるため、`docs/ops/local-ve
 
 ## 受け入れ条件
 
-- [ ] Tools API の 6 operation が request schema と response schema を持ち、invalid request を 400 として返す。
-- [ ] handler の response が schema 外の場合、Tools API が 500 として返す。
-- [ ] Agent 側に Tools API HTTP endpoint 用 client があり、6 operation を `toolContracts` の path で呼び出せる。
-- [ ] source gate が Tools API schema/client 境界を検査する。
-- [ ] 関連 docs が、今回確認済みの source-level 境界と未確認の AWS 実接続範囲を区別している。
-- [ ] 選定した検証コマンドが pass し、未実施の実 AWS 検証を実施済み扱いしていない。
+- [x] Tools API の 6 operation が request schema と response schema を持ち、invalid request を 400 として返す。
+- [x] handler の response が schema 外の場合、Tools API が 500 として返す。
+- [x] Agent 側に Tools API HTTP endpoint 用 client があり、6 operation を `toolContracts` の path で呼び出せる。
+- [x] source gate が Tools API schema/client 境界を検査する。
+- [x] 関連 docs が、今回確認済みの source-level 境界と未確認の AWS 実接続範囲を区別している。
+- [x] 選定した検証コマンドが pass し、未実施の実 AWS 検証を実施済み扱いしていない。
 
 ## 検証計画
 
@@ -61,6 +61,11 @@ Tools API と Agent 境界の検証範囲が変わるため、`docs/ops/local-ve
 - `@hono/zod-openapi` の型制約により、schema mapping の型を過度に複雑化すると typecheck の保守性が落ちる。
 - 実 HTTP endpoint の認証は AgentCore Gateway 側の責務として残るため、今回の client は source-level 接続境界に留まる。
 
+## PR コメント
+
+- 受け入れ条件確認: https://github.com/tsuji-tomonori/saphnexa/pull/3#issuecomment-4570405198
+- セルフレビュー: https://github.com/tsuji-tomonori/saphnexa/pull/3#issuecomment-4570412752
+
 ## 状態
 
-do
+done
