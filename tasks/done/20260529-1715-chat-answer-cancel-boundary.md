@@ -95,4 +95,4 @@ Chat UI から選択中の回答生成 message にキャンセル要求を出す
 
 ## 状態
 
-in_progress
+done
