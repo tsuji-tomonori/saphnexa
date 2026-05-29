@@ -1,6 +1,6 @@
 # Chat 回答単位お気に入り UI 境界
 
-- 状態: do
+- 状態: done
 - タスク種別: 機能追加
 - 作成日時: 2026-05-29 20:04
 - 対象ブランチ: `codex/typescript-framework-implementation`
@@ -30,13 +30,13 @@ Chat のお気に入り API は `message_id` を受け取れるが、Web UI は�
 
 ## 受け入れ条件
 
-- [ ] assistant 回答 message に対してお気に入り登録/解除ボタンが表示される。
-- [ ] 参加者だけが message favorite を登録でき、outsider は拒否される。
-- [ ] `addFavorite` は message が対象 chat の assistant message であることを検証する。
-- [ ] 同じ user/chat/message の重複 favorite は作らず既存 favorite を返す。
-- [ ] Web は既存 `addFavorite` / `deleteFavorite` route helper と generated operation helper を使う。
-- [ ] docs/source/UI/a11y gates 上で回答単位のお気に入り UI と重複排除は接続済みになり、実ブラウザ/実 Aurora DSQL は未接続として残る。
-- [ ] 選定した検証コマンドが pass する。
+- [x] assistant 回答 message に対してお気に入り登録/解除ボタンが表示される。
+- [x] 参加者だけが message favorite を登録でき、outsider は拒否される。
+- [x] `addFavorite` は message が対象 chat の assistant message であることを検証する。
+- [x] 同じ user/chat/message の重複 favorite は作らず既存 favorite を返す。
+- [x] Web は既存 `addFavorite` / `deleteFavorite` route helper と generated operation helper を使う。
+- [x] docs/source/UI/a11y gates 上で回答単位のお気に入り UI と重複排除は接続済みになり、実ブラウザ/実 Aurora DSQL は未接続として残る。
+- [x] 選定した検証コマンドが pass する。
 
 ## 検証計画
 
@@ -57,3 +57,23 @@ Chat のお気に入り API は `message_id` を受け取れるが、Web UI は�
 - message_id だけで別 chat や user へ favorite を作らないこと。
 - mock/dummy favorite を UI に出していないこと。
 - 既存 public API route 契約を不要に増やしていないこと。
+
+## 完了メモ
+
+- 実装 commit: `6f0e0f7`
+- 作業レポート: `reports/working/20260529-2004-chat-message-favorite-ui.md`
+- PR 受け入れ条件コメント: https://github.com/tsuji-tomonori/saphnexa/pull/3#issuecomment-4574337159
+- PR セルフレビューコメント: https://github.com/tsuji-tomonori/saphnexa/pull/3#issuecomment-4574339405
+- 検証:
+  - `npm run typecheck -w @saphnexa/web`: pass
+  - `npm run typecheck -w @saphnexa/api`: pass
+  - `npm run typecheck:source`: pass
+  - `npm run web:flow:check`: pass
+  - `npm run ui:check`: pass
+  - `npm run web:a11y:check`: pass
+  - `npm run test:integration:local`: pass
+  - `npm test`: pass
+  - `npm run docs:check`: pass
+  - `npm run test:contract`: pass
+  - `npm run web:build:check`: pass。Vite の 500 kB chunk warning は出た。
+  - `git diff --check`: pass
