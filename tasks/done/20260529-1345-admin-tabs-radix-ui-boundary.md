@@ -35,11 +35,11 @@ Radix Tabs ベースの共通 UI organism を追加し、Admin Dashboard を実�
 
 ## 受け入れ条件
 
-- [ ] `packages/ui` が Radix Tabs primitive ベースの `Tabs` organism を持つ。
-- [ ] `AdminDashboardPage` が評価操作と成果物一覧を `Tabs` で分割し、既存 API hook と empty state を維持する。
-- [ ] 架空ユーザー、架空文書、架空件数、demo fallback を追加しない。
-- [ ] UI/source/a11y/docs gate が Admin Tabs と Radix Tabs 境界を検査する。
-- [ ] 選定した検証コマンドが pass し、実ブラウザ visual regression を実施済み扱いしない。
+- [x] `packages/ui` が Radix Tabs primitive ベースの `Tabs` organism を持つ。
+- [x] `AdminDashboardPage` が評価操作と成果物一覧を `Tabs` で分割し、既存 API hook と empty state を維持する。
+- [x] 架空ユーザー、架空文書、架空件数、demo fallback を追加しない。
+- [x] UI/source/a11y/docs gate が Admin Tabs と Radix Tabs 境界を検査する。
+- [x] 選定した検証コマンドが pass し、実ブラウザ visual regression を実施済み扱いしない。
 
 ## 検証計画
 
@@ -65,4 +65,20 @@ Radix Tabs ベースの共通 UI organism を追加し、Admin Dashboard を実�
 
 ## 状態
 
-do
+done
+
+## PR コメント
+
+- 受け入れ条件確認: https://github.com/tsuji-tomonori/saphnexa/pull/3#issuecomment-4570728324
+- セルフレビュー: https://github.com/tsuji-tomonori/saphnexa/pull/3#issuecomment-4570728332
+
+## 完了時検証
+
+- PASS: `npm run typecheck -w @saphnexa/ui`
+- PASS: `npm run typecheck -w @saphnexa/web`
+- PASS: `npm run ui:check`
+- PASS: `npm run web:a11y:check`
+- PASS: `npm run typecheck:source`
+- PASS: `npm run docs:check`
+- PASS: `npm run web:build:check`
+- PASS: `git diff --check`
