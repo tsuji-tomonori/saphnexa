@@ -150,7 +150,7 @@ checkFile("DocumentTable", "apps/web/src/features/admin/DocumentTable.tsx", [
 ]);
 checkFile("DocumentRegistrationForm", "apps/web/src/features/admin/DocumentRegistrationForm.tsx", [
   rule("form label", (body) => body.includes("aria-label=\"文書登録フォーム\"")),
-  rule("field labels", (body) => body.includes("label=\"文書名\"") && body.includes("label=\"PDFファイル名\"")),
+  rule("field labels", (body) => body.includes("label=\"文書名\"") && body.includes("label=\"PDFファイル名\"") && body.includes("label=\"文書種別\"") && body.includes("label=\"有効開始日\"") && body.includes("label=\"有効終了日\"")),
   rule("pending status", (body) => body.includes("<p role=\"status\">文書登録を開始しています</p>")),
   rule("honest upload state", (body) => body.includes("PDF実アップロード: 未接続")),
   rule("error alert", (body) => body.includes("role=\"alert\"")),

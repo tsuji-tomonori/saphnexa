@@ -149,6 +149,8 @@ for (const file of files) {
   if (file.includes("DocumentRegistrationForm")) {
     assert(body.includes("useForm"), "Admin document registration must use React Hook Form");
     assert(body.includes("zodResolver"), "Admin document registration must use Zod validation");
+    assert(body.includes("文書種別") && body.includes("有効開始日") && body.includes("有効終了日"), "Admin document registration must expose metadata fields");
+    assert(body.includes("document_type") && body.includes("valid_from") && body.includes("valid_until"), "Admin document registration must wire metadata fields to request input");
     assert(body.includes("PDF実アップロード: 未接続"), "Admin document registration must not imply PDF binary upload is implemented");
     assert(!body.includes("doc-local"), "Admin document registration must not hard-code local document ids");
   }

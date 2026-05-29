@@ -589,12 +589,17 @@ export function createLocalStore() {
     requireAdmin(actor);
     const document_id = input.document_id || nextId("doc");
     const version_id = input.version_id || nextId("ver");
-    const metadata = input.metadata || {
+    const defaultMetadata = {
       document_id,
       version: version_id,
       acl_scope: input.acl_scope_id || `user:${actor.user_id}`,
+      document_type: input.document_type || "unspecified",
+      valid_from: input.valid_from || null,
+      valid_until: input.valid_until || null,
       status: "uploaded"
     };
+    const optionalMetadataOnly = input.metadata && Object.keys(input.metadata).every((key) => ["document_type", "valid_from", "valid_until"].includes(key));
+    const metadata = input.metadata ? (optionalMetadataOnly ? { ...defaultMetadata, ...input.metadata } : input.metadata) : defaultMetadata;
     const metadataError = validateDocumentMetadata(metadata);
     const existingVersion = state.document_versions.find((item) => item.document_id === document_id && item.version_id === version_id);
     if (existingVersion) {

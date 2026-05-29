@@ -121,7 +121,7 @@ git diff --check
 - Admin Dashboard が Saphnexa UI package の Radix Tabs organism を使い、評価操作と公開成果物一覧を実データ由来の管理領域として分割すること。CSV/Excel 実アップロード、実 PDF upload、取り込み監視の未実装 backend を架空 UI で実装済みに見せないこと。
 - Admin Dashboard のユーザータブが `adminListUsers` / `startUserImport` / `getUserImport` route helper / generated operation helper を使い、JSON rows 入力で local user import 結果と行別エラーを確認できること。CSV/Excel 実アップロード、Cognito 実反映、AppSync 通知は未接続であることを表示すること。
 - Admin Dashboard の文書タブが `adminListDocuments` route helper / generated operation helper を使い、local API と DSQL query plan の管理者限定文書一覧境界を source gate で確認できること。文書がない場合は正直な empty state を表示すること。
-- Admin Dashboard の文書登録フォームが React Hook Form + Zod と `createDocument` route helper / generated operation helper を使い、登録後に文書一覧 query を再取得する境界を source gate で確認できること。実 PDF upload は未接続であることを表示すること。
+- Admin Dashboard の文書登録フォームが React Hook Form + Zod と `createDocument` route helper / generated operation helper を使い、文書種別、有効期間、登録後の文書一覧 query 再取得を source gate で確認できること。実 PDF upload は未接続であることを表示すること。
 - Admin Dashboard の文書版 lifecycle が React Hook Form + Zod と `getDocument` / `createDocumentVersion` / `activateDocumentVersion` route helper / generated operation helper を使い、文書詳細、文書版、ACL、取り込みジョブ、取り込み完了済み版だけの active 化を source gate で確認できること。実 PDF upload、Step Functions 実行、Bedrock KB / S3 Vectors ingestion は未接続であることを表示すること。
 - Admin Dashboard の文書 ACL 更新が React Hook Form + Zod と `updateDocumentAcl` route helper / generated operation helper を使い、管理者だけが対象文書版の `document_acl_entries` を置換する境界を source gate で確認できること。Cognito group 反映、Bedrock KB / S3 Vectors metadata 再同期、実 retrieval index 再構築は未接続であることを表示すること。
 - Admin Dashboard の文書公開停止が `suspendDocument` route helper / generated operation helper を使い、管理者だけが文書と文書版を logical delete 状態へ更新する境界を source gate で確認できること。物理削除、S3 object delete、Bedrock KB / S3 Vectors delete、保持期間後 lifecycle 実行は未接続であることを表示すること。
@@ -232,7 +232,7 @@ git diff --check
 - Admin Tabs の source gate は評価操作と公開成果物一覧の画面構造を確認する。CSV/Excel 実アップロード、実 PDF upload、取り込み監視の実 backend/API/UI は別途実装・検証する。
 - Chat お気に入りの local gate は参加チャット単位と回答単位の登録、一覧、解除、重複排除、所有者境界、assistant message 以外の拒否を確認する。実ブラウザ操作、実 Aurora DSQL での SQL 実行は別途確認する。
 - Admin 文書一覧の source gate は既存文書の表示と `adminListDocuments` 境界を確認する。実 PDF upload、ACL 編集、取り込みジョブ詳細は別途実装・検証する。
-- Admin 文書登録フォームの source gate は `createDocument` API 境界、CSRF disabled state、local ingestion job 受付、文書一覧再取得を確認する。実 S3 PDF upload、文書種別、有効期間、ACL 編集、取り込みジョブ詳細は別途実装・検証する。
+- Admin 文書登録フォームの source gate は `createDocument` API 境界、CSRF disabled state、local ingestion job 受付、文書種別、有効期間、文書一覧再取得を確認する。実 S3 PDF upload、ACL 編集、取り込みジョブ詳細は別途実装・検証する。
 - Admin 文書版 lifecycle の source gate は `getDocument` の versions / ingestion jobs / ACL entries、`createDocumentVersion` による local 版追加、`activateDocumentVersion` の取り込み完了条件、管理者ロール境界を確認する。文書停止・削除、実 S3 PDF upload、実 Step Functions 実行、Bedrock KB / S3 Vectors ingestion は別途実装・検証する。
 - Admin 文書 ACL 更新の source gate は `updateDocumentAcl` の CSRF / admin role boundary、対象文書版の `document_acl_entries` 置換、文書詳細再取得を確認する。Cognito group 反映、Bedrock KB / S3 Vectors metadata 再同期、実 retrieval index 再構築は別途実装・検証する。
 - Admin 文書公開停止の source gate は `suspendDocument` の CSRF / admin role boundary、文書と文書版の logical delete、文書一覧からの除外を確認する。物理削除、S3 object delete、Bedrock KB / S3 Vectors delete、保持期間後 lifecycle 実行は別途実装・検証する。

@@ -476,6 +476,7 @@ scenario("admin UI source contract", () => {
   assert(createDocumentHookSource.includes("apiRoutes.createDocument()"), "useCreateDocument hook must use createDocument route helper");
   assert(createDocumentHookSource.includes("apiPostOperation(\"createDocument\""), "useCreateDocument hook must use generated createDocument operation helper");
   assert(createDocumentHookSource.includes("invalidateQueries({ queryKey: [\"admin-documents\"] })"), "useCreateDocument hook must refresh admin documents query");
+  assert(createDocumentHookSource.includes("metadata") && createDocumentHookSource.includes("document_type") && createDocumentHookSource.includes("valid_from") && createDocumentHookSource.includes("valid_until"), "useCreateDocument hook must send document metadata fields");
   assert(documentLifecycleHookSource.includes("apiRoutes.getDocument(documentId)"), "useDocumentDetail hook must use getDocument route helper");
   assert(documentLifecycleHookSource.includes("apiGetOperation(\"getDocument\""), "useDocumentDetail hook must use generated getDocument operation helper");
   assert(documentLifecycleHookSource.includes("apiRoutes.createDocumentVersion(input.document_id)"), "useCreateDocumentVersion hook must use createDocumentVersion route helper");
@@ -499,6 +500,12 @@ scenario("admin UI source contract", () => {
     "zodResolver",
     "documentRegistrationSchema",
     "FormField",
+    "文書種別",
+    "有効開始日",
+    "有効終了日",
+    "document_type",
+    "valid_from",
+    "valid_until",
     "Dialog",
     "disabled={!props.csrfToken || createDocument.isPending}",
     "PDF実アップロード: 未接続",
@@ -643,13 +650,22 @@ scenario("admin local API flow", () => {
   const emptyDocuments = api.request("admin-1", "adminListDocuments");
   assert(emptyDocuments.status === 200, "admin documents list failed");
   assert(Array.isArray(emptyDocuments.body.documents), "admin documents list must return documents array");
-  const registered = api.request("admin-1", "createDocument", { csrf_token: csrf, title: "form document", file_name: "flow-form.pdf", acl_scope_id: "group:admin" });
+  const registered = api.request("admin-1", "createDocument", {
+    csrf_token: csrf,
+    title: "form document",
+    file_name: "flow-form.pdf",
+    acl_scope_id: "group:admin",
+    metadata: { document_type: "policy", valid_from: "2026-04-01", valid_until: "2027-03-31" }
+  });
   assert(registered.status === 202, "admin document registration failed");
   assert(registered.body.raw_s3_uri.endsWith("/flow-form.pdf"), "admin document registration must preserve file name in raw S3 URI");
   assert(api.request("user-owner", "getDocument", { document_id: registered.body.document_id }).status === 403, "general user must not get admin document detail");
   const registeredDetail = api.request("admin-1", "getDocument", { document_id: registered.body.document_id });
   assert(registeredDetail.status === 200, "admin document detail failed");
   assert(registeredDetail.body.document.versions.length === 1, "admin document detail must include versions");
+  assert(registeredDetail.body.document.versions[0].metadata_json.document_type === "policy", "admin document metadata must include document type");
+  assert(registeredDetail.body.document.versions[0].metadata_json.valid_from === "2026-04-01", "admin document metadata must include valid_from");
+  assert(registeredDetail.body.document.versions[0].metadata_json.valid_until === "2027-03-31", "admin document metadata must include valid_until");
   assert(registeredDetail.body.document.ingestion_jobs.length === 1, "admin document detail must include ingestion jobs");
   assert(registeredDetail.body.document.acl_entries.some((entry) => entry.acl_scope_id === "group:admin"), "admin document detail must include ACL entries");
   const documentsBeforeSuspension = api.request("admin-1", "adminListDocuments");

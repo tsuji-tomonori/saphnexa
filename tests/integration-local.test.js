@@ -237,11 +237,15 @@ test("document ingestion validates metadata, retries failures, and is idempotent
   assert.equal(retried.body.job.status, "queued");
   assert.equal(retried.body.job.progress_percent, 10);
 
-  const metadata = { document_id: "doc-idempotent", version: "v1", acl_scope: "admin", status: "uploaded" };
+  const metadata = { document_id: "doc-idempotent", version: "v1", acl_scope: "admin", status: "uploaded", document_type: "manual", valid_from: "2026-04-01", valid_until: "2027-03-31" };
   const first = api.request("admin-1", "createDocument", { csrf_token: adminCsrf, title: "idempotent", document_id: "doc-idempotent", version_id: "ver-1", metadata });
   const second = api.request("admin-1", "createDocument", { csrf_token: adminCsrf, title: "idempotent", document_id: "doc-idempotent", version_id: "ver-1", metadata });
   assert.equal(second.body.idempotent, true);
   assert.equal(api.store.state.document_versions.filter((item) => item.document_id === first.body.document_id && item.version_id === first.body.version_id).length, 1);
+  const savedVersion = api.store.state.document_versions.find((item) => item.document_id === first.body.document_id && item.version_id === first.body.version_id);
+  assert.equal(savedVersion.metadata_json.document_type, "manual");
+  assert.equal(savedVersion.metadata_json.valid_from, "2026-04-01");
+  assert.equal(savedVersion.metadata_json.valid_until, "2027-03-31");
 
   const succeeded = api.request("admin-1", "createDocument", {
     csrf_token: adminCsrf,

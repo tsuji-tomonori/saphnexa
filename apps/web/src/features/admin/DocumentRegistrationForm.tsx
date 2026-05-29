@@ -8,7 +8,10 @@ const documentRegistrationSchema = z.object({
   title: z.string().min(1, "文書名は必須です"),
   file_name: z.string().min(1, "PDFファイル名は必須です").regex(/\.pdf$/i, "PDFファイル名は .pdf で終わる必要があります"),
   version_label: z.string().optional(),
-  acl_scope_id: z.string().optional()
+  acl_scope_id: z.string().optional(),
+  document_type: z.string().min(1, "文書種別は必須です"),
+  valid_from: z.string().min(1, "有効開始日は必須です"),
+  valid_until: z.string().min(1, "有効終了日は必須です")
 });
 
 type DocumentRegistrationFormValues = z.infer<typeof documentRegistrationSchema>;
@@ -21,13 +24,16 @@ export function DocumentRegistrationForm(props: { csrfToken: string }) {
       title: "",
       file_name: "",
       version_label: "v1",
-      acl_scope_id: ""
+      acl_scope_id: "",
+      document_type: "",
+      valid_from: "",
+      valid_until: ""
     }
   });
 
   async function submit(values: DocumentRegistrationFormValues) {
     await createDocument.mutateAsync(values);
-    form.reset({ title: "", file_name: "", version_label: "v1", acl_scope_id: "" });
+    form.reset({ title: "", file_name: "", version_label: "v1", acl_scope_id: "", document_type: "", valid_from: "", valid_until: "" });
   }
 
   const created = createDocument.data;
@@ -69,6 +75,33 @@ export function DocumentRegistrationForm(props: { csrfToken: string }) {
           render={({ field }) => (
             <FormField label="ACL scope" htmlFor="document-acl-scope">
               <Input id="document-acl-scope" value={field.value ?? ""} onChange={field.onChange} />
+            </FormField>
+          )}
+        />
+        <Controller
+          control={form.control}
+          name="document_type"
+          render={({ field, fieldState }) => (
+            <FormField label="文書種別" htmlFor="document-type" help={fieldState.error?.message}>
+              <Input id="document-type" value={field.value} onChange={field.onChange} />
+            </FormField>
+          )}
+        />
+        <Controller
+          control={form.control}
+          name="valid_from"
+          render={({ field, fieldState }) => (
+            <FormField label="有効開始日" htmlFor="document-valid-from" help={fieldState.error?.message}>
+              <Input id="document-valid-from" value={field.value} onChange={field.onChange} />
+            </FormField>
+          )}
+        />
+        <Controller
+          control={form.control}
+          name="valid_until"
+          render={({ field, fieldState }) => (
+            <FormField label="有効終了日" htmlFor="document-valid-until" help={fieldState.error?.message}>
+              <Input id="document-valid-until" value={field.value} onChange={field.onChange} />
             </FormField>
           )}
         />
