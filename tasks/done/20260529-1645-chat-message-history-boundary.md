@@ -85,6 +85,11 @@ Chat UI から現在のチャットの過去メッセージ一覧を表示でき
 - pass: `npm test`
 - pass: `git diff --check`
 
+## PR コメント
+
+- 受け入れ条件確認: https://github.com/tsuji-tomonori/saphnexa/pull/3#issuecomment-4572246766
+- セルフレビュー: https://github.com/tsuji-tomonori/saphnexa/pull/3#issuecomment-4572248943
+
 ## 状態
 
-in_progress
+done
