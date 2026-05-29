@@ -1,6 +1,6 @@
 # CI typecheck dependency install
 
-- 状態: doing
+- 状態: done
 - タスク種別: 修正
 - 作成日時: 2026-05-29 09:35 JST
 - 対象ブランチ: `codex/typescript-framework-implementation`
@@ -32,10 +32,10 @@ PR #3 の CI `typecheck` job が clean checkout で失敗した。ローカル�
 
 ## 受け入れ条件
 
-- [ ] `.github/workflows/ci.yml` の `typecheck` job が `npm ci` を実行してから `npm run typecheck` を実行する。
-- [ ] ローカル `npm run typecheck` が pass する。
-- [ ] `.github/workflows/ci.yml` の YAML 検査または関連 docs check が pass する。
-- [ ] PR に CI 修正のセルフレビューを追記する。
+- [x] `.github/workflows/ci.yml` の `typecheck` job が `npm ci` を実行してから `npm run typecheck` を実行する。
+- [x] ローカル `npm run typecheck` が pass する。
+- [x] `.github/workflows/ci.yml` の YAML 検査または関連 docs check が pass する。
+- [x] PR に CI 修正のセルフレビューを追記する。
 
 ## 検証計画
 
@@ -43,6 +43,19 @@ PR #3 の CI `typecheck` job が clean checkout で失敗した。ローカル�
 - `npm run docs:check`
 - `git diff --check`
 - `gh pr checks 3`
+
+## 検証結果
+
+- `npm ci`: pass。
+- `npm run typecheck`: pass。
+- `npm run docs:check`: pass。
+- `git diff --check`: pass。
+- commit hook `check yaml`: pass。
+
+## PR コメント
+
+- 受け入れ条件確認: https://github.com/tsuji-tomonori/saphnexa/pull/3#issuecomment-4569446557
+- セルフレビュー: https://github.com/tsuji-tomonori/saphnexa/pull/3#issuecomment-4569447425
 
 ## リスク
 
