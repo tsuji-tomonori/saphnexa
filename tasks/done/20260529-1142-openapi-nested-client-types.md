@@ -1,6 +1,6 @@
 # OpenAPI nested client types
 
-- 状態: doing
+- 状態: done
 - タスク種別: 機能追加
 - 作成日時: 2026-05-29 11:42 JST
 - 対象ブランチ: `codex/typescript-framework-implementation`
@@ -58,6 +58,11 @@ API route contract の path/status は変えない。local verification docs に
 - `ApiClientJsonObject` を完全排除したと誤認させず、対象を主要 response に限定していること。
 - 既存 API runtime contract、route-level authorization、CSRF 境界を変更していないこと。
 - 実 HTTP や AWS runtime validation を過大に完了扱いしていないこと。
+
+## PR コメント
+
+- 受け入れ条件確認: https://github.com/tsuji-tomonori/saphnexa/pull/3#issuecomment-4570038301
+- セルフレビュー: https://github.com/tsuji-tomonori/saphnexa/pull/3#issuecomment-4570039285
 
 ## 検証結果
 
