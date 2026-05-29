@@ -1,6 +1,6 @@
 # Agent invocation validation boundary
 
-- 状態: doing
+- 状態: done
 - タスク種別: 機能追加
 - 作成日時: 2026-05-29 12:33 JST
 - 対象ブランチ: `codex/typescript-framework-implementation`
@@ -71,3 +71,8 @@ AgentCore Runtime 互換の `/invocations` handler を、入力 validation、出
 - `git diff --check`: pass。
 - `npm run docs:check`: pass。
 - `npm run typecheck`: pass。
+
+## PR コメント
+
+- 受け入れ条件確認: https://github.com/tsuji-tomonori/saphnexa/pull/3#issuecomment-4570253991
+- セルフレビュー: https://github.com/tsuji-tomonori/saphnexa/pull/3#issuecomment-4570255316
