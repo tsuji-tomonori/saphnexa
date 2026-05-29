@@ -35,11 +35,11 @@ Saphnexa 共通 UI package に、shadcn/ui 系の variant 設計と Radix primit
 
 ## 受け入れ条件
 
-- [ ] `packages/ui` が `createThemeContract` と `@vanilla-extract/recipes` の recipe source を持つ。
-- [ ] `Button` / form control / `StatusBadge` が UI package の recipe class を使い、apps/web へ独自 styling を増やさない。
-- [ ] `Dialog` / `Drawer` が Radix Dialog primitive に基づく実装を持ち、既存の title/open API と a11y 意味を維持する。
-- [ ] UI/source/docs gate が vanilla-extract recipe と Radix primitive 境界を検査する。
-- [ ] 選定した検証コマンドが pass し、未実施の実ブラウザ visual regression を実施済み扱いしない。
+- [x] `packages/ui` が `createThemeContract` と `@vanilla-extract/recipes` の recipe source を持つ。
+- [x] `Button` / form control / `StatusBadge` が UI package の recipe class を使い、apps/web へ独自 styling を増やさない。
+- [x] `Dialog` / `Drawer` が Radix Dialog primitive に基づく実装を持ち、既存の title/open API と a11y 意味を維持する。
+- [x] UI/source/docs gate が vanilla-extract recipe と Radix primitive 境界を検査する。
+- [x] 選定した検証コマンドが pass し、未実施の実ブラウザ visual regression を実施済み扱いしない。
 
 ## 検証計画
 
@@ -64,4 +64,20 @@ Saphnexa 共通 UI package に、shadcn/ui 系の variant 設計と Radix primit
 
 ## 状態
 
-do
+done
+
+## PR コメント
+
+- 受け入れ条件確認: https://github.com/tsuji-tomonori/saphnexa/pull/3#issuecomment-4570676989
+- セルフレビュー: https://github.com/tsuji-tomonori/saphnexa/pull/3#issuecomment-4570676996
+
+## 完了時検証
+
+- PASS: `npm run typecheck -w @saphnexa/ui`
+- PASS: `npm run typecheck -w @saphnexa/web`
+- PASS: `npm run ui:check`
+- PASS: `npm run web:a11y:check`
+- PASS: `npm run typecheck:source`
+- PASS: `npm run docs:check`
+- PASS: `npm run web:build:check`
+- PASS: `git diff --check`
