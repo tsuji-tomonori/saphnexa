@@ -35,12 +35,12 @@ DB shared type の local verification 範囲が増えるため、`docs/ops/local
 
 ## 受け入れ条件
 
-- [ ] `packages/db-types` が package として存在し、typecheck script を持つ。
-- [ ] `DbRowByTable` が `dbTableMetadata` の主要 table 名を覆う。
-- [ ] insert/update helper 型が nullable/primary key の違いを表現する。
-- [ ] API DSQL repository が DB row 型を query result boundary で参照する。
-- [ ] source gate と docs が DB shared type 境界を検査・説明する。
-- [ ] 選定した検証コマンドが pass し、実 DSQL introspection を実施済み扱いしていない。
+- [x] `packages/db-types` が package として存在し、typecheck script を持つ。
+- [x] `DbRowByTable` が `dbTableMetadata` の主要 table 名を覆う。
+- [x] insert/update helper 型が nullable/primary key の違いを表現する。
+- [x] API DSQL repository が DB row 型を query result boundary で参照する。
+- [x] source gate と docs が DB shared type 境界を検査・説明する。
+- [x] 選定した検証コマンドが pass し、実 DSQL introspection を実施済み扱いしていない。
 
 ## 検証計画
 
@@ -62,6 +62,11 @@ DB shared type の local verification 範囲が増えるため、`docs/ops/local
 - 今回の型は source metadata 由来の手動 shared type であり、実 Aurora DSQL introspection 由来の完全自動生成ではない。
 - `packages/db-schema` は全 required table の metadata をまだ持っていないため、今回は metadata がある主要 table から開始する。
 
+## PR コメント
+
+- 受け入れ条件確認: https://github.com/tsuji-tomonori/saphnexa/pull/3#issuecomment-4570457431
+- セルフレビュー: https://github.com/tsuji-tomonori/saphnexa/pull/3#issuecomment-4570460565
+
 ## 状態
 
-do
+done
