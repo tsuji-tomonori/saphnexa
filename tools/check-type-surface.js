@@ -30,6 +30,7 @@ for (const [pkgFile, script] of [
 
 for (const file of [
   "packages/api-contract/src/routes.ts",
+  "packages/api-client/src/client.ts",
   "packages/tool-contract/src/tools.ts",
   "packages/model-catalog/src/models.ts",
   "packages/model-catalog/src/cost-estimate.ts",
@@ -80,6 +81,29 @@ for (const route of publicApiRoutes) {
   assert(apiContractTs.includes(`"${route.id}"`), `API contract TS source missing ${route.id}`);
   assert(apiContractTs.includes(`"${route.operationId}"`), `API contract TS source missing ${route.operationId}`);
 }
+
+const apiClientTs = readText("packages/api-client/src/client.ts");
+for (const token of [
+  "getMe",
+  "listChatSessions",
+  "submitQuestion",
+  "listMessageEvents",
+  "issueWsTicket",
+  "listPublishedArtifacts",
+  "startEvaluationRun",
+  "/api/me",
+  "/api/chat-sessions",
+  "/api/ws-ticket",
+  "/api/admin/artifacts",
+  "/api/admin/evaluation-runs"
+]) {
+  assert(apiClientTs.includes(token), `API client TS source missing ${token}`);
+  assert(apiContractTs.includes(token), `API contract TS source missing API client token ${token}`);
+}
+for (const token of ["ApiClientPath", "apiRoutes", "ApiClientRouteName"]) {
+  assert(apiClientTs.includes(token), `API client TS source missing ${token}`);
+}
+assert(apiClientTs.includes("path: ApiClientPath"), "API client request helpers must require ApiClientPath");
 
 const toolContractTs = readText("packages/tool-contract/src/tools.ts");
 assert(toolContractTs.includes("export interface ToolContract"), "Tool contract TS source must export ToolContract");

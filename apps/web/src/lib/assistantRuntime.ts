@@ -1,5 +1,5 @@
 import type { ChatModelAdapter } from "@assistant-ui/react";
-import { apiPost } from "@saphnexa/api-client";
+import { apiPost, apiRoutes } from "@saphnexa/api-client";
 
 export function createSaphnexaAssistantAdapter(csrfToken: string, chatId: string): ChatModelAdapter {
   return {
@@ -7,7 +7,7 @@ export function createSaphnexaAssistantAdapter(csrfToken: string, chatId: string
       const lastMessage = messages.at(-1);
       const question = lastMessage?.content?.map((part) => ("text" in part ? part.text : "")).join("") ?? "";
       const accepted = await apiPost<{ message_id: string }>(
-        "/api/chat-sessions/" + chatId + "/messages",
+        apiRoutes.submitQuestion(chatId),
         { question },
         csrfToken
       );
