@@ -1,6 +1,6 @@
 # API Zod response runtime validation
 
-- 状態: doing
+- 状態: done
 - タスク種別: 機能追加
 - 作成日時: 2026-05-29 11:54 JST
 - 対象ブランチ: `codex/typescript-framework-implementation`
@@ -59,6 +59,11 @@ API route contract の path/status は変えない。local verification docs に
 - runtime validation が成功レスポンス境界に限定され、認可/CSRF/session の意味を変えていないこと。
 - validation failure を成功扱いせず、標準 error response に変換していること。
 - 実 AWS runtime validation を過大に完了扱いしていないこと。
+
+## PR コメント
+
+- 受け入れ条件確認: https://github.com/tsuji-tomonori/saphnexa/pull/3#issuecomment-4570084714
+- セルフレビュー: https://github.com/tsuji-tomonori/saphnexa/pull/3#issuecomment-4570086122
 
 ## 検証結果
 
