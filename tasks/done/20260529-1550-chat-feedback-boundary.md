@@ -64,6 +64,11 @@ Chat UI から現在表示している回答にフィードバックを登録で
 
 2026-05-29 に上記コマンドをすべて実行し pass。`web:build:check` は Vite の 500 kB chunk warning を出したが、既存の build output gate は gzip 146400 bytes で pass。
 
+## PR コメント
+
+- 受け入れ条件確認: https://github.com/tsuji-tomonori/saphnexa/pull/3#issuecomment-4571815501
+- セルフレビュー: https://github.com/tsuji-tomonori/saphnexa/pull/3#issuecomment-4571815490
+
 ## PR レビュー観点
 
 - フィードバック登録がチャット参加者境界を越えていないこと。
@@ -78,4 +83,4 @@ Chat UI から現在表示している回答にフィードバックを登録で
 
 ## 状態
 
-ready_for_pr_comment
+done
