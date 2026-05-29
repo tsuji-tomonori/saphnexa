@@ -72,6 +72,10 @@ assert(
   "submitQuestion response schema must expose message_id"
 );
 assert(
+  document.paths["/v1/chat-sessions/{chat_id}/messages"].get.responses["200"].content["application/json"].schema.properties.messages.items.properties.feedback.type.includes("null"),
+  "listMessages response schema must expose nullable feedback state"
+);
+assert(
   document.paths["/v1/chat-sessions/{chat_id}/messages/{message_id}/events"].get.responses["200"].content["application/json"].schema.properties.events.type === "array",
   "listMessageEvents response schema must expose events array"
 );

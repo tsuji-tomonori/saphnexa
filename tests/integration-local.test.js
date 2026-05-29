@@ -58,6 +58,36 @@ test("question submission creates run/message ids, events, citations, and audite
   assert.equal(aclInvocation.response_summary_json.denied_count, 1);
 });
 
+test("message history restores only the viewer own feedback state", () => {
+  const api = createLocalApi();
+  const ownerCsrf = csrf(api, "user-owner");
+  const chatId = api.request("user-owner", "createChatSession", { csrf_token: ownerCsrf, title: "feedback state" }).body.chat.chat_id;
+  assert.equal(api.request("user-owner", "addChatParticipant", { csrf_token: ownerCsrf, chat_id: chatId, user_id: "user-viewer" }).status, 201);
+  const accepted = api.request("user-owner", "submitQuestion", {
+    csrf_token: ownerCsrf,
+    chat_id: chatId,
+    question: "フィードバック復元を確認する"
+  });
+  assert.equal(accepted.status, 202);
+  const feedback = api.request("user-owner", "createFeedback", {
+    csrf_token: ownerCsrf,
+    chat_id: chatId,
+    message_id: accepted.body.message_id,
+    rating: "positive",
+    comment: "履歴で確認"
+  });
+  assert.equal(feedback.status, 201);
+
+  const ownerMessages = api.request("user-owner", "listMessages", { chat_id: chatId });
+  const ownerAnswer = ownerMessages.body.messages.find((message) => message.message_id === accepted.body.message_id);
+  assert.equal(ownerAnswer.feedback.rating, "positive");
+  assert.equal(ownerAnswer.feedback.comment, "履歴で確認");
+
+  const viewerMessages = api.request("user-viewer", "listMessages", { chat_id: chatId });
+  const viewerAnswer = viewerMessages.body.messages.find((message) => message.message_id === accepted.body.message_id);
+  assert.equal(viewerAnswer.feedback, null);
+});
+
 test("fixture RAG refuses ungrounded questions without fake citations", () => {
   const api = createLocalApi();
   const ownerCsrf = csrf(api, "user-owner");

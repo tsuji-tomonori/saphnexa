@@ -154,7 +154,8 @@ function chatMessageSchema() {
     sender_type: z.string(),
     content_text: z.string(),
     status: z.string(),
-    created_at: z.string()
+    created_at: z.string(),
+    feedback: feedbackSchema().nullable().optional()
   }).passthrough();
 }
 

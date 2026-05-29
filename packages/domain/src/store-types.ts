@@ -69,6 +69,7 @@ export interface ChatMessage {
   status: Status;
   created_at: string;
   completed_at: string | null;
+  feedback?: MessageFeedbackRecord | null;
 }
 
 export interface RetrievalPolicyJson {

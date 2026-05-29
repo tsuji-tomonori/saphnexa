@@ -218,6 +218,7 @@ export function createLocalStore() {
     requireReader(actor, chat_id);
     return state.chat_messages
       .filter((item) => item.tenant_id === actor.tenant_id && item.chat_id === chat_id)
+      .map((message) => withOwnFeedback(message, actor.user_id))
       .sort((a, b) => a.created_at.localeCompare(b.created_at));
   }
 
@@ -236,8 +237,20 @@ export function createLocalStore() {
     return {
       ...chat,
       participants: state.chat_participants.filter((item) => item.chat_id === chat_id && item.status === statuses.ACTIVE),
-      messages: state.chat_messages.filter((item) => item.chat_id === chat_id)
+      messages: state.chat_messages
+        .filter((item) => item.chat_id === chat_id)
+        .map((message) => withOwnFeedback(message, actor.user_id))
     };
+  }
+
+  function withOwnFeedback(message, user_id) {
+    const feedback = state.message_feedback.find((item) =>
+      item.tenant_id === message.tenant_id &&
+      item.chat_id === message.chat_id &&
+      item.message_id === message.message_id &&
+      item.user_id === user_id
+    );
+    return feedback ? { ...message, feedback } : { ...message, feedback: null };
   }
 
   function submitQuestion(actor, chat_id, input, ragAdapter) {

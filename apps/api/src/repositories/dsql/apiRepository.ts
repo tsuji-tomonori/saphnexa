@@ -550,13 +550,32 @@ const dsqlOperationMappings = {
             m.run_id,
             m.status,
             m.created_at,
-            m.completed_at
+            m.completed_at,
+            CASE
+              WHEN f.feedback_id IS NULL THEN NULL
+              ELSE json_build_object(
+                'tenant_id', f.tenant_id,
+                'feedback_id', f.feedback_id,
+                'chat_id', f.chat_id,
+                'message_id', f.message_id,
+                'user_id', f.user_id,
+                'rating', f.rating,
+                'comment', f.comment,
+                'problem_type', f.problem_type,
+                'created_at', f.created_at
+              )
+            END AS feedback
           FROM chat_messages m
           JOIN chat_participants p
             ON p.tenant_id = m.tenant_id
            AND p.chat_id = m.chat_id
            AND p.user_id = :actor_id
            AND p.status = 'active'
+          LEFT JOIN message_feedback f
+            ON f.tenant_id = m.tenant_id
+           AND f.chat_id = m.chat_id
+           AND f.message_id = m.message_id
+           AND f.user_id = :actor_id
           WHERE m.chat_id = :chat_id
           ORDER BY m.created_at ASC, m.message_id ASC
         `,

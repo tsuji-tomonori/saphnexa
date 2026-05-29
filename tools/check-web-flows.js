@@ -208,8 +208,10 @@ scenario("chat UI source contract", () => {
     "メッセージはありません",
     "チャットを選択してください",
     "メッセージ履歴を確認しています",
-    "paging cursor、feedback state、引用本文の完全 REST 復元: 未接続",
+    "paging cursor、引用本文の完全 REST 復元: 未接続",
     "実 AgentCore Runtime 停止、SQS event-publish、stream中断: 未接続",
+    "message.feedback",
+    "フィードバック:",
     "回答生成キャンセル要求",
     "disabled={!props.csrfToken || !props.activeChatId || !props.activeMessageId || props.isCanceling}",
     "StatusBadge",
@@ -354,6 +356,13 @@ scenario("chat local API flow", () => {
   });
   assert(feedback.status === 201, "feedback creation failed");
   assert(feedback.body.feedback.rating === "positive", "feedback rating missing");
+  const feedbackMessages = api.request("user-owner", "listMessages", { chat_id: chat.body.chat.chat_id });
+  const feedbackMessage = feedbackMessages.body.messages.find((message) => message.message_id === submit.body.message_id);
+  assert(feedbackMessage?.feedback?.rating === "positive", "own feedback rating must be restored in message history");
+  assert(feedbackMessage?.feedback?.comment === "参考になりました", "own feedback comment must be restored in message history");
+  const viewerFeedbackMessages = api.request("user-viewer", "listMessages", { chat_id: chat.body.chat.chat_id });
+  const viewerFeedbackMessage = viewerFeedbackMessages.body.messages.find((message) => message.message_id === submit.body.message_id);
+  assert(viewerFeedbackMessage?.feedback === null, "message history must not expose another participant feedback state");
   const outsiderFeedback = api.request("user-outsider", "createFeedback", {
     csrf_token: "csrf-user-outsider",
     chat_id: chat.body.chat.chat_id,

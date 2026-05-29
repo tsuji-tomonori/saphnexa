@@ -278,7 +278,8 @@ function chatMessageSchema() {
     run_id: nullableStringSchema(),
     status: statusSchema(),
     created_at: stringSchema(),
-    completed_at: nullableStringSchema()
+    completed_at: nullableStringSchema(),
+    feedback: nullableSchema(feedbackSchema())
   });
 }
 
@@ -524,6 +525,10 @@ function jsonObjectSchema() {
 
 function nullableJsonObjectSchema() {
   return { type: ["object", "null"], additionalProperties: true };
+}
+
+function nullableSchema(schema) {
+  return { ...schema, type: [schema.type, "null"] };
 }
 
 function arrayOf(items) {
