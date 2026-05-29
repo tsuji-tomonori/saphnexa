@@ -1,14 +1,16 @@
-import { Panel } from "@saphnexa/ui";
+import { MessageThread } from "@saphnexa/ui";
 import type { EventRow } from "../../types";
 
 export function MessageEventsPanel(props: { events: EventRow[] }) {
   return (
-    <Panel aria-label="イベント">
-      {props.events.length === 0 ? (
-        <p role="status">イベントはありません</p>
-      ) : (
-        props.events.map((event) => <div key={event.event_seq}>{event.event_name}</div>)
-      )}
-    </Panel>
+    <MessageThread
+      aria-label="イベント"
+      emptyLabel="イベントはありません"
+      items={props.events.map((event) => ({
+        id: event.event_seq,
+        name: event.event_name,
+        type: event.event_type
+      }))}
+    />
   );
 }

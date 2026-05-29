@@ -27,7 +27,7 @@ for (const file of files) {
     assert(body.includes("disabled={!props.csrfToken || !question}"), "MessageComposer must disable submit without token or question");
   }
   if (file.includes("MessageEventsPanel")) {
-    assert(body.includes("<p role=\"status\">イベントはありません</p>"), "ChatApp must render an honest empty event state");
+    assert(body.includes("MessageThread") && body.includes("emptyLabel=\"イベントはありません\""), "ChatApp must render events through MessageThread with an honest empty state");
   }
   if (file.includes("AdminDashboardPage")) {
     assert(body.includes("className=\"sx-admin-shell\""), "AdminApp must expose admin shell landmark through AppShell");
@@ -46,10 +46,16 @@ for (const file of files) {
 const componentsSource = readText("packages/ui/src/components.tsx");
 const statusSource = readText("packages/ui/src/molecules/StatusBadge.tsx");
 const tableSource = readText("packages/ui/src/organisms/DataTable.tsx");
+const sidebarSource = readText("packages/ui/src/organisms/Sidebar.tsx");
+const messageThreadSource = readText("packages/ui/src/organisms/MessageThread.tsx");
 assert(statusSource.includes("aria-label={`状態: ${props.status}`}"), "StatusBadge must expose an accessible status label");
 assert(componentsSource.includes("export { DataTable }"), "UI barrel must export DataTable organism");
 assert(componentsSource.includes("export { CitationDrawer"), "UI barrel must export CitationDrawer organism");
+assert(componentsSource.includes("export { Sidebar }"), "UI barrel must export Sidebar organism");
+assert(componentsSource.includes("export { MessageThread"), "UI barrel must export MessageThread organism");
 assert(tableSource.includes("<table") && tableSource.includes("<caption>"), "DataTable must render a labelled table");
+assert(sidebarSource.includes("<aside") && sidebarSource.includes("aria-label={props[\"aria-label\"]}"), "Sidebar must render a labelled aside");
+assert(messageThreadSource.includes("<ol") && messageThreadSource.includes("emptyLabel"), "MessageThread must render a labelled ordered event thread with empty state");
 
 const usageRate = componentCandidates === 0 ? 0 : commonUiUsers / componentCandidates;
 assert(usageRate >= 0.7, `common UI package usage below 70%: ${(usageRate * 100).toFixed(1)}%`);

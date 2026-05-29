@@ -8,5 +8,7 @@ export { CitationDrawer, type CitationDrawerItem } from "./organisms/CitationDra
 export { DataTable } from "./organisms/DataTable";
 export { Dialog } from "./organisms/Dialog";
 export { Drawer } from "./organisms/Drawer";
+export { MessageThread, type MessageThreadItem } from "./organisms/MessageThread";
 export { Panel } from "./organisms/Panel";
+export { Sidebar } from "./organisms/Sidebar";
 export { AppShell } from "./templates/AppShell";

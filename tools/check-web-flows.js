@@ -69,6 +69,7 @@ scenario("chat UI source contract", () => {
   assert(chatSessionsHookSource.includes("apiRoutes.listChatSessions()"), "useChatSessions hook must use listChatSessions route helper");
   assert(apiClientSource.includes("/api/chat-sessions"), "API client chat sessions helper must call /api/chat-sessions");
   for (const token of [
+    "Sidebar",
     "aria-label=\"チャット一覧\"",
     "role=\"status\"",
     "チャットはありません"
@@ -85,9 +86,9 @@ scenario("chat UI source contract", () => {
     assert(composerSource.includes(token), `MessageComposer missing token: ${token}`);
   }
   for (const token of [
+    "MessageThread",
     "aria-label=\"イベント\"",
-    "role=\"status\"",
-    "イベントはありません"
+    "emptyLabel=\"イベントはありません\""
   ]) {
     assert(eventsPanelSource.includes(token), `MessageEventsPanel missing token: ${token}`);
   }
