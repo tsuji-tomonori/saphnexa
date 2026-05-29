@@ -15,6 +15,29 @@ export interface DbTableMetadata {
 }
 
 export const dbTableMetadata = [
+  table("users", ["tenant_id", "user_id"], [
+    column("tenant_id", "string", false),
+    column("user_id", "string", false),
+    column("email", "string", false),
+    column("display_name", "string", false),
+    column("role", "string", false),
+    column("department", "string", true),
+    column("employment_type", "string", true),
+    column("status", "string", false),
+    column("created_at", "timestamp", false),
+    column("updated_at", "timestamp", false)
+  ]),
+  table("web_sessions", ["tenant_id", "session_id"], [
+    column("tenant_id", "string", false),
+    column("session_id", "string", false),
+    column("user_id", "string", false),
+    column("refresh_token_ref", "string", false),
+    column("csrf_secret_hash", "string", false),
+    column("status", "string", false),
+    column("expires_at", "timestamp", false),
+    column("created_at", "timestamp", false),
+    column("updated_at", "timestamp", false)
+  ]),
   table("chat_sessions", ["tenant_id", "chat_id"], [
     column("tenant_id", "string", false),
     column("chat_id", "uuid", false),

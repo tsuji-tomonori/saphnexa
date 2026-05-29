@@ -1,13 +1,15 @@
 import type { ApiOperationId } from "@saphnexa/api-contract";
+import type { DbRow, DbTableName } from "@saphnexa/db-types";
 
-export interface DsqlQuery {
+export interface DsqlQuery<TResultTable extends DbTableName = DbTableName> {
   operationId: ApiOperationId;
+  resultTable: TResultTable;
   sql: string;
   params: Record<string, unknown>;
 }
 
 export interface DsqlQueryExecutor {
-  query<T extends Record<string, unknown>>(query: DsqlQuery): Promise<T[]> | T[];
+  query<TResultTable extends DbTableName>(query: DsqlQuery<TResultTable>): Promise<Array<DbRow<TResultTable>>> | Array<DbRow<TResultTable>>;
 }
 
 export interface ApiRepositoryRequest {
@@ -30,10 +32,10 @@ export interface DsqlApiRepositoryOptions {
   executor?: DsqlQueryExecutor;
 }
 
-export type DsqlCsrfTokenIssuer = (input: { actorId: string | undefined; row: Record<string, unknown> }) => Promise<string> | string;
+export type DsqlCsrfTokenIssuer = (input: { actorId: string | undefined; row: DbRow<DbTableName> }) => Promise<string> | string;
 
 type DsqlOperationPlanner = (request: ApiRepositoryRequest) => DsqlQuery;
-type DsqlOperationMapper = (rows: Array<Record<string, unknown>>, request: ApiRepositoryRequest, options: DsqlApiRepositoryOptions) => Promise<unknown> | unknown;
+type DsqlOperationMapper = (rows: Array<DbRow<DbTableName>>, request: ApiRepositoryRequest, options: DsqlApiRepositoryOptions) => Promise<unknown> | unknown;
 
 interface DsqlOperationMapping {
   notFoundErrorCode?: string;
@@ -90,6 +92,7 @@ const dsqlOperationMappings = {
     plan(request) {
       return {
         operationId: "getMe",
+        resultTable: "users",
         sql: `
           SELECT
             u.tenant_id,
@@ -129,6 +132,7 @@ const dsqlOperationMappings = {
     plan(request) {
       return {
         operationId: "listChatSessions",
+        resultTable: "chat_sessions",
         sql: `
           SELECT
             c.tenant_id,
@@ -160,6 +164,7 @@ const dsqlOperationMappings = {
     plan(request) {
       return {
         operationId: "listMessageEvents",
+        resultTable: "chat_message_events",
         sql: `
           SELECT
             e.tenant_id,
@@ -198,6 +203,7 @@ const dsqlOperationMappings = {
     plan(request) {
       return {
         operationId: "listPublishedArtifacts",
+        resultTable: "published_artifacts",
         sql: `
           SELECT
             a.tenant_id,
@@ -209,7 +215,7 @@ const dsqlOperationMappings = {
             a.viewer_path,
             a.version_label,
             a.status,
-            a.published_by_user_id,
+            a.published_by,
             a.published_at,
             a.updated_at
           FROM published_artifacts a
@@ -245,6 +251,6 @@ function repositoryError(status: number, error_code: string, message: string, de
   };
 }
 
-function firstRow(rows: Array<Record<string, unknown>>): Record<string, unknown> {
-  return rows[0] ?? {};
+function firstRow(rows: Array<DbRow<DbTableName>>): DbRow<DbTableName> {
+  return rows[0] as DbRow<DbTableName>;
 }

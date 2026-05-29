@@ -23,6 +23,7 @@ for (const [pkgFile, script] of [
   ["apps/tools-api/package.json", "typecheck"],
   ["apps/workers/package.json", "typecheck"],
   ["apps/web/package.json", "typecheck"],
+  ["packages/db-types/package.json", "typecheck"],
   ["packages/ui/package.json", "typecheck"]
 ]) {
   const pkg = readJson(pkgFile);
@@ -38,6 +39,7 @@ for (const file of [
   "packages/model-catalog/src/cost-estimate.ts",
   "packages/db-schema/src/tables.ts",
   "packages/db-schema/src/table-metadata.ts",
+  "packages/db-types/src/index.ts",
   "packages/rag-core/src/fixture-rag.ts",
   "packages/domain/src/index.ts",
   "packages/domain/src/observability.ts",
@@ -239,6 +241,25 @@ for (const columnName of [
 assert(dbTableMetadataTs.includes("export interface DbTableMetadata"), "DB table metadata TS source must type DbTableMetadata");
 assert(dbTableMetadataTs.includes("export function getDbTableMetadata"), "DB table metadata TS source must expose getDbTableMetadata");
 
+const dbTypesTs = readText("packages/db-types/src/index.ts");
+for (const token of [
+  "export interface DbRowByTable",
+  "export type DbInsert",
+  "export type DbUpdate",
+  "export const dbTypeTableNames",
+  "users",
+  "web_sessions",
+  "chat_sessions",
+  "chat_message_events",
+  "published_artifacts",
+  "published_by"
+]) {
+  assert(dbTypesTs.includes(token), `DB shared types source missing ${token}`);
+}
+for (const metadataTable of extractTableNamesFromMetadata(dbTableMetadataTs)) {
+  assert(dbTypesTs.includes(`${metadataTable}:`), `DB shared types source missing row type for ${metadataTable}`);
+}
+
 const ragCoreTs = readText("packages/rag-core/src/fixture-rag.ts");
 const ragCoreJs = readText("packages/rag-core/src/fixture-rag.js");
 for (const token of [
@@ -347,6 +368,8 @@ const apiRepositorySource = readText("apps/api/src/repositories/dsql/apiReposito
 assert(apiRepositorySource.includes("export interface DsqlApiRepository"), "API must define DSQL repository boundary");
 assert(apiRepositorySource.includes("export interface DsqlQueryExecutor"), "API must define DSQL query executor boundary");
 assert(apiRepositorySource.includes("createDsqlApiRepository"), "API must expose DSQL repository factory");
+assert(apiRepositorySource.includes('from "@saphnexa/db-types"'), "API DSQL repository must use shared DB row types");
+assert(apiRepositorySource.includes("resultTable"), "API DSQL query plan must identify result table");
 assert(apiRepositorySource.includes("DSQL_EXECUTOR_NOT_BOUND"), "API DSQL repository must distinguish missing executor");
 assert(apiRepositorySource.includes("DSQL_OPERATION_NOT_MAPPED"), "API DSQL repository must distinguish unmapped operations");
 for (const token of [
@@ -354,6 +377,10 @@ for (const token of [
   "listChatSessions",
   "listMessageEvents",
   "listPublishedArtifacts",
+  'resultTable: "users"',
+  'resultTable: "chat_sessions"',
+  'resultTable: "chat_message_events"',
+  'resultTable: "published_artifacts"',
   "FROM users",
   "FROM chat_sessions",
   "FROM chat_message_events",
@@ -449,4 +476,8 @@ function extractStringArray(source, exportName) {
   const match = source.match(new RegExp(String.raw`export const ${exportName} = \[([\s\S]*?)\] as const`));
   assert(match, `${exportName} must be exported as const array`);
   return [...match[1].matchAll(/"([^"]+)"/g)].map((item) => item[1]);
+}
+
+function extractTableNamesFromMetadata(source) {
+  return [...source.matchAll(/table\("([^"]+)"/g)].map((match) => match[1]);
 }

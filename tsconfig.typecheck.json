@@ -17,6 +17,7 @@
     "packages/api-client/src/**/*.ts",
     "packages/api-contract/src/**/*.ts",
     "packages/db-schema/src/**/*.ts",
+    "packages/db-types/src/**/*.ts",
     "packages/domain/src/**/*.js",
     "packages/domain/src/**/*.ts",
     "packages/model-catalog/src/**/*.ts",

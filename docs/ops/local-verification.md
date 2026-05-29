@@ -105,12 +105,13 @@ git diff --check
 - `@saphnexa/api-client` が API contract / OpenAPI document 由来の generated operation type map を持ち、method、viewer path、internal path、params、query、request body、success response、error response、主要 outer fields、代表的な nested object / array item fields を drift check で同期確認すること。
 - Web の主要 API 呼び出しが `apiGetOperation` / `apiPostOperation` を使い、手書き response generic や配列要素 cast ではなく generated operation response 型から受け取ること。
 - `packages/db-schema` が required table 名に加えて主要 DB table metadata を TypeScript source として持ち、Flyway SQL migration の主要 table/column token と同期していること。
+- `packages/db-types` が DB metadata 由来の主要 table row/insert/update 型を TypeScript source として持ち、API DSQL query plan が result table と shared DB row 型を参照すること。
 - `npm run typecheck` が source gate と `tsc --noEmit --project tsconfig.typecheck.json` の両方を実行し、API / Agent / Tools API / Web / UI / shared contract の TypeScript source を実コンパイルすること。
 - `packages/rag-core` が typed RAG adapter/tools boundary を TypeScript source として持ち、既存 `.js` runtime mirror と主要 tool/policy token が同期していること。
 - `packages/domain` が role/status/event/helper、observability catalog、local store 境界を TypeScript source として持ち、既存 `.js` runtime mirror と主要 token が同期していること。
 - `apps/workers` が lightweight notification boundary を TypeScript source として持ち、既存 `.js` runtime mirror と禁止フィールド、4KB payload 上限、REST detail URL が同期していること。
 - Hono/Zod/OpenAPI 実装 entrypoint が 38 route と `/openapi.json` を route contract から生成し、CSRF/role/Zod validation metadata と主要 success response の runtime validation 境界を保持すること。
-- API が `hono/aws-lambda` handler entrypoint、request log / origin / error / session / CSRF middleware 境界、dispatch service、DSQL repository interface、operation-level SQL plan、DSQL query executor interface を TypeScript source として持つこと。
+- API が `hono/aws-lambda` handler entrypoint、request log / origin / error / session / CSRF middleware 境界、dispatch service、DSQL repository interface、operation-level SQL plan、DSQL query executor interface、shared DB row type boundary を TypeScript source として持つこと。
 - API の Hono app factory、OpenAPI document builder、Zod schema catalog が TypeScript source of record を持ち、主要 success response の concrete Zod schema と既存 Node local tools 用の `.js` runtime mirror が同期していること。
 - `apps/api`、`apps/tools-api`、`apps/agent` が TypeScript entry を持ち、AgentCore Runtime 互換の `/ping` / `/invocations` contract、invocation input/output validation、runtime failure containment、Agent から Tools API HTTP endpoint への client boundary を source-level で確認できること。
 - Agent TypeScript runtime が query rewrite、DSQL ACL scope 解決、BM25 / KB retrieve、ACL check、reference expand、evidence pack、context packing、answer generation、citation binding の責務境界を持ち、evidence 不足時は回答生成に進まず refusal とすること。
@@ -141,7 +142,7 @@ git diff --check
 - prompt injection attack 20件で policy violation と tool invocation が発生しないこと。
 - Bedrock KB / S3 Vectors / AgentCore Runtime / AgentCore Gateway Target が Tools API、ACL precheck、S3 Vectors metadata、DSQL endpoint と source-level で接続されていること。実 AgentCore Gateway 認可、実 Bedrock KB Retrieve、実 DSQL ACL query、実 HTTP logs による結合確認は AWS dev/UAT 検証で別途実施する。
 - local RAG timing smoke で初回通知と最終回答の p95 が基準を満たすこと。
-- Flyway versioned SQL migration の命名、schema_migrations、required tables、checksum、自動 migration 不採用。
+- Flyway versioned SQL migration の命名、schema_migrations、required tables、checksum、自動 migration 不採用。実 Aurora DSQL introspection 由来の完全生成 DB type と実 Flyway apply は AWS dev/UAT 検証で別途確認する。
 - local DB-like store の主要ドメイン整合性と chat event append-only invariant。
 - 参照グラフ sample 10/10 と BM25F golden recall@10 >= 0.80。
 - required metrics 7/7、alarms 6/6、retention 未設定 0件の catalog。
