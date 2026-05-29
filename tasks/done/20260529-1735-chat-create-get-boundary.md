@@ -97,4 +97,4 @@ Chat UI から新規チャットを作成できる API/UI 境界を追加し、D
 
 ## 状態
 
-in_progress
+done
