@@ -42,6 +42,9 @@ export function createLocalApi() {
             return ok({ events: store.listEvents(actor, input.chat_id, input.message_id, input.after_seq || 0) });
           case "addFavorite":
             return created({ favorite: store.addFavorite(actor, input) });
+          case "deleteFavorite":
+            store.deleteFavorite(actor, input.favorite_id);
+            return noContent();
           case "listFavorites":
             return ok({ favorites: store.listFavorites(actor) });
           case "listLlmModels":

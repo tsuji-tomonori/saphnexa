@@ -15,6 +15,8 @@ for (const file of files) {
     assert(body.includes("className=\"sx-chat-shell\""), "ChatPage must expose chat shell landmark through AppShell");
     assert(body.includes("useChatSessions"), "ChatPage must use TanStack Query chat hook");
     assert(body.includes("useMessageEvents"), "ChatPage must use TanStack Query message events hook");
+    assert(body.includes("useFavorites"), "ChatPage must use TanStack Query favorites hook");
+    assert(body.includes("FavoritePanel"), "ChatPage must render favorite panel through feature component");
     assert(body.includes("AssistantRuntimeBoundary"), "ChatPage must bind assistant-ui runtime provider boundary");
     assert(body.includes("submitAssistantQuestion"), "ChatPage must submit through assistant route helper boundary");
   }
@@ -34,6 +36,13 @@ for (const file of files) {
   }
   if (file.includes("MessageEventsPanel")) {
     assert(body.includes("MessageThread") && body.includes("emptyLabel=\"イベントはありません\""), "ChatApp must render events through MessageThread with an honest empty state");
+  }
+  if (file.includes("FavoritePanel")) {
+    assert(body.includes("DataTable"), "Chat favorites must render through DataTable");
+    assert(body.includes("お気に入りはありません"), "Chat favorites must render an honest empty favorite state");
+    assert(body.includes("disabled={!props.csrfToken || !props.activeChatId || props.isMutating}"), "Chat favorite action must require token and active chat");
+    assert(!body.includes("fav-local"), "Chat favorites must not hard-code local favorite ids");
+    assert(!body.includes("chat-local"), "Chat favorites must not hard-code local chat ids");
   }
   if (file.includes("AdminDashboardPage")) {
     assert(body.includes("className=\"sx-admin-shell\""), "AdminApp must expose admin shell landmark through AppShell");

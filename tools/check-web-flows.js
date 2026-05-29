@@ -15,6 +15,7 @@ const chatNavSource = readText("apps/web/src/features/chat/ChatSessionNav.tsx");
 const composerSource = readText("apps/web/src/features/chat/MessageComposer.tsx");
 const eventsPanelSource = readText("apps/web/src/features/chat/MessageEventsPanel.tsx");
 const citationDrawerSource = readText("apps/web/src/features/chat/CitationDrawerPanel.tsx");
+const favoritePanelSource = readText("apps/web/src/features/chat/FavoritePanel.tsx");
 const assistantRuntimeBoundarySource = readText("apps/web/src/features/chat/AssistantRuntimeBoundary.tsx");
 const realtimeHookSource = readText("apps/web/src/hooks/useMessageRealtime.ts");
 const realtimeClientSource = readText("apps/web/src/lib/realtimeClient.ts");
@@ -31,6 +32,7 @@ const userTableSource = readText("apps/web/src/features/admin/UserTable.tsx");
 const assistantRuntimeSource = readText("apps/web/src/lib/assistantRuntime.ts");
 const meHookSource = readText("apps/web/src/hooks/useMe.ts");
 const chatSessionsHookSource = readText("apps/web/src/hooks/useChatSessions.ts");
+const favoritesHookSource = readText("apps/web/src/hooks/useFavorites.ts");
 const adminUsersHookSource = readText("apps/web/src/hooks/useAdminUsers.ts");
 const userImportHookSource = readText("apps/web/src/hooks/useUserImport.ts");
 const artifactsHookSource = readText("apps/web/src/hooks/useAdminArtifacts.ts");
@@ -71,7 +73,11 @@ scenario("chat UI source contract", () => {
     "useChatSessions",
     "useMessageEvents",
     "useMessageRealtime",
+    "useFavorites",
+    "useAddFavorite",
+    "useDeleteFavorite",
     "CitationDrawerPanel",
+    "FavoritePanel",
     "AssistantRuntimeBoundary",
     "submitAssistantQuestion",
     "setMessageId(accepted.message_id)",
@@ -84,6 +90,14 @@ scenario("chat UI source contract", () => {
   assert(apiClientSource.includes("/api/me"), "API client getMe helper must call /api/me");
   assert(chatSessionsHookSource.includes("apiRoutes.listChatSessions()"), "useChatSessions hook must use listChatSessions route helper");
   assert(apiClientSource.includes("/api/chat-sessions"), "API client chat sessions helper must call /api/chat-sessions");
+  assert(favoritesHookSource.includes("apiRoutes.listFavorites()"), "useFavorites hook must use listFavorites route helper");
+  assert(favoritesHookSource.includes("apiGetOperation(\"listFavorites\""), "useFavorites hook must use generated listFavorites helper");
+  assert(favoritesHookSource.includes("apiRoutes.addFavorite()"), "useAddFavorite hook must use addFavorite route helper");
+  assert(favoritesHookSource.includes("apiPostOperation(\"addFavorite\""), "useAddFavorite hook must use generated addFavorite helper");
+  assert(favoritesHookSource.includes("apiRoutes.deleteFavorite(input.favorite_id)"), "useDeleteFavorite hook must use deleteFavorite route helper");
+  assert(favoritesHookSource.includes("apiDeleteOperation(\"deleteFavorite\""), "useDeleteFavorite hook must use generated deleteFavorite helper");
+  assert(favoritesHookSource.includes("invalidateQueries({ queryKey: [\"favorites\"] })"), "favorite mutations must refresh favorite query");
+  assert(apiClientSource.includes("/api/favorites"), "API client favorites helper must call /api/favorites");
   for (const token of [
     "Sidebar",
     "aria-label=\"チャット一覧\"",
@@ -107,6 +121,16 @@ scenario("chat UI source contract", () => {
     "emptyLabel=\"イベントはありません\""
   ]) {
     assert(eventsPanelSource.includes(token), `MessageEventsPanel missing token: ${token}`);
+  }
+  for (const token of [
+    "DataTable",
+    "aria-label=\"お気に入り\"",
+    "お気に入り一覧",
+    "お気に入りはありません",
+    "disabled={!props.csrfToken || !props.activeChatId || props.isMutating}",
+    "activeFavorite ? \"お気に入り解除\" : \"お気に入り登録\""
+  ]) {
+    assert(favoritePanelSource.includes(token), `FavoritePanel missing token: ${token}`);
   }
   for (const token of [
     "@assistant-ui/react",
@@ -165,6 +189,17 @@ scenario("chat local API flow", () => {
   assert(events.body.events.some((event) => event.event_name === "chat.message.final_ready"), "final event missing");
   const finalEvent = events.body.events.find((event) => event.event_name === "chat.message.final_ready");
   assert(Array.isArray(finalEvent.payload_json.citations), "final event citations missing");
+  const favorite = api.request("user-owner", "addFavorite", { csrf_token: csrf, chat_id: chat.body.chat.chat_id });
+  assert(favorite.status === 201, "favorite creation failed");
+  const outsiderFavorite = api.request("user-outsider", "addFavorite", { csrf_token: "csrf-user-outsider", chat_id: chat.body.chat.chat_id });
+  assert(outsiderFavorite.status === 403, "outsider must not favorite unreadable chat");
+  const favorites = api.request("user-owner", "listFavorites");
+  assert(favorites.status === 200, "favorites fetch failed");
+  assert(favorites.body.favorites.some((item) => item.favorite_id === favorite.body.favorite.favorite_id), "created favorite missing from list");
+  const deleted = api.request("user-owner", "deleteFavorite", { csrf_token: csrf, favorite_id: favorite.body.favorite.favorite_id });
+  assert(deleted.status === 204, "favorite deletion failed");
+  const favoritesAfterDelete = api.request("user-owner", "listFavorites");
+  assert(!favoritesAfterDelete.body.favorites.some((item) => item.favorite_id === favorite.body.favorite.favorite_id), "deleted favorite leaked into list");
 });
 
 scenario("admin UI source contract", () => {

@@ -232,6 +232,7 @@ for (const token of [
   'apiGetOperation("getMe"',
   'apiGetOperation("listChatSessions"',
   'apiGetOperation("listMessageEvents"',
+  'apiGetOperation("listFavorites"',
   'apiGetOperation("adminListUsers"',
   'apiGetOperation("getUserImport"',
   'apiGetOperation("listPublishedArtifacts"',
@@ -245,8 +246,10 @@ for (const token of [
   'apiPostOperation("updateDocumentAcl"',
   'apiPostOperation("suspendDocument"',
   'apiPostOperation("retryIngestionJob"',
+  'apiPostOperation("addFavorite"',
   'apiPostOperation("issueWsTicket"',
-  'apiPostOperation("startEvaluationRun"'
+  'apiPostOperation("startEvaluationRun"',
+  'apiDeleteOperation("deleteFavorite"'
 ]) {
   assert(listFiles(["apps/web/src"], (path) => path.endsWith(".ts") || path.endsWith(".tsx")).some((file) => readText(file).includes(token)), `Web source missing operation-aware helper token ${token}`);
 }
@@ -297,6 +300,8 @@ for (const tableName of [
   "chat_runs",
   "chat_message_events",
   "citation_records",
+  "message_feedback",
+  "favorites",
   "document_acl_entries",
   "ws_tickets",
   "tool_invocations",
@@ -313,6 +318,9 @@ for (const columnName of [
   "retrieval_policy_json",
   "payload_json",
   "display_json",
+  "favorite_id",
+  "rating",
+  "problem_type",
   "acl_scope_id",
   "channel_scope_json",
   "tool_name",
@@ -413,6 +421,9 @@ for (const token of [
   "submitQuestion",
   "issueWsTicket",
   "consumeWsTicket",
+  "addFavorite",
+  "deleteFavorite",
+  "listFavorites",
   "listAdminArtifacts"
 ]) {
   assert(storeTypesTs.includes(token), `Domain store TS source missing ${token}`);
@@ -473,6 +484,9 @@ for (const token of [
   "getMe",
   "listChatSessions",
   "listMessageEvents",
+  "listFavorites",
+  "addFavorite",
+  "deleteFavorite",
   "adminListUsers",
   "listPublishedArtifacts",
   "adminListDocuments",
@@ -485,6 +499,7 @@ for (const token of [
   'resultTable: "users"',
   'resultTable: "chat_sessions"',
   'resultTable: "chat_message_events"',
+  'resultTable: "favorites"',
   'resultTable: "published_artifacts"',
   'resultTable: "documents"',
   'resultTable: "document_versions"',

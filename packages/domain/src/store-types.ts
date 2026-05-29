@@ -102,6 +102,15 @@ export interface CitationRecord {
   display: string;
 }
 
+export interface FavoriteRecord {
+  tenant_id: string;
+  favorite_id: string;
+  user_id: string;
+  chat_id: string | null;
+  message_id: string | null;
+  created_at: string;
+}
+
 export interface DocumentRecord {
   tenant_id: string;
   document_id: string;
@@ -230,7 +239,7 @@ export interface LocalDomainState {
   chat_message_events: ChatMessageEvent[];
   citation_records: CitationRecord[];
   message_feedback: Array<Record<string, unknown>>;
-  favorites: Array<Record<string, unknown>>;
+  favorites: FavoriteRecord[];
   documents: DocumentRecord[];
   document_versions: DocumentVersion[];
   document_acl_entries: DocumentAclEntry[];
@@ -273,6 +282,9 @@ export interface LocalStore {
   getChat(actor: LocalActor, chat_id: string): ChatSession & { participants: ChatParticipant[]; messages: ChatMessage[] };
   submitQuestion(actor: LocalActor, chat_id: string, input: { question: string; retrieval_policy?: RetrievalPolicyJson; model_id?: string; failure_injection?: string }, ragAdapter?: RagAdapter): { message_id: string; run_id: string; status: Status };
   listEvents(actor: LocalActor, chat_id: string, message_id: string, after_seq?: number): ChatMessageEvent[];
+  addFavorite(actor: LocalActor, input: { chat_id?: string; message_id?: string }): FavoriteRecord;
+  deleteFavorite(actor: LocalActor, favorite_id: string): boolean;
+  listFavorites(actor: LocalActor): FavoriteRecord[];
   listAdminUsers(actor: LocalActor): LocalUser[];
   listDocuments(actor: LocalActor): DocumentRecord[];
   getDocument(actor: LocalActor, document_id: string): DocumentDetail;

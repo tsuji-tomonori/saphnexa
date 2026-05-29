@@ -60,6 +60,7 @@ export function createLocalStore() {
     submitQuestion,
     listEvents,
     addFavorite,
+    deleteFavorite,
     listFavorites,
     listAdminUsers,
     startUserImport,
@@ -325,6 +326,7 @@ export function createLocalStore() {
   function addFavorite(actor, input) {
     requireActiveUser(actor);
     if (input.chat_id) requireReader(actor, input.chat_id);
+    if (!input.chat_id && input.message_id) throw forbidden("FAVORITE_CHAT_REQUIRED", "回答のお気に入りにはチャットIDが必要。", 400);
     const favorite = {
       tenant_id: actor.tenant_id,
       favorite_id: nextId("fav"),
@@ -335,6 +337,14 @@ export function createLocalStore() {
     };
     state.favorites.push(favorite);
     return favorite;
+  }
+
+  function deleteFavorite(actor, favorite_id) {
+    requireActiveUser(actor);
+    const favorite = state.favorites.find((item) => item.tenant_id === actor.tenant_id && item.favorite_id === favorite_id);
+    if (!favorite || favorite.user_id !== actor.user_id) throw forbidden("FAVORITE_NOT_FOUND", "お気に入りが存在しない。", 404);
+    state.favorites = state.favorites.filter((item) => !(item.tenant_id === actor.tenant_id && item.favorite_id === favorite_id));
+    return true;
   }
 
   function listFavorites(actor) {

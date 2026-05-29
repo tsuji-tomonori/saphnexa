@@ -100,6 +100,24 @@ export interface DbRowByTable {
     display_json: DbJson;
     created_at: DbTimestamp;
   };
+  message_feedback: {
+    tenant_id: string;
+    chat_id: DbUuid;
+    message_id: DbUuid;
+    user_id: string;
+    rating: string;
+    comment: string | null;
+    problem_type: string | null;
+    created_at: DbTimestamp;
+  };
+  favorites: {
+    tenant_id: string;
+    favorite_id: DbUuid;
+    user_id: string;
+    chat_id: DbUuid | null;
+    message_id: DbUuid | null;
+    created_at: DbTimestamp;
+  };
   documents: {
     tenant_id: string;
     document_id: string;

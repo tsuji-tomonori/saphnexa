@@ -199,6 +199,98 @@ const dsqlOperationMappings = {
       return { events: rows };
     }
   },
+  listFavorites: {
+    plan(request) {
+      return {
+        operationId: "listFavorites",
+        resultTable: "favorites",
+        sql: `
+          SELECT f.*
+          FROM favorites f
+          JOIN users u
+            ON u.tenant_id = f.tenant_id
+           AND u.user_id = :actor_id
+           AND u.status = 'active'
+          WHERE f.user_id = u.user_id
+          ORDER BY f.created_at DESC
+        `,
+        params: { actor_id: request.actorId }
+      };
+    },
+    map(rows) {
+      return { favorites: rows };
+    }
+  },
+  addFavorite: {
+    plan(request) {
+      return {
+        operationId: "addFavorite",
+        resultTable: "favorites",
+        sql: `
+          WITH actor AS (
+            SELECT tenant_id, user_id
+            FROM users
+            WHERE user_id = :actor_id
+              AND status = 'active'
+          ),
+          readable_chat AS (
+            SELECT p.tenant_id, p.chat_id
+            FROM chat_participants p
+            JOIN actor a
+              ON a.tenant_id = p.tenant_id
+             AND a.user_id = p.user_id
+            WHERE p.chat_id = :chat_id
+              AND p.status = 'active'
+          )
+          INSERT INTO favorites (
+            tenant_id, favorite_id, user_id, chat_id, message_id, created_at
+          )
+          SELECT
+            a.tenant_id,
+            gen_random_uuid(),
+            a.user_id,
+            rc.chat_id,
+            :message_id,
+            now()
+          FROM actor a
+          JOIN readable_chat rc
+            ON rc.tenant_id = a.tenant_id
+          RETURNING *
+        `,
+        params: {
+          actor_id: request.actorId,
+          chat_id: request.input.chat_id,
+          message_id: request.input.message_id ?? null
+        }
+      };
+    },
+    map(rows) {
+      return { favorite: firstRow(rows) };
+    }
+  },
+  deleteFavorite: {
+    notFoundErrorCode: "DSQL_FAVORITE_NOT_FOUND",
+    plan(request) {
+      return {
+        operationId: "deleteFavorite",
+        resultTable: "favorites",
+        sql: `
+          DELETE FROM favorites f
+          USING users u
+          WHERE u.tenant_id = f.tenant_id
+            AND u.user_id = :actor_id
+            AND u.status = 'active'
+            AND f.user_id = u.user_id
+            AND f.favorite_id = :favorite_id
+          RETURNING f.*
+        `,
+        params: { actor_id: request.actorId, favorite_id: request.input.favorite_id }
+      };
+    },
+    map() {
+      return undefined;
+    }
+  },
   listPublishedArtifacts: {
     plan(request) {
       return {

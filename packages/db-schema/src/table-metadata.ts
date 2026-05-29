@@ -108,6 +108,24 @@ export const dbTableMetadata = [
     column("display_json", "json", false),
     column("created_at", "timestamp", false)
   ]),
+  table("message_feedback", ["tenant_id", "chat_id", "message_id", "user_id"], [
+    column("tenant_id", "string", false),
+    column("chat_id", "uuid", false),
+    column("message_id", "uuid", false),
+    column("user_id", "string", false),
+    column("rating", "string", false),
+    column("comment", "text", true),
+    column("problem_type", "string", true),
+    column("created_at", "timestamp", false)
+  ]),
+  table("favorites", ["tenant_id", "favorite_id"], [
+    column("tenant_id", "string", false),
+    column("favorite_id", "uuid", false),
+    column("user_id", "string", false),
+    column("chat_id", "uuid", true),
+    column("message_id", "uuid", true),
+    column("created_at", "timestamp", false)
+  ]),
   table("document_acl_entries", ["tenant_id", "document_id", "version_id", "acl_scope_id"], [
     column("tenant_id", "string", false),
     column("document_id", "string", false),

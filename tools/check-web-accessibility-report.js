@@ -9,7 +9,8 @@ checkFile("ChatApp", "apps/web/src/chat/ChatApp.tsx", [
 ]);
 checkFile("ChatPage", "apps/web/src/pages/ChatPage.tsx", [
   rule("main landmark", (body) => body.includes("className=\"sx-chat-shell\"")),
-  rule("assistant runtime provider boundary", (body) => body.includes("AssistantRuntimeBoundary"))
+  rule("assistant runtime provider boundary", (body) => body.includes("AssistantRuntimeBoundary")),
+  rule("favorite panel", (body) => body.includes("FavoritePanel"))
 ]);
 checkFile("AssistantRuntimeBoundary", "apps/web/src/features/chat/AssistantRuntimeBoundary.tsx", [
   rule("assistant runtime provider", (body) => body.includes("AssistantRuntimeProvider")),
@@ -34,6 +35,13 @@ checkFile("CitationDrawerPanel", "apps/web/src/features/chat/CitationDrawerPanel
 checkFile("MessageEventsPanel", "apps/web/src/features/chat/MessageEventsPanel.tsx", [
   rule("event panel label", (body) => body.includes("aria-label=\"イベント\"")),
   rule("empty event status", (body) => body.includes("emptyLabel=\"イベントはありません\""))
+]);
+checkFile("FavoritePanel", "apps/web/src/features/chat/FavoritePanel.tsx", [
+  rule("section label", (body) => body.includes("aria-label=\"お気に入り\"")),
+  rule("favorite table", (body) => body.includes("DataTable") && body.includes("caption=\"お気に入り一覧\"")),
+  rule("empty favorite status", (body) => body.includes("empty=\"お気に入りはありません\"")),
+  rule("button disabled state", (body) => body.includes("disabled={!props.csrfToken || !props.activeChatId || props.isMutating}")),
+  rule("button type", (body) => !/<button(?![^>]*\stype=)/.test(body))
 ]);
 checkFile("AdminApp", "apps/web/src/admin/AdminApp.tsx", [
   rule("page wrapper", (body) => body.includes("<AdminDashboardPage />"))
