@@ -33,6 +33,7 @@
 - `ChatSessionNav` を `Sidebar` 使用へ移行した。
 - `MessageEventsPanel` を `MessageThread` 使用へ移行した。
 - `tools/check-ui-quality.js` と `tools/check-web-flows.js` を更新し、organism分割を検査するようにした。
+- `tools/check-web-accessibility-report.js` を更新し、空状態の `role="status"` が `MessageThread` organism にあることを検査するようにした。
 - `docs/ops/local-verification.md` に Chat UI organism 検査範囲を追記した。
 
 ## 5. 成果物
@@ -42,7 +43,7 @@
 | `packages/ui/src/organisms/Sidebar.tsx` | TSX | Chat navigation 用 organism | R2 |
 | `packages/ui/src/organisms/MessageThread.tsx` | TSX | Event thread 用 organism | R2 |
 | `apps/web/src/features/chat/*` | TSX | Chat feature の organism 利用 | R3 |
-| `tools/check-ui-quality.js` / `tools/check-web-flows.js` | JS | source gate 更新 | R4 |
+| `tools/check-ui-quality.js` / `tools/check-web-flows.js` / `tools/check-web-accessibility-report.js` | JS | source gate 更新 | R4 |
 | `docs/ops/local-verification.md` | Markdown | 検証範囲と未対応範囲の説明 | R6 |
 
 ## 6. 指示へのfit評価
@@ -66,6 +67,7 @@
 - `npm run typecheck`: pass。
 - `npm run web:flow:check`: pass。
 - `npm run ui:check`: 初回 fail。`MessageEventsPanel` の空状態が `MessageThread` organism に移ったため、source gate 期待値を更新後 pass。
+- `npm run web:a11y:check`: CI 初回 fail。`MessageEventsPanel` の空状態が `MessageThread` organism に移ったため、a11y source gate 期待値を更新後 pass。
 - `npm run build -w @saphnexa/web`: pass。
 - `npm run docs:check`: pass。
 - `git diff --check`: pass。

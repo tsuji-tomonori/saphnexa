@@ -28,7 +28,7 @@ checkFile("CitationDrawerPanel", "apps/web/src/features/chat/CitationDrawerPanel
 ]);
 checkFile("MessageEventsPanel", "apps/web/src/features/chat/MessageEventsPanel.tsx", [
   rule("event panel label", (body) => body.includes("aria-label=\"イベント\"")),
-  rule("empty event status", (body) => body.includes("<p role=\"status\">イベントはありません</p>"))
+  rule("empty event status", (body) => body.includes("emptyLabel=\"イベントはありません\""))
 ]);
 checkFile("AdminApp", "apps/web/src/admin/AdminApp.tsx", [
   rule("page wrapper", (body) => body.includes("<AdminDashboardPage />"))
@@ -58,6 +58,9 @@ checkFile("UI atoms", "packages/ui/src/atoms/Button.tsx", [
 ]);
 checkFile("UI panel", "packages/ui/src/organisms/Panel.tsx", [
   rule("panel labelled section", (body) => body.includes("<section") && body.includes("aria-label={props[\"aria-label\"]}")),
+]);
+checkFile("UI message thread", "packages/ui/src/organisms/MessageThread.tsx", [
+  rule("thread empty status", (body) => body.includes("<p role=\"status\">{props.emptyLabel}</p>")),
 ]);
 checkFile("UI status", "packages/ui/src/molecules/StatusBadge.tsx", [
   rule("status accessible name", (body) => body.includes("aria-label={`状態: ${props.status}`}"))

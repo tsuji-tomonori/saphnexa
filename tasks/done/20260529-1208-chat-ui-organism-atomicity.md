@@ -72,6 +72,7 @@ UI挙動の外部契約は変えない。local verification docs には Chat UI 
 - `npm run typecheck`: pass。
 - `npm run web:flow:check`: pass。
 - `npm run ui:check`: 初回 fail。`MessageEventsPanel` の空状態が `MessageThread` organism に移ったため、source gate 期待値を更新後 pass。
+- `npm run web:a11y:check`: CI 初回 fail。`MessageEventsPanel` の空状態が `MessageThread` organism に移ったため、a11y source gate 期待値を更新後 pass。
 - `npm run build -w @saphnexa/web`: pass。
 - `npm run docs:check`: pass。
 - `git diff --check`: pass。
