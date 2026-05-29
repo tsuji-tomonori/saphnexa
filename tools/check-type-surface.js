@@ -1,4 +1,8 @@
 import { assert, listFiles, readJson, readText } from "./lib.js";
+import { publicApiRoutes } from "../packages/api-contract/src/routes.js";
+import { toolContracts } from "../packages/tool-contract/src/tools.js";
+import { requiredTables } from "../packages/db-schema/src/tables.js";
+import { llmModels } from "../packages/model-catalog/src/models.js";
 
 const packageFiles = listFiles(["apps", "infra", "packages"], (path) => path.endsWith("package.json"));
 for (const file of packageFiles) {
@@ -24,6 +28,11 @@ for (const [pkgFile, script] of [
 }
 
 for (const file of [
+  "packages/api-contract/src/routes.ts",
+  "packages/tool-contract/src/tools.ts",
+  "packages/model-catalog/src/models.ts",
+  "packages/model-catalog/src/cost-estimate.ts",
+  "packages/db-schema/src/tables.ts",
   "apps/api/src/app.ts",
   "apps/api/src/hono-openapi-app.ts",
   "apps/api/src/openapi-document.ts",
@@ -44,6 +53,39 @@ for (const file of [
 ]) {
   const body = readText(file);
   assert(body.includes("export "), `${file} must export its TypeScript public surface`);
+}
+
+const apiContractTs = readText("packages/api-contract/src/routes.ts");
+assert(apiContractTs.includes("export interface PublicApiRoute"), "API contract TS source must export PublicApiRoute");
+assert(apiContractTs.includes("export type ApiOperationId"), "API contract TS source must export ApiOperationId");
+assert(extractStringArray(apiContractTs, "apiRouteIds").length === publicApiRoutes.length, "API route id TS source count must match JS runtime");
+assert(extractStringArray(apiContractTs, "apiOperationIds").length === publicApiRoutes.length, "API operation id TS source count must match JS runtime");
+for (const route of publicApiRoutes) {
+  assert(apiContractTs.includes(`"${route.id}"`), `API contract TS source missing ${route.id}`);
+  assert(apiContractTs.includes(`"${route.operationId}"`), `API contract TS source missing ${route.operationId}`);
+}
+
+const toolContractTs = readText("packages/tool-contract/src/tools.ts");
+assert(toolContractTs.includes("export interface ToolContract"), "Tool contract TS source must export ToolContract");
+assert(extractStringArray(toolContractTs, "toolNames").length === toolContracts.length, "Tool name TS source count must match JS runtime");
+assert(extractStringArray(toolContractTs, "toolOperationIds").length === toolContracts.length, "Tool operation TS source count must match JS runtime");
+for (const tool of toolContracts) {
+  assert(toolContractTs.includes(`"${tool.toolName}"`), `Tool contract TS source missing ${tool.toolName}`);
+  assert(toolContractTs.includes(`"${tool.operationId}"`), `Tool contract TS source missing ${tool.operationId}`);
+}
+
+const modelCatalogTs = readText("packages/model-catalog/src/models.ts");
+assert(modelCatalogTs.includes("export interface LlmModelCatalogEntry"), "Model catalog TS source must export LlmModelCatalogEntry");
+assert(extractStringArray(modelCatalogTs, "modelIds").length === llmModels.length, "Model id TS source count must match JS runtime");
+for (const model of llmModels) {
+  assert(modelCatalogTs.includes(`"${model.model_id}"`), `Model catalog TS source missing ${model.model_id}`);
+}
+
+const dbSchemaTs = readText("packages/db-schema/src/tables.ts");
+assert(dbSchemaTs.includes("export type RequiredTableName"), "DB schema TS source must export RequiredTableName");
+assert(extractStringArray(dbSchemaTs, "requiredTableNames").length === requiredTables.length, "DB table TS source count must match JS runtime");
+for (const table of requiredTables) {
+  assert(dbSchemaTs.includes(`"${table}"`), `DB schema TS source missing ${table}`);
 }
 
 const apiAppSource = readText("apps/api/src/app.ts");
@@ -80,3 +122,9 @@ assert(citationBindingSource.includes("citationFormat"), "citation binding must 
 assert(citationBindingSource.includes("evidence: input.evidence"), "citation binding must bind citations to evidence");
 
 console.log("type surface check passed");
+
+function extractStringArray(source, exportName) {
+  const match = source.match(new RegExp(String.raw`export const ${exportName} = \[([\s\S]*?)\] as const`));
+  assert(match, `${exportName} must be exported as const array`);
+  return [...match[1].matchAll(/"([^"]+)"/g)].map((item) => item[1]);
+}
