@@ -1,6 +1,6 @@
 # Admin 文書登録 metadata fields 境界
 
-- 状態: do
+- 状態: done
 - タスク種別: 機能追加
 - 作成日時: 2026-05-29 20:48
 - 対象ブランチ: `codex/typescript-framework-implementation`
@@ -33,12 +33,12 @@ Admin 文書登録フォームは `createDocument` route helper / generated oper
 
 ## 受け入れ条件
 
-- [ ] 文書登録フォームが文書種別、有効開始日、有効終了日を入力できる。
-- [ ] Web は `createDocument` request の `metadata` に `document_type` / `valid_from` / `valid_until` を含める。
-- [ ] local store の default metadata も文書種別と有効期間を保存する。
-- [ ] local integration / web flow gate が metadata の保存を確認する。
-- [ ] docs/source/UI/a11y gates 上で文書種別と有効期間は接続済みになり、実 PDF upload、ACL 編集、取り込みジョブ詳細は未接続として残る。
-- [ ] 選定した検証コマンドが pass する。
+- [x] 文書登録フォームが文書種別、有効開始日、有効終了日を入力できる。
+- [x] Web は `createDocument` request の `metadata` に `document_type` / `valid_from` / `valid_until` を含める。
+- [x] local store の default metadata も文書種別と有効期間を保存する。
+- [x] local integration / web flow gate が metadata の保存を確認する。
+- [x] docs/source/UI/a11y gates 上で文書種別と有効期間は接続済みになり、実 PDF upload、ACL 編集、取り込みジョブ詳細は未接続として残る。
+- [x] 選定した検証コマンドが pass する。
 
 ## 実装計画
 
