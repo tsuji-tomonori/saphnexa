@@ -55,6 +55,7 @@ for (const file of [
   "apps/agent/src/agent/answerGeneration.ts",
   "apps/agent/src/agent/citationBinding.ts",
   "apps/tools-api/src/app.ts",
+  "apps/web/src/main.tsx",
   "apps/web/src/pages/ChatPage.tsx",
   "apps/web/src/pages/AdminDashboardPage.tsx",
   "packages/ui/src/templates/AppShell.tsx"
@@ -140,6 +141,10 @@ assert(answerGenerationSource.includes("packedContext.evidence.length === 0"), "
 const citationBindingSource = readText("apps/agent/src/agent/citationBinding.ts");
 assert(citationBindingSource.includes("citationFormat"), "citation binding must use citation formatter");
 assert(citationBindingSource.includes("evidence: input.evidence"), "citation binding must bind citations to evidence");
+
+const webMainSource = readText("apps/web/src/main.tsx");
+assert(webMainSource.includes("createRoot"), "Web browser entrypoint must mount React root");
+assert(webMainSource.includes("<ChatApp />") && webMainSource.includes("<AdminApp />"), "Web browser entrypoint must reach Chat and Admin apps");
 
 console.log("type surface check passed");
 

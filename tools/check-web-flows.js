@@ -6,6 +6,9 @@ import { assert, readText } from "./lib.js";
 
 const api = createLocalApi();
 const routesSource = readText("apps/web/src/routes.ts");
+const htmlSource = readText("apps/web/index.html");
+const viteConfigSource = readText("apps/web/vite.config.ts");
+const mainSource = readText("apps/web/src/main.tsx");
 const chatSource = readText("apps/web/src/chat/ChatApp.tsx");
 const chatPageSource = readText("apps/web/src/pages/ChatPage.tsx");
 const chatNavSource = readText("apps/web/src/features/chat/ChatSessionNav.tsx");
@@ -26,6 +29,11 @@ const startEvaluationHookSource = readText("apps/web/src/hooks/useStartEvaluatio
 
 const scenarios = [];
 scenario("route role metadata", () => {
+  assert(htmlSource.includes("/src/main.tsx"), "Vite HTML must load browser entrypoint");
+  assert(viteConfigSource.includes("@vitejs/plugin-react"), "Vite config must use React plugin");
+  assert(viteConfigSource.includes("@saphnexa/ui"), "Vite config must alias workspace UI package");
+  assert(mainSource.includes("createRoot"), "browser entrypoint must mount React root");
+  assert(mainSource.includes("<AdminApp />") && mainSource.includes("<ChatApp />"), "browser entrypoint must reach Chat and Admin apps");
   for (const [path, role] of [
     ["/chat", "general_user"],
     ["/admin", "admin"],
