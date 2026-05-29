@@ -84,6 +84,11 @@ Chat UI から owner が共有対象ユーザーを viewer として追加・再
 - pass: `npm test`
 - pass: `git diff --check`
 
+## PR コメント
+
+- 受け入れ条件確認: https://github.com/tsuji-tomonori/saphnexa/pull/3#issuecomment-4572168004
+- セルフレビュー: https://github.com/tsuji-tomonori/saphnexa/pull/3#issuecomment-4572169710
+
 ## 状態
 
-in_progress
+done
