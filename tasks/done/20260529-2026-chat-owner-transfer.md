@@ -1,6 +1,6 @@
 # Chat owner 移譲境界
 
-- 状態: do
+- 状態: done
 - タスク種別: 機能追加
 - 作成日時: 2026-05-29 20:26
 - 対象ブランチ: `codex/typescript-framework-implementation`
@@ -33,13 +33,13 @@ Chat 共有操作は owner による viewer 共有、再有効化、共有解除
 
 ## 受け入れ条件
 
-- [ ] owner が active viewer を owner に移譲できる。
-- [ ] 移譲後、旧 owner は viewer になり、新 owner だけが active owner になる。
-- [ ] 移譲後、旧 owner は owner-only 操作を拒否され、新 owner は owner-only 操作を実行できる。
-- [ ] viewer / outsider は owner 移譲を実行できない。
-- [ ] Web は既存 `updateChatParticipant` route helper / generated operation helper を使って owner 移譲ボタンを実ハンドラに接続する。
-- [ ] docs/source/UI/a11y gates 上で owner 移譲は接続済みになり、owner 昇格の任意増殖、実 AppSync Events fan-out、実ブラウザ/実 Aurora DSQL は未接続として残る。
-- [ ] 選定した検証コマンドが pass する。
+- [x] owner が active viewer を owner に移譲できる。
+- [x] 移譲後、旧 owner は viewer になり、新 owner だけが active owner になる。
+- [x] 移譲後、旧 owner は owner-only 操作を拒否され、新 owner は owner-only 操作を実行できる。
+- [x] viewer / outsider は owner 移譲を実行できない。
+- [x] Web は既存 `updateChatParticipant` route helper / generated operation helper を使って owner 移譲ボタンを実ハンドラに接続する。
+- [x] docs/source/UI/a11y gates 上で owner 移譲は接続済みになり、owner 昇格の任意増殖、実 AppSync Events fan-out、実ブラウザ/実 Aurora DSQL は未接続として残る。
+- [x] 選定した検証コマンドが pass する。
 
 ## 実装計画
 
@@ -75,3 +75,23 @@ Chat 共有操作は owner による viewer 共有、再有効化、共有解除
 - viewer / outsider が owner 移譲や owner-only 操作を実行できないこと。
 - UI が未実装操作を表示せず、実 mutation に接続されていること。
 - 既存 public API route 契約を不要に増やしていないこと。
+
+## 完了メモ
+
+- 実装 commit: `7cbba64`
+- 作業レポート: `reports/working/20260529-2026-chat-owner-transfer.md`
+- PR 受け入れ条件コメント: https://github.com/tsuji-tomonori/saphnexa/pull/3#issuecomment-4574433346
+- PR セルフレビューコメント: https://github.com/tsuji-tomonori/saphnexa/pull/3#issuecomment-4574437378
+- 検証:
+  - `npm run typecheck -w @saphnexa/api`: pass
+  - `npm run typecheck -w @saphnexa/web`: pass
+  - `npm run typecheck:source`: pass
+  - `npm run test:integration:local`: pass
+  - `npm run web:flow:check`: pass
+  - `npm run ui:check`: pass
+  - `npm run web:a11y:check`: pass
+  - `npm test`: pass
+  - `npm run docs:check`: pass
+  - `npm run test:contract`: pass
+  - `npm run web:build:check`: pass。Vite の 500 kB chunk warning は出た。
+  - `git diff --check`: pass
