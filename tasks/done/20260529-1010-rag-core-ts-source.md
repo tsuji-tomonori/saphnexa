@@ -1,6 +1,6 @@
 # RAG core TypeScript source
 
-- 状態: doing
+- 状態: done
 - タスク種別: 機能追加
 - 作成日時: 2026-05-29 10:10 JST
 - 対象ブランチ: `codex/typescript-framework-implementation`
@@ -29,11 +29,11 @@ RAG fixture adapter と local tools 境界を TypeScript source として定義�
 
 ## 受け入れ条件
 
-- [ ] `packages/rag-core/src/fixture-rag.ts` が typed RAG adapter/tools boundary を export する。
-- [ ] RAG core TS source が `npm run typecheck` の実 `tsc` 対象に含まれる。
-- [ ] source gate が TS source と JS runtime mirror の主要 tool/policy token 同期を確認する。
-- [ ] RAG security / quality 関連 checks が pass する。
-- [ ] 実 Bedrock / AgentCore Gateway / S3 Vectors 接続を完了扱いにしない。
+- [x] `packages/rag-core/src/fixture-rag.ts` が typed RAG adapter/tools boundary を export する。
+- [x] RAG core TS source が `npm run typecheck` の実 `tsc` 対象に含まれる。
+- [x] source gate が TS source と JS runtime mirror の主要 tool/policy token 同期を確認する。
+- [x] RAG security / quality 関連 checks が pass する。
+- [x] 実 Bedrock / AgentCore Gateway / S3 Vectors 接続を完了扱いにしない。
 
 ## 検証計画
 
@@ -44,6 +44,21 @@ RAG fixture adapter と local tools 境界を TypeScript source として定義�
 - `npm test`
 - `npm run docs:check`
 - `git diff --check`
+
+## 検証結果
+
+- `npm run typecheck`: pass。
+- `npm run rag:security:check`: pass。20/20 cases。
+- `npm run rag:quality:check`: pass。
+- `npm run test:contract`: pass。
+- `npm test`: pass。15 tests。
+- `npm run docs:check`: pass。
+- `git diff --check`: pass。
+
+## PR コメント
+
+- 受け入れ条件確認: https://github.com/tsuji-tomonori/saphnexa/pull/3#issuecomment-4569631423
+- セルフレビュー: https://github.com/tsuji-tomonori/saphnexa/pull/3#issuecomment-4569633254
 
 ## PR レビュー観点
 
