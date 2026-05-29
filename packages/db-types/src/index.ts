@@ -156,6 +156,26 @@ export interface DbRowByTable {
     error_code: string | null;
     created_at: DbTimestamp;
   };
+  evaluation_datasets: {
+    tenant_id: string;
+    dataset_id: string;
+    dataset_name: string;
+    status: string;
+    source_s3_uri: string;
+    created_at: DbTimestamp;
+  };
+  evaluation_runs: {
+    tenant_id: string;
+    evaluation_run_id: string;
+    dataset_id: string;
+    model_id: string;
+    prompt_version: string;
+    retrieval_config_json: DbJson;
+    artifact_s3_prefix: string | null;
+    status: string;
+    metrics_json: DbJson | null;
+    created_by_user_id: string;
+  };
   ws_tickets: {
     tenant_id: string;
     ticket_id: string;

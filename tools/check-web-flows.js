@@ -468,13 +468,26 @@ scenario("admin UI source contract", () => {
   for (const token of [
     "aria-label=\"管理操作\"",
     "role=\"status\"",
+    "DataTable",
+    "評価データセット一覧",
+    "評価データセットはありません",
+    "useEvaluationDatasets",
+    "useEvaluationRun",
     "disabled={!props.csrfToken || !datasetId}",
-    "setJobStatus(response.evaluation_run.status)"
+    "setJobStatus(response.evaluation_run.status)",
+    "評価run ID",
+    "評価run詳細",
+    "Step Functions評価runner、Bedrock Evaluations job、評価HTML report、AppSync fan-out: 未接続"
   ]) {
     assert(adminActionsSource.includes(token), `AdminActions missing token: ${token}`);
   }
+  assert(startEvaluationHookSource.includes("apiRoutes.listEvaluationDatasets()"), "useEvaluationDatasets hook must use listEvaluationDatasets route helper");
+  assert(startEvaluationHookSource.includes("apiGetOperation(\"listEvaluationDatasets\""), "useEvaluationDatasets hook must use generated dataset operation helper");
   assert(startEvaluationHookSource.includes("apiRoutes.startEvaluationRun()"), "useStartEvaluationRun hook must use startEvaluationRun route helper");
   assert(startEvaluationHookSource.includes("apiPostOperation(\"startEvaluationRun\""), "useStartEvaluationRun hook must use generated evaluation operation helper");
+  assert(startEvaluationHookSource.includes("apiRoutes.getEvaluationRun(evaluationRunId ?? \"\")"), "useEvaluationRun hook must use getEvaluationRun route helper");
+  assert(startEvaluationHookSource.includes("apiGetOperation(\"getEvaluationRun\""), "useEvaluationRun hook must use generated evaluation run operation helper");
+  assert(apiClientSource.includes("/api/admin/evaluation-datasets"), "API client evaluation dataset helper must call /api/admin/evaluation-datasets");
   assert(apiClientSource.includes("/api/admin/evaluation-runs"), "API client evaluation run helper must call /api/admin/evaluation-runs");
   for (const token of [
     "DataTable",
@@ -606,8 +619,15 @@ scenario("admin local API flow", () => {
   api.request("admin-1", "createDocument", { csrf_token: csrf, title: "flow document", document_id: "doc-flow", version_id: "ver-flow" });
   const documents = api.request("admin-1", "adminListDocuments");
   assert(documents.body.documents.some((document) => document.document_id === "doc-flow"), "created document missing from admin documents list");
+  const datasets = api.request("admin-1", "listEvaluationDatasets");
+  assert(datasets.status === 200 && datasets.body.datasets.some((dataset) => dataset.dataset_id === "dataset-local-golden"), "admin evaluation dataset list failed");
+  assert(api.request("user-owner", "listEvaluationDatasets").status === 403, "general user must not list evaluation datasets");
+  assert(api.request("user-owner", "startEvaluationRun", { csrf_token: "csrf-user-owner", dataset_id: "dataset-local-golden" }).status === 403, "general user must not start evaluation runs");
   const evaluation = api.request("admin-1", "startEvaluationRun", { csrf_token: csrf, dataset_id: "dataset-local-golden" });
   assert(evaluation.status === 202, "evaluation run failed");
+  const evaluationDetail = api.request("admin-1", "getEvaluationRun", { evaluation_run_id: evaluation.body.evaluation_run.evaluation_run_id });
+  assert(evaluationDetail.status === 200 && evaluationDetail.body.evaluation_run.metrics_json.retrieval.recall_at_10 === 0.86, "admin evaluation run detail failed");
+  assert(api.request("user-owner", "getEvaluationRun", { evaluation_run_id: evaluation.body.evaluation_run.evaluation_run_id }).status === 403, "general user must not fetch evaluation run details");
   const cookie = api.request("admin-1", "issueArtifactAccessCookie", { csrf_token: csrf });
   assert(cookie.status === 201, "artifact cookie failed");
 });

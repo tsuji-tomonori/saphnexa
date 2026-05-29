@@ -13,6 +13,8 @@ export type IngestionJob = { job_id: string; document_id: string; version_id: st
 export type AdminDocumentDetail = AdminDocument & { versions: DocumentVersion[]; ingestion_jobs: IngestionJob[]; acl_entries: DocumentAclEntry[] };
 export type UserImportJob = { import_id: string; status: string; result_s3_prefix: string; result_report_json: { created: number; updated: number; deleted: number; failed: number; error_rows_s3_uri: string } };
 export type UserImportRow = { row_number: number; action: string; status: string; target_user_id?: string | null; error_message?: string | null };
+export type EvaluationDataset = { dataset_id: string; dataset_name: string; status: string; source_s3_uri: string; created_at: string };
+export type EvaluationRun = { evaluation_run_id: string; dataset_id: string; model_id: string; prompt_version: string; retrieval_config_json: Record<string, unknown>; artifact_s3_prefix: string; status: string; metrics_json: Record<string, unknown>; created_by_user_id: string };
 export type Citation = {
   citation_id: string;
   document_id: string;

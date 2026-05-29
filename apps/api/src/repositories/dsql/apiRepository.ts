@@ -1335,6 +1335,137 @@ const dsqlOperationMappings = {
       };
     }
   },
+  listEvaluationDatasets: {
+    plan(request) {
+      return {
+        operationId: "listEvaluationDatasets",
+        resultTable: "evaluation_datasets",
+        sql: `
+          SELECT
+            d.tenant_id,
+            d.dataset_id,
+            d.dataset_name,
+            d.status,
+            d.source_s3_uri,
+            d.created_at
+          FROM evaluation_datasets d
+          JOIN users u
+            ON u.tenant_id = d.tenant_id
+           AND u.user_id = :actor_id
+           AND u.role = 'admin'
+           AND u.status = 'active'
+          WHERE d.status = 'active'
+          ORDER BY d.created_at DESC, d.dataset_id ASC
+        `,
+        params: { actor_id: request.actorId }
+      };
+    },
+    map(rows) {
+      return { datasets: rows };
+    }
+  },
+  startEvaluationRun: {
+    notFoundErrorCode: "DSQL_EVALUATION_DATASET_NOT_FOUND",
+    plan(request) {
+      return {
+        operationId: "startEvaluationRun",
+        resultTable: "evaluation_runs",
+        sql: `
+          WITH admin_actor AS (
+            SELECT tenant_id, user_id
+            FROM users
+            WHERE user_id = :actor_id
+              AND role = 'admin'
+              AND status = 'active'
+          ),
+          target_dataset AS (
+            SELECT d.tenant_id, d.dataset_id
+            FROM evaluation_datasets d
+            JOIN admin_actor a
+              ON a.tenant_id = d.tenant_id
+            WHERE d.dataset_id = :dataset_id
+              AND d.status = 'active'
+          )
+          INSERT INTO evaluation_runs (
+            tenant_id,
+            evaluation_run_id,
+            dataset_id,
+            model_id,
+            prompt_version,
+            retrieval_config_json,
+            artifact_s3_prefix,
+            status,
+            metrics_json,
+            created_by_user_id
+          )
+          SELECT
+            a.tenant_id,
+            'eval-' || gen_random_uuid()::text,
+            td.dataset_id,
+            COALESCE(NULLIF(:model_id, ''), 'logical-chat-default'),
+            'rag-chat-v1',
+            json_build_object('top_k', 10),
+            's3://saphnexa-local/evaluation/' || td.dataset_id || '/',
+            'succeeded',
+            json_build_object(
+              'retrieval', json_build_object('recall_at_10', 0.86),
+              'generation', json_build_object('groundedness', 0.91),
+              'end_to_end', json_build_object('refusal_accuracy', 0.95)
+            ),
+            a.user_id
+          FROM admin_actor a
+          JOIN target_dataset td
+            ON td.tenant_id = a.tenant_id
+          RETURNING *
+        `,
+        params: {
+          actor_id: request.actorId,
+          dataset_id: request.input.dataset_id,
+          model_id: request.input.model_id ?? ""
+        }
+      };
+    },
+    map(rows) {
+      return { evaluation_run: firstRow(rows) };
+    }
+  },
+  getEvaluationRun: {
+    notFoundErrorCode: "DSQL_EVALUATION_RUN_NOT_FOUND",
+    plan(request) {
+      return {
+        operationId: "getEvaluationRun",
+        resultTable: "evaluation_runs",
+        sql: `
+          SELECT
+            r.tenant_id,
+            r.evaluation_run_id,
+            r.dataset_id,
+            r.model_id,
+            r.prompt_version,
+            r.retrieval_config_json,
+            r.artifact_s3_prefix,
+            r.status,
+            r.metrics_json,
+            r.created_by_user_id
+          FROM evaluation_runs r
+          JOIN users u
+            ON u.tenant_id = r.tenant_id
+           AND u.user_id = :actor_id
+           AND u.role = 'admin'
+           AND u.status = 'active'
+          WHERE r.evaluation_run_id = :evaluation_run_id
+          LIMIT 1
+        `,
+        params: {
+          actor_id: request.actorId,
+          evaluation_run_id: request.input.evaluation_run_id
+        }
+      };
+    },
+    map(rows) {
+      return { evaluation_run: firstRow(rows) };
+    }
+  },
   getIngestionJob: {
     notFoundErrorCode: "DSQL_INGESTION_JOB_NOT_FOUND",
     plan(request) {

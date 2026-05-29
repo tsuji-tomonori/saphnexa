@@ -154,6 +154,26 @@ export const dbTableMetadata = [
     column("output_json", "json", true),
     column("created_at", "timestamp", false)
   ]),
+  table("evaluation_datasets", ["tenant_id", "dataset_id"], [
+    column("tenant_id", "string", false),
+    column("dataset_id", "string", false),
+    column("dataset_name", "string", false),
+    column("status", "string", false),
+    column("source_s3_uri", "string", false),
+    column("created_at", "timestamp", false)
+  ]),
+  table("evaluation_runs", ["tenant_id", "evaluation_run_id"], [
+    column("tenant_id", "string", false),
+    column("evaluation_run_id", "string", false),
+    column("dataset_id", "string", false),
+    column("model_id", "string", false),
+    column("prompt_version", "string", false),
+    column("retrieval_config_json", "json", false),
+    column("artifact_s3_prefix", "string", true),
+    column("status", "string", false),
+    column("metrics_json", "json", true),
+    column("created_by_user_id", "string", false)
+  ]),
   table("published_artifacts", ["tenant_id", "artifact_id"], [
     column("tenant_id", "string", false),
     column("artifact_id", "string", false),

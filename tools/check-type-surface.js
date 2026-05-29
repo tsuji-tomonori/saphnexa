@@ -249,6 +249,8 @@ for (const token of [
   'apiGetOperation("adminListDocuments"',
   'apiGetOperation("getDocument"',
   'apiGetOperation("getIngestionJob"',
+  'apiGetOperation("listEvaluationDatasets"',
+  'apiGetOperation("getEvaluationRun"',
   'apiPostOperation("startUserImport"',
   'apiPostOperation("createDocument"',
   'apiPostOperation("createDocumentVersion"',
@@ -316,6 +318,8 @@ for (const tableName of [
   "document_acl_entries",
   "ws_tickets",
   "tool_invocations",
+  "evaluation_datasets",
+  "evaluation_runs",
   "published_artifacts"
 ]) {
   assert(dbTableMetadataTs.includes(`"${tableName}"`), `DB table metadata TS source missing ${tableName}`);
@@ -338,7 +342,11 @@ for (const columnName of [
   "tool_name",
   "viewer_path",
   "s3_prefix",
-  "published_by"
+  "published_by",
+  "evaluation_run_id",
+  "dataset_id",
+  "metrics_json",
+  "artifact_s3_prefix"
 ]) {
   assert(dbTableMetadataTs.includes(`"${columnName}"`), `DB table metadata TS source missing ${columnName}`);
   assert(dbMigrationSql.includes(columnName), `DB migration missing column ${columnName}`);
@@ -525,6 +533,9 @@ for (const token of [
   "updateDocumentAcl",
   "suspendDocument",
   "getIngestionJob",
+  "listEvaluationDatasets",
+  "startEvaluationRun",
+  "getEvaluationRun",
   'resultTable: "users"',
   'resultTable: "chat_sessions"',
   'resultTable: "chat_participants"',
@@ -536,6 +547,8 @@ for (const token of [
   'resultTable: "documents"',
   'resultTable: "document_versions"',
   'resultTable: "ingestion_jobs"',
+  'resultTable: "evaluation_datasets"',
+  'resultTable: "evaluation_runs"',
   "FROM users",
   "FROM chat_sessions",
   "FROM chat_messages",
@@ -545,6 +558,8 @@ for (const token of [
   "FROM documents",
   "FROM document_versions",
   "FROM ingestion_jobs",
+  "FROM evaluation_datasets",
+  "FROM evaluation_runs",
   "JOIN ingestion_jobs",
   "JOIN chat_participants",
   "u.role = 'admin'"

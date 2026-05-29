@@ -118,7 +118,12 @@ for (const file of files) {
   }
   if (file.includes("AdminActions")) {
     assert(body.includes("aria-label=\"管理操作\""), "AdminApp must label admin actions");
+    assert(body.includes("useEvaluationDatasets") && body.includes("useEvaluationRun"), "Admin evaluation must use route-backed query hooks");
+    assert(body.includes("DataTable") && body.includes("評価データセット一覧"), "Admin evaluation must render datasets through DataTable");
+    assert(body.includes("評価データセットはありません"), "Admin evaluation must render an honest empty dataset state");
     assert(body.includes("disabled={!props.csrfToken || !datasetId}"), "Admin evaluation must require csrf token and dataset id");
+    assert(body.includes("評価run詳細") && body.includes("metrics_json"), "Admin evaluation must render run details and metrics from API data");
+    assert(body.includes("Step Functions評価runner、Bedrock Evaluations job、評価HTML report、AppSync fan-out: 未接続"), "Admin evaluation must not imply external evaluation pipeline is implemented");
     assert(!body.includes("dataset-local-golden"), "Admin UI must not hard-code a dataset id");
   }
   if (file.includes("ArtifactTable")) {

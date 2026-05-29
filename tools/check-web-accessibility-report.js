@@ -103,7 +103,12 @@ checkFile("AdminDashboardPage", "apps/web/src/pages/AdminDashboardPage.tsx", [
 ]);
 checkFile("AdminActions", "apps/web/src/features/admin/AdminActions.tsx", [
   rule("admin action label", (body) => body.includes("aria-label=\"管理操作\"")),
+  rule("dataset pending status", (body) => body.includes("<p role=\"status\">評価データセットを確認しています</p>")),
+  rule("dataset table", (body) => body.includes("DataTable") && body.includes("caption=\"評価データセット一覧\"")),
   rule("evaluation disabled state", (body) => body.includes("disabled={!props.csrfToken || !datasetId}")),
+  rule("evaluation run field", (body) => body.includes("label=\"評価run ID\"")),
+  rule("evaluation run detail table", (body) => body.includes("caption=\"評価run詳細\"")),
+  rule("honest evaluation pipeline state", (body) => body.includes("Step Functions評価runner、Bedrock Evaluations job、評価HTML report、AppSync fan-out: 未接続")),
   rule("evaluation progress status", (body) => body.includes("<p role=\"status\">評価実行を開始しています</p>"))
 ]);
 checkFile("UserImportPanel", "apps/web/src/features/admin/UserImportPanel.tsx", [
