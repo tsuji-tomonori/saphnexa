@@ -25,6 +25,9 @@ for (const [pkgFile, script] of [
 
 for (const file of [
   "apps/api/src/app.ts",
+  "apps/api/src/hono-openapi-app.ts",
+  "apps/api/src/openapi-document.ts",
+  "apps/api/src/zod-openapi-schemas.ts",
   "apps/agent/src/app.ts",
   "apps/agent/src/runtime/agentCoreHandler.ts",
   "apps/agent/src/clients/toolsApiClient.ts",
@@ -42,6 +45,14 @@ for (const file of [
   const body = readText(file);
   assert(body.includes("export "), `${file} must export its TypeScript public surface`);
 }
+
+const apiAppSource = readText("apps/api/src/app.ts");
+assert(apiAppSource.includes("createSaphnexaHonoOpenApiApp"), "API app entry must use the TypeScript Hono/OpenAPI source");
+
+const honoOpenApiSource = readText("apps/api/src/hono-openapi-app.ts");
+assert(honoOpenApiSource.includes("interface ApiDispatcher"), "API Hono source must type dispatcher boundary");
+assert(honoOpenApiSource.includes("buildRouteZodSchemas"), "API Hono source must use Zod route schemas");
+assert(honoOpenApiSource.includes("buildOpenApiDocument"), "API Hono source must use OpenAPI document builder");
 
 const ragAgentSource = readText("apps/agent/src/agent/ragAgent.ts");
 for (const token of [

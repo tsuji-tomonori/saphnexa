@@ -3,8 +3,12 @@ import { buildHonoRouteDefinitions, buildOpenApiDocument } from "../apps/api/src
 import { publicApiRoutes } from "../packages/api-contract/src/routes.js";
 
 const apiPackage = readJson("apps/api/package.json");
-const appSource = readText("apps/api/src/hono-openapi-app.js");
-const zodSource = readText("apps/api/src/zod-openapi-schemas.js");
+const appSource = readText("apps/api/src/hono-openapi-app.ts");
+const appWrapperSource = readText("apps/api/src/hono-openapi-app.js");
+const openApiSource = readText("apps/api/src/openapi-document.ts");
+const openApiWrapperSource = readText("apps/api/src/openapi-document.js");
+const zodSource = readText("apps/api/src/zod-openapi-schemas.ts");
+const zodWrapperSource = readText("apps/api/src/zod-openapi-schemas.js");
 const document = buildOpenApiDocument();
 const definitions = buildHonoRouteDefinitions();
 
@@ -17,8 +21,13 @@ assert(appSource.includes("OpenAPIHono"), "Hono app must use OpenAPIHono");
 assert(appSource.includes("createRoute"), "Hono app must use createRoute");
 assert(appSource.includes("app.doc(\"/openapi.json\""), "Hono app must expose /openapi.json");
 assert(appSource.includes("x-saphnexa-actor-id"), "Hono app must carry actor boundary through header mapping");
+assert(appSource.includes("interface ApiDispatcher"), "Hono app TypeScript source must type the dispatcher boundary");
+assert(openApiSource.includes("export type HonoRouteDefinition"), "OpenAPI TypeScript source must export HonoRouteDefinition");
 assert(zodSource.includes("@hono/zod-openapi"), "Zod schema catalog must use @hono/zod-openapi");
 assert(zodSource.includes("buildRouteZodSchemas"), "Zod schema catalog must export route schemas");
+assert(appWrapperSource.includes("OpenAPIHono"), "Hono JS runtime mirror must keep OpenAPIHono compatibility");
+assert(openApiWrapperSource.includes("buildOpenApiDocument"), "OpenAPI JS runtime mirror must keep existing Node compatibility");
+assert(zodWrapperSource.includes("buildRouteZodSchemas"), "Zod JS runtime mirror must keep existing Node compatibility");
 
 assert(document.openapi === "3.1.0", "OpenAPI version mismatch");
 assert(document.info.title === "Saphnexa Hono API", "OpenAPI title mismatch");

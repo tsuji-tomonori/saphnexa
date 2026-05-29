@@ -98,6 +98,7 @@ git diff --check
 
 - 公開 API 38 件と Tools API 6 件の contract metadata。
 - Hono/Zod/OpenAPI 実装 entrypoint が 38 route と `/openapi.json` を route contract から生成し、CSRF/role/Zod validation metadata を保持すること。
+- API の Hono app factory、OpenAPI document builder、Zod schema catalog が TypeScript source of record を持ち、既存 Node local tools 用の `.js` runtime mirror と同期していること。
 - `apps/api`、`apps/tools-api`、`apps/agent` が TypeScript entry を持ち、AgentCore Runtime 互換の `/ping` / `/invocations` contract を source-level で確認できること。
 - Agent TypeScript runtime が query rewrite、DSQL ACL scope 解決、BM25 / KB retrieve、ACL check、reference expand、evidence pack、context packing、answer generation、citation binding の責務境界を持ち、evidence 不足時は回答生成に進まず refusal とすること。
 - `apps/web` が React + Vite + TypeScript package として成立し、TanStack Query hook、assistant-ui runtime adapter 境界、Atomic Design UI package を通して chat/admin source gate を満たすこと。
@@ -176,6 +177,7 @@ git diff --check
 
 - AWS dev/UAT での Cognito、DSQL、S3、CloudFront、AppSync Events、Bedrock KB、S3 Vectors、AgentCore の実接続。
 - Hono runtime の実 Lambda adapter 起動、依存 install、Cognito authorizer、CSRF cookie integration、CloudFront 経由の実 HTTP request。
+- API TypeScript source of record は source gate で検査する。既存 local tools/tests は標準 `node` 実行のため `.js` runtime mirror を使う。依存 install 後の実 `tsc` compilation と `.ts` からの runtime bundle 生成は別途確認する。
 - `aws-cdk-lib` / `constructs` install 後の実 `cdk synth`、CDK bootstrap、CDK deploy、CloudFormation change set 実行。
 - CDK deploy、CloudFormation outputs、S3 inventory、CloudWatch logs、CloudFront/S3/Docusaurus/Allure 公開 URL。
 - `aws s3 sync dist/admin/docs/versions/v0.17/ ...` と Allure run別 publish の実行結果。
