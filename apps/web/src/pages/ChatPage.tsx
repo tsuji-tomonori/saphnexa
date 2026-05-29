@@ -1,5 +1,5 @@
 import { useMemo, useState } from "react";
-import { apiPost, apiRoutes } from "@saphnexa/api-client";
+import { apiPostOperation, apiRoutes } from "@saphnexa/api-client";
 import { AppShell } from "@saphnexa/ui";
 import { CitationDrawerPanel } from "../features/chat/CitationDrawerPanel";
 import { ChatSessionNav } from "../features/chat/ChatSessionNav";
@@ -26,10 +26,10 @@ export function ChatPage() {
 
   async function submit(question: string) {
     if (!activeChatId) return;
-    const accepted = await apiPost<{ message_id: string }>(apiRoutes.submitQuestion(activeChatId), { question }, csrfToken);
+    const accepted = await apiPostOperation("submitQuestion", apiRoutes.submitQuestion(activeChatId), { question }, csrfToken);
     setMessageId(accepted.message_id);
-    const ticket = await apiPost<{ ticket: { ticket_id: string } }>(apiRoutes.issueWsTicket(), { chat_id: activeChatId, message_id: accepted.message_id }, csrfToken);
-    setWsTicket(ticket.ticket.ticket_id);
+    const ticket = await apiPostOperation("issueWsTicket", apiRoutes.issueWsTicket(), { chat_id: activeChatId, message_id: accepted.message_id }, csrfToken);
+    setWsTicket(ticket.ticket);
   }
 
   return (

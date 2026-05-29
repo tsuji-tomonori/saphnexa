@@ -126,11 +126,41 @@ assert(
   publicApiRoutes.every((route) => apiClientTs.includes(route.operationId)),
   "API client route helpers must cover every public API operation"
 );
-for (const token of ["ApiClientPath", "ApiClientPathTemplate", "apiRoutes", "ApiClientRouteName", "apiPatch", "apiDelete"]) {
+for (const token of [
+  "ApiClientPath",
+  "ApiClientPathTemplate",
+  "ApiClientOperationIdForMethod",
+  "ApiClientRequestBodyInput",
+  "apiRoutes",
+  "ApiClientRouteName",
+  "apiGetOperation",
+  "apiPostOperation",
+  "apiPatchOperation",
+  "apiDeleteOperation",
+  "apiPatch",
+  "apiDelete"
+]) {
   assert(apiClientTs.includes(token), `API client TS source missing ${token}`);
 }
 assert(apiClientTs.includes("path: ApiClientPath"), "API client request helpers must require ApiClientPath");
 assert(apiClientTs.includes("encodeURIComponent"), "API client parameterized route helpers must URL-encode parameters");
+
+for (const file of listFiles(["apps/web/src"], (path) => path.endsWith(".ts") || path.endsWith(".tsx"))) {
+  const source = readText(file);
+  assert(!source.includes("apiGet<"), `${file} must use generated operation response helpers instead of apiGet<T>`);
+  assert(!source.includes("apiPost<"), `${file} must use generated operation response helpers instead of apiPost<T>`);
+}
+for (const token of [
+  'apiGetOperation("getMe"',
+  'apiGetOperation("listChatSessions"',
+  'apiGetOperation("listMessageEvents"',
+  'apiGetOperation("listPublishedArtifacts"',
+  'apiPostOperation("submitQuestion"',
+  'apiPostOperation("issueWsTicket"',
+  'apiPostOperation("startEvaluationRun"'
+]) {
+  assert(listFiles(["apps/web/src"], (path) => path.endsWith(".ts") || path.endsWith(".tsx")).some((file) => readText(file).includes(token)), `Web source missing operation-aware helper token ${token}`);
+}
 
 const toolContractTs = readText("packages/tool-contract/src/tools.ts");
 assert(toolContractTs.includes("export interface ToolContract"), "Tool contract TS source must export ToolContract");

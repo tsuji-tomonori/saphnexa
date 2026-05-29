@@ -1,3 +1,10 @@
+import type {
+  ApiClientGeneratedOperationId,
+  ApiClientOperationRequest,
+  ApiClientOperationResponse,
+  ApiClientOperationTypes
+} from "./generated/operation-types";
+
 export type ApiClientPath = `/api/${string}` | `/auth/${string}`;
 export type ApiClientPathTemplate = `/${"api" | "auth"}/${string}`;
 export type {
@@ -52,6 +59,15 @@ export const apiRouteTemplates = {
 } as const satisfies Record<string, ApiClientPathTemplate>;
 
 export type ApiClientRouteName = keyof typeof apiRouteTemplates;
+export type ApiClientOperationIdForMethod<TMethod extends ApiClientOperationTypes[ApiClientGeneratedOperationId]["method"]> = {
+  [TOperation in ApiClientGeneratedOperationId]: ApiClientOperationTypes[TOperation]["method"] extends TMethod
+    ? TOperation
+    : never;
+}[ApiClientGeneratedOperationId];
+export type ApiClientRequestBodyInput<TOperation extends ApiClientGeneratedOperationId> =
+  ApiClientOperationRequest<TOperation> extends never
+    ? never
+    : Omit<ApiClientOperationRequest<TOperation>, "csrf_token">;
 
 export const apiRoutes = {
   loginStart: () => pathFromTemplate(apiRouteTemplates.loginStart),
@@ -107,8 +123,30 @@ export async function apiGet<T>(path: ApiClientPath): Promise<T> {
   return request<T>(path, { method: "GET" });
 }
 
+export async function apiGetOperation<TOperation extends ApiClientOperationIdForMethod<"GET">>(
+  operationId: TOperation,
+  path: ApiClientPath
+): Promise<ApiClientOperationResponse<TOperation>> {
+  void operationId;
+  return request<ApiClientOperationResponse<TOperation>>(path, { method: "GET" });
+}
+
 export async function apiPost<T>(path: ApiClientPath, body: unknown, csrfToken: string): Promise<T> {
   return request<T>(path, {
+    method: "POST",
+    headers: { "content-type": "application/json", "x-csrf-token": csrfToken },
+    body: JSON.stringify(body)
+  });
+}
+
+export async function apiPostOperation<TOperation extends ApiClientOperationIdForMethod<"POST">>(
+  operationId: TOperation,
+  path: ApiClientPath,
+  body: ApiClientRequestBodyInput<TOperation>,
+  csrfToken: string
+): Promise<ApiClientOperationResponse<TOperation>> {
+  void operationId;
+  return request<ApiClientOperationResponse<TOperation>>(path, {
     method: "POST",
     headers: { "content-type": "application/json", "x-csrf-token": csrfToken },
     body: JSON.stringify(body)
@@ -123,12 +161,39 @@ export async function apiPatch<T>(path: ApiClientPath, body: unknown, csrfToken:
   });
 }
 
+export async function apiPatchOperation<TOperation extends ApiClientOperationIdForMethod<"PATCH">>(
+  operationId: TOperation,
+  path: ApiClientPath,
+  body: ApiClientRequestBodyInput<TOperation>,
+  csrfToken: string
+): Promise<ApiClientOperationResponse<TOperation>> {
+  void operationId;
+  return request<ApiClientOperationResponse<TOperation>>(path, {
+    method: "PATCH",
+    headers: { "content-type": "application/json", "x-csrf-token": csrfToken },
+    body: JSON.stringify(body)
+  });
+}
+
 export async function apiDelete<T>(path: ApiClientPath, csrfToken?: string): Promise<T> {
   const init: RequestInit = { method: "DELETE" };
   if (csrfToken) {
     init.headers = { "x-csrf-token": csrfToken };
   }
   return request<T>(path, init);
+}
+
+export async function apiDeleteOperation<TOperation extends ApiClientOperationIdForMethod<"DELETE">>(
+  operationId: TOperation,
+  path: ApiClientPath,
+  csrfToken?: string
+): Promise<ApiClientOperationResponse<TOperation>> {
+  void operationId;
+  const init: RequestInit = { method: "DELETE" };
+  if (csrfToken) {
+    init.headers = { "x-csrf-token": csrfToken };
+  }
+  return request<ApiClientOperationResponse<TOperation>>(path, init);
 }
 
 function pathFromTemplate(template: ApiClientPathTemplate, params: Record<string, string> = {}): ApiClientPath {

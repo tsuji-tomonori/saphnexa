@@ -93,7 +93,9 @@ scenario("chat UI source contract", () => {
   }
   for (const token of [
     "@assistant-ui/react",
-    "apiRoutes.submitQuestion"
+    "apiRoutes.submitQuestion",
+    "apiPostOperation",
+    "\"submitQuestion\""
   ]) {
     assert(assistantRuntimeSource.includes(token), `assistant runtime missing token: ${token}`);
   }
@@ -146,17 +148,20 @@ scenario("admin UI source contract", () => {
     assert(adminPageSource.includes(token), `AdminDashboardPage missing token: ${token}`);
   }
   assert(meHookSource.includes("apiRoutes.getMe()"), "useMe hook must use getMe route helper");
+  assert(meHookSource.includes("apiGetOperation(\"getMe\""), "useMe hook must use generated getMe operation helper");
   assert(artifactsHookSource.includes("apiRoutes.listPublishedArtifacts()"), "useAdminArtifacts hook must use listPublishedArtifacts route helper");
+  assert(artifactsHookSource.includes("apiGetOperation(\"listPublishedArtifacts\""), "useAdminArtifacts hook must use generated artifacts operation helper");
   assert(apiClientSource.includes("/api/admin/artifacts"), "API client artifacts helper must call /api/admin/artifacts");
   for (const token of [
     "aria-label=\"管理操作\"",
     "role=\"status\"",
     "disabled={!props.csrfToken || !datasetId}",
-    "setJobStatus(response.evaluation_run.status)"
+    "statusFromEvaluationRun(response.evaluation_run)"
   ]) {
     assert(adminActionsSource.includes(token), `AdminActions missing token: ${token}`);
   }
   assert(startEvaluationHookSource.includes("apiRoutes.startEvaluationRun()"), "useStartEvaluationRun hook must use startEvaluationRun route helper");
+  assert(startEvaluationHookSource.includes("apiPostOperation(\"startEvaluationRun\""), "useStartEvaluationRun hook must use generated evaluation operation helper");
   assert(apiClientSource.includes("/api/admin/evaluation-runs"), "API client evaluation run helper must call /api/admin/evaluation-runs");
   for (const token of [
     "DataTable",
