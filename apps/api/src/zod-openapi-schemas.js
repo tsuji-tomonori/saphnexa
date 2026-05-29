@@ -85,7 +85,7 @@ function responseSchema(route) {
     getUserImport: z.object({ import: userImportSchema().optional(), rows: z.array(userImportRowSchema()) }),
     adminListDocuments: z.object({ documents: z.array(documentSchema()) }),
     createDocument: documentMutationSchema(),
-    getDocument: z.object({ document: documentSchema().optional() }),
+    getDocument: z.object({ document: documentDetailSchema().optional() }),
     createDocumentVersion: documentMutationSchema(),
     activateDocumentVersion: z.object({ version: documentVersionSchema().optional() }),
     getIngestionJob: z.object({ job: ingestionJobSchema().optional() }),
@@ -236,6 +236,14 @@ function documentSchema() {
   });
 }
 
+function documentDetailSchema() {
+  return documentSchema().extend({
+    versions: z.array(documentVersionSchema()),
+    ingestion_jobs: z.array(ingestionJobSchema()),
+    acl_entries: z.array(documentAclEntrySchema())
+  });
+}
+
 function documentMutationSchema() {
   return z.object({
     document_id: z.string(),
@@ -256,6 +264,16 @@ function documentVersionSchema() {
     raw_s3_uri: z.string(),
     metadata_json: z.record(z.unknown()),
     created_at: z.string()
+  });
+}
+
+function documentAclEntrySchema() {
+  return z.object({
+    tenant_id: z.string(),
+    document_id: z.string(),
+    version_id: z.string(),
+    acl_scope_id: z.string(),
+    effect: z.string()
   });
 }
 

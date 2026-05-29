@@ -131,6 +131,12 @@ export interface DocumentAclEntry {
   effect: "allow" | "deny";
 }
 
+export type DocumentDetail = DocumentRecord & {
+  versions: DocumentVersion[];
+  ingestion_jobs: IngestionJob[];
+  acl_entries: DocumentAclEntry[];
+};
+
 export interface IngestionJob {
   tenant_id: string;
   job_id: string;
@@ -269,8 +275,12 @@ export interface LocalStore {
   listEvents(actor: LocalActor, chat_id: string, message_id: string, after_seq?: number): ChatMessageEvent[];
   listAdminUsers(actor: LocalActor): LocalUser[];
   listDocuments(actor: LocalActor): DocumentRecord[];
-  getDocument(actor: LocalActor, document_id: string): DocumentRecord | undefined;
+  getDocument(actor: LocalActor, document_id: string): DocumentDetail;
   getIngestionJob(actor: LocalActor, job_id: string): IngestionJob | undefined;
+  createDocument(actor: LocalActor, input: Record<string, unknown>): Record<string, unknown>;
+  createDocumentVersion(actor: LocalActor, document_id: string, input: Record<string, unknown>): Record<string, unknown>;
+  activateDocumentVersion(actor: LocalActor, document_id: string, version_id: string): DocumentVersion;
+  retryIngestionJob(actor: LocalActor, job_id: string): IngestionJob;
   issueWsTicket(actor: LocalActor, input?: { now_ms?: number }): { ticket: string; expires_in_seconds: number; channels: string[] };
   consumeWsTicket(actor: LocalActor, ticket_id: string, now_ms?: number): { ticket_id: string; channels: string[]; status: string };
   startEvaluationRun(actor: LocalActor, input?: { dataset_id?: string; model_id?: string }): EvaluationRun;

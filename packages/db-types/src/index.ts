@@ -109,6 +109,16 @@ export interface DbRowByTable {
     created_at: DbTimestamp;
     updated_at: DbTimestamp;
   };
+  document_versions: {
+    tenant_id: string;
+    document_id: string;
+    version_id: string;
+    version_label: string;
+    status: string;
+    raw_s3_uri: string;
+    metadata_json: DbJson;
+    created_at: DbTimestamp;
+  };
   document_acl_entries: {
     tenant_id: string;
     document_id: string;

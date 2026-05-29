@@ -78,6 +78,14 @@ assert(
   document.paths["/v1/admin/artifacts"].get.responses["200"].content["application/json"].schema.properties.artifacts.type === "array",
   "listPublishedArtifacts response schema must expose artifacts array"
 );
+assert(
+  document.paths["/v1/admin/documents/{document_id}"].get.responses["200"].content["application/json"].schema.properties.document.properties.versions.type === "array",
+  "getDocument response schema must expose document versions array"
+);
+assert(
+  document.paths["/v1/admin/documents/{document_id}"].get.responses["200"].content["application/json"].schema.properties.document.properties.acl_entries.type === "array",
+  "getDocument response schema must expose document ACL entries array"
+);
 
 assert(new Set(operationIds).size === publicApiRoutes.length, "OpenAPI operationIds must be unique");
 for (const definition of definitions) {

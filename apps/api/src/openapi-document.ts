@@ -205,7 +205,7 @@ function successResponseSchema(route: ApiRoute) {
     getUserImport: objectSchema(["import", "rows"], { import: userImportSchema(), rows: arrayOf(userImportRowSchema()) }),
     adminListDocuments: objectSchema(["documents"], { documents: arrayOf(documentSchema()) }),
     createDocument: objectSchema(["document_id", "version_id", "job_id", "raw_s3_uri"], { document_id: stringSchema(), version_id: stringSchema(), job_id: stringSchema(), raw_s3_uri: stringSchema(), idempotent: booleanSchema() }),
-    getDocument: objectSchema(["document"], { document: documentSchema() }),
+    getDocument: objectSchema(["document"], { document: documentDetailSchema() }),
     createDocumentVersion: objectSchema(["document_id", "version_id", "job_id", "raw_s3_uri"], { document_id: stringSchema(), version_id: stringSchema(), job_id: stringSchema(), raw_s3_uri: stringSchema(), idempotent: booleanSchema() }),
     activateDocumentVersion: objectSchema(["version"], { version: documentVersionSchema() }),
     getIngestionJob: objectSchema(["job"], { job: ingestionJobSchema() }),
@@ -380,16 +380,35 @@ function documentSchema() {
   });
 }
 
+function documentDetailSchema() {
+  return objectSchema(["tenant_id", "document_id", "title", "status", "created_by_user_id", "created_at", "updated_at", "versions", "ingestion_jobs", "acl_entries"], {
+    ...documentSchema().properties,
+    versions: arrayOf(documentVersionSchema()),
+    ingestion_jobs: arrayOf(ingestionJobSchema()),
+    acl_entries: arrayOf(documentAclEntrySchema())
+  });
+}
+
 function documentVersionSchema() {
   return objectSchema(["tenant_id", "document_id", "version_id", "version_label", "status", "raw_s3_uri", "metadata_json", "created_at"], {
     tenant_id: stringSchema(),
     document_id: stringSchema(),
     version_id: stringSchema(),
     version_label: stringSchema(),
-    status: enumStringSchema(["active", "archived", "failed", "uploaded"]),
+    status: enumStringSchema(["active", "archived", "failed", "queued", "succeeded", "uploaded"]),
     raw_s3_uri: stringSchema(),
     metadata_json: jsonObjectSchema(),
     created_at: stringSchema()
+  });
+}
+
+function documentAclEntrySchema() {
+  return objectSchema(["tenant_id", "document_id", "version_id", "acl_scope_id", "effect"], {
+    tenant_id: stringSchema(),
+    document_id: stringSchema(),
+    version_id: stringSchema(),
+    acl_scope_id: stringSchema(),
+    effect: enumStringSchema(["allow", "deny"])
   });
 }
 

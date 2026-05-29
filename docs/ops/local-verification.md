@@ -122,6 +122,7 @@ git diff --check
 - Admin Dashboard のユーザータブが `adminListUsers` / `startUserImport` / `getUserImport` route helper / generated operation helper を使い、JSON rows 入力で local user import 結果と行別エラーを確認できること。CSV/Excel 実アップロード、Cognito 実反映、AppSync 通知は未接続であることを表示すること。
 - Admin Dashboard の文書タブが `adminListDocuments` route helper / generated operation helper を使い、local API と DSQL query plan の管理者限定文書一覧境界を source gate で確認できること。文書がない場合は正直な empty state を表示すること。
 - Admin Dashboard の文書登録フォームが React Hook Form + Zod と `createDocument` route helper / generated operation helper を使い、登録後に文書一覧 query を再取得する境界を source gate で確認できること。実 PDF upload は未接続であることを表示すること。
+- Admin Dashboard の文書版 lifecycle が React Hook Form + Zod と `getDocument` / `createDocumentVersion` / `activateDocumentVersion` route helper / generated operation helper を使い、文書詳細、文書版、ACL、取り込みジョブ、取り込み完了済み版だけの active 化を source gate で確認できること。実 PDF upload、Step Functions 実行、Bedrock KB / S3 Vectors ingestion は未接続であることを表示すること。
 - Admin Dashboard の取り込みジョブ確認が React Hook Form + Zod と `getIngestionJob` / `retryIngestionJob` route helper / generated operation helper を使い、retryable な失敗ジョブだけを再実行できる境界を source gate で確認できること。実 Step Functions / S3 / KB ingestion は未接続であること。
 - `npm run web:build` が Vite production build を実行し、Chat/Admin browser entrypoint を bundle できること。
 - `npm run web:build:check` が Vite production build output の `apps/web/dist/index.html`、hashed JS asset、JS sourcemap、gzip size 上限を検査すること。
@@ -217,6 +218,7 @@ git diff --check
 - Admin Tabs の source gate は評価操作と公開成果物一覧の画面構造を確認する。CSV/Excel 実アップロード、実 PDF upload、取り込み監視の実 backend/API/UI は別途実装・検証する。
 - Admin 文書一覧の source gate は既存文書の表示と `adminListDocuments` 境界を確認する。実 PDF upload、ACL 編集、取り込みジョブ詳細は別途実装・検証する。
 - Admin 文書登録フォームの source gate は `createDocument` API 境界、CSRF disabled state、local ingestion job 受付、文書一覧再取得を確認する。実 S3 PDF upload、文書種別、有効期間、ACL 編集、取り込みジョブ詳細は別途実装・検証する。
+- Admin 文書版 lifecycle の source gate は `getDocument` の versions / ingestion jobs / ACL entries、`createDocumentVersion` による local 版追加、`activateDocumentVersion` の取り込み完了条件、管理者ロール境界を確認する。文書停止・削除、実 S3 PDF upload、実 Step Functions 実行、Bedrock KB / S3 Vectors ingestion は別途実装・検証する。
 - Admin 取り込みジョブ確認の source gate は job ID 指定の `getIngestionJob`、retryable state、`retryIngestionJob`、管理者ロール境界を確認する。実 Step Functions 実行、S3 raw/parsed 実配置、Bedrock KB / S3 Vectors ingestion、進捗 percentage、job 一覧 API は別途実装・検証する。
 - 実ブラウザ操作による chat/admin E2E、CloudFront 経由のロール別導線確認。
 - Bedrock KB、S3 Vectors、AgentCore Runtime、Bedrock Evaluations を使った実 RAG 品質評価。

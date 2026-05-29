@@ -296,6 +296,189 @@ const dsqlOperationMappings = {
       return { documents: rows };
     }
   },
+  getDocument: {
+    notFoundErrorCode: "DSQL_DOCUMENT_NOT_FOUND",
+    plan(request) {
+      return {
+        operationId: "getDocument",
+        resultTable: "documents",
+        sql: `
+          SELECT
+            d.tenant_id,
+            d.document_id,
+            d.title,
+            d.status,
+            d.created_by_user_id,
+            d.created_at,
+            d.updated_at,
+            COALESCE(
+              json_agg(DISTINCT dv.*) FILTER (WHERE dv.version_id IS NOT NULL),
+              '[]'::json
+            ) AS versions,
+            COALESCE(
+              json_agg(DISTINCT j.*) FILTER (WHERE j.job_id IS NOT NULL),
+              '[]'::json
+            ) AS ingestion_jobs,
+            COALESCE(
+              json_agg(DISTINCT acl.*) FILTER (WHERE acl.acl_scope_id IS NOT NULL),
+              '[]'::json
+            ) AS acl_entries
+          FROM documents d
+          JOIN users u
+            ON u.tenant_id = d.tenant_id
+           AND u.user_id = :actor_id
+           AND u.role = 'admin'
+           AND u.status = 'active'
+          LEFT JOIN document_versions dv
+            ON dv.tenant_id = d.tenant_id
+           AND dv.document_id = d.document_id
+          LEFT JOIN ingestion_jobs j
+            ON j.tenant_id = d.tenant_id
+           AND j.document_id = d.document_id
+          LEFT JOIN document_acl_entries acl
+            ON acl.tenant_id = d.tenant_id
+           AND acl.document_id = d.document_id
+          WHERE d.document_id = :document_id
+            AND d.status <> 'deleted'
+          GROUP BY d.tenant_id, d.document_id, d.title, d.status, d.created_by_user_id, d.created_at, d.updated_at
+          LIMIT 1
+        `,
+        params: { actor_id: request.actorId, document_id: request.input.document_id }
+      };
+    },
+    map(rows) {
+      const row = firstRow(rows) as DbRow<"documents"> & {
+        versions?: unknown;
+        ingestion_jobs?: unknown;
+        acl_entries?: unknown;
+      };
+      return {
+        document: {
+          ...row,
+          versions: arrayValue(row.versions),
+          ingestion_jobs: arrayValue(row.ingestion_jobs),
+          acl_entries: arrayValue(row.acl_entries)
+        }
+      };
+    }
+  },
+  createDocumentVersion: {
+    plan(request) {
+      return {
+        operationId: "createDocumentVersion",
+        resultTable: "document_versions",
+        sql: `
+          WITH actor AS (
+            SELECT tenant_id, user_id
+            FROM users
+            WHERE user_id = :actor_id
+              AND role = 'admin'
+              AND status = 'active'
+          ),
+          target_document AS (
+            SELECT d.tenant_id, d.document_id, d.title
+            FROM documents d
+            JOIN actor a
+              ON a.tenant_id = d.tenant_id
+            WHERE d.document_id = :document_id
+              AND d.status <> 'deleted'
+          ),
+          inserted_version AS (
+            INSERT INTO document_versions (
+              tenant_id, document_id, version_id, version_label, status,
+              raw_s3_uri, metadata_json, created_at
+            )
+            SELECT
+              td.tenant_id,
+              td.document_id,
+              COALESCE(:version_id, concat('ver-', gen_random_uuid()::text)),
+              :version_label,
+              'uploaded',
+              :raw_s3_uri,
+              :metadata_json,
+              now()
+            FROM target_document td
+            ON CONFLICT (tenant_id, document_id, version_id) DO NOTHING
+            RETURNING *
+          )
+          SELECT * FROM inserted_version
+        `,
+        params: {
+          actor_id: request.actorId,
+          document_id: request.input.document_id,
+          version_id: request.input.version_id,
+          version_label: request.input.version_label,
+          raw_s3_uri: request.input.raw_s3_uri ?? `s3://saphnexa-dsql/raw/${String(request.input.document_id)}/${String(request.input.version_id)}/${String(request.input.file_name ?? "document.pdf")}`,
+          metadata_json: request.input.metadata ?? {
+            document_id: request.input.document_id,
+            version: request.input.version_id,
+            acl_scope: request.input.acl_scope_id,
+            status: "uploaded"
+          }
+        }
+      };
+    },
+    map(rows, request) {
+      const version = firstRow(rows) as DbRow<"document_versions">;
+      return {
+        document_id: version.document_id,
+        version_id: version.version_id,
+        raw_s3_uri: version.raw_s3_uri,
+        job_id: request.input.job_id
+      };
+    }
+  },
+  activateDocumentVersion: {
+    notFoundErrorCode: "DSQL_DOCUMENT_VERSION_NOT_READY",
+    plan(request) {
+      return {
+        operationId: "activateDocumentVersion",
+        resultTable: "document_versions",
+        sql: `
+          WITH actor AS (
+            SELECT tenant_id
+            FROM users
+            WHERE user_id = :actor_id
+              AND role = 'admin'
+              AND status = 'active'
+          ),
+          ready_version AS (
+            SELECT dv.tenant_id, dv.document_id, dv.version_id
+            FROM document_versions dv
+            JOIN actor a
+              ON a.tenant_id = dv.tenant_id
+            JOIN ingestion_jobs j
+              ON j.tenant_id = dv.tenant_id
+             AND j.document_id = dv.document_id
+             AND j.version_id = dv.version_id
+             AND j.status = 'succeeded'
+            WHERE dv.document_id = :document_id
+              AND dv.version_id = :version_id
+          ),
+          archive_old AS (
+            UPDATE document_versions dv
+               SET status = 'archived'
+              FROM ready_version rv
+             WHERE dv.tenant_id = rv.tenant_id
+               AND dv.document_id = rv.document_id
+               AND dv.version_id <> rv.version_id
+            RETURNING dv.version_id
+          )
+          UPDATE document_versions dv
+             SET status = 'active'
+            FROM ready_version rv
+           WHERE dv.tenant_id = rv.tenant_id
+             AND dv.document_id = rv.document_id
+             AND dv.version_id = rv.version_id
+          RETURNING dv.*
+        `,
+        params: { actor_id: request.actorId, document_id: request.input.document_id, version_id: request.input.version_id }
+      };
+    },
+    map(rows) {
+      return { version: firstRow(rows) };
+    }
+  },
   getIngestionJob: {
     notFoundErrorCode: "DSQL_INGESTION_JOB_NOT_FOUND",
     plan(request) {
@@ -349,4 +532,8 @@ function repositoryError(status: number, error_code: string, message: string, de
 
 function firstRow(rows: Array<DbRow<DbTableName>>): DbRow<DbTableName> {
   return rows[0] as DbRow<DbTableName>;
+}
+
+function arrayValue(value: unknown): unknown[] {
+  return Array.isArray(value) ? value : [];
 }

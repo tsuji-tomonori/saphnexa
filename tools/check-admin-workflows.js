@@ -31,7 +31,7 @@ const documentInputs = [
   documentInput("doc-local-2", "ver-1", "local-2.pdf"),
   documentInput("doc-local-3", "ver-1", "local-3.pdf"),
   documentInput("doc-versioned", "ver-1", "versioned-v1.pdf"),
-  documentInput("doc-versioned", "ver-2", "versioned-v2.pdf")
+  documentInput("doc-versioned", "ver-2", "versioned-v2.pdf", "succeeded")
 ];
 for (const input of documentInputs.slice(0, 4)) {
   const created = api.request("admin-1", "createDocument", { csrf_token: adminCsrf, ...input });
@@ -86,13 +86,13 @@ function csrf(userId) {
   return api.request(userId, "getMe").body.csrf_token;
 }
 
-function documentInput(document_id, version_id, file_name) {
+function documentInput(document_id, version_id, file_name, status = "uploaded") {
   return {
     title: document_id,
     document_id,
     version_id,
     file_name,
-    metadata: { document_id, version: version_id, acl_scope: "admin", status: "uploaded" },
+    metadata: { document_id, version: version_id, acl_scope: "admin", status },
     acl_scope_id: "admin"
   };
 }

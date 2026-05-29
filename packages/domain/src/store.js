@@ -399,10 +399,12 @@ export function createLocalStore() {
     }
     const job_id = nextId("ing");
     const raw_s3_uri = `s3://saphnexa-local/raw/${document_id}/${version_id}/${input.file_name || "document.pdf"}`;
+    const acceptedStatus = metadata.status === statuses.SUCCEEDED ? statuses.SUCCEEDED : "uploaded";
+    const acceptedJobStatus = metadata.status === statuses.SUCCEEDED ? statuses.SUCCEEDED : statuses.QUEUED;
     if (!state.documents.find((item) => item.document_id === document_id)) {
       state.documents.push({ tenant_id: actor.tenant_id, document_id, title: input.title, status: statuses.ACTIVE, created_by_user_id: actor.user_id, created_at: now(), updated_at: now() });
     }
-    state.document_versions.push({ tenant_id: actor.tenant_id, document_id, version_id, version_label: input.version_label || "v1", status: metadataError ? statuses.FAILED : "uploaded", raw_s3_uri, metadata_json: metadata, created_at: now() });
+    state.document_versions.push({ tenant_id: actor.tenant_id, document_id, version_id, version_label: input.version_label || "v1", status: metadataError ? statuses.FAILED : acceptedStatus, raw_s3_uri, metadata_json: metadata, created_at: now() });
     if (!metadataError) {
       state.document_acl_entries.push({ tenant_id: actor.tenant_id, document_id, version_id, acl_scope_id: input.acl_scope_id || `user:${actor.user_id}`, effect: "allow" });
     }
@@ -411,7 +413,7 @@ export function createLocalStore() {
       job_id,
       document_id,
       version_id,
-      status: metadataError ? statuses.FAILED : statuses.QUEUED,
+      status: metadataError ? statuses.FAILED : acceptedJobStatus,
       raw_s3_uri,
       parsed_s3_prefix: `s3://saphnexa-local/parsed/${document_id}/${version_id}/`,
       error_code: metadataError?.error_code || null,
@@ -435,7 +437,14 @@ export function createLocalStore() {
 
   function getDocument(actor, document_id) {
     requireAdmin(actor);
-    return state.documents.find((item) => item.tenant_id === actor.tenant_id && item.document_id === document_id && item.status !== statuses.DELETED);
+    const document = state.documents.find((item) => item.tenant_id === actor.tenant_id && item.document_id === document_id && item.status !== statuses.DELETED);
+    if (!document) throw forbidden("DOCUMENT_NOT_FOUND", "文書が存在しない。", 404);
+    return {
+      ...document,
+      versions: state.document_versions.filter((item) => item.tenant_id === actor.tenant_id && item.document_id === document_id),
+      ingestion_jobs: state.ingestion_jobs.filter((item) => item.tenant_id === actor.tenant_id && item.document_id === document_id),
+      acl_entries: state.document_acl_entries.filter((item) => item.tenant_id === actor.tenant_id && item.document_id === document_id)
+    };
   }
 
   function getIngestionJob(actor, job_id) {
@@ -451,10 +460,15 @@ export function createLocalStore() {
 
   function activateDocumentVersion(actor, document_id, version_id) {
     requireAdmin(actor);
-    for (const version of state.document_versions.filter((item) => item.document_id === document_id)) {
+    const activeVersion = state.document_versions.find((item) => item.tenant_id === actor.tenant_id && item.document_id === document_id && item.version_id === version_id);
+    if (!activeVersion) throw forbidden("DOCUMENT_VERSION_NOT_FOUND", "文書版が存在しない。", 404);
+    const ingestionJob = state.ingestion_jobs.find((item) => item.tenant_id === actor.tenant_id && item.document_id === document_id && item.version_id === version_id);
+    if (ingestionJob?.status !== statuses.SUCCEEDED && activeVersion.status !== statuses.SUCCEEDED && activeVersion.status !== statuses.ACTIVE) {
+      throw forbidden("DOCUMENT_VERSION_NOT_READY", "取り込み完了済みの文書版だけ active 化できます。");
+    }
+    for (const version of state.document_versions.filter((item) => item.tenant_id === actor.tenant_id && item.document_id === document_id)) {
       version.status = version.version_id === version_id ? statuses.ACTIVE : statuses.ARCHIVED;
     }
-    const activeVersion = state.document_versions.find((item) => item.document_id === document_id && item.version_id === version_id);
     recordAuditEvent(actor, "document.version.activated", "document_publish", document_id, { version_id });
     return activeVersion;
   }

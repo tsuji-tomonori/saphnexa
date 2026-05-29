@@ -86,6 +86,7 @@ for (const file of [
   "apps/web/src/pages/ChatPage.tsx",
   "apps/web/src/features/chat/AssistantRuntimeBoundary.tsx",
   "apps/web/src/features/admin/DocumentRegistrationForm.tsx",
+  "apps/web/src/features/admin/DocumentVersionLifecyclePanel.tsx",
   "apps/web/src/features/admin/IngestionJobPanel.tsx",
   "apps/web/src/features/admin/UserImportPanel.tsx",
   "apps/web/src/features/admin/UserTable.tsx",
@@ -93,6 +94,7 @@ for (const file of [
   "apps/web/src/hooks/useAdminUsers.ts",
   "apps/web/src/hooks/useUserImport.ts",
   "apps/web/src/hooks/useCreateDocument.ts",
+  "apps/web/src/hooks/useDocumentLifecycle.ts",
   "apps/web/src/hooks/useAdminDocuments.ts",
   "apps/web/src/hooks/useIngestionJob.ts",
   "apps/web/src/pages/AdminDashboardPage.tsx",
@@ -234,9 +236,12 @@ for (const token of [
   'apiGetOperation("getUserImport"',
   'apiGetOperation("listPublishedArtifacts"',
   'apiGetOperation("adminListDocuments"',
+  'apiGetOperation("getDocument"',
   'apiGetOperation("getIngestionJob"',
   'apiPostOperation("startUserImport"',
   'apiPostOperation("createDocument"',
+  'apiPostOperation("createDocumentVersion"',
+  'apiPostOperation("activateDocumentVersion"',
   'apiPostOperation("retryIngestionJob"',
   'apiPostOperation("issueWsTicket"',
   'apiPostOperation("startEvaluationRun"'
@@ -414,7 +419,9 @@ for (const token of [
 for (const token of [
   "listDocuments",
   "getDocument",
-  "getIngestionJob"
+  "getIngestionJob",
+  "createDocumentVersion",
+  "activateDocumentVersion"
 ]) {
   assert(storeTypesTs.includes(token), `Domain store TS source missing ${token}`);
   assert(storeJs.includes(token), `Domain store JS runtime mirror missing ${token}`);
@@ -465,12 +472,16 @@ for (const token of [
   "adminListUsers",
   "listPublishedArtifacts",
   "adminListDocuments",
+  "getDocument",
+  "createDocumentVersion",
+  "activateDocumentVersion",
   "getIngestionJob",
   'resultTable: "users"',
   'resultTable: "chat_sessions"',
   'resultTable: "chat_message_events"',
   'resultTable: "published_artifacts"',
   'resultTable: "documents"',
+  'resultTable: "document_versions"',
   'resultTable: "ingestion_jobs"',
   "FROM users",
   "FROM chat_sessions",
@@ -478,7 +489,9 @@ for (const token of [
   "FROM users",
   "FROM published_artifacts",
   "FROM documents",
+  "FROM document_versions",
   "FROM ingestion_jobs",
+  "JOIN ingestion_jobs",
   "JOIN chat_participants",
   "u.role = 'admin'"
 ]) {

@@ -23,6 +23,7 @@ const adminPageSource = readText("apps/web/src/pages/AdminDashboardPage.tsx");
 const adminActionsSource = readText("apps/web/src/features/admin/AdminActions.tsx");
 const artifactTableSource = readText("apps/web/src/features/admin/ArtifactTable.tsx");
 const documentRegistrationFormSource = readText("apps/web/src/features/admin/DocumentRegistrationForm.tsx");
+const documentVersionLifecycleSource = readText("apps/web/src/features/admin/DocumentVersionLifecyclePanel.tsx");
 const documentTableSource = readText("apps/web/src/features/admin/DocumentTable.tsx");
 const ingestionJobPanelSource = readText("apps/web/src/features/admin/IngestionJobPanel.tsx");
 const userImportPanelSource = readText("apps/web/src/features/admin/UserImportPanel.tsx");
@@ -34,6 +35,7 @@ const adminUsersHookSource = readText("apps/web/src/hooks/useAdminUsers.ts");
 const userImportHookSource = readText("apps/web/src/hooks/useUserImport.ts");
 const artifactsHookSource = readText("apps/web/src/hooks/useAdminArtifacts.ts");
 const createDocumentHookSource = readText("apps/web/src/hooks/useCreateDocument.ts");
+const documentLifecycleHookSource = readText("apps/web/src/hooks/useDocumentLifecycle.ts");
 const documentsHookSource = readText("apps/web/src/hooks/useAdminDocuments.ts");
 const ingestionJobHookSource = readText("apps/web/src/hooks/useIngestionJob.ts");
 const startEvaluationHookSource = readText("apps/web/src/hooks/useStartEvaluationRun.ts");
@@ -178,6 +180,7 @@ scenario("admin UI source contract", () => {
     "UserTable",
     "useAdminDocuments",
     "DocumentRegistrationForm",
+    "DocumentVersionLifecyclePanel",
     "IngestionJobPanel",
     "DocumentTable",
     "aria-label=\"成果物\""
@@ -203,6 +206,13 @@ scenario("admin UI source contract", () => {
   assert(createDocumentHookSource.includes("apiRoutes.createDocument()"), "useCreateDocument hook must use createDocument route helper");
   assert(createDocumentHookSource.includes("apiPostOperation(\"createDocument\""), "useCreateDocument hook must use generated createDocument operation helper");
   assert(createDocumentHookSource.includes("invalidateQueries({ queryKey: [\"admin-documents\"] })"), "useCreateDocument hook must refresh admin documents query");
+  assert(documentLifecycleHookSource.includes("apiRoutes.getDocument(documentId)"), "useDocumentDetail hook must use getDocument route helper");
+  assert(documentLifecycleHookSource.includes("apiGetOperation(\"getDocument\""), "useDocumentDetail hook must use generated getDocument operation helper");
+  assert(documentLifecycleHookSource.includes("apiRoutes.createDocumentVersion(input.document_id)"), "useCreateDocumentVersion hook must use createDocumentVersion route helper");
+  assert(documentLifecycleHookSource.includes("apiPostOperation(\"createDocumentVersion\""), "useCreateDocumentVersion hook must use generated createDocumentVersion operation helper");
+  assert(documentLifecycleHookSource.includes("apiRoutes.activateDocumentVersion(input.document_id, input.version_id)"), "useActivateDocumentVersion hook must use activateDocumentVersion route helper");
+  assert(documentLifecycleHookSource.includes("apiPostOperation(\"activateDocumentVersion\""), "useActivateDocumentVersion hook must use generated activateDocumentVersion operation helper");
+  assert(documentLifecycleHookSource.includes("invalidateQueries({ queryKey: [\"admin-document-detail\", input.document_id] })"), "document lifecycle hook must refresh document detail query");
   assert(ingestionJobHookSource.includes("apiRoutes.getIngestionJob(jobId)"), "useIngestionJob hook must use getIngestionJob route helper");
   assert(ingestionJobHookSource.includes("apiGetOperation(\"getIngestionJob\""), "useIngestionJob hook must use generated getIngestionJob operation helper");
   assert(ingestionJobHookSource.includes("apiRoutes.retryIngestionJob(jobId)"), "useRetryIngestionJob hook must use retryIngestionJob route helper");
@@ -221,6 +231,22 @@ scenario("admin UI source contract", () => {
     "role=\"alert\""
   ]) {
     assert(documentRegistrationFormSource.includes(token), `DocumentRegistrationForm missing token: ${token}`);
+  }
+  for (const token of [
+    "useForm",
+    "zodResolver",
+    "documentLookupSchema",
+    "versionSchema",
+    "文書版ライフサイクル",
+    "DataTable",
+    "文書版一覧",
+    "文書ACL一覧",
+    "文書取り込みジョブ一覧",
+    "PDF実アップロードとStep Functions実行: 未接続",
+    "disabled={!props.csrfToken || version.status !== \"succeeded\" || activateVersion.isPending}",
+    "role=\"alert\""
+  ]) {
+    assert(documentVersionLifecycleSource.includes(token), `DocumentVersionLifecyclePanel missing token: ${token}`);
   }
   for (const token of [
     "aria-label=\"管理操作\"",
@@ -317,6 +343,28 @@ scenario("admin local API flow", () => {
   const registered = api.request("admin-1", "createDocument", { csrf_token: csrf, title: "form document", file_name: "flow-form.pdf", acl_scope_id: "group:admin" });
   assert(registered.status === 202, "admin document registration failed");
   assert(registered.body.raw_s3_uri.endsWith("/flow-form.pdf"), "admin document registration must preserve file name in raw S3 URI");
+  assert(api.request("user-owner", "getDocument", { document_id: registered.body.document_id }).status === 403, "general user must not get admin document detail");
+  const registeredDetail = api.request("admin-1", "getDocument", { document_id: registered.body.document_id });
+  assert(registeredDetail.status === 200, "admin document detail failed");
+  assert(registeredDetail.body.document.versions.length === 1, "admin document detail must include versions");
+  assert(registeredDetail.body.document.ingestion_jobs.length === 1, "admin document detail must include ingestion jobs");
+  assert(registeredDetail.body.document.acl_entries.some((entry) => entry.acl_scope_id === "group:admin"), "admin document detail must include ACL entries");
+  const notReadyActivation = api.request("admin-1", "activateDocumentVersion", { csrf_token: csrf, document_id: registered.body.document_id, version_id: registered.body.version_id });
+  assert(notReadyActivation.status === 403, "queued document version must not activate");
+  const completedVersion = api.request("admin-1", "createDocumentVersion", {
+    csrf_token: csrf,
+    document_id: registered.body.document_id,
+    version_id: "ver-flow-complete",
+    version_label: "completed",
+    file_name: "flow-complete.pdf",
+    acl_scope_id: "group:admin",
+    metadata: { document_id: registered.body.document_id, version: "ver-flow-complete", acl_scope: "group:admin", status: "succeeded" }
+  });
+  assert(completedVersion.status === 202, "admin document version creation failed");
+  assert(api.request("user-owner", "createDocumentVersion", { csrf_token: "csrf-user-owner", document_id: registered.body.document_id, file_name: "blocked.pdf" }).status === 403, "general user must not create document versions");
+  assert(api.request("user-owner", "activateDocumentVersion", { csrf_token: "csrf-user-owner", document_id: registered.body.document_id, version_id: "ver-flow-complete" }).status === 403, "general user must not activate document versions");
+  const activatedVersion = api.request("admin-1", "activateDocumentVersion", { csrf_token: csrf, document_id: registered.body.document_id, version_id: "ver-flow-complete" });
+  assert(activatedVersion.status === 200 && activatedVersion.body.version.status === "active", "completed document version must activate");
   const invalid = api.request("admin-1", "createDocument", { csrf_token: csrf, title: "invalid metadata", document_id: "doc-invalid-flow", version_id: "ver-invalid-flow", metadata: { document_id: "doc-invalid-flow" } });
   const failedJob = api.request("admin-1", "getIngestionJob", { job_id: invalid.body.job_id });
   assert(failedJob.status === 200, "admin ingestion job fetch failed");

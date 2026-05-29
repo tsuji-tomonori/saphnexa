@@ -47,6 +47,7 @@ checkFile("AdminDashboardPage", "apps/web/src/pages/AdminDashboardPage.tsx", [
   rule("artifact panel label", (body) => body.includes("aria-label=\"成果物\"")),
   rule("document panel label", (body) => body.includes("aria-label=\"文書\"")),
   rule("document registration form", (body) => body.includes("DocumentRegistrationForm")),
+  rule("document lifecycle panel", (body) => body.includes("DocumentVersionLifecyclePanel")),
   rule("ingestion job panel", (body) => body.includes("IngestionJobPanel"))
 ]);
 checkFile("AdminActions", "apps/web/src/features/admin/AdminActions.tsx", [
@@ -85,6 +86,16 @@ checkFile("DocumentRegistrationForm", "apps/web/src/features/admin/DocumentRegis
   rule("honest upload state", (body) => body.includes("PDF実アップロード: 未接続")),
   rule("error alert", (body) => body.includes("role=\"alert\"")),
   rule("button disabled state", (body) => body.includes("disabled={!props.csrfToken || createDocument.isPending}"))
+]);
+checkFile("DocumentVersionLifecyclePanel", "apps/web/src/features/admin/DocumentVersionLifecyclePanel.tsx", [
+  rule("section label", (body) => body.includes("aria-label=\"文書版ライフサイクル\"")),
+  rule("lookup form label", (body) => body.includes("aria-label=\"文書詳細検索フォーム\"")),
+  rule("version form label", (body) => body.includes("aria-label=\"文書版追加フォーム\"")),
+  rule("field labels", (body) => body.includes("label=\"文書ID\"") && body.includes("label=\"PDFファイル名\"")),
+  rule("pending status", (body) => body.includes("<p role=\"status\">文書版の状態を更新しています</p>")),
+  rule("honest ingestion state", (body) => body.includes("PDF実アップロードとStep Functions実行: 未接続")),
+  rule("activation disabled state", (body) => body.includes("disabled={!props.csrfToken || version.status !== \"succeeded\" || activateVersion.isPending}")),
+  rule("error alert", (body) => body.includes("role=\"alert\""))
 ]);
 checkFile("IngestionJobPanel", "apps/web/src/features/admin/IngestionJobPanel.tsx", [
   rule("section label", (body) => body.includes("aria-label=\"取り込みジョブ確認\"")),
