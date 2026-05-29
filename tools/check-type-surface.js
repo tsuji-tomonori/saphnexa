@@ -38,6 +38,7 @@ for (const token of [
   "apps/web/dist/index.html",
   "apps/web/dist",
   "gzipLimitBytes",
+  ".css",
   ".js.map",
   "Vite build output"
 ]) {
@@ -85,11 +86,42 @@ for (const file of [
   "apps/web/src/pages/ChatPage.tsx",
   "apps/web/src/features/chat/AssistantRuntimeBoundary.tsx",
   "apps/web/src/pages/AdminDashboardPage.tsx",
+  "packages/ui/src/theme.css.ts",
+  "packages/ui/src/atoms/Button.tsx",
+  "packages/ui/src/atoms/Input.tsx",
+  "packages/ui/src/atoms/Textarea.tsx",
+  "packages/ui/src/organisms/Dialog.tsx",
+  "packages/ui/src/organisms/Drawer.tsx",
   "packages/ui/src/templates/AppShell.tsx"
 ]) {
   const body = readText(file);
   assert(body.includes("export "), `${file} must export its TypeScript public surface`);
 }
+
+const uiPackageJson = readJson("packages/ui/package.json");
+const webPackageJson = readJson("apps/web/package.json");
+const webViteConfigTs = readText("apps/web/vite.config.ts");
+const uiThemeTs = readText("packages/ui/src/theme.css.ts");
+const uiButtonTs = readText("packages/ui/src/atoms/Button.tsx");
+const uiDialogTs = readText("packages/ui/src/organisms/Dialog.tsx");
+const uiDrawerTs = readText("packages/ui/src/organisms/Drawer.tsx");
+assert(uiPackageJson.dependencies?.["@vanilla-extract/recipes"], "UI package must depend on vanilla-extract recipes");
+assert(uiPackageJson.dependencies?.["@radix-ui/react-dialog"], "UI package must depend on Radix Dialog primitives");
+assert(webPackageJson.devDependencies?.["@vanilla-extract/vite-plugin"], "Web package must install vanilla-extract Vite plugin");
+assert(webViteConfigTs.includes("vanillaExtractPlugin()"), "Vite config must enable vanilla-extract plugin");
+for (const token of [
+  "createThemeContract",
+  "createTheme",
+  "@vanilla-extract/recipes",
+  "buttonRecipe",
+  "controlRecipe",
+  "statusBadgeRecipe"
+]) {
+  assert(uiThemeTs.includes(token), `UI theme TS source missing ${token}`);
+}
+assert(uiButtonTs.includes("buttonRecipe"), "Button TS source must use vanilla-extract recipe");
+assert(uiDialogTs.includes("@radix-ui/react-dialog") && uiDialogTs.includes("RadixDialog.Content"), "Dialog TS source must use Radix Dialog primitive");
+assert(uiDrawerTs.includes("@radix-ui/react-dialog") && uiDrawerTs.includes("RadixDialog.Content"), "Drawer TS source must use Radix Dialog primitive");
 
 const apiContractTs = readText("packages/api-contract/src/routes.ts");
 assert(apiContractTs.includes("export interface PublicApiRoute"), "API contract TS source must export PublicApiRoute");

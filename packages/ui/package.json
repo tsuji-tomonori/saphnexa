@@ -11,7 +11,9 @@
     "typecheck": "tsc --noEmit --project tsconfig.json"
   },
   "dependencies": {
+    "@radix-ui/react-dialog": "^1.1.15",
     "@vanilla-extract/css": "^1.16.0",
+    "@vanilla-extract/recipes": "^0.5.7",
     "class-variance-authority": "^0.7.1",
     "lucide-react": "^0.468.0",
     "react": "^19.0.0"

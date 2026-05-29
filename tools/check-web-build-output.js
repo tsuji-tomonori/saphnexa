@@ -15,10 +15,12 @@ assert(existsSync(assetsDir), "Vite build output missing apps/web/dist/assets");
 
 const indexHtml = readText(indexPath);
 const jsAssets = readdirSync(assetsDir).filter((entry) => entry.endsWith(".js")).sort();
+const cssAssets = readdirSync(assetsDir).filter((entry) => entry.endsWith(".css")).sort();
 const sourceMaps = readdirSync(assetsDir).filter((entry) => entry.endsWith(".js.map")).sort();
 
 assert(indexHtml.includes("<script") && indexHtml.includes("/assets/"), "index.html must reference built JS assets");
 assert(jsAssets.length >= 1, "Vite build must emit at least one JS asset");
+assert(indexHtml.includes("<link") && cssAssets.length >= 1, "Vite build must emit and reference vanilla-extract CSS assets");
 assert(sourceMaps.length >= jsAssets.length, "Vite build must emit JS sourcemaps");
 
 const gzipLimitBytes = 150 * 1024;

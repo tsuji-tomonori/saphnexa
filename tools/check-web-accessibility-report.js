@@ -60,6 +60,19 @@ checkFile("UI components", "packages/ui/src/components.tsx", [
 ]);
 checkFile("UI atoms", "packages/ui/src/atoms/Button.tsx", [
   rule("button type default", (body) => body.includes("type={props.type || \"button\"}")),
+  rule("button recipe", (body) => body.includes("buttonRecipe")),
+]);
+checkFile("UI theme", "packages/ui/src/theme.css.ts", [
+  rule("theme contract", (body) => body.includes("createThemeContract")),
+  rule("recipe boundary", (body) => body.includes("@vanilla-extract/recipes")),
+]);
+checkFile("UI dialog", "packages/ui/src/organisms/Dialog.tsx", [
+  rule("radix dialog primitive", (body) => body.includes("@radix-ui/react-dialog") && body.includes("RadixDialog.Content")),
+  rule("dialog title", (body) => body.includes("RadixDialog.Title"))
+]);
+checkFile("UI drawer", "packages/ui/src/organisms/Drawer.tsx", [
+  rule("radix drawer primitive", (body) => body.includes("@radix-ui/react-dialog") && body.includes("RadixDialog.Content")),
+  rule("drawer title", (body) => body.includes("RadixDialog.Title"))
 ]);
 checkFile("UI panel", "packages/ui/src/organisms/Panel.tsx", [
   rule("panel labelled section", (body) => body.includes("<section") && body.includes("aria-label={props[\"aria-label\"]}")),

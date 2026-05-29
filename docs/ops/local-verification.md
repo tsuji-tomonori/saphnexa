@@ -117,6 +117,7 @@ git diff --check
 - `apps/api`、`apps/tools-api`、`apps/agent` が TypeScript entry を持ち、AgentCore Runtime 互換の `/ping` / `/invocations` contract、invocation input/output validation、runtime failure containment、Agent から Tools API HTTP endpoint への client boundary を source-level で確認できること。
 - Agent TypeScript runtime が query rewrite、DSQL ACL scope 解決、BM25 / KB retrieve、ACL check、reference expand、evidence pack、context packing、answer generation、citation binding の責務境界を持ち、evidence 不足時は回答生成に進まず refusal とすること。
 - `apps/web` が React + Vite + TypeScript package として成立し、TanStack Query hook、assistant-ui runtime adapter/provider 境界、Atomic Design UI package を通して chat/admin source gate を満たすこと。Chat UI は `AssistantRuntimeProvider` / `useLocalRuntime`、`Sidebar` / `MessageThread` organism を通して runtime 境界、navigation、event thread を表示すること。
+- `packages/ui` が shadcn/ui 系の所有 component 方針に沿って、vanilla-extract の `createThemeContract` / recipes、Radix Dialog primitive、Vite vanilla-extract plugin 境界を source gate で確認できること。実ブラウザ visual regression は別途確認する。
 - `npm run web:build` が Vite production build を実行し、Chat/Admin browser entrypoint を bundle できること。
 - `npm run web:build:check` が Vite production build output の `apps/web/dist/index.html`、hashed JS asset、JS sourcemap、gzip size 上限を検査すること。
 - Chat UI が React Hook Form + Zod validation、events payload 由来の Citation Drawer、AppSync Events / WebSocket client boundary を持ち、未接続時に架空 realtime event を生成しないこと。
@@ -206,6 +207,7 @@ git diff --check
 - CloudFormation `describe-stacks` / `list-stack-resources` の実取得と、AC-081 の最終 PASS 判定。
 - GitHub issue tracker の最終再取得と、AC-153 の最終 PASS 判定。
 - axe/Playwright の実 DOM accessibility report、Lighthouse CI、本番 bundler の analyzer report、AWS load test。
+- UI theme / recipe / Radix primitive 境界は source gate、`tsc --noEmit`、Vite production build で確認する。実ブラウザ visual regression、dark/density theme の実切替、全 shadcn/ui component 群の網羅は別途確認する。
 - 実ブラウザ操作による chat/admin E2E、CloudFront 経由のロール別導線確認。
 - Bedrock KB、S3 Vectors、AgentCore Runtime、Bedrock Evaluations を使った実 RAG 品質評価。
 - TypeScript framework 境界は local/source gate、実 `tsc --noEmit`、Vite production build と build output check で確認する。assistant-ui runtime provider は source gate と Vite production build で React tree への接続を確認するが、assistant-ui runtime の実ブラウザ streaming 挙動、AppSync Events の実 subscribe は、実 runtime が揃った環境で別途確認する。`/event/realtime` の browser source contract は検査するが、実 AppSync Events 接続成功の証跡ではない。

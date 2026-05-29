@@ -50,11 +50,32 @@ for (const file of files) {
 }
 
 const componentsSource = readText("packages/ui/src/components.tsx");
+const themeSource = readText("packages/ui/src/theme.css.ts");
+const buttonSource = readText("packages/ui/src/atoms/Button.tsx");
+const inputSource = readText("packages/ui/src/atoms/Input.tsx");
+const textareaSource = readText("packages/ui/src/atoms/Textarea.tsx");
 const statusSource = readText("packages/ui/src/molecules/StatusBadge.tsx");
+const dialogSource = readText("packages/ui/src/organisms/Dialog.tsx");
+const drawerSource = readText("packages/ui/src/organisms/Drawer.tsx");
 const tableSource = readText("packages/ui/src/organisms/DataTable.tsx");
 const sidebarSource = readText("packages/ui/src/organisms/Sidebar.tsx");
 const messageThreadSource = readText("packages/ui/src/organisms/MessageThread.tsx");
+for (const token of [
+  "createThemeContract",
+  "createTheme",
+  "@vanilla-extract/recipes",
+  "buttonRecipe",
+  "controlRecipe",
+  "statusBadgeRecipe"
+]) {
+  assert(themeSource.includes(token), `UI theme source missing ${token}`);
+}
+assert(buttonSource.includes("buttonRecipe"), "Button must use vanilla-extract recipe classes");
+assert(inputSource.includes("controlRecipe") && textareaSource.includes("controlRecipe"), "form controls must use vanilla-extract recipe classes");
 assert(statusSource.includes("aria-label={`状態: ${props.status}`}"), "StatusBadge must expose an accessible status label");
+assert(statusSource.includes("statusBadgeRecipe"), "StatusBadge must use vanilla-extract recipe classes");
+assert(dialogSource.includes("@radix-ui/react-dialog") && dialogSource.includes("RadixDialog.Content"), "Dialog must use Radix Dialog primitives");
+assert(drawerSource.includes("@radix-ui/react-dialog") && drawerSource.includes("RadixDialog.Content"), "Drawer must use Radix Dialog primitives");
 assert(componentsSource.includes("export { DataTable }"), "UI barrel must export DataTable organism");
 assert(componentsSource.includes("export { CitationDrawer"), "UI barrel must export CitationDrawer organism");
 assert(componentsSource.includes("export { Sidebar }"), "UI barrel must export Sidebar organism");
