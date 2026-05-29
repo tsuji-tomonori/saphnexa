@@ -349,6 +349,15 @@ const apiDispatchServiceSource = readText("apps/api/src/services/apiDispatchServ
 assert(apiDispatchServiceSource.includes("createApiDispatchServiceFromEnvironment"), "API must expose environment-based dispatch service factory");
 
 const ragAgentSource = readText("apps/agent/src/agent/ragAgent.ts");
+const agentCoreAppSource = readText("apps/agent/src/app.ts");
+const agentCoreHandlerSource = readText("apps/agent/src/runtime/agentCoreHandler.ts");
+assert(agentCoreAppSource.includes('app.get("/ping"'), "Agent app must expose /ping");
+assert(agentCoreAppSource.includes('app.post("/invocations"'), "Agent app must expose /invocations");
+assert(agentCoreAppSource.includes("agentCoreHttpStatus(result.status)"), "Agent app must use handler status for invocation responses");
+assert(agentCoreHandlerSource.includes("AgentInvocationSchema.safeParse"), "AgentCore handler must validate invocation input");
+assert(agentCoreHandlerSource.includes("AgentInvocationResultSchema.safeParse"), "AgentCore handler must validate runtime output");
+assert(agentCoreHandlerSource.includes("INVALID_INVOCATION_RESULT"), "AgentCore handler must reject invalid runtime outputs");
+assert(agentCoreHandlerSource.includes('status: "failed"'), "AgentCore handler must map runtime exceptions to failed invocation results");
 for (const token of [
   "rewriteQuery",
   "packContext",

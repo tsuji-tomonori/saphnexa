@@ -111,7 +111,7 @@ git diff --check
 - Hono/Zod/OpenAPI 実装 entrypoint が 38 route と `/openapi.json` を route contract から生成し、CSRF/role/Zod validation metadata と主要 success response の runtime validation 境界を保持すること。
 - API が `hono/aws-lambda` handler entrypoint、request log / origin / error / session / CSRF middleware 境界、dispatch service、DSQL repository interface を TypeScript source として持つこと。
 - API の Hono app factory、OpenAPI document builder、Zod schema catalog が TypeScript source of record を持ち、主要 success response の concrete Zod schema と既存 Node local tools 用の `.js` runtime mirror が同期していること。
-- `apps/api`、`apps/tools-api`、`apps/agent` が TypeScript entry を持ち、AgentCore Runtime 互換の `/ping` / `/invocations` contract を source-level で確認できること。
+- `apps/api`、`apps/tools-api`、`apps/agent` が TypeScript entry を持ち、AgentCore Runtime 互換の `/ping` / `/invocations` contract、invocation input/output validation、runtime failure containment を source-level で確認できること。
 - Agent TypeScript runtime が query rewrite、DSQL ACL scope 解決、BM25 / KB retrieve、ACL check、reference expand、evidence pack、context packing、answer generation、citation binding の責務境界を持ち、evidence 不足時は回答生成に進まず refusal とすること。
 - `apps/web` が React + Vite + TypeScript package として成立し、TanStack Query hook、assistant-ui runtime adapter 境界、Atomic Design UI package を通して chat/admin source gate を満たすこと。Chat UI は `Sidebar` / `MessageThread` organism を通して navigation と event thread を表示すること。
 - `npm run web:build` が Vite production build を実行し、Chat/Admin browser entrypoint を bundle できること。
@@ -208,7 +208,7 @@ git diff --check
 - Shared contract TypeScript source は source gate で確認する。DB introspection/codegen、`.ts` source からの runtime artifact 生成は別途確認する。
 - API client route helper、generated operation type map、operation-aware Web request helper は source gate と実 `tsc --noEmit` で全 public route の operation/path/request/response、主要 outer field、代表的な chat/event/artifact/evaluation の nested object / array item field 同期を確認する。全 route 全 field の完全 schema 化、実 CloudFront/Cognito 経由 HTTP request は別途確認する。
 - DB table metadata TypeScript source は migration source 由来の static metadata として検査する。実 DSQL introspection、生成 DB types、Flyway 実適用は別途確認する。
-- Agent runtime pipeline は source-level の責務境界と local fixture tests で確認する。実 Bedrock Runtime 生成、AgentCore Gateway Target 経由の Tools API 呼び出し、Aurora DSQL ACL query は AWS 接続後に別途確認する。
+- Agent runtime pipeline は source-level の責務境界、invocation schema validation、runtime failure containment、local fixture tests で確認する。実 Bedrock Runtime 生成、AgentCore Runtime `/invocations` の AWS HTTP 実行、AgentCore Gateway Target 経由の Tools API 呼び出し、Aurora DSQL ACL query は AWS 接続後に別途確認する。
 - Aurora DSQL への Flyway 実適用、CloudWatch metrics/alarms、S3 lifecycle、DSQL retention settings の実リソース確認。
 - CloudFront Function、WAF、IAM policy、KMS key policy、SQS/DLQ、AppSync Events、cdk-nag の実リソース/実行結果確認。
 - 実 S3 の offline artifact inventory、実 parser/KB/S3 Vectors ingestion、実バックアップからの restore drill。

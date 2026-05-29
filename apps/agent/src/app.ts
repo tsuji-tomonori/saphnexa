@@ -1,6 +1,6 @@
 import { Hono } from "hono";
 import { createRagAgentRuntime, type RagAgentRuntime } from "./agent/ragAgent";
-import { handleAgentCoreInvocation } from "./runtime/agentCoreHandler";
+import { agentCoreHttpStatus, handleAgentCoreInvocation } from "./runtime/agentCoreHandler";
 
 export interface AgentCoreAppOptions {
   runtime?: RagAgentRuntime;
@@ -14,7 +14,7 @@ export function createAgentCoreApp(options: AgentCoreAppOptions = {}) {
 
   app.post("/invocations", async (c) => {
     const result = await handleAgentCoreInvocation(await c.req.json(), runtime);
-    return c.json(result.body, result.status as 202);
+    return c.json(result.body, agentCoreHttpStatus(result.status));
   });
 
   return app;
