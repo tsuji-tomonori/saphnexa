@@ -34,6 +34,9 @@ for (const file of [
   "packages/model-catalog/src/cost-estimate.ts",
   "packages/db-schema/src/tables.ts",
   "packages/rag-core/src/fixture-rag.ts",
+  "packages/domain/src/index.ts",
+  "packages/domain/src/observability.ts",
+  "packages/domain/src/store-types.ts",
   "apps/api/src/app.ts",
   "apps/api/src/index.ts",
   "apps/api/src/hono-openapi-app.ts",
@@ -118,6 +121,72 @@ for (const token of [
 }
 assert(ragCoreTs.includes("export interface LocalRagTools"), "RAG core TS source must type LocalRagTools");
 assert(ragCoreTs.includes("export interface RagCitation"), "RAG core TS source must type RagCitation");
+
+const domainIndexTs = readText("packages/domain/src/index.ts");
+const domainIndexJs = readText("packages/domain/src/index.js");
+for (const token of [
+  "roles",
+  "participantRoles",
+  "statuses",
+  "chatEventNames",
+  "adminEventNames",
+  "canReadChat",
+  "canWriteChat",
+  "canManageAdmin",
+  "createErrorResponse"
+]) {
+  assert(domainIndexTs.includes(token), `Domain index TS source missing ${token}`);
+  assert(domainIndexJs.includes(token), `Domain index JS runtime mirror missing ${token}`);
+}
+assert(domainIndexTs.includes("export type Role"), "Domain index TS source must export Role");
+assert(domainIndexTs.includes("export type Status"), "Domain index TS source must export Status");
+
+const observabilityTs = readText("packages/domain/src/observability.ts");
+const observabilityJs = readText("packages/domain/src/observability.js");
+for (const token of [
+  "logSchemaRequiredFields",
+  "requiredMetricCatalog",
+  "requiredAlarmCatalog",
+  "retentionPolicyCatalog",
+  "createLogEvent",
+  "assertLogSchema",
+  "assertTracePropagation",
+  "api_latency_ms",
+  "rag_latency_ms",
+  "api_5xx_alarm",
+  "schema_migrations"
+]) {
+  assert(observabilityTs.includes(token), `Domain observability TS source missing ${token}`);
+  assert(observabilityJs.includes(token), `Domain observability JS runtime mirror missing ${token}`);
+}
+assert(observabilityTs.includes("export interface MetricCatalogEntry"), "Domain observability TS source must type metric catalog");
+assert(observabilityTs.includes("export interface LogEvent"), "Domain observability TS source must type log events");
+
+const storeTypesTs = readText("packages/domain/src/store-types.ts");
+const storeJs = readText("packages/domain/src/store.js");
+for (const token of [
+  "createLocalStore",
+  "submitQuestion",
+  "issueWsTicket",
+  "consumeWsTicket",
+  "listAdminArtifacts"
+]) {
+  assert(storeTypesTs.includes(token), `Domain store TS source missing ${token}`);
+  assert(storeJs.includes(token), `Domain store JS runtime mirror missing ${token}`);
+}
+for (const token of [
+  "LocalDomainState",
+  "ChatSession",
+  "ChatParticipant",
+  "ChatRun",
+  "ChatMessageEvent",
+  "CitationRecord",
+  "ToolInvocationRecord"
+]) {
+  assert(storeTypesTs.includes(token), `Domain store TS source missing ${token}`);
+}
+assert(storeTypesTs.includes("export interface LocalStore"), "Domain store TS source must type LocalStore");
+assert(storeTypesTs.includes("export declare function createLocalStore"), "Domain store TS source must declare createLocalStore boundary");
 
 const apiAppSource = readText("apps/api/src/app.ts");
 assert(apiAppSource.includes("createSaphnexaHonoOpenApiApp"), "API app entry must use the TypeScript Hono/OpenAPI source");
