@@ -1,6 +1,6 @@
 # OpenAPI field-level client types
 
-- 状態: doing
+- 状態: done
 - タスク種別: 機能追加
 - 作成日時: 2026-05-29 11:19 JST
 - 対象ブランチ: `codex/typescript-framework-implementation`
@@ -67,6 +67,11 @@ API route contract 自体は変えない。local verification docs には、fiel
 - `npm test`: pass。15 tests。
 - `git diff --check`: pass。
 - `rg -c "successResponse: \\{" packages/api-client/src/generated/operation-types.ts`: 32。
+
+## PR コメント
+
+- 受け入れ条件確認: https://github.com/tsuji-tomonori/saphnexa/pull/3#issuecomment-4569943414
+- セルフレビュー: https://github.com/tsuji-tomonori/saphnexa/pull/3#issuecomment-4569944970
 
 ## PR レビュー観点
 
