@@ -1,6 +1,6 @@
 # Domain TypeScript source
 
-- 状態: doing
+- 状態: done
 - タスク種別: 機能追加
 - 作成日時: 2026-05-29 10:20 JST
 - 対象ブランチ: `codex/typescript-framework-implementation`
@@ -59,6 +59,11 @@ Domain package の公開 domain contract と local store 境界を TypeScript so
 - `npm test`: pass。15 tests。
 - `npm run docs:check`: pass。
 - `git diff --check`: pass。
+
+## PR コメント
+
+- 受け入れ条件確認: https://github.com/tsuji-tomonori/saphnexa/pull/3#issuecomment-4569688026
+- セルフレビュー: https://github.com/tsuji-tomonori/saphnexa/pull/3#issuecomment-4569689055
 
 ## PR レビュー観点
 
