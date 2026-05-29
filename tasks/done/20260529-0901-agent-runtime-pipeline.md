@@ -1,6 +1,6 @@
 # Agent runtime pipeline
 
-- 状態: doing
+- 状態: done
 - タスク種別: 機能追加
 - 作成日時: 2026-05-29 09:01 JST
 - 対象ブランチ: `codex/typescript-framework-implementation`
@@ -44,16 +44,23 @@ Agent 側を、RAG Tools 境界を活かした TypeScript pipeline 構造へ進�
 
 ## 受け入れ条件
 
-- [ ] AgentCore invocation を扱う runtime handler がある。
-- [ ] Tools API client 境界があり、kb retrieve、BM25、ACL、reference expand、evidence pack、citation format を型として扱う。
-- [ ] Bedrock Runtime client 境界があり、LLM answer generation が pipeline 内の独立責務になっている。
-- [ ] DSQL client 境界があり、ACL scope 解決が Agent 側の独立責務になっている。
-- [ ] query rewrite、context packing、answer generation、citation binding が別 module になっている。
-- [ ] evidence がない場合は answer generation に進まず refusal になる。
-- [ ] citation は evidence / citation formatter の結果からのみ作る。
-- [ ] retrieval policy guard が緩和されない。
-- [ ] source gate と既存 RAG / contract tests が pass する。
-- [ ] 実 AWS 接続や未実施検証を完了扱いにしない。
+- [x] AgentCore invocation を扱う runtime handler がある。
+- [x] Tools API client 境界があり、kb retrieve、BM25、ACL、reference expand、evidence pack、citation format を型として扱う。
+- [x] Bedrock Runtime client 境界があり、LLM answer generation が pipeline 内の独立責務になっている。
+- [x] DSQL client 境界があり、ACL scope 解決が Agent 側の独立責務になっている。
+- [x] query rewrite、context packing、answer generation、citation binding が別 module になっている。
+- [x] evidence がない場合は answer generation に進まず refusal になる。
+- [x] citation は evidence / citation formatter の結果からのみ作る。
+- [x] retrieval policy guard が緩和されない。
+- [x] source gate と既存 RAG / contract tests が pass する。
+- [x] 実 AWS 接続や未実施検証を完了扱いにしない。
+
+## 完了時確認
+
+- PR: https://github.com/tsuji-tomonori/saphnexa/pull/3
+- 受け入れ条件コメント: https://github.com/tsuji-tomonori/saphnexa/pull/3#issuecomment-4569313924
+- セルフレビューコメント: https://github.com/tsuji-tomonori/saphnexa/pull/3#issuecomment-4569315297
+- 作業レポート: `reports/working/20260529-0904-agent-runtime-pipeline.md`
 
 ## 検証計画
 
