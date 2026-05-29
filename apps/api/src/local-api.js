@@ -29,6 +29,15 @@ export function createLocalApi() {
             return ok({ chats: store.listChats(actor) });
           case "getChatSession":
             return ok({ chat: store.getChat(actor, input.chat_id) });
+          case "updateChatSession":
+            return ok({ chat: store.updateChat(actor, input.chat_id, input) });
+          case "deleteChatSession":
+            store.deleteChat(actor, input.chat_id);
+            return noContent();
+          case "listChatParticipants":
+            return ok({ participants: store.listParticipants(actor, input.chat_id) });
+          case "listMessages":
+            return ok(store.listMessages(actor, input.chat_id, input));
           case "addChatParticipant":
             return created({ participant: store.addParticipant(actor, input.chat_id, input) });
           case "updateChatParticipant":
@@ -38,17 +47,23 @@ export function createLocalApi() {
             return noContent();
           case "submitQuestion":
             return accepted(store.submitQuestion(actor, input.chat_id, input, rag));
+          case "cancelAnswerGeneration":
+            return accepted(store.cancelAnswerGeneration(actor, input.chat_id, input.message_id, input));
           case "listMessageEvents":
             return ok({ events: store.listEvents(actor, input.chat_id, input.message_id, input.after_seq || 0) });
+          case "createFeedback":
+            return created({ feedback: store.createFeedback(actor, input.chat_id, input.message_id, input) });
           case "addFavorite":
             return created({ favorite: store.addFavorite(actor, input) });
+          case "deleteFavorite":
+            store.deleteFavorite(actor, input.favorite_id);
+            return noContent();
           case "listFavorites":
             return ok({ favorites: store.listFavorites(actor) });
           case "listLlmModels":
-            return ok({ models: store.listLlmModels() });
+            return ok({ models: store.listLlmModels(actor) });
           case "adminListUsers":
-            requireAdmin(actor);
-            return ok({ users: store.state.users });
+            return ok({ users: store.listAdminUsers(actor) });
           case "startUserImport":
             return accepted({ import: store.startUserImport(actor, input.rows || []) });
           case "getUserImport":
@@ -59,13 +74,20 @@ export function createLocalApi() {
             });
           case "createDocument":
             return accepted(store.createDocument(actor, input));
+          case "adminListDocuments":
+            return ok({ documents: store.listDocuments(actor) });
+          case "getDocument":
+            return ok({ document: store.getDocument(actor, input.document_id) });
           case "createDocumentVersion":
             return accepted(store.createDocumentVersion(actor, input.document_id, input));
           case "activateDocumentVersion":
             return ok({ version: store.activateDocumentVersion(actor, input.document_id, input.version_id) });
+          case "updateDocumentAcl":
+            return ok({ document: store.updateDocumentAcl(actor, input.document_id, input.version_id, input) });
+          case "suspendDocument":
+            return ok({ document: store.suspendDocument(actor, input.document_id) });
           case "getIngestionJob":
-            requireAdmin(actor);
-            return ok({ job: store.state.ingestion_jobs.find((item) => item.job_id === input.job_id) });
+            return ok({ job: store.getIngestionJob(actor, input.job_id) });
           case "retryIngestionJob":
             return accepted({ job: store.retryIngestionJob(actor, input.job_id) });
           case "listEvaluationDatasets":
@@ -74,8 +96,7 @@ export function createLocalApi() {
           case "startEvaluationRun":
             return accepted({ evaluation_run: store.startEvaluationRun(actor, input) });
           case "getEvaluationRun":
-            requireAdmin(actor);
-            return ok({ evaluation_run: store.state.evaluation_runs.find((item) => item.evaluation_run_id === input.evaluation_run_id) });
+            return ok(store.getEvaluationRun(actor, input.evaluation_run_id));
           case "listPublishedArtifacts":
             return ok({ artifacts: store.listAdminArtifacts(actor) });
           case "issueArtifactAccessCookie":

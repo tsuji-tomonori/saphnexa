@@ -2,5 +2,14 @@
   "name": "@saphnexa/api-client",
   "version": "0.1.0",
   "type": "module",
-  "private": true
+  "private": true,
+  "exports": {
+    ".": "./src/client.ts"
+  },
+  "scripts": {
+    "typecheck": "tsc --noEmit --project tsconfig.json"
+  },
+  "devDependencies": {
+    "typescript": "^5.8.0"
+  }
 }

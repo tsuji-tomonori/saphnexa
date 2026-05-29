@@ -29,6 +29,7 @@ export const chatEventNames = Object.freeze([
   "chat.generation.started",
   "chat.message.partial_ready",
   "chat.message.final_ready",
+  "chat.feedback.recorded",
   "chat.run.failed",
   "chat.run.canceled"
 ]);

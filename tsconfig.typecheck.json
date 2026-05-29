@@ -1,0 +1,30 @@
+{
+  "extends": "./tsconfig.base.json",
+  "compilerOptions": {
+    "composite": false,
+    "rootDir": "."
+  },
+  "include": [
+    "apps/api/src/**/*.ts",
+    "apps/api/src/**/*.js",
+    "apps/agent/src/**/*.ts",
+    "apps/tools-api/src/**/*.ts",
+    "apps/tools-api/src/**/*.js",
+    "apps/workers/src/**/*.ts",
+    "apps/workers/src/**/*.js",
+    "apps/web/src/**/*.ts",
+    "apps/web/src/**/*.tsx",
+    "packages/api-client/src/**/*.ts",
+    "packages/api-contract/src/**/*.ts",
+    "packages/db-schema/src/**/*.ts",
+    "packages/db-types/src/**/*.ts",
+    "packages/domain/src/**/*.js",
+    "packages/domain/src/**/*.ts",
+    "packages/model-catalog/src/**/*.ts",
+    "packages/rag-core/src/**/*.js",
+    "packages/rag-core/src/**/*.ts",
+    "packages/tool-contract/src/**/*.ts",
+    "packages/ui/src/**/*.ts",
+    "packages/ui/src/**/*.tsx"
+  ]
+}

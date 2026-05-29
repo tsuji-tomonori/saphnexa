@@ -11,6 +11,7 @@ test("chat is an independent resource with owner/viewer participant permissions"
   const created = api.request("user-owner", "createChatSession", { csrf_token: ownerCsrf, title: "検収チャット" });
   assert.equal(created.status, 201);
   const chatId = created.body.chat.chat_id;
+  assert.equal(api.store.state.audit_events.some((event) => event.event_name === "chat.session.created" && event.resource_id === chatId), true);
 
   const shared = api.request("user-owner", "addChatParticipant", { csrf_token: ownerCsrf, chat_id: chatId, user_id: "user-viewer" });
   assert.equal(shared.status, 201);
@@ -23,8 +24,35 @@ test("chat is an independent resource with owner/viewer participant permissions"
   assert.equal(viewerWrite.status, 403);
   assert.equal(viewerWrite.body.error_code, "CHAT_WRITE_FORBIDDEN");
 
+  const transferred = api.request("user-owner", "updateChatParticipant", { csrf_token: ownerCsrf, chat_id: chatId, user_id: "user-viewer", participant_role: "owner" });
+  assert.equal(transferred.status, 200);
+  assert.equal(transferred.body.participant.participant_role, "owner");
+  const afterTransfer = api.request("user-viewer", "listChatParticipants", { chat_id: chatId });
+  assert.equal(afterTransfer.status, 200);
+  assert.equal(afterTransfer.body.participants.filter((participant) => participant.participant_role === "owner").length, 1);
+  assert.equal(afterTransfer.body.participants.find((participant) => participant.user_id === "user-owner").participant_role, "viewer");
+  assert.equal(api.store.state.audit_events.some((event) => event.event_name === "chat.participant.owner_transferred" && event.resource_id === chatId), true);
+
+  const oldOwnerWrite = api.request("user-owner", "updateChatSession", { csrf_token: ownerCsrf, chat_id: chatId, title: "旧owner title" });
+  assert.equal(oldOwnerWrite.status, 403);
+  assert.equal(api.request("user-owner", "updateChatParticipant", { csrf_token: ownerCsrf, chat_id: chatId, user_id: "user-owner", participant_role: "owner" }).status, 403);
+  assert.equal(api.request("user-outsider", "updateChatParticipant", { csrf_token: "csrf-user-outsider", chat_id: chatId, user_id: "user-owner", participant_role: "owner" }).status, 403);
+
   const outsiderRead = api.request("user-outsider", "getChatSession", { chat_id: chatId });
   assert.equal(outsiderRead.status, 403);
+
+  const renamed = api.request("user-viewer", "updateChatSession", { csrf_token: viewerCsrf, chat_id: chatId, title: "検収チャット renamed" });
+  assert.equal(renamed.status, 200);
+  assert.equal(api.store.state.audit_events.some((event) => event.event_name === "chat.session.title_updated" && event.resource_id === chatId), true);
+
+  const auditCountBeforeViewerDelete = api.store.state.audit_events.length;
+  const oldOwnerDelete = api.request("user-owner", "deleteChatSession", { csrf_token: ownerCsrf, chat_id: chatId });
+  assert.equal(oldOwnerDelete.status, 403);
+  assert.equal(api.store.state.audit_events.length, auditCountBeforeViewerDelete);
+
+  const deleted = api.request("user-viewer", "deleteChatSession", { csrf_token: viewerCsrf, chat_id: chatId });
+  assert.equal(deleted.status, 204);
+  assert.equal(api.store.state.audit_events.some((event) => event.event_name === "chat.session.deleted" && event.resource_id === chatId && event.payload_json.physical_delete === false), true);
 });
 
 test("question submission creates run/message ids, events, citations, and audited tool invocations", () => {
@@ -53,9 +81,63 @@ test("question submission creates run/message ids, events, citations, and audite
   const message = api.store.state.chat_messages.find((item) => item.message_id === accepted.body.message_id);
   assert.equal(message.status, "succeeded");
   assert.equal(api.store.state.citation_records.length >= 1, true);
+  const messages = api.request("user-owner", "listMessages", { chat_id: chatId });
+  const restoredMessage = messages.body.messages.find((item) => item.message_id === accepted.body.message_id);
+  assert.equal(restoredMessage.citations.length >= 1, true);
+  assert.equal(restoredMessage.citations.every((citation) => citation.display.document_name), true);
+  assert.equal(api.request("user-outsider", "listMessages", { chat_id: chatId }).status, 403);
   assert.equal(api.store.state.tool_invocations.map((item) => item.tool_name).includes("acl-check"), true);
   const aclInvocation = api.store.state.tool_invocations.find((item) => item.tool_name === "acl-check");
   assert.equal(aclInvocation.response_summary_json.denied_count, 1);
+});
+
+test("message history restores only the viewer own feedback state", () => {
+  const api = createLocalApi();
+  const ownerCsrf = csrf(api, "user-owner");
+  const chatId = api.request("user-owner", "createChatSession", { csrf_token: ownerCsrf, title: "feedback state" }).body.chat.chat_id;
+  assert.equal(api.request("user-owner", "addChatParticipant", { csrf_token: ownerCsrf, chat_id: chatId, user_id: "user-viewer" }).status, 201);
+  const accepted = api.request("user-owner", "submitQuestion", {
+    csrf_token: ownerCsrf,
+    chat_id: chatId,
+    question: "フィードバック復元を確認する"
+  });
+  assert.equal(accepted.status, 202);
+  const feedback = api.request("user-owner", "createFeedback", {
+    csrf_token: ownerCsrf,
+    chat_id: chatId,
+    message_id: accepted.body.message_id,
+    rating: "positive",
+    comment: "履歴で確認"
+  });
+  assert.equal(feedback.status, 201);
+
+  const ownerMessages = api.request("user-owner", "listMessages", { chat_id: chatId });
+  const ownerAnswer = ownerMessages.body.messages.find((message) => message.message_id === accepted.body.message_id);
+  assert.equal(ownerAnswer.feedback.rating, "positive");
+  assert.equal(ownerAnswer.feedback.comment, "履歴で確認");
+  assert.equal(ownerAnswer.citations.length >= 1, true);
+  const firstPage = api.request("user-owner", "listMessages", { chat_id: chatId, limit: 1 });
+  assert.equal(firstPage.body.messages.length, 1);
+  assert.equal(typeof firstPage.body.next_cursor, "string");
+  const secondPage = api.request("user-owner", "listMessages", { chat_id: chatId, after_message_id: firstPage.body.next_cursor, limit: 1 });
+  assert.equal(secondPage.body.messages.length, 1);
+  assert.notEqual(secondPage.body.messages[0].message_id, firstPage.body.messages[0].message_id);
+  assert.equal(secondPage.body.next_cursor, null);
+
+  const viewerMessages = api.request("user-viewer", "listMessages", { chat_id: chatId });
+  const viewerAnswer = viewerMessages.body.messages.find((message) => message.message_id === accepted.body.message_id);
+  assert.equal(viewerAnswer.feedback, null);
+  assert.equal(viewerAnswer.citations.length >= 1, true);
+
+  const messageFavorite = api.request("user-owner", "addFavorite", { csrf_token: ownerCsrf, chat_id: chatId, message_id: accepted.body.message_id });
+  assert.equal(messageFavorite.status, 201);
+  const duplicateFavorite = api.request("user-owner", "addFavorite", { csrf_token: ownerCsrf, chat_id: chatId, message_id: accepted.body.message_id });
+  assert.equal(duplicateFavorite.status, 201);
+  assert.equal(duplicateFavorite.body.favorite.favorite_id, messageFavorite.body.favorite.favorite_id);
+  assert.equal(api.store.state.favorites.filter((favorite) => favorite.chat_id === chatId && favorite.message_id === accepted.body.message_id).length, 1);
+  const userMessage = api.store.state.chat_messages.find((message) => message.chat_id === chatId && message.sender_user_id === "user-owner");
+  assert.equal(api.request("user-owner", "addFavorite", { csrf_token: ownerCsrf, chat_id: chatId, message_id: userMessage.message_id }).status, 404);
+  assert.equal(api.request("user-outsider", "addFavorite", { csrf_token: "csrf-user-outsider", chat_id: chatId, message_id: accepted.body.message_id }).status, 403);
 });
 
 test("fixture RAG refuses ungrounded questions without fake citations", () => {
@@ -81,6 +163,10 @@ test("admin APIs reject general users and allow admins", () => {
   const evaluation = api.request("admin-1", "startEvaluationRun", { csrf_token: adminCsrf, dataset_id: "dataset-local-golden" });
   assert.equal(evaluation.status, 202);
   assert.equal(evaluation.body.evaluation_run.metrics_json.retrieval.recall_at_10 >= 0.85, true);
+  const detail = api.request("admin-1", "getEvaluationRun", { evaluation_run_id: evaluation.body.evaluation_run.evaluation_run_id });
+  assert.equal(detail.status, 200);
+  assert.equal(detail.body.items.length >= 2, true);
+  assert.equal(detail.body.items.every((item) => item.evaluation_run_id === evaluation.body.evaluation_run.evaluation_run_id), true);
 });
 
 test("state-changing APIs reject missing or mismatched CSRF tokens", () => {
@@ -137,18 +223,39 @@ test("document ingestion validates metadata, retries failures, and is idempotent
   assert.equal(invalid.status, 202);
   const failedJob = api.store.state.ingestion_jobs.find((item) => item.job_id === invalid.body.job_id);
   assert.equal(failedJob.status, "failed");
+  assert.equal(failedJob.progress_percent, 0);
   assert.equal(failedJob.retryable, true);
+  const fetchedFailedJob = api.request("admin-1", "getIngestionJob", { job_id: invalid.body.job_id });
+  assert.equal(fetchedFailedJob.status, 200);
+  assert.equal(fetchedFailedJob.body.job.progress_percent, 0);
+  assert.equal(api.request("user-owner", "getIngestionJob", { job_id: invalid.body.job_id }).status, 403);
+  assert.equal(api.request("user-owner", "retryIngestionJob", { csrf_token: "csrf-user-owner", job_id: invalid.body.job_id }).status, 403);
   assert.equal(api.store.state.admin_events.at(-1).event_name, "admin.ingestion.updated");
 
   const retried = api.request("admin-1", "retryIngestionJob", { csrf_token: adminCsrf, job_id: invalid.body.job_id });
   assert.equal(retried.status, 202);
   assert.equal(retried.body.job.status, "queued");
+  assert.equal(retried.body.job.progress_percent, 10);
 
-  const metadata = { document_id: "doc-idempotent", version: "v1", acl_scope: "admin", status: "uploaded" };
+  const metadata = { document_id: "doc-idempotent", version: "v1", acl_scope: "admin", status: "uploaded", document_type: "manual", valid_from: "2026-04-01", valid_until: "2027-03-31" };
   const first = api.request("admin-1", "createDocument", { csrf_token: adminCsrf, title: "idempotent", document_id: "doc-idempotent", version_id: "ver-1", metadata });
   const second = api.request("admin-1", "createDocument", { csrf_token: adminCsrf, title: "idempotent", document_id: "doc-idempotent", version_id: "ver-1", metadata });
   assert.equal(second.body.idempotent, true);
   assert.equal(api.store.state.document_versions.filter((item) => item.document_id === first.body.document_id && item.version_id === first.body.version_id).length, 1);
+  const savedVersion = api.store.state.document_versions.find((item) => item.document_id === first.body.document_id && item.version_id === first.body.version_id);
+  assert.equal(savedVersion.metadata_json.document_type, "manual");
+  assert.equal(savedVersion.metadata_json.valid_from, "2026-04-01");
+  assert.equal(savedVersion.metadata_json.valid_until, "2027-03-31");
+
+  const succeeded = api.request("admin-1", "createDocument", {
+    csrf_token: adminCsrf,
+    title: "complete document",
+    document_id: "doc-complete",
+    version_id: "ver-complete",
+    metadata: { document_id: "doc-complete", version: "ver-complete", acl_scope: "admin", status: "succeeded" }
+  });
+  const fetchedSucceededJob = api.request("admin-1", "getIngestionJob", { job_id: succeeded.body.job_id });
+  assert.equal(fetchedSucceededJob.body.job.progress_percent, 100);
 });
 
 test("retrieval policy cannot be relaxed by agent-side code", () => {

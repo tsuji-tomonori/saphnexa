@@ -1,3 +1,5 @@
+// Compatibility export for existing local Node checks. The TypeScript source of
+// record lives in agent/retrievalPolicy.ts.
 export function assertRetrievalPolicyNotRelaxed(inputPolicy, effectivePolicy) {
   const inputTopK = inputPolicy.top_k ?? 10;
   const effectiveTopK = effectivePolicy.top_k ?? 10;

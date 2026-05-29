@@ -39,6 +39,7 @@ export function createLocalStore() {
       created_at: baseTime
     }],
     evaluation_runs: [],
+    evaluation_run_items: [],
     published_artifacts: [
       artifact("artifact-docs-latest", "design_doc_html", "設計書サイト latest", "/admin/docs/latest/", "dist/admin/docs/latest/manifest.json"),
       artifact("artifact-docs-v0-16", "design_doc_html", "設計書サイト v0.16", "/admin/docs/versions/v0.16/", "dist/admin/docs/versions/v0.16/manifest.json"),
@@ -52,30 +53,54 @@ export function createLocalStore() {
     state,
     getCurrentUser,
     createChat,
+    updateChat,
+    deleteChat,
     addParticipant,
     updateParticipant,
     removeParticipant,
+    listParticipants,
+    listMessages,
     listChats,
     getChat,
     submitQuestion,
+    cancelAnswerGeneration,
     listEvents,
+    createFeedback,
     addFavorite,
+    deleteFavorite,
     listFavorites,
+    listAdminUsers,
     startUserImport,
+    listDocuments,
+    getDocument,
+    getIngestionJob,
     createDocument,
     createDocumentVersion,
     activateDocumentVersion,
+    updateDocumentAcl,
+    suspendDocument,
     retryIngestionJob,
     issueArtifactAccessCookie,
     issueWsTicket,
     consumeWsTicket,
     startEvaluationRun,
+    getEvaluationRun,
     listAdminArtifacts,
-    listLlmModels: () => llmModels.filter((item) => item.status === statuses.ACTIVE)
+    listLlmModels
   };
 
   function getCurrentUser(user_id) {
     return state.users.find((item) => item.user_id === user_id && item.status === statuses.ACTIVE);
+  }
+
+  function listLlmModels(actor) {
+    requireActiveUser(actor);
+    return llmModels.filter((item) => {
+      if (item.status !== statuses.ACTIVE) return false;
+      if (item.allowed_role === "system") return false;
+      if (actor.role === roles.ADMIN) return item.visible_to_user || item.allowed_role === roles.ADMIN || item.allowed_role === roles.GENERAL_USER;
+      return item.visible_to_user && item.allowed_role === actor.role;
+    });
   }
 
   function createChat(actor, input = {}) {
@@ -103,7 +128,46 @@ export function createLocalStore() {
       added_at: now(),
       removed_at: null
     });
+    recordAuditEvent(actor, "chat.session.created", "chat_session", chat_id, {
+      title: chat.title,
+      participant_role: participantRoles.OWNER
+    });
     return chat;
+  }
+
+  function updateChat(actor, chat_id, input = {}) {
+    requireOwner(actor, chat_id);
+    const chat = activeChat(actor, chat_id);
+    const previousTitle = chat.title;
+    const title = typeof input.title === "string" ? input.title.trim() : "";
+    if (title) {
+      chat.title = title;
+    }
+    chat.updated_at = now();
+    recordAuditEvent(actor, "chat.session.title_updated", "chat_session", chat_id, {
+      previous_title: previousTitle,
+      title: chat.title
+    });
+    return chat;
+  }
+
+  function deleteChat(actor, chat_id) {
+    requireOwner(actor, chat_id);
+    const chat = activeChat(actor, chat_id);
+    const deletedAt = now();
+    chat.status = statuses.DELETED;
+    chat.deleted_at = deletedAt;
+    chat.updated_at = deletedAt;
+    for (const row of state.chat_participants.filter((item) => item.tenant_id === actor.tenant_id && item.chat_id === chat_id && item.status === statuses.ACTIVE)) {
+      row.status = statuses.REMOVED;
+      row.removed_at = deletedAt;
+    }
+    recordAuditEvent(actor, "chat.session.deleted", "chat_session", chat_id, {
+      deleted_at: deletedAt,
+      removed_participants: state.chat_participants.filter((item) => item.tenant_id === actor.tenant_id && item.chat_id === chat_id && item.status === statuses.REMOVED).length,
+      physical_delete: false
+    });
+    return true;
   }
 
   function addParticipant(actor, chat_id, input) {
@@ -138,11 +202,29 @@ export function createLocalStore() {
   function updateParticipant(actor, chat_id, user_id, input = {}) {
     requireOwner(actor, chat_id);
     const row = participant(chat_id, user_id);
-    if (!row || row.status !== statuses.ACTIVE) throw forbidden("PARTICIPANT_NOT_FOUND", "参加者が存在しない。");
+    if (!row) throw forbidden("PARTICIPANT_NOT_FOUND", "参加者が存在しない。");
+    if (input.participant_role === participantRoles.OWNER) {
+      if (row.status !== statuses.ACTIVE || row.participant_role !== participantRoles.VIEWER || row.user_id === actor.user_id) {
+        throw forbidden("OWNER_TRANSFER_TARGET_INVALID", "owner 移譲先は active viewer に限定される。");
+      }
+      const currentOwner = participant(chat_id, actor.user_id);
+      currentOwner.participant_role = participantRoles.VIEWER;
+      row.participant_role = participantRoles.OWNER;
+      row.status = statuses.ACTIVE;
+      row.removed_at = null;
+      recordAuditEvent(actor, "chat.participant.owner_transferred", "chat_share", chat_id, {
+        previous_owner_user_id: actor.user_id,
+        new_owner_user_id: row.user_id
+      });
+      return row;
+    }
+    if (row.participant_role === participantRoles.OWNER) throw forbidden("PARTICIPANT_NOT_FOUND", "参加者が存在しない。");
     if (input.participant_role && input.participant_role !== participantRoles.VIEWER) {
-      throw forbidden("UNSUPPORTED_PARTICIPANT_ROLE", "初期構成では共有先は viewer 固定。");
+      throw forbidden("UNSUPPORTED_PARTICIPANT_ROLE", "共有先 role は viewer または owner 移譲に限定される。");
     }
     row.participant_role = participantRoles.VIEWER;
+    row.status = statuses.ACTIVE;
+    row.removed_at = null;
     return row;
   }
 
@@ -155,6 +237,29 @@ export function createLocalStore() {
     return true;
   }
 
+  function listParticipants(actor, chat_id) {
+    requireReader(actor, chat_id);
+    return state.chat_participants
+      .filter((item) => item.tenant_id === actor.tenant_id && item.chat_id === chat_id && item.status === statuses.ACTIVE)
+      .sort((a, b) => a.added_at.localeCompare(b.added_at));
+  }
+
+  function listMessages(actor, chat_id, input = {}) {
+    requireReader(actor, chat_id);
+    const limit = messagePageLimit(input.limit);
+    const ordered = state.chat_messages
+      .filter((item) => item.tenant_id === actor.tenant_id && item.chat_id === chat_id)
+      .map((message) => withMessageRestoration(message, actor.user_id))
+      .sort((a, b) => a.created_at.localeCompare(b.created_at) || a.message_id.localeCompare(b.message_id));
+    const cursorIndex = input.after_message_id ? ordered.findIndex((message) => message.message_id === input.after_message_id) : -1;
+    const pageSource = input.after_message_id && cursorIndex < 0 ? [] : cursorIndex >= 0 ? ordered.slice(cursorIndex + 1) : ordered;
+    const page = pageSource.slice(0, limit);
+    return {
+      messages: page,
+      next_cursor: pageSource.length > limit ? page.at(-1)?.message_id ?? null : null
+    };
+  }
+
   function listChats(actor) {
     requireActiveUser(actor);
     const visibleIds = state.chat_participants
@@ -165,12 +270,41 @@ export function createLocalStore() {
 
   function getChat(actor, chat_id) {
     requireReader(actor, chat_id);
-    const chat = state.chat_sessions.find((item) => item.chat_id === chat_id && item.status !== statuses.DELETED);
+    const chat = state.chat_sessions.find((item) => item.tenant_id === actor.tenant_id && item.chat_id === chat_id && item.status !== statuses.DELETED);
+    if (!chat) throw forbidden("CHAT_NOT_FOUND", "チャットが存在しない。", 404);
     return {
       ...chat,
       participants: state.chat_participants.filter((item) => item.chat_id === chat_id && item.status === statuses.ACTIVE),
-      messages: state.chat_messages.filter((item) => item.chat_id === chat_id)
+      messages: state.chat_messages
+        .filter((item) => item.chat_id === chat_id)
+        .map((message) => withMessageRestoration(message, actor.user_id))
     };
+  }
+
+  function withMessageRestoration(message, user_id) {
+    return withCitations(withOwnFeedback(message, user_id));
+  }
+
+  function withOwnFeedback(message, user_id) {
+    const feedback = state.message_feedback.find((item) =>
+      item.tenant_id === message.tenant_id &&
+      item.chat_id === message.chat_id &&
+      item.message_id === message.message_id &&
+      item.user_id === user_id
+    );
+    return feedback ? { ...message, feedback } : { ...message, feedback: null };
+  }
+
+  function withCitations(message) {
+    const citations = state.citation_records
+      .filter((item) => item.tenant_id === message.tenant_id && item.chat_id === message.chat_id && item.message_id === message.message_id)
+      .sort((a, b) => a.citation_id.localeCompare(b.citation_id));
+    return { ...message, citations };
+  }
+
+  function messagePageLimit(limit) {
+    if (!Number.isFinite(limit)) return 50;
+    return Math.max(1, Math.min(100, Math.trunc(limit)));
   }
 
   function submitQuestion(actor, chat_id, input, ragAdapter) {
@@ -279,6 +413,13 @@ export function createLocalStore() {
           run_id: run.run_id,
           answer_available: true,
           citation_count: result.citations.length,
+          citations: result.citations.map((citation) => ({
+            citation_id: citation.citation_id,
+            document_id: citation.document_id,
+            version_id: citation.version_id,
+            chunk_id: citation.chunk_id,
+            display: citation.display
+          })),
           refusal: false
         });
       }
@@ -302,6 +443,28 @@ export function createLocalStore() {
     });
   }
 
+  function cancelAnswerGeneration(actor, chat_id, message_id, input = {}) {
+    requireReader(actor, chat_id);
+    const message = state.chat_messages.find((item) => item.tenant_id === actor.tenant_id && item.chat_id === chat_id && item.message_id === message_id);
+    if (!message || message.sender_type !== "assistant" || !message.run_id) throw forbidden("MESSAGE_NOT_FOUND", "キャンセル対象の回答が存在しない。", 404);
+    const run = state.chat_runs.find((item) => item.tenant_id === actor.tenant_id && item.chat_id === chat_id && item.message_id === message_id && item.run_id === message.run_id);
+    if (!run) throw forbidden("CHAT_RUN_NOT_FOUND", "キャンセル対象のrunが存在しない。", 404);
+    const owner = canWriteChat(participant(chat_id, actor.user_id));
+    if (!owner && run.requested_by_user_id !== actor.user_id) throw forbidden("CHAT_CANCEL_FORBIDDEN", "回答生成のキャンセル権限がない。");
+    run.status = statuses.CANCELED;
+    run.completed_at = now();
+    run.error_code = input.reason || null;
+    run.retryable = false;
+    message.status = statuses.CANCELED;
+    message.completed_at = now();
+    appendEvent(actor.tenant_id, chat_id, message_id, "chat.run.canceled", "final", {
+      run_id: run.run_id,
+      status: statuses.CANCELED,
+      reason: input.reason || null
+    });
+    return { message_id, run_id: run.run_id, status: statuses.CANCELED };
+  }
+
   function listEvents(actor, chat_id, message_id, after_seq = 0) {
     requireReader(actor, chat_id);
     return state.chat_message_events
@@ -309,9 +472,58 @@ export function createLocalStore() {
       .sort((a, b) => a.event_seq - b.event_seq);
   }
 
+  function createFeedback(actor, chat_id, message_id, input = {}) {
+    requireReader(actor, chat_id);
+    const message = state.chat_messages.find((item) => item.tenant_id === actor.tenant_id && item.chat_id === chat_id && item.message_id === message_id);
+    if (!message || message.sender_type !== "assistant") throw forbidden("MESSAGE_NOT_FOUND", "フィードバック対象の回答が存在しない。", 404);
+    const rating = input.rating || "positive";
+    if (!["positive", "negative"].includes(rating)) throw forbidden("FEEDBACK_RATING_INVALID", "フィードバック評価が不正。", 400);
+    const existing = state.message_feedback.find((item) => item.tenant_id === actor.tenant_id && item.chat_id === chat_id && item.message_id === message_id && item.user_id === actor.user_id);
+    if (existing) {
+      existing.rating = rating;
+      existing.comment = input.comment || null;
+      existing.problem_type = input.problem_type || null;
+      return existing;
+    }
+    const feedback = {
+      tenant_id: actor.tenant_id,
+      feedback_id: nextId("feedback"),
+      chat_id,
+      message_id,
+      user_id: actor.user_id,
+      rating,
+      comment: input.comment || null,
+      problem_type: input.problem_type || null,
+      created_at: now()
+    };
+    state.message_feedback.push(feedback);
+    appendEvent(actor.tenant_id, chat_id, message_id, "chat.feedback.recorded", "progress", {
+      feedback_id: feedback.feedback_id,
+      rating: feedback.rating
+    });
+    return feedback;
+  }
+
   function addFavorite(actor, input) {
     requireActiveUser(actor);
     if (input.chat_id) requireReader(actor, input.chat_id);
+    if (!input.chat_id && input.message_id) throw forbidden("FAVORITE_CHAT_REQUIRED", "回答のお気に入りにはチャットIDが必要。", 400);
+    if (input.message_id) {
+      const message = state.chat_messages.find((item) =>
+        item.tenant_id === actor.tenant_id &&
+        item.chat_id === input.chat_id &&
+        item.message_id === input.message_id &&
+        item.sender_type === "assistant"
+      );
+      if (!message) throw forbidden("FAVORITE_MESSAGE_NOT_FOUND", "お気に入り対象の回答が存在しない。", 404);
+    }
+    const existing = state.favorites.find((item) =>
+      item.tenant_id === actor.tenant_id &&
+      item.user_id === actor.user_id &&
+      item.chat_id === (input.chat_id || null) &&
+      item.message_id === (input.message_id || null)
+    );
+    if (existing) return existing;
     const favorite = {
       tenant_id: actor.tenant_id,
       favorite_id: nextId("fav"),
@@ -322,6 +534,14 @@ export function createLocalStore() {
     };
     state.favorites.push(favorite);
     return favorite;
+  }
+
+  function deleteFavorite(actor, favorite_id) {
+    requireActiveUser(actor);
+    const favorite = state.favorites.find((item) => item.tenant_id === actor.tenant_id && item.favorite_id === favorite_id);
+    if (!favorite || favorite.user_id !== actor.user_id) throw forbidden("FAVORITE_NOT_FOUND", "お気に入りが存在しない。", 404);
+    state.favorites = state.favorites.filter((item) => !(item.tenant_id === actor.tenant_id && item.favorite_id === favorite_id));
+    return true;
   }
 
   function listFavorites(actor) {
@@ -360,11 +580,27 @@ export function createLocalStore() {
     return job;
   }
 
+  function listAdminUsers(actor) {
+    requireAdmin(actor);
+    return state.users.filter((item) => item.tenant_id === actor.tenant_id);
+  }
+
   function createDocument(actor, input) {
     requireAdmin(actor);
-    const metadataError = validateDocumentMetadata(input.metadata || {});
     const document_id = input.document_id || nextId("doc");
     const version_id = input.version_id || nextId("ver");
+    const defaultMetadata = {
+      document_id,
+      version: version_id,
+      acl_scope: input.acl_scope_id || `user:${actor.user_id}`,
+      document_type: input.document_type || "unspecified",
+      valid_from: input.valid_from || null,
+      valid_until: input.valid_until || null,
+      status: "uploaded"
+    };
+    const optionalMetadataOnly = input.metadata && Object.keys(input.metadata).every((key) => ["document_type", "valid_from", "valid_until"].includes(key));
+    const metadata = input.metadata ? (optionalMetadataOnly ? { ...defaultMetadata, ...input.metadata } : input.metadata) : defaultMetadata;
+    const metadataError = validateDocumentMetadata(metadata);
     const existingVersion = state.document_versions.find((item) => item.document_id === document_id && item.version_id === version_id);
     if (existingVersion) {
       return {
@@ -377,10 +613,12 @@ export function createLocalStore() {
     }
     const job_id = nextId("ing");
     const raw_s3_uri = `s3://saphnexa-local/raw/${document_id}/${version_id}/${input.file_name || "document.pdf"}`;
+    const acceptedStatus = metadata.status === statuses.SUCCEEDED ? statuses.SUCCEEDED : "uploaded";
+    const acceptedJobStatus = metadata.status === statuses.SUCCEEDED ? statuses.SUCCEEDED : statuses.QUEUED;
     if (!state.documents.find((item) => item.document_id === document_id)) {
       state.documents.push({ tenant_id: actor.tenant_id, document_id, title: input.title, status: statuses.ACTIVE, created_by_user_id: actor.user_id, created_at: now(), updated_at: now() });
     }
-    state.document_versions.push({ tenant_id: actor.tenant_id, document_id, version_id, version_label: input.version_label || "v1", status: metadataError ? statuses.FAILED : "uploaded", raw_s3_uri, metadata_json: input.metadata || {}, created_at: now() });
+    state.document_versions.push({ tenant_id: actor.tenant_id, document_id, version_id, version_label: input.version_label || "v1", status: metadataError ? statuses.FAILED : acceptedStatus, raw_s3_uri, metadata_json: metadata, created_at: now() });
     if (!metadataError) {
       state.document_acl_entries.push({ tenant_id: actor.tenant_id, document_id, version_id, acl_scope_id: input.acl_scope_id || `user:${actor.user_id}`, effect: "allow" });
     }
@@ -389,7 +627,8 @@ export function createLocalStore() {
       job_id,
       document_id,
       version_id,
-      status: metadataError ? statuses.FAILED : statuses.QUEUED,
+      status: metadataError ? statuses.FAILED : acceptedJobStatus,
+      progress_percent: ingestionProgressPercent(metadataError ? statuses.FAILED : acceptedJobStatus),
       raw_s3_uri,
       parsed_s3_prefix: `s3://saphnexa-local/parsed/${document_id}/${version_id}/`,
       error_code: metadataError?.error_code || null,
@@ -406,6 +645,23 @@ export function createLocalStore() {
     return { document_id, version_id, job_id, raw_s3_uri };
   }
 
+  function listDocuments(actor) {
+    requireAdmin(actor);
+    return state.documents.filter((item) => item.tenant_id === actor.tenant_id && item.status !== statuses.DELETED);
+  }
+
+  function getDocument(actor, document_id) {
+    requireAdmin(actor);
+    const document = state.documents.find((item) => item.tenant_id === actor.tenant_id && item.document_id === document_id && item.status !== statuses.DELETED);
+    if (!document) throw forbidden("DOCUMENT_NOT_FOUND", "文書が存在しない。", 404);
+    return documentDetail(actor, document);
+  }
+
+  function getIngestionJob(actor, job_id) {
+    requireAdmin(actor);
+    return withIngestionProgress(state.ingestion_jobs.find((item) => item.tenant_id === actor.tenant_id && item.job_id === job_id));
+  }
+
   function createDocumentVersion(actor, document_id, input) {
     requireAdmin(actor);
     if (!state.documents.find((item) => item.document_id === document_id)) throw forbidden("DOCUMENT_NOT_FOUND", "文書が存在しない。");
@@ -414,25 +670,88 @@ export function createLocalStore() {
 
   function activateDocumentVersion(actor, document_id, version_id) {
     requireAdmin(actor);
-    for (const version of state.document_versions.filter((item) => item.document_id === document_id)) {
+    const activeVersion = state.document_versions.find((item) => item.tenant_id === actor.tenant_id && item.document_id === document_id && item.version_id === version_id);
+    if (!activeVersion) throw forbidden("DOCUMENT_VERSION_NOT_FOUND", "文書版が存在しない。", 404);
+    const ingestionJob = state.ingestion_jobs.find((item) => item.tenant_id === actor.tenant_id && item.document_id === document_id && item.version_id === version_id);
+    if (ingestionJob?.status !== statuses.SUCCEEDED && activeVersion.status !== statuses.SUCCEEDED && activeVersion.status !== statuses.ACTIVE) {
+      throw forbidden("DOCUMENT_VERSION_NOT_READY", "取り込み完了済みの文書版だけ active 化できます。");
+    }
+    for (const version of state.document_versions.filter((item) => item.tenant_id === actor.tenant_id && item.document_id === document_id)) {
       version.status = version.version_id === version_id ? statuses.ACTIVE : statuses.ARCHIVED;
     }
-    const activeVersion = state.document_versions.find((item) => item.document_id === document_id && item.version_id === version_id);
     recordAuditEvent(actor, "document.version.activated", "document_publish", document_id, { version_id });
     return activeVersion;
   }
 
+  function updateDocumentAcl(actor, document_id, version_id, input) {
+    requireAdmin(actor);
+    const document = state.documents.find((item) => item.tenant_id === actor.tenant_id && item.document_id === document_id && item.status !== statuses.DELETED);
+    if (!document) throw forbidden("DOCUMENT_NOT_FOUND", "文書が存在しない。", 404);
+    const version = state.document_versions.find((item) => item.tenant_id === actor.tenant_id && item.document_id === document_id && item.version_id === version_id && item.status !== statuses.DELETED);
+    if (!version) throw forbidden("DOCUMENT_VERSION_NOT_FOUND", "文書版が存在しない。", 404);
+    const acl_scope_id = typeof input.acl_scope_id === "string" ? input.acl_scope_id.trim() : "";
+    if (!acl_scope_id) throw forbidden("DOCUMENT_ACL_SCOPE_REQUIRED", "ACL scope が必要。", 400);
+    state.document_acl_entries = state.document_acl_entries.filter(
+      (item) => !(item.tenant_id === actor.tenant_id && item.document_id === document_id && item.version_id === version_id)
+    );
+    state.document_acl_entries.push({ tenant_id: actor.tenant_id, document_id, version_id, acl_scope_id, effect: "allow" });
+    recordAuditEvent(actor, "document.acl.updated", "document_acl", document_id, {
+      version_id,
+      acl_scope_id,
+      cognito_group_synced: false,
+      retrieval_index_resynced: false
+    });
+    return documentDetail(actor, document);
+  }
+
+  function suspendDocument(actor, document_id) {
+    requireAdmin(actor);
+    const document = state.documents.find((item) => item.tenant_id === actor.tenant_id && item.document_id === document_id && item.status !== statuses.DELETED);
+    if (!document) throw forbidden("DOCUMENT_NOT_FOUND", "文書が存在しない。", 404);
+    document.status = statuses.DELETED;
+    document.updated_at = now();
+    for (const version of state.document_versions.filter((item) => item.tenant_id === actor.tenant_id && item.document_id === document_id)) {
+      version.status = statuses.DELETED;
+    }
+    recordAuditEvent(actor, "document.suspended", "document_publish", document_id, {
+      affected_versions: state.document_versions.filter((item) => item.tenant_id === actor.tenant_id && item.document_id === document_id).length,
+      physical_delete: false
+    });
+    return documentDetail(actor, document);
+  }
+
+  function documentDetail(actor, document) {
+    return {
+      ...document,
+      versions: state.document_versions.filter((item) => item.tenant_id === actor.tenant_id && item.document_id === document.document_id),
+      ingestion_jobs: state.ingestion_jobs.filter((item) => item.tenant_id === actor.tenant_id && item.document_id === document.document_id).map((item) => withIngestionProgress(item)),
+      acl_entries: state.document_acl_entries.filter((item) => item.tenant_id === actor.tenant_id && item.document_id === document.document_id)
+    };
+  }
+
   function retryIngestionJob(actor, job_id) {
     requireAdmin(actor);
-    const job = state.ingestion_jobs.find((item) => item.job_id === job_id);
+    const job = state.ingestion_jobs.find((item) => item.tenant_id === actor.tenant_id && item.job_id === job_id);
     if (!job) throw forbidden("INGESTION_JOB_NOT_FOUND", "取り込みジョブが存在しない。", 404);
     if (!job.retryable && job.status !== statuses.FAILED) throw forbidden("INGESTION_RETRY_NOT_ALLOWED", "再実行できる状態ではない。");
     job.status = statuses.QUEUED;
+    job.progress_percent = ingestionProgressPercent(statuses.QUEUED);
     job.retryable = false;
     job.error_code = null;
     recordAdminEvent(actor, "admin.ingestion.updated", { job_id, status: statuses.QUEUED });
     recordAuditEvent(actor, "document.ingestion.retried", "admin_operation", job_id, { document_id: job.document_id, version_id: job.version_id });
     return job;
+  }
+
+  function withIngestionProgress(job) {
+    return job ? { ...job, progress_percent: ingestionProgressPercent(job.status) } : job;
+  }
+
+  function ingestionProgressPercent(status) {
+    if (status === statuses.SUCCEEDED || status === statuses.ACTIVE) return 100;
+    if (status === statuses.RUNNING || status === statuses.STREAMING) return 50;
+    if (status === statuses.QUEUED) return 10;
+    return 0;
   }
 
   function issueWsTicket(actor, input = {}) {
@@ -467,12 +786,13 @@ export function createLocalStore() {
 
   function startEvaluationRun(actor, input = {}) {
     requireAdmin(actor);
+    const model = resolveEvaluationModel(actor, input.model_id);
     const evaluation_run_id = nextId("eval");
     const run = {
       tenant_id: actor.tenant_id,
       evaluation_run_id,
       dataset_id: input.dataset_id || "dataset-local-golden",
-      model_id: input.model_id || "logical-chat-default",
+      model_id: model.model_id,
       prompt_version: "rag-chat-v1",
       retrieval_config_json: { top_k: 10 },
       artifact_s3_prefix: `s3://saphnexa-local/evaluation/${evaluation_run_id}/`,
@@ -481,6 +801,9 @@ export function createLocalStore() {
       created_by_user_id: actor.user_id
     };
     state.evaluation_runs.push(run);
+    for (const item of evaluationRunItems(actor.tenant_id, evaluation_run_id)) {
+      state.evaluation_run_items.push(item);
+    }
     recordAdminEvent(actor, "admin.evaluation.updated", { evaluation_run_id, status: run.status, dataset_id: run.dataset_id });
     recordAuditEvent(actor, "admin.evaluation.completed", "evaluation", evaluation_run_id, {
       dataset_id: run.dataset_id,
@@ -488,6 +811,25 @@ export function createLocalStore() {
       metrics: Object.keys(run.metrics_json)
     });
     return run;
+  }
+
+  function resolveEvaluationModel(actor, model_id = "") {
+    const targetModelId = model_id || "logical-chat-default";
+    const model = listLlmModels(actor).find((item) => item.model_id === targetModelId);
+    if (!model) throw forbidden("EVALUATION_MODEL_NOT_AVAILABLE", "評価実行に利用できないモデルです。");
+    if (!["chat", "judge"].includes(model.model_type)) throw forbidden("EVALUATION_MODEL_NOT_AVAILABLE", "評価実行に利用できないモデルです。");
+    return model;
+  }
+
+  function getEvaluationRun(actor, evaluation_run_id) {
+    requireAdmin(actor);
+    const evaluation_run = state.evaluation_runs.find((item) => item.tenant_id === actor.tenant_id && item.evaluation_run_id === evaluation_run_id);
+    return {
+      evaluation_run,
+      items: state.evaluation_run_items
+        .filter((item) => item.tenant_id === actor.tenant_id && item.evaluation_run_id === evaluation_run_id)
+        .sort((a, b) => a.case_id.localeCompare(b.case_id))
+    };
   }
 
   function listAdminArtifacts(actor) {
@@ -536,12 +878,19 @@ export function createLocalStore() {
 
   function requireReader(actor, chat_id) {
     requireActiveUser(actor);
+    activeChat(actor, chat_id);
     if (!canReadChat(participant(chat_id, actor.user_id))) throw forbidden("CHAT_READ_FORBIDDEN", "チャット参加者のみ参照できる。");
   }
 
   function requireOwner(actor, chat_id) {
     requireActiveUser(actor);
     if (!canWriteChat(participant(chat_id, actor.user_id))) throw forbidden("CHAT_WRITE_FORBIDDEN", "owner のみ操作できる。");
+  }
+
+  function activeChat(actor, chat_id) {
+    const chat = state.chat_sessions.find((item) => item.tenant_id === actor.tenant_id && item.chat_id === chat_id && item.status !== statuses.DELETED);
+    if (!chat) throw forbidden("CHAT_NOT_FOUND", "チャットが存在しない。", 404);
+    return chat;
   }
 
   function nextId(prefix) {
@@ -639,6 +988,55 @@ function artifact(artifact_id, artifact_type, title, viewer_path, source_ref) {
     created_at: baseTime,
     updated_at: baseTime
   };
+}
+
+function evaluationRunItems(tenant_id, evaluation_run_id) {
+  return [
+    {
+      tenant_id,
+      evaluation_run_id,
+      case_id: "case-retrieval-acl",
+      status: statuses.SUCCEEDED,
+      answer_text: "就業規則の休暇規程に基づいて回答します。",
+      retrieved_context_json: {
+        retrieved_count: 4,
+        allowed_count: 3,
+        denied_count: 1
+      },
+      judge_result_json: {
+        grounded: true,
+        citation_supported: true,
+        acl_leak_detected: false
+      },
+      metrics_json: {
+        retrieval: { recall_at_10: 0.9 },
+        generation: { groundedness: 0.92 },
+        acl: { denied_context_leak: 0 }
+      }
+    },
+    {
+      tenant_id,
+      evaluation_run_id,
+      case_id: "case-unanswerable-refusal",
+      status: statuses.SUCCEEDED,
+      answer_text: "根拠がないため回答できません。",
+      retrieved_context_json: {
+        retrieved_count: 1,
+        allowed_count: 0,
+        denied_count: 1
+      },
+      judge_result_json: {
+        grounded: true,
+        refusal_correct: true,
+        unsupported_claim_count: 0
+      },
+      metrics_json: {
+        retrieval: { recall_at_10: 0.82 },
+        generation: { unsupported_claim_rate: 0 },
+        end_to_end: { refusal_accuracy: 1 }
+      }
+    }
+  ];
 }
 
 function now() {

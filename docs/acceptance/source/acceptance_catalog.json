@@ -209,8 +209,8 @@
       "area": "API・契約",
       "item": "公開API契約",
       "priority": "P0",
-      "acceptance_condition": "公開API 38件すべてについて、パスパラメータ、クエリ、body、response schema、status code意味が契約定義と一致する。",
-      "quantitative_criteria": "契約テスト pass 38/38",
+      "acceptance_condition": "公開API 40件すべてについて、パスパラメータ、クエリ、body、response schema、status code意味が契約定義と一致する。",
+      "quantitative_criteria": "契約テスト pass 40/40",
       "evidence": "Allure API contract、generated OpenAPI、packages/api-contract",
       "verification_method": "契約テスト実行結果を確認"
     },

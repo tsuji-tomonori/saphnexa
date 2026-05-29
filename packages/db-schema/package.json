@@ -4,6 +4,13 @@
   "type": "module",
   "private": true,
   "exports": {
-    ".": "./src/tables.js"
+    ".": "./src/tables.js",
+    "./metadata": "./src/table-metadata.ts"
+  },
+  "scripts": {
+    "typecheck": "tsc --noEmit --project tsconfig.json"
+  },
+  "devDependencies": {
+    "typescript": "^5.8.0"
   }
 }

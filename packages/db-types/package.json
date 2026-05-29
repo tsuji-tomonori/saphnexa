@@ -1,0 +1,18 @@
+{
+  "name": "@saphnexa/db-types",
+  "version": "0.1.0",
+  "type": "module",
+  "private": true,
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "scripts": {
+    "typecheck": "tsc --noEmit --project tsconfig.json"
+  },
+  "dependencies": {
+    "@saphnexa/db-schema": "0.1.0"
+  },
+  "devDependencies": {
+    "typescript": "^5.8.0"
+  }
+}

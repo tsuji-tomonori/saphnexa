@@ -22,6 +22,8 @@ const evaluation = api.request("admin-1", "startEvaluationRun", { csrf_token: ad
 assert(accepted.status === 202, "question submit must be accepted");
 assert(document.status === 202, "document create must be accepted");
 assert(evaluation.status === 202, "evaluation run must be accepted");
+assert(api.request("admin-1", "startEvaluationRun", { csrf_token: adminCsrf, dataset_id: "dataset-local-golden", model_id: "unknown-model" }).status === 403, "evaluation run must reject unknown model");
+assert(api.request("admin-1", "startEvaluationRun", { csrf_token: adminCsrf, dataset_id: "dataset-local-golden", model_id: "logical-embedding-default" }).status === 403, "evaluation run must reject embedding model");
 
 const state = api.store.state;
 const violations = [];
@@ -47,6 +49,11 @@ for (const job of state.ingestion_jobs) {
 for (const run of state.evaluation_runs) {
   exists(state.evaluation_datasets, "dataset_id", run.dataset_id, `evaluation dataset missing ${run.evaluation_run_id}`);
   assert(run.metrics_json.retrieval && run.metrics_json.generation && run.metrics_json.end_to_end, "evaluation metrics must contain three categories");
+  assert(state.evaluation_run_items.some((item) => item.evaluation_run_id === run.evaluation_run_id), `evaluation items missing ${run.evaluation_run_id}`);
+}
+for (const item of state.evaluation_run_items) {
+  exists(state.evaluation_runs, "evaluation_run_id", item.evaluation_run_id, `evaluation run missing for item ${item.case_id}`);
+  assert(item.metrics_json && Object.keys(item.metrics_json).length > 0, `evaluation item metrics missing ${item.case_id}`);
 }
 for (const artifact of state.published_artifacts) {
   assert(artifact.viewer_path.startsWith("/admin/"), `artifact viewer path must be admin-only: ${artifact.artifact_id}`);

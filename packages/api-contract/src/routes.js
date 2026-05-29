@@ -44,13 +44,15 @@ export const publicApiRoutes = [
   route("API-29", "getDocument", "GET", "/api/admin/documents/{document_id}", "/v1/admin/documents/{document_id}", ["admin"], false, [200]),
   route("API-30", "createDocumentVersion", "POST", "/api/admin/documents/{document_id}/versions", "/v1/admin/documents/{document_id}/versions", ["admin"], csrf, [202]),
   route("API-31", "activateDocumentVersion", "POST", "/api/admin/documents/{document_id}/versions/{version_id}/activate", "/v1/admin/documents/{document_id}/versions/{version_id}/activate", ["admin"], csrf, [200]),
-  route("API-32", "getIngestionJob", "GET", "/api/admin/ingestion-jobs/{job_id}", "/v1/admin/ingestion-jobs/{job_id}", ["admin"], false, [200]),
-  route("API-33", "retryIngestionJob", "POST", "/api/admin/ingestion-jobs/{job_id}/retry", "/v1/admin/ingestion-jobs/{job_id}/retry", ["admin"], csrf, [202]),
-  route("API-34", "listEvaluationDatasets", "GET", "/api/admin/evaluation-datasets", "/v1/admin/evaluation-datasets", ["admin"], false, [200]),
-  route("API-35", "startEvaluationRun", "POST", "/api/admin/evaluation-runs", "/v1/admin/evaluation-runs", ["admin"], csrf, [202]),
-  route("API-36", "getEvaluationRun", "GET", "/api/admin/evaluation-runs/{evaluation_run_id}", "/v1/admin/evaluation-runs/{evaluation_run_id}", ["admin"], false, [200]),
-  route("API-37", "listPublishedArtifacts", "GET", "/api/admin/artifacts", "/v1/admin/artifacts", ["admin"], false, [200]),
-  route("API-38", "issueArtifactAccessCookie", "POST", "/api/admin/artifacts/access-cookie", "/v1/admin/artifacts/access-cookie", ["admin"], csrf, [201])
+  route("API-32", "updateDocumentAcl", "POST", "/api/admin/documents/{document_id}/versions/{version_id}/acl", "/v1/admin/documents/{document_id}/versions/{version_id}/acl", ["admin"], csrf, [200]),
+  route("API-33", "suspendDocument", "POST", "/api/admin/documents/{document_id}/suspend", "/v1/admin/documents/{document_id}/suspend", ["admin"], csrf, [200]),
+  route("API-34", "getIngestionJob", "GET", "/api/admin/ingestion-jobs/{job_id}", "/v1/admin/ingestion-jobs/{job_id}", ["admin"], false, [200]),
+  route("API-35", "retryIngestionJob", "POST", "/api/admin/ingestion-jobs/{job_id}/retry", "/v1/admin/ingestion-jobs/{job_id}/retry", ["admin"], csrf, [202]),
+  route("API-36", "listEvaluationDatasets", "GET", "/api/admin/evaluation-datasets", "/v1/admin/evaluation-datasets", ["admin"], false, [200]),
+  route("API-37", "startEvaluationRun", "POST", "/api/admin/evaluation-runs", "/v1/admin/evaluation-runs", ["admin"], csrf, [202]),
+  route("API-38", "getEvaluationRun", "GET", "/api/admin/evaluation-runs/{evaluation_run_id}", "/v1/admin/evaluation-runs/{evaluation_run_id}", ["admin"], false, [200]),
+  route("API-39", "listPublishedArtifacts", "GET", "/api/admin/artifacts", "/v1/admin/artifacts", ["admin"], false, [200]),
+  route("API-40", "issueArtifactAccessCookie", "POST", "/api/admin/artifacts/access-cookie", "/v1/admin/artifacts/access-cookie", ["admin"], csrf, [201])
 ];
 
 export function route(id, operationId, method, viewerPath, internalPath, roles, csrfRequired, successStatuses) {
@@ -72,9 +74,9 @@ export function route(id, operationId, method, viewerPath, internalPath, roles, 
 export function assertPublicApiContract() {
   const ids = new Set(publicApiRoutes.map((item) => item.id));
   const operationIds = new Set(publicApiRoutes.map((item) => item.operationId));
-  if (publicApiRoutes.length !== 38) throw new Error(`expected 38 public routes, got ${publicApiRoutes.length}`);
-  if (ids.size !== 38) throw new Error("public API IDs must be unique");
-  if (operationIds.size !== 38) throw new Error("public API operationIds must be unique");
+  if (publicApiRoutes.length !== 40) throw new Error(`expected 40 public routes, got ${publicApiRoutes.length}`);
+  if (ids.size !== 40) throw new Error("public API IDs must be unique");
+  if (operationIds.size !== 40) throw new Error("public API operationIds must be unique");
   for (const item of publicApiRoutes) {
     if (!item.viewerPath.startsWith("/api/") && !item.viewerPath.startsWith("/auth/")) {
       throw new Error(`${item.id} has invalid viewer path ${item.viewerPath}`);

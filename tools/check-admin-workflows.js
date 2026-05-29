@@ -31,7 +31,7 @@ const documentInputs = [
   documentInput("doc-local-2", "ver-1", "local-2.pdf"),
   documentInput("doc-local-3", "ver-1", "local-3.pdf"),
   documentInput("doc-versioned", "ver-1", "versioned-v1.pdf"),
-  documentInput("doc-versioned", "ver-2", "versioned-v2.pdf")
+  documentInput("doc-versioned", "ver-2", "versioned-v2.pdf", "succeeded")
 ];
 for (const input of documentInputs.slice(0, 4)) {
   const created = api.request("admin-1", "createDocument", { csrf_token: adminCsrf, ...input });
@@ -43,6 +43,7 @@ assert(api.store.state.ingestion_jobs.length === 5, "document registration must 
 for (const job of api.store.state.ingestion_jobs) {
   assert(job.raw_s3_uri.startsWith("s3://saphnexa-local/raw/"), `raw URI missing: ${job.job_id}`);
   assert(job.parsed_s3_prefix.startsWith("s3://saphnexa-local/parsed/"), `parsed prefix missing: ${job.job_id}`);
+  assert(typeof job.progress_percent === "number", `progress percent missing: ${job.job_id}`);
   const version = api.store.state.document_versions.find((item) => item.document_id === job.document_id && item.version_id === job.version_id);
   assert(version?.metadata_json?.document_id === job.document_id, `metadata document_id mismatch: ${job.job_id}`);
 }
@@ -51,15 +52,41 @@ const activated = api.request("admin-1", "activateDocumentVersion", { csrf_token
 assert(activated.status === 200, "document version activation must succeed");
 assert(api.store.state.document_versions.find((item) => item.document_id === "doc-versioned" && item.version_id === "ver-2").status === "active", "new version must be active");
 assert(api.store.state.document_versions.find((item) => item.document_id === "doc-versioned" && item.version_id === "ver-1").status === "archived", "old version must be archived");
+const aclUpdated = api.request("admin-1", "updateDocumentAcl", { csrf_token: adminCsrf, document_id: "doc-versioned", version_id: "ver-2", acl_scope_id: "group:legal" });
+assert(aclUpdated.status === 200, "document ACL update must succeed");
+assert(aclUpdated.body.document.acl_entries.some((entry) => entry.version_id === "ver-2" && entry.acl_scope_id === "group:legal"), "updated document ACL entry missing");
+assert(!aclUpdated.body.document.acl_entries.some((entry) => entry.version_id === "ver-2" && entry.acl_scope_id === "admin"), "document ACL update must replace old version ACL entry");
+const suspended = api.request("admin-1", "suspendDocument", { csrf_token: adminCsrf, document_id: "doc-versioned" });
+assert(suspended.status === 200, "document suspension must succeed");
+assert(suspended.body.document.status === "deleted", "suspended document must be deleted");
+assert(suspended.body.document.versions.every((version) => version.status === "deleted"), "suspended document versions must be deleted");
 
+const models = api.request("admin-1", "listLlmModels");
+assert(models.status === 200, "model list must be available");
+assert(models.body.models.some((model) => model.model_id === "logical-chat-default"), "general chat model missing for admin");
+assert(models.body.models.some((model) => model.model_id === "logical-evaluation-judge"), "evaluation judge model missing");
+assert(!models.body.models.some((model) => model.model_id === "logical-embedding-default"), "system embedding model must not be listed to admin");
+const ownerModels = api.request("user-owner", "listLlmModels");
+assert(ownerModels.status === 200, "model list must be available to general user");
+assert(ownerModels.body.models.some((model) => model.model_id === "logical-chat-default"), "general chat model missing for general user");
+assert(!ownerModels.body.models.some((model) => model.model_id === "logical-evaluation-judge"), "admin judge model must not be listed to general user");
+assert(api.request("admin-1", "startEvaluationRun", { csrf_token: adminCsrf, dataset_id: "dataset-local-golden", model_id: "unknown-model" }).status === 403, "unknown evaluation model must be rejected");
+assert(api.request("admin-1", "startEvaluationRun", { csrf_token: adminCsrf, dataset_id: "dataset-local-golden", model_id: "logical-embedding-default" }).status === 403, "system embedding model must be rejected for evaluation");
+const defaultEvaluation = api.request("admin-1", "startEvaluationRun", { csrf_token: adminCsrf, dataset_id: "dataset-local-golden" });
+assert(defaultEvaluation.status === 202 && defaultEvaluation.body.evaluation_run.model_id === "logical-chat-default", "evaluation default model mismatch");
 for (let index = 0; index < 3; index += 1) {
-  const evaluation = api.request("admin-1", "startEvaluationRun", { csrf_token: adminCsrf, dataset_id: "dataset-local-golden" });
+  const evaluation = api.request("admin-1", "startEvaluationRun", { csrf_token: adminCsrf, dataset_id: "dataset-local-golden", model_id: "logical-evaluation-judge" });
   assert(evaluation.status === 202, "evaluation run must be accepted");
+  assert(evaluation.body.evaluation_run.model_id === "logical-evaluation-judge", "evaluation run must preserve selected model");
   const metrics = evaluation.body.evaluation_run.metrics_json;
   assert(metrics.retrieval && metrics.generation && metrics.end_to_end, "evaluation metrics must include three categories");
   assert(evaluation.body.evaluation_run.artifact_s3_prefix.startsWith("s3://saphnexa-local/evaluation/"), "evaluation artifact prefix missing");
+  const detail = api.request("admin-1", "getEvaluationRun", { evaluation_run_id: evaluation.body.evaluation_run.evaluation_run_id });
+  assert(detail.status === 200 && detail.body.items.length >= 2, "evaluation run detail must include case items");
+  assert(detail.body.items.every((item) => item.evaluation_run_id === evaluation.body.evaluation_run.evaluation_run_id), "evaluation items must belong to run");
 }
-assert(api.store.state.evaluation_runs.length === 3, "evaluation run count mismatch");
+assert(api.store.state.evaluation_runs.length === 4, "evaluation run count mismatch");
+assert(api.store.state.evaluation_run_items.length === 8, "evaluation run item count mismatch");
 
 const chatId = api.request("user-owner", "createChatSession", { csrf_token: ownerCsrf, title: "audit chat" }).body.chat.chat_id;
 assert(api.request("user-owner", "addChatParticipant", { csrf_token: ownerCsrf, chat_id: chatId, user_id: "user-viewer" }).status === 201, "chat share must succeed");
@@ -76,7 +103,7 @@ assert(api.request("admin-1", "issueArtifactAccessCookie", { csrf_token: adminCs
 for (const eventName of ["admin.user_import.updated", "admin.ingestion.updated", "admin.evaluation.updated", "admin.artifact.published"]) {
   assert(api.store.state.admin_events.some((event) => event.event_name === eventName), `admin event missing: ${eventName}`);
 }
-for (const category of ["admin_operation", "document_publish", "artifact_access", "chat_share", "tools_execution", "evaluation"]) {
+for (const category of ["admin_operation", "document_publish", "document_acl", "artifact_access", "chat_session", "chat_share", "tools_execution", "evaluation"]) {
   assert(api.store.state.audit_events.some((event) => event.category === category), `audit category missing: ${category}`);
 }
 
@@ -86,13 +113,13 @@ function csrf(userId) {
   return api.request(userId, "getMe").body.csrf_token;
 }
 
-function documentInput(document_id, version_id, file_name) {
+function documentInput(document_id, version_id, file_name, status = "uploaded") {
   return {
     title: document_id,
     document_id,
     version_id,
     file_name,
-    metadata: { document_id, version: version_id, acl_scope: "admin", status: "uploaded" },
+    metadata: { document_id, version: version_id, acl_scope: "admin", status },
     acl_scope_id: "admin"
   };
 }

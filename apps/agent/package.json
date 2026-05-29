@@ -2,5 +2,20 @@
   "name": "@saphnexa/agent",
   "version": "0.1.0",
   "type": "module",
-  "private": true
+  "private": true,
+  "exports": {
+    ".": "./src/app.ts",
+    "./policy": "./src/rag-agent.js"
+  },
+  "scripts": {
+    "typecheck": "tsc --noEmit --project tsconfig.json"
+  },
+  "dependencies": {
+    "@saphnexa/tool-contract": "0.1.0",
+    "hono": "^4.7.0",
+    "zod": "^3.24.0"
+  },
+  "devDependencies": {
+    "typescript": "^5.8.0"
+  }
 }

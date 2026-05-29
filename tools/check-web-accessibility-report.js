@@ -4,26 +4,216 @@ import { assert, readText } from "./lib.js";
 
 const checks = [];
 checkFile("ChatApp", "apps/web/src/chat/ChatApp.tsx", [
-  rule("main landmark", (body) => body.includes("<main className=\"sx-chat-shell\"")),
+  rule("query provider", (body) => body.includes("QueryClientProvider")),
+  rule("page wrapper", (body) => body.includes("<ChatPage />"))
+]);
+checkFile("ChatPage", "apps/web/src/pages/ChatPage.tsx", [
+  rule("main landmark", (body) => body.includes("className=\"sx-chat-shell\"")),
+  rule("assistant runtime provider boundary", (body) => body.includes("AssistantRuntimeBoundary")),
+  rule("chat route selection", (body) => body.includes("chatIdFromPath") && body.includes("window.history.pushState") && body.includes("popstate")),
+  rule("first question chat creation", (body) => body.includes("ensureActiveChatId") && body.includes("chatTitleFromQuestion") && body.includes("createChatSession.mutateAsync({ title: chatTitleFromQuestion(question) })")),
+  rule("participants panel", (body) => body.includes("ChatParticipantsPanel")),
+  rule("message history panel", (body) => body.includes("MessageHistoryPanel")),
+  rule("feedback panel", (body) => body.includes("FeedbackPanel")),
+  rule("favorite panel", (body) => body.includes("FavoritePanel"))
+]);
+checkFile("AssistantRuntimeBoundary", "apps/web/src/features/chat/AssistantRuntimeBoundary.tsx", [
+  rule("assistant runtime provider", (body) => body.includes("AssistantRuntimeProvider")),
+  rule("assistant local runtime", (body) => body.includes("useLocalRuntime")),
+  rule("empty token guard", (body) => body.includes("!props.chatId || !props.csrfToken"))
+]);
+checkFile("ChatSessionNav", "apps/web/src/features/chat/ChatSessionNav.tsx", [
   rule("labelled navigation", (body) => body.includes("<nav aria-label=\"チャット一覧\">")),
-  rule("question label", (body) => body.includes("aria-label=\"質問\"")),
-  rule("question disabled state", (body) => body.includes("disabled={!csrfToken || !question}")),
-  rule("event panel label", (body) => body.includes("aria-label=\"イベント\"")),
   rule("empty chat status", (body) => body.includes("<p role=\"status\">チャットはありません</p>")),
-  rule("empty event status", (body) => body.includes("<p role=\"status\">イベントはありません</p>")),
+  rule("create form label", (body) => body.includes("aria-label=\"新規チャット作成フォーム\"")),
+  rule("create field label", (body) => body.includes("label=\"新規チャット名\"")),
+  rule("honest create state", (body) => body.includes("chat session audit event append: 接続済み")),
+  rule("create action disabled state", (body) => body.includes("disabled={!props.csrfToken || props.isMutating}")),
+  rule("title update form label", (body) => body.includes("aria-label=\"チャットタイトル更新フォーム\"")),
+  rule("title field label", (body) => body.includes("label=\"チャットタイトル\"")),
+  rule("honest lifecycle state", (body) => body.includes("保持期間後物理削除、SQS/AppSync publish: 未接続")),
+  rule("title action disabled state", (body) => body.includes("disabled={!props.csrfToken || !props.selectedChatId || props.isMutating}")),
+  rule("delete action disabled state", (body) => body.includes("disabled={!props.csrfToken || chat.chat_id !== props.selectedChatId || props.isMutating}")),
+  rule("button type", (body) => !/<button(?![^>]*\stype=)/.test(body))
+]);
+checkFile("ChatParticipantsPanel", "apps/web/src/features/chat/ChatParticipantsPanel.tsx", [
+  rule("section label", (body) => body.includes("aria-label=\"参加者\"")),
+  rule("share form label", (body) => body.includes("aria-label=\"チャット共有フォーム\"")),
+  rule("share input label", (body) => body.includes("label=\"共有先ユーザーID\"")),
+  rule("owner transfer action", (body) => body.includes("ownerを移譲")),
+  rule("honest share state", (body) => body.includes("任意owner昇格、実 AppSync Events fan-out: 未接続")),
+  rule("participants table", (body) => body.includes("DataTable") && body.includes("caption=\"参加者一覧\"")),
+  rule("empty selected-chat state", (body) => body.includes("チャットを選択してください")),
+  rule("pending status", (body) => body.includes("<p role=\"status\">参加者を確認しています</p>")),
+  rule("status badge", (body) => body.includes("StatusBadge")),
+  rule("button disabled state", (body) => body.includes("disabled={!props.csrfToken || !props.activeChatId || props.isMutating}")),
+  rule("button type", (body) => !/<button(?![^>]*\stype=)/.test(body))
+]);
+checkFile("MessageComposer", "apps/web/src/features/chat/MessageComposer.tsx", [
+  rule("question label", (body) => body.includes("aria-label=\"質問\"")),
+  rule("question disabled state", (body) => body.includes("disabled={!props.csrfToken || !question}")),
+  rule("validation error alert", (body) => body.includes("role=\"alert\"")),
+  rule("button type", (body) => !/<button(?![^>]*\stype=)/.test(body))
+]);
+checkFile("MessageHistoryPanel", "apps/web/src/features/chat/MessageHistoryPanel.tsx", [
+  rule("message history label", (body) => body.includes("aria-label=\"メッセージ履歴\"")),
+  rule("empty message status", (body) => body.includes("メッセージはありません")),
+  rule("empty selected-chat state", (body) => body.includes("チャットを選択してください")),
+  rule("pending status", (body) => body.includes("<p role=\"status\">メッセージ履歴を確認しています</p>")),
+  rule("restore state", (body) => body.includes("引用 REST 復元: 接続済み")),
+  rule("citation count", (body) => body.includes("message.citations") && body.includes("引用:")),
+  rule("next cursor status", (body) => body.includes("props.nextCursor") && body.includes("次ページcursor:")),
+  rule("feedback state", (body) => body.includes("message.feedback") && body.includes("フィードバック:")),
+  rule("answer favorite action", (body) => body.includes("回答お気に入り登録") && body.includes("回答お気に入り解除")),
+  rule("honest cancel state", (body) => body.includes("実 AgentCore Runtime 停止、SQS event-publish、stream中断: 未接続")),
+  rule("cancel action", (body) => body.includes("回答生成キャンセル要求")),
+  rule("cancel disabled state", (body) => body.includes("disabled={!props.csrfToken || !props.activeChatId || !props.activeMessageId || props.isCanceling}")),
+  rule("status badge", (body) => body.includes("StatusBadge"))
+]);
+checkFile("CitationDrawerPanel", "apps/web/src/features/chat/CitationDrawerPanel.tsx", [
+  rule("citation drawer organism", (body) => body.includes("CitationDrawer")),
+  rule("citations from event payload", (body) => body.includes("event.payload_json.citations")),
+  rule("citations from REST messages", (body) => body.includes("message.citations"))
+]);
+checkFile("MessageEventsPanel", "apps/web/src/features/chat/MessageEventsPanel.tsx", [
+  rule("event panel label", (body) => body.includes("aria-label=\"イベント\"")),
+  rule("empty event status", (body) => body.includes("emptyLabel=\"イベントはありません\""))
+]);
+checkFile("FeedbackPanel", "apps/web/src/features/chat/FeedbackPanel.tsx", [
+  rule("section label", (body) => body.includes("aria-label=\"回答フィードバック\"")),
+  rule("comment textarea label", (body) => body.includes("aria-label=\"フィードバックコメント\"")),
+  rule("submitted status", (body) => body.includes("<p role=\"status\">フィードバックを登録しました")),
+  rule("pending status", (body) => body.includes("<p role=\"status\">フィードバックを送信しています</p>")),
+  rule("button disabled state", (body) => body.includes("!props.csrfToken || !props.activeChatId || !props.activeMessageId || props.isPending")),
+  rule("button type", (body) => !/<button(?![^>]*\stype=)/.test(body))
+]);
+checkFile("FavoritePanel", "apps/web/src/features/chat/FavoritePanel.tsx", [
+  rule("section label", (body) => body.includes("aria-label=\"お気に入り\"")),
+  rule("favorite table", (body) => body.includes("DataTable") && body.includes("caption=\"お気に入り一覧\"")),
+  rule("empty favorite status", (body) => body.includes("empty=\"お気に入りはありません\"")),
+  rule("button disabled state", (body) => body.includes("disabled={!props.csrfToken || !props.activeChatId || props.isMutating}")),
   rule("button type", (body) => !/<button(?![^>]*\stype=)/.test(body))
 ]);
 checkFile("AdminApp", "apps/web/src/admin/AdminApp.tsx", [
-  rule("main landmark", (body) => body.includes("<main className=\"sx-admin-shell\"")),
-  rule("admin action label", (body) => body.includes("aria-label=\"管理操作\"")),
+  rule("page wrapper", (body) => body.includes("<AdminDashboardPage />"))
+]);
+checkFile("AdminDashboardPage", "apps/web/src/pages/AdminDashboardPage.tsx", [
+  rule("main landmark", (body) => body.includes("className=\"sx-admin-shell\"")),
+  rule("admin tabs", (body) => body.includes("Tabs") && body.includes("aria-label=\"管理領域\"")),
+  rule("user panel label", (body) => body.includes("aria-label=\"ユーザー\"")),
+  rule("user import panel", (body) => body.includes("UserImportPanel")),
+  rule("user table", (body) => body.includes("UserTable")),
   rule("artifact panel label", (body) => body.includes("aria-label=\"成果物\"")),
-  rule("evaluation disabled state", (body) => body.includes("disabled={!csrfToken}")),
-  rule("empty artifact status", (body) => body.includes("<p role=\"status\">成果物はありません</p>")),
-  rule("artifact links from API data", (body) => body.includes("href={artifact.viewer_path}") && body.includes("{artifact.title}"))
+  rule("document panel label", (body) => body.includes("aria-label=\"文書\"")),
+  rule("document registration form", (body) => body.includes("DocumentRegistrationForm")),
+  rule("document lifecycle panel", (body) => body.includes("DocumentVersionLifecyclePanel")),
+  rule("ingestion job panel", (body) => body.includes("IngestionJobPanel"))
+]);
+checkFile("AdminActions", "apps/web/src/features/admin/AdminActions.tsx", [
+  rule("admin action label", (body) => body.includes("aria-label=\"管理操作\"")),
+  rule("dataset pending status", (body) => body.includes("<p role=\"status\">評価データセットを確認しています</p>")),
+  rule("dataset table", (body) => body.includes("DataTable") && body.includes("caption=\"評価データセット一覧\"")),
+  rule("model pending status", (body) => body.includes("<p role=\"status\">評価モデルを確認しています</p>")),
+  rule("model table", (body) => body.includes("DataTable") && body.includes("caption=\"評価モデル一覧\"")),
+  rule("model field", (body) => body.includes("label=\"評価モデルID\"")),
+  rule("evaluation disabled state", (body) => body.includes("disabled={!props.csrfToken || !datasetId || !modelId}")),
+  rule("evaluation run field", (body) => body.includes("label=\"評価run ID\"")),
+  rule("evaluation run detail table", (body) => body.includes("caption=\"評価run詳細\"")),
+  rule("evaluation case result table", (body) => body.includes("caption=\"評価case別結果\"")),
+  rule("evaluation case result empty state", (body) => body.includes("評価case別結果はありません")),
+  rule("honest evaluation pipeline state", (body) => body.includes("Step Functions評価runner、Bedrock Evaluations job、評価HTML report、AppSync fan-out: 未接続")),
+  rule("evaluation progress status", (body) => body.includes("<p role=\"status\">評価実行を開始しています</p>"))
+]);
+checkFile("UserImportPanel", "apps/web/src/features/admin/UserImportPanel.tsx", [
+  rule("section label", (body) => body.includes("aria-label=\"ユーザー取込\"")),
+  rule("form label", (body) => body.includes("aria-label=\"ユーザー取込フォーム\"")),
+  rule("textarea label", (body) => body.includes("aria-label=\"JSON rows\"")),
+  rule("honest upload state", (body) => body.includes("CSV/Excel実アップロード: 未接続")),
+  rule("pending status", (body) => body.includes("<p role=\"status\">ユーザー取込を確認しています</p>")),
+  rule("error alert", (body) => body.includes("role=\"alert\"")),
+  rule("button disabled state", (body) => body.includes("disabled={!props.csrfToken || startImport.isPending}"))
+]);
+checkFile("UserTable", "apps/web/src/features/admin/UserTable.tsx", [
+  rule("empty user status", (body) => body.includes("ユーザーはありません")),
+  rule("user rows from API data", (body) => body.includes("user.email") && body.includes("user.user_id")),
+  rule("status badge", (body) => body.includes("StatusBadge"))
+]);
+checkFile("ArtifactTable", "apps/web/src/features/admin/ArtifactTable.tsx", [
+  rule("empty artifact status", (body) => body.includes("成果物はありません")),
+  rule("artifact links from API data", (body) => body.includes("href={artifact.viewer_path}") && body.includes("{artifact.title}")),
+  rule("details drawer status", (body) => body.includes("<p role=\"status\">成果物を選択すると詳細を表示します</p>"))
+]);
+checkFile("DocumentTable", "apps/web/src/features/admin/DocumentTable.tsx", [
+  rule("empty document status", (body) => body.includes("文書はありません")),
+  rule("document rows from API data", (body) => body.includes("document.title") && body.includes("document.document_id")),
+  rule("status badge", (body) => body.includes("StatusBadge"))
+]);
+checkFile("DocumentRegistrationForm", "apps/web/src/features/admin/DocumentRegistrationForm.tsx", [
+  rule("form label", (body) => body.includes("aria-label=\"文書登録フォーム\"")),
+  rule("field labels", (body) => body.includes("label=\"文書名\"") && body.includes("label=\"PDFファイル名\"") && body.includes("label=\"文書種別\"") && body.includes("label=\"有効開始日\"") && body.includes("label=\"有効終了日\"")),
+  rule("pending status", (body) => body.includes("<p role=\"status\">文書登録を開始しています</p>")),
+  rule("honest upload state", (body) => body.includes("PDF実アップロード: 未接続")),
+  rule("error alert", (body) => body.includes("role=\"alert\"")),
+  rule("button disabled state", (body) => body.includes("disabled={!props.csrfToken || createDocument.isPending}"))
+]);
+checkFile("DocumentVersionLifecyclePanel", "apps/web/src/features/admin/DocumentVersionLifecyclePanel.tsx", [
+  rule("section label", (body) => body.includes("aria-label=\"文書版ライフサイクル\"")),
+  rule("lookup form label", (body) => body.includes("aria-label=\"文書詳細検索フォーム\"")),
+  rule("version form label", (body) => body.includes("aria-label=\"文書版追加フォーム\"")),
+  rule("acl form label", (body) => body.includes("aria-label=\"文書ACL更新フォーム\"")),
+  rule("field labels", (body) => body.includes("label=\"文書ID\"") && body.includes("label=\"PDFファイル名\"")),
+  rule("pending status", (body) => body.includes("<p role=\"status\">文書版の状態を更新しています</p>")),
+  rule("honest ingestion state", (body) => body.includes("PDF実アップロードとStep Functions実行: 未接続")),
+  rule("honest acl sync state", (body) => body.includes("Cognito group反映、Bedrock KB / S3 Vectors metadata再同期: 未接続")),
+  rule("honest physical delete state", (body) => body.includes("物理削除、S3 object delete、Bedrock KB / S3 Vectors delete: 未接続")),
+  rule("activation disabled state", (body) => body.includes("disabled={!props.csrfToken || version.status !== \"succeeded\" || activateVersion.isPending}")),
+  rule("acl update disabled state", (body) => body.includes("disabled={!props.csrfToken || !documentId || !aclVersionId || !aclScopeId || updateDocumentAcl.isPending}")),
+  rule("suspend disabled state", (body) => body.includes("disabled={!props.csrfToken || document.status === \"deleted\" || suspendDocument.isPending}")),
+  rule("error alert", (body) => body.includes("role=\"alert\""))
+]);
+checkFile("IngestionJobPanel", "apps/web/src/features/admin/IngestionJobPanel.tsx", [
+  rule("section label", (body) => body.includes("aria-label=\"取り込みジョブ確認\"")),
+  rule("form label", (body) => body.includes("aria-label=\"取り込みジョブ確認フォーム\"")),
+  rule("field label", (body) => body.includes("label=\"取り込みジョブID\"")),
+  rule("empty status", (body) => body.includes("取り込みジョブを選択してください")),
+  rule("pending status", (body) => body.includes("<p role=\"status\">取り込みジョブを確認しています</p>")),
+  rule("progress percentage", (body) => body.includes("進捗") && body.includes("job.progress_percent")),
+  rule("retry disabled state", (body) => body.includes("disabled={!props.csrfToken || !job?.retryable || retry.isPending}")),
+  rule("error alert", (body) => body.includes("role=\"alert\""))
 ]);
 checkFile("UI components", "packages/ui/src/components.tsx", [
+  rule("data table export", (body) => body.includes("export { DataTable }")),
+  rule("dialog export", (body) => body.includes("export { Dialog }")),
+  rule("drawer export", (body) => body.includes("export { Drawer }")),
+  rule("citation drawer export", (body) => body.includes("export { CitationDrawer"))
+]);
+checkFile("UI atoms", "packages/ui/src/atoms/Button.tsx", [
   rule("button type default", (body) => body.includes("type={props.type || \"button\"}")),
+  rule("button recipe", (body) => body.includes("buttonRecipe")),
+]);
+checkFile("UI theme", "packages/ui/src/theme.css.ts", [
+  rule("theme contract", (body) => body.includes("createThemeContract")),
+  rule("recipe boundary", (body) => body.includes("@vanilla-extract/recipes")),
+]);
+checkFile("UI dialog", "packages/ui/src/organisms/Dialog.tsx", [
+  rule("radix dialog primitive", (body) => body.includes("@radix-ui/react-dialog") && body.includes("RadixDialog.Content")),
+  rule("dialog title", (body) => body.includes("RadixDialog.Title"))
+]);
+checkFile("UI drawer", "packages/ui/src/organisms/Drawer.tsx", [
+  rule("radix drawer primitive", (body) => body.includes("@radix-ui/react-dialog") && body.includes("RadixDialog.Content")),
+  rule("drawer title", (body) => body.includes("RadixDialog.Title"))
+]);
+checkFile("UI tabs", "packages/ui/src/organisms/Tabs.tsx", [
+  rule("radix tabs primitive", (body) => body.includes("@radix-ui/react-tabs") && body.includes("RadixTabs.List")),
+  rule("labelled tabs list", (body) => body.includes("aria-label={props[\"aria-label\"]}"))
+]);
+checkFile("UI panel", "packages/ui/src/organisms/Panel.tsx", [
   rule("panel labelled section", (body) => body.includes("<section") && body.includes("aria-label={props[\"aria-label\"]}")),
+]);
+checkFile("UI message thread", "packages/ui/src/organisms/MessageThread.tsx", [
+  rule("thread empty status", (body) => body.includes("<p role=\"status\">{props.emptyLabel}</p>")),
+]);
+checkFile("UI status", "packages/ui/src/molecules/StatusBadge.tsx", [
   rule("status accessible name", (body) => body.includes("aria-label={`状態: ${props.status}`}"))
 ]);
 
