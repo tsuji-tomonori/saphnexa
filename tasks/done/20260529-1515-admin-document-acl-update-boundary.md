@@ -98,6 +98,11 @@ Admin 文書管理から文書版 ACL scope を更新できる API/UI 境界を�
 - `npm run aws:dev-uat:preflight-raw-input:fixture:check`: pass
 - `git diff --check`: pass
 
+## PR コメント
+
+- 受け入れ条件確認: https://github.com/tsuji-tomonori/saphnexa/pull/3#issuecomment-4571515854
+- セルフレビュー結果: https://github.com/tsuji-tomonori/saphnexa/pull/3#issuecomment-4571515851
+
 ## 状態
 
-in_progress
+done
