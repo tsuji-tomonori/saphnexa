@@ -26,10 +26,15 @@ checkFile("ChatSessionNav", "apps/web/src/features/chat/ChatSessionNav.tsx", [
 ]);
 checkFile("ChatParticipantsPanel", "apps/web/src/features/chat/ChatParticipantsPanel.tsx", [
   rule("section label", (body) => body.includes("aria-label=\"参加者\"")),
+  rule("share form label", (body) => body.includes("aria-label=\"チャット共有フォーム\"")),
+  rule("share input label", (body) => body.includes("label=\"共有先ユーザーID\"")),
+  rule("honest share state", (body) => body.includes("owner移譲、owner昇格、実 AppSync Events fan-out: 未接続")),
   rule("participants table", (body) => body.includes("DataTable") && body.includes("caption=\"参加者一覧\"")),
   rule("empty selected-chat state", (body) => body.includes("チャットを選択してください")),
   rule("pending status", (body) => body.includes("<p role=\"status\">参加者を確認しています</p>")),
-  rule("status badge", (body) => body.includes("StatusBadge"))
+  rule("status badge", (body) => body.includes("StatusBadge")),
+  rule("button disabled state", (body) => body.includes("disabled={!props.csrfToken || !props.activeChatId || props.isMutating}")),
+  rule("button type", (body) => !/<button(?![^>]*\stype=)/.test(body))
 ]);
 checkFile("MessageComposer", "apps/web/src/features/chat/MessageComposer.tsx", [
   rule("question label", (body) => body.includes("aria-label=\"質問\"")),

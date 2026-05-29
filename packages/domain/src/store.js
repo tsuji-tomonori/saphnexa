@@ -147,11 +147,13 @@ export function createLocalStore() {
   function updateParticipant(actor, chat_id, user_id, input = {}) {
     requireOwner(actor, chat_id);
     const row = participant(chat_id, user_id);
-    if (!row || row.status !== statuses.ACTIVE) throw forbidden("PARTICIPANT_NOT_FOUND", "参加者が存在しない。");
+    if (!row || row.participant_role === participantRoles.OWNER) throw forbidden("PARTICIPANT_NOT_FOUND", "参加者が存在しない。");
     if (input.participant_role && input.participant_role !== participantRoles.VIEWER) {
       throw forbidden("UNSUPPORTED_PARTICIPANT_ROLE", "初期構成では共有先は viewer 固定。");
     }
     row.participant_role = participantRoles.VIEWER;
+    row.status = statuses.ACTIVE;
+    row.removed_at = null;
     return row;
   }
 

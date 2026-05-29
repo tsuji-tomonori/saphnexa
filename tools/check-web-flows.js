@@ -76,6 +76,9 @@ scenario("chat UI source contract", () => {
   for (const token of [
     "useChatSessions",
     "useChatParticipants",
+    "useAddChatParticipant",
+    "useUpdateChatParticipant",
+    "useRemoveChatParticipant",
     "useMessageEvents",
     "useMessageRealtime",
     "useCreateFeedback",
@@ -101,6 +104,13 @@ scenario("chat UI source contract", () => {
   assert(chatParticipantsHookSource.includes("apiRoutes.listChatParticipants(chatId ?? \"\")"), "useChatParticipants hook must use listChatParticipants route helper");
   assert(chatParticipantsHookSource.includes("apiGetOperation(\"listChatParticipants\""), "useChatParticipants hook must use generated listChatParticipants helper");
   assert(chatParticipantsHookSource.includes("enabled: Boolean(chatId)"), "useChatParticipants hook must wait for active chat");
+  assert(chatParticipantsHookSource.includes("apiRoutes.addChatParticipant(input.chat_id)"), "useAddChatParticipant hook must use addChatParticipant route helper");
+  assert(chatParticipantsHookSource.includes("apiPostOperation(\"addChatParticipant\""), "useAddChatParticipant hook must use generated addChatParticipant helper");
+  assert(chatParticipantsHookSource.includes("apiRoutes.updateChatParticipant(input.chat_id, input.user_id)"), "useUpdateChatParticipant hook must use updateChatParticipant route helper");
+  assert(chatParticipantsHookSource.includes("apiPatchOperation(\"updateChatParticipant\""), "useUpdateChatParticipant hook must use generated updateChatParticipant helper");
+  assert(chatParticipantsHookSource.includes("apiRoutes.removeChatParticipant(input.chat_id, input.user_id)"), "useRemoveChatParticipant hook must use removeChatParticipant route helper");
+  assert(chatParticipantsHookSource.includes("apiDeleteOperation(\"removeChatParticipant\""), "useRemoveChatParticipant hook must use generated removeChatParticipant helper");
+  assert(chatParticipantsHookSource.includes("invalidateQueries({ queryKey: [\"chat-participants\", input.chat_id] })"), "participant mutations must refresh participants query");
   assert(apiClientSource.includes("/api/chat-sessions/{chat_id}/participants"), "API client participants helper must call participants path");
   assert(feedbackHookSource.includes("apiRoutes.createFeedback(input.chat_id, input.message_id)"), "useCreateFeedback hook must use createFeedback route helper");
   assert(feedbackHookSource.includes("apiPostOperation(\"createFeedback\""), "useCreateFeedback hook must use generated createFeedback helper");
@@ -127,7 +137,13 @@ scenario("chat UI source contract", () => {
     "参加者一覧",
     "チャットを選択してください",
     "StatusBadge",
-    "added_by_user_id"
+    "added_by_user_id",
+    "aria-label=\"チャット共有フォーム\"",
+    "shareParticipantSchema",
+    "viewerとして共有",
+    "viewer再有効化",
+    "共有解除",
+    "owner移譲、owner昇格、実 AppSync Events fan-out: 未接続"
   ]) {
     assert(chatParticipantsPanelSource.includes(token), `ChatParticipantsPanel missing token: ${token}`);
   }
@@ -228,6 +244,17 @@ scenario("chat local API flow", () => {
   assert(participants.status === 200, "chat participants fetch failed");
   assert(participants.body.participants.some((item) => item.user_id === "user-owner" && item.participant_role === "owner"), "owner participant missing");
   assert(api.request("user-outsider", "listChatParticipants", { chat_id: chat.body.chat.chat_id }).status === 403, "outsider must not list participants for unreadable chat");
+  const shared = api.request("user-owner", "addChatParticipant", { csrf_token: csrf, chat_id: chat.body.chat.chat_id, user_id: "user-viewer" });
+  assert(shared.status === 201 && shared.body.participant.participant_role === "viewer", "owner must share chat with viewer");
+  assert(api.request("user-viewer", "addChatParticipant", { csrf_token: "csrf-user-viewer", chat_id: chat.body.chat.chat_id, user_id: "user-outsider" }).status === 403, "viewer must not share chat");
+  assert(api.request("user-outsider", "addChatParticipant", { csrf_token: "csrf-user-outsider", chat_id: chat.body.chat.chat_id, user_id: "user-viewer" }).status === 403, "outsider must not share unreadable chat");
+  const removedParticipant = api.request("user-owner", "removeChatParticipant", { csrf_token: csrf, chat_id: chat.body.chat.chat_id, user_id: "user-viewer" });
+  assert(removedParticipant.status === 204, "owner must remove viewer participant");
+  assert(api.request("user-viewer", "listChatParticipants", { chat_id: chat.body.chat.chat_id }).status === 403, "removed viewer must not list participants");
+  const reenabledParticipant = api.request("user-owner", "updateChatParticipant", { csrf_token: csrf, chat_id: chat.body.chat.chat_id, user_id: "user-viewer", participant_role: "viewer" });
+  assert(reenabledParticipant.status === 200 && reenabledParticipant.body.participant.status === "active", "owner must re-enable viewer participant");
+  assert(api.request("user-owner", "updateChatParticipant", { csrf_token: csrf, chat_id: chat.body.chat.chat_id, user_id: "user-viewer", participant_role: "owner" }).status === 403, "owner promotion must stay unsupported");
+  assert(api.request("user-owner", "removeChatParticipant", { csrf_token: csrf, chat_id: chat.body.chat.chat_id, user_id: "user-owner" }).status === 403, "owner participant must not be removable");
   const feedback = api.request("user-owner", "createFeedback", {
     csrf_token: csrf,
     chat_id: chat.body.chat.chat_id,

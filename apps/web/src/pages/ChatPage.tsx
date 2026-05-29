@@ -16,7 +16,7 @@ import { useMe } from "../hooks/useMe";
 import { useMessageEvents } from "../hooks/useMessageEvents";
 import { useMessageRealtime } from "../hooks/useMessageRealtime";
 import { submitAssistantQuestion } from "../lib/assistantRuntime";
-import { useChatParticipants } from "../hooks/useChatParticipants";
+import { useAddChatParticipant, useChatParticipants, useRemoveChatParticipant, useUpdateChatParticipant } from "../hooks/useChatParticipants";
 
 export function ChatPage() {
   const me = useMe();
@@ -26,6 +26,9 @@ export function ChatPage() {
   const addFavorite = useAddFavorite(csrfToken);
   const deleteFavorite = useDeleteFavorite(csrfToken);
   const createFeedback = useCreateFeedback(csrfToken);
+  const addChatParticipant = useAddChatParticipant(csrfToken);
+  const updateChatParticipant = useUpdateChatParticipant(csrfToken);
+  const removeChatParticipant = useRemoveChatParticipant(csrfToken);
   const [selectedChatId, setSelectedChatId] = useState<string | null>(null);
   const [messageId, setMessageId] = useState<string | null>(null);
   const [wsTicket, setWsTicket] = useState<string | null>(null);
@@ -63,8 +66,13 @@ export function ChatPage() {
         <p role="status">リアルタイム接続: {realtime.status}</p>
         <ChatParticipantsPanel
           activeChatId={activeChatId}
+          csrfToken={csrfToken}
           participants={participants.data?.participants ?? []}
           isLoading={participants.isFetching}
+          isMutating={addChatParticipant.isPending || updateChatParticipant.isPending || removeChatParticipant.isPending}
+          onAdd={(input) => addChatParticipant.mutateAsync(input)}
+          onUpdate={(input) => updateChatParticipant.mutate(input)}
+          onRemove={(input) => removeChatParticipant.mutate(input)}
         />
         <FavoritePanel
           activeChatId={activeChatId}

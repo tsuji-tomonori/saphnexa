@@ -195,6 +195,140 @@ const dsqlOperationMappings = {
       return { participants: rows };
     }
   },
+  addChatParticipant: {
+    notFoundErrorCode: "DSQL_CHAT_OWNER_OR_TARGET_NOT_FOUND",
+    plan(request) {
+      return {
+        operationId: "addChatParticipant",
+        resultTable: "chat_participants",
+        sql: `
+          WITH owner_participant AS (
+            SELECT tenant_id, chat_id, user_id
+            FROM chat_participants
+            WHERE user_id = :actor_id
+              AND chat_id = :chat_id
+              AND participant_role = 'owner'
+              AND status = 'active'
+          ),
+          target_user AS (
+            SELECT u.tenant_id, u.user_id
+            FROM users u
+            JOIN owner_participant op
+              ON op.tenant_id = u.tenant_id
+            WHERE u.user_id = :user_id
+              AND u.role = 'general_user'
+              AND u.status = 'active'
+          )
+          INSERT INTO chat_participants (
+            tenant_id, chat_id, user_id, participant_role, status, added_by_user_id, added_at, removed_at
+          )
+          SELECT
+            op.tenant_id,
+            op.chat_id,
+            tu.user_id,
+            'viewer',
+            'active',
+            op.user_id,
+            now(),
+            NULL
+          FROM owner_participant op
+          JOIN target_user tu
+            ON tu.tenant_id = op.tenant_id
+          ON CONFLICT (tenant_id, chat_id, user_id)
+          DO UPDATE SET
+            participant_role = 'viewer',
+            status = 'active',
+            added_by_user_id = EXCLUDED.added_by_user_id,
+            removed_at = NULL
+          RETURNING *
+        `,
+        params: {
+          actor_id: request.actorId,
+          chat_id: request.input.chat_id,
+          user_id: request.input.user_id
+        }
+      };
+    },
+    map(rows) {
+      return { participant: firstRow(rows) };
+    }
+  },
+  updateChatParticipant: {
+    notFoundErrorCode: "DSQL_CHAT_PARTICIPANT_NOT_FOUND",
+    plan(request) {
+      return {
+        operationId: "updateChatParticipant",
+        resultTable: "chat_participants",
+        sql: `
+          WITH owner_participant AS (
+            SELECT tenant_id, chat_id
+            FROM chat_participants
+            WHERE user_id = :actor_id
+              AND chat_id = :chat_id
+              AND participant_role = 'owner'
+              AND status = 'active'
+          )
+          UPDATE chat_participants target
+             SET participant_role = 'viewer',
+                 status = 'active',
+                 removed_at = NULL
+            FROM owner_participant op
+           WHERE target.tenant_id = op.tenant_id
+             AND target.chat_id = op.chat_id
+             AND target.user_id = :user_id
+             AND target.participant_role <> 'owner'
+             AND COALESCE(:participant_role, 'viewer') = 'viewer'
+          RETURNING target.*
+        `,
+        params: {
+          actor_id: request.actorId,
+          chat_id: request.input.chat_id,
+          user_id: request.input.user_id,
+          participant_role: request.input.participant_role ?? "viewer"
+        }
+      };
+    },
+    map(rows) {
+      return { participant: firstRow(rows) };
+    }
+  },
+  removeChatParticipant: {
+    notFoundErrorCode: "DSQL_CHAT_PARTICIPANT_NOT_FOUND",
+    plan(request) {
+      return {
+        operationId: "removeChatParticipant",
+        resultTable: "chat_participants",
+        sql: `
+          WITH owner_participant AS (
+            SELECT tenant_id, chat_id
+            FROM chat_participants
+            WHERE user_id = :actor_id
+              AND chat_id = :chat_id
+              AND participant_role = 'owner'
+              AND status = 'active'
+          )
+          UPDATE chat_participants target
+             SET status = 'removed',
+                 removed_at = now()
+            FROM owner_participant op
+           WHERE target.tenant_id = op.tenant_id
+             AND target.chat_id = op.chat_id
+             AND target.user_id = :user_id
+             AND target.participant_role = 'viewer'
+             AND target.status = 'active'
+          RETURNING target.*
+        `,
+        params: {
+          actor_id: request.actorId,
+          chat_id: request.input.chat_id,
+          user_id: request.input.user_id
+        }
+      };
+    },
+    map() {
+      return undefined;
+    }
+  },
   listMessageEvents: {
     plan(request) {
       return {

@@ -15,6 +15,9 @@ for (const file of files) {
     assert(body.includes("className=\"sx-chat-shell\""), "ChatPage must expose chat shell landmark through AppShell");
     assert(body.includes("useChatSessions"), "ChatPage must use TanStack Query chat hook");
     assert(body.includes("useChatParticipants"), "ChatPage must use TanStack Query participants hook");
+    assert(body.includes("useAddChatParticipant"), "ChatPage must use participant share mutation hook");
+    assert(body.includes("useUpdateChatParticipant"), "ChatPage must use participant update mutation hook");
+    assert(body.includes("useRemoveChatParticipant"), "ChatPage must use participant remove mutation hook");
     assert(body.includes("ChatParticipantsPanel"), "ChatPage must render participants panel through feature component");
     assert(body.includes("useMessageEvents"), "ChatPage must use TanStack Query message events hook");
     assert(body.includes("useCreateFeedback"), "ChatPage must use TanStack Query feedback hook");
@@ -34,10 +37,17 @@ for (const file of files) {
     assert(body.includes("<p role=\"status\">チャットはありません</p>"), "ChatApp must render an honest empty chat state");
   }
   if (file.includes("ChatParticipantsPanel")) {
+    assert(body.includes("useForm") && body.includes("zodResolver") && body.includes("shareParticipantSchema"), "Chat participants share form must use React Hook Form + Zod validation");
     assert(body.includes("DataTable"), "Chat participants must render through DataTable");
     assert(body.includes("参加者一覧"), "Chat participants must expose a table caption");
     assert(body.includes("チャットを選択してください"), "Chat participants must render an honest no-chat state");
     assert(body.includes("StatusBadge"), "Chat participants must show status through StatusBadge");
+    assert(body.includes("aria-label=\"チャット共有フォーム\""), "Chat participants must expose a labelled share form");
+    assert(body.includes("viewerとして共有"), "Chat participants must expose viewer share action");
+    assert(body.includes("viewer再有効化"), "Chat participants must expose viewer re-enable action");
+    assert(body.includes("共有解除"), "Chat participants must expose remove share action");
+    assert(body.includes("owner移譲、owner昇格、実 AppSync Events fan-out: 未接続"), "Chat participants must not imply owner transfer or realtime fan-out is implemented");
+    assert(body.includes("disabled={!props.csrfToken || !props.activeChatId || props.isMutating}"), "Chat participants actions must require token and active chat");
     assert(!body.includes("user-local"), "Chat participants must not hard-code local user ids");
   }
   if (file.includes("MessageComposer")) {
