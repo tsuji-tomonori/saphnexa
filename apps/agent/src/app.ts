@@ -1,6 +1,6 @@
 import { Hono } from "hono";
-import { AgentInvocationSchema } from "./schemas/invocation";
 import { createRagAgentRuntime, type RagAgentRuntime } from "./agent/ragAgent";
+import { handleAgentCoreInvocation } from "./runtime/agentCoreHandler";
 
 export interface AgentCoreAppOptions {
   runtime?: RagAgentRuntime;
@@ -13,12 +13,8 @@ export function createAgentCoreApp(options: AgentCoreAppOptions = {}) {
   app.get("/ping", (c) => c.json({ status: "ok", service: "saphnexa-agent" }));
 
   app.post("/invocations", async (c) => {
-    const parsed = AgentInvocationSchema.safeParse(await c.req.json());
-    if (!parsed.success) {
-      return c.json({ error_code: "INVALID_INVOCATION", message: "Agent invocation payload is invalid.", details: parsed.error.flatten() }, 400);
-    }
-    const result = await runtime.invoke(parsed.data);
-    return c.json(result, result.status === "failed" ? 500 : 202);
+    const result = await handleAgentCoreInvocation(await c.req.json(), runtime);
+    return c.json(result.body, result.status as 202);
   });
 
   return app;
