@@ -1,8 +1,8 @@
 import { CitationDrawer } from "@saphnexa/ui";
-import type { Citation, EventRow } from "../../types";
+import type { ChatMessage, Citation, EventRow } from "../../types";
 
-export function CitationDrawerPanel(props: { events: EventRow[]; open: boolean }) {
-  const citations = extractCitations(props.events);
+export function CitationDrawerPanel(props: { events: EventRow[]; messages?: ChatMessage[]; open: boolean }) {
+  const citations = dedupeCitations([...extractRestCitations(props.messages ?? []), ...extractEventCitations(props.events)]);
   return (
     <CitationDrawer
       open={props.open}
@@ -17,10 +17,23 @@ export function CitationDrawerPanel(props: { events: EventRow[]; open: boolean }
   );
 }
 
-export function extractCitations(events: EventRow[]): Citation[] {
+export function extractRestCitations(messages: ChatMessage[]): Citation[] {
+  return messages.flatMap((message) => message.citations ?? []).filter(isCitation);
+}
+
+export function extractEventCitations(events: EventRow[]): Citation[] {
   return events.flatMap((event) => {
     const citations = event.payload_json.citations;
     return Array.isArray(citations) ? citations.filter(isCitation) : [];
+  });
+}
+
+export function dedupeCitations(citations: Citation[]): Citation[] {
+  const seen = new Set<string>();
+  return citations.filter((citation) => {
+    if (seen.has(citation.citation_id)) return false;
+    seen.add(citation.citation_id);
+    return true;
   });
 }
 

@@ -67,6 +67,11 @@ test("question submission creates run/message ids, events, citations, and audite
   const message = api.store.state.chat_messages.find((item) => item.message_id === accepted.body.message_id);
   assert.equal(message.status, "succeeded");
   assert.equal(api.store.state.citation_records.length >= 1, true);
+  const messages = api.request("user-owner", "listMessages", { chat_id: chatId });
+  const restoredMessage = messages.body.messages.find((item) => item.message_id === accepted.body.message_id);
+  assert.equal(restoredMessage.citations.length >= 1, true);
+  assert.equal(restoredMessage.citations.every((citation) => citation.display.document_name), true);
+  assert.equal(api.request("user-outsider", "listMessages", { chat_id: chatId }).status, 403);
   assert.equal(api.store.state.tool_invocations.map((item) => item.tool_name).includes("acl-check"), true);
   const aclInvocation = api.store.state.tool_invocations.find((item) => item.tool_name === "acl-check");
   assert.equal(aclInvocation.response_summary_json.denied_count, 1);
@@ -96,6 +101,7 @@ test("message history restores only the viewer own feedback state", () => {
   const ownerAnswer = ownerMessages.body.messages.find((message) => message.message_id === accepted.body.message_id);
   assert.equal(ownerAnswer.feedback.rating, "positive");
   assert.equal(ownerAnswer.feedback.comment, "履歴で確認");
+  assert.equal(ownerAnswer.citations.length >= 1, true);
   const firstPage = api.request("user-owner", "listMessages", { chat_id: chatId, limit: 1 });
   assert.equal(firstPage.body.messages.length, 1);
   assert.equal(typeof firstPage.body.next_cursor, "string");
@@ -107,6 +113,7 @@ test("message history restores only the viewer own feedback state", () => {
   const viewerMessages = api.request("user-viewer", "listMessages", { chat_id: chatId });
   const viewerAnswer = viewerMessages.body.messages.find((message) => message.message_id === accepted.body.message_id);
   assert.equal(viewerAnswer.feedback, null);
+  assert.equal(viewerAnswer.citations.length >= 1, true);
 });
 
 test("fixture RAG refuses ungrounded questions without fake citations", () => {

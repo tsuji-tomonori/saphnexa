@@ -76,6 +76,10 @@ assert(
   "listMessages response schema must expose nullable feedback state"
 );
 assert(
+  document.paths["/v1/chat-sessions/{chat_id}/messages"].get.responses["200"].content["application/json"].schema.properties.messages.items.properties.citations.type === "array",
+  "listMessages response schema must expose citations array"
+);
+assert(
   document.paths["/v1/chat-sessions/{chat_id}/messages"].get.responses["200"].content["application/json"].schema.properties.next_cursor.type.includes("null"),
   "listMessages response schema must expose nullable next_cursor"
 );

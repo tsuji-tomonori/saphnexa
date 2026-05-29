@@ -233,7 +233,7 @@ export function createLocalStore() {
     const limit = messagePageLimit(input.limit);
     const ordered = state.chat_messages
       .filter((item) => item.tenant_id === actor.tenant_id && item.chat_id === chat_id)
-      .map((message) => withOwnFeedback(message, actor.user_id))
+      .map((message) => withMessageRestoration(message, actor.user_id))
       .sort((a, b) => a.created_at.localeCompare(b.created_at) || a.message_id.localeCompare(b.message_id));
     const cursorIndex = input.after_message_id ? ordered.findIndex((message) => message.message_id === input.after_message_id) : -1;
     const pageSource = input.after_message_id && cursorIndex < 0 ? [] : cursorIndex >= 0 ? ordered.slice(cursorIndex + 1) : ordered;
@@ -261,8 +261,12 @@ export function createLocalStore() {
       participants: state.chat_participants.filter((item) => item.chat_id === chat_id && item.status === statuses.ACTIVE),
       messages: state.chat_messages
         .filter((item) => item.chat_id === chat_id)
-        .map((message) => withOwnFeedback(message, actor.user_id))
+        .map((message) => withMessageRestoration(message, actor.user_id))
     };
+  }
+
+  function withMessageRestoration(message, user_id) {
+    return withCitations(withOwnFeedback(message, user_id));
   }
 
   function withOwnFeedback(message, user_id) {
@@ -273,6 +277,13 @@ export function createLocalStore() {
       item.user_id === user_id
     );
     return feedback ? { ...message, feedback } : { ...message, feedback: null };
+  }
+
+  function withCitations(message) {
+    const citations = state.citation_records
+      .filter((item) => item.tenant_id === message.tenant_id && item.chat_id === message.chat_id && item.message_id === message.message_id)
+      .sort((a, b) => a.citation_id.localeCompare(b.citation_id));
+    return { ...message, citations };
   }
 
   function messagePageLimit(limit) {

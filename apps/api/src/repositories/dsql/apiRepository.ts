@@ -633,7 +633,8 @@ const dsqlOperationMappings = {
                 'problem_type', f.problem_type,
                 'created_at', f.created_at
               )
-            END AS feedback
+            END AS feedback,
+            COALESCE(citations.citations_json, '[]'::json) AS citations
           FROM chat_messages m
           JOIN chat_participants p
             ON p.tenant_id = m.tenant_id
@@ -645,6 +646,25 @@ const dsqlOperationMappings = {
            AND f.chat_id = m.chat_id
            AND f.message_id = m.message_id
            AND f.user_id = :actor_id
+          LEFT JOIN LATERAL (
+            SELECT json_agg(
+              json_build_object(
+                'tenant_id', c.tenant_id,
+                'chat_id', c.chat_id,
+                'message_id', c.message_id,
+                'citation_id', c.citation_id,
+                'document_id', c.document_id,
+                'version_id', c.version_id,
+                'chunk_id', c.chunk_id,
+                'display', c.display_json
+              )
+              ORDER BY c.citation_id ASC
+            ) AS citations_json
+            FROM citation_records c
+            WHERE c.tenant_id = m.tenant_id
+              AND c.chat_id = m.chat_id
+              AND c.message_id = m.message_id
+          ) citations ON TRUE
           WHERE m.chat_id = :chat_id
             AND (
               :after_message_id IS NULL

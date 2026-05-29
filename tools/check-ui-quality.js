@@ -82,7 +82,8 @@ for (const file of files) {
     assert(body.includes("aria-label=\"メッセージ履歴\""), "Chat message history must expose a labelled thread");
     assert(body.includes("メッセージはありません"), "Chat message history must render an honest empty message state");
     assert(body.includes("チャットを選択してください"), "Chat message history must render an honest no-chat state");
-    assert(body.includes("引用本文の完全 REST 復元: 未接続"), "Chat message history must not imply citation restoration is complete");
+    assert(body.includes("引用 REST 復元: 接続済み"), "Chat message history must show REST citation restoration is connected");
+    assert(body.includes("message.citations") && body.includes("引用:"), "Chat message history must render restored citation count");
     assert(body.includes("props.nextCursor") && body.includes("次ページcursor:"), "Chat message history must render next page cursor");
     assert(body.includes("message.feedback") && body.includes("フィードバック:"), "Chat message history must render restored feedback state");
     assert(body.includes("実 AgentCore Runtime 停止、SQS event-publish、stream中断: 未接続"), "Chat message history must not imply real runtime stop or event publish is complete");

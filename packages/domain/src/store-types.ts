@@ -70,6 +70,7 @@ export interface ChatMessage {
   created_at: string;
   completed_at: string | null;
   feedback?: MessageFeedbackRecord | null;
+  citations?: CitationRecord[];
 }
 
 export interface ChatMessagePage {
@@ -119,7 +120,7 @@ export interface CitationRecord {
   document_id: string;
   version_id: string;
   chunk_id: string;
-  display: string;
+  display: Record<string, unknown>;
 }
 
 export interface FavoriteRecord {

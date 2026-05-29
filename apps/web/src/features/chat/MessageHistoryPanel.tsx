@@ -14,7 +14,7 @@ export function MessageHistoryPanel(props: {
   return (
     <>
       {props.isLoading ? <p role="status">メッセージ履歴を確認しています</p> : null}
-      <p role="status">引用本文の完全 REST 復元: 未接続</p>
+      <p role="status">引用 REST 復元: 接続済み</p>
       {props.nextCursor ? <p role="status">次ページcursor: {props.nextCursor}</p> : null}
       <p role="status">実 AgentCore Runtime 停止、SQS event-publish、stream中断: 未接続</p>
       <Button
@@ -41,6 +41,7 @@ export function MessageHistoryPanel(props: {
                   {message.feedback.comment ? ` / ${message.feedback.comment}` : ""}
                 </p>
               ) : null}
+              {message.citations?.length ? <p role="status">引用: {message.citations.length}件</p> : null}
               <StatusBadge status={message.status} />
               <small>{message.created_at}</small>
             </>

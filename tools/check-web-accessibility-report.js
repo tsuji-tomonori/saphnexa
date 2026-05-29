@@ -59,7 +59,8 @@ checkFile("MessageHistoryPanel", "apps/web/src/features/chat/MessageHistoryPanel
   rule("empty message status", (body) => body.includes("メッセージはありません")),
   rule("empty selected-chat state", (body) => body.includes("チャットを選択してください")),
   rule("pending status", (body) => body.includes("<p role=\"status\">メッセージ履歴を確認しています</p>")),
-  rule("honest restore state", (body) => body.includes("引用本文の完全 REST 復元: 未接続")),
+  rule("restore state", (body) => body.includes("引用 REST 復元: 接続済み")),
+  rule("citation count", (body) => body.includes("message.citations") && body.includes("引用:")),
   rule("next cursor status", (body) => body.includes("props.nextCursor") && body.includes("次ページcursor:")),
   rule("feedback state", (body) => body.includes("message.feedback") && body.includes("フィードバック:")),
   rule("honest cancel state", (body) => body.includes("実 AgentCore Runtime 停止、SQS event-publish、stream中断: 未接続")),
@@ -69,7 +70,8 @@ checkFile("MessageHistoryPanel", "apps/web/src/features/chat/MessageHistoryPanel
 ]);
 checkFile("CitationDrawerPanel", "apps/web/src/features/chat/CitationDrawerPanel.tsx", [
   rule("citation drawer organism", (body) => body.includes("CitationDrawer")),
-  rule("citations from event payload", (body) => body.includes("event.payload_json.citations"))
+  rule("citations from event payload", (body) => body.includes("event.payload_json.citations")),
+  rule("citations from REST messages", (body) => body.includes("message.citations"))
 ]);
 checkFile("MessageEventsPanel", "apps/web/src/features/chat/MessageEventsPanel.tsx", [
   rule("event panel label", (body) => body.includes("aria-label=\"イベント\"")),

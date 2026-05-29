@@ -209,7 +209,8 @@ scenario("chat UI source contract", () => {
     "メッセージはありません",
     "チャットを選択してください",
     "メッセージ履歴を確認しています",
-    "引用本文の完全 REST 復元: 未接続",
+    "引用 REST 復元: 接続済み",
+    "message.citations",
     "次ページcursor:",
     "実 AgentCore Runtime 停止、SQS event-publish、stream中断: 未接続",
     "message.feedback",
@@ -267,8 +268,11 @@ scenario("chat UI source contract", () => {
   }
   for (const token of [
     "CitationDrawer",
-    "extractCitations",
-    "event.payload_json.citations"
+    "extractRestCitations",
+    "extractEventCitations",
+    "event.payload_json.citations",
+    "message.citations",
+    "dedupeCitations"
   ]) {
     assert(citationDrawerSource.includes(token), `CitationDrawerPanel missing token: ${token}`);
   }
@@ -335,6 +339,9 @@ scenario("chat local API flow", () => {
   assert(messages.status === 200, "chat messages fetch failed");
   assert(messages.body.messages.some((message) => message.message_id === submit.body.message_id && message.sender_type === "assistant"), "assistant message missing from message history");
   assert(messages.body.messages.some((message) => message.sender_user_id === "user-owner" && message.content_text.includes("Saphnexa")), "user message missing from message history");
+  const restoredAnswer = messages.body.messages.find((message) => message.message_id === submit.body.message_id);
+  assert(restoredAnswer.citations.length >= 1, "message history must restore citations from REST");
+  assert(restoredAnswer.citations.every((citation) => citation.display?.document_name), "restored citations must include display metadata");
   const pagedMessages = api.request("user-owner", "listMessages", { chat_id: chat.body.chat.chat_id, limit: 1 });
   assert(pagedMessages.body.messages.length === 1 && pagedMessages.body.next_cursor, "message history must return first page cursor");
   const nextMessages = api.request("user-owner", "listMessages", { chat_id: chat.body.chat.chat_id, after_message_id: pagedMessages.body.next_cursor, limit: 1 });
@@ -370,6 +377,7 @@ scenario("chat local API flow", () => {
   const feedbackMessage = feedbackMessages.body.messages.find((message) => message.message_id === submit.body.message_id);
   assert(feedbackMessage?.feedback?.rating === "positive", "own feedback rating must be restored in message history");
   assert(feedbackMessage?.feedback?.comment === "参考になりました", "own feedback comment must be restored in message history");
+  assert(feedbackMessage?.citations?.length >= 1, "own message history must keep restored citations with feedback state");
   const viewerFeedbackMessages = api.request("user-viewer", "listMessages", { chat_id: chat.body.chat.chat_id });
   const viewerFeedbackMessage = viewerFeedbackMessages.body.messages.find((message) => message.message_id === submit.body.message_id);
   assert(viewerFeedbackMessage?.feedback === null, "message history must not expose another participant feedback state");

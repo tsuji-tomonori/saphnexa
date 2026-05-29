@@ -157,7 +157,7 @@ export function ChatPage() {
           onCancel={(input) => cancelAnswerGeneration.mutate(input)}
         />
         <MessageEventsPanel events={events.data?.events ?? []} />
-        <CitationDrawerPanel open={Boolean(activeChatId && csrfToken)} events={events.data?.events ?? []} />
+        <CitationDrawerPanel open={Boolean(activeChatId && csrfToken)} events={events.data?.events ?? []} messages={messages.data?.messages ?? []} />
       </AssistantRuntimeBoundary>
     </AppShell>
   );

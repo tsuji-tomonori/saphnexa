@@ -155,7 +155,21 @@ function chatMessageSchema() {
     content_text: z.string(),
     status: z.string(),
     created_at: z.string(),
-    feedback: feedbackSchema().nullable().optional()
+    feedback: feedbackSchema().nullable().optional(),
+    citations: z.array(citationSchema()).optional()
+  }).passthrough();
+}
+
+function citationSchema() {
+  return z.object({
+    tenant_id: z.string(),
+    chat_id: z.string(),
+    message_id: z.string(),
+    citation_id: z.string(),
+    document_id: z.string(),
+    version_id: z.string(),
+    chunk_id: z.string(),
+    display: z.record(z.unknown())
   }).passthrough();
 }
 

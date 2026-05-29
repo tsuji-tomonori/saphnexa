@@ -295,7 +295,21 @@ function chatMessageSchema() {
     status: statusSchema(),
     created_at: stringSchema(),
     completed_at: nullableStringSchema(),
-    feedback: nullableSchema(feedbackSchema())
+    feedback: nullableSchema(feedbackSchema()),
+    citations: arrayOf(citationSchema())
+  });
+}
+
+function citationSchema() {
+  return objectSchema(["tenant_id", "chat_id", "message_id", "citation_id", "document_id", "version_id", "chunk_id", "display"], {
+    tenant_id: stringSchema(),
+    chat_id: stringSchema(),
+    message_id: stringSchema(),
+    citation_id: stringSchema(),
+    document_id: stringSchema(),
+    version_id: stringSchema(),
+    chunk_id: stringSchema(),
+    display: jsonObjectSchema()
   });
 }
 
