@@ -82,4 +82,4 @@
 
 ## 状態
 
-acceptance_verified_pr_comment_pending
+done
