@@ -5,8 +5,11 @@ import { ArtifactTable } from "../features/admin/ArtifactTable";
 import { DocumentRegistrationForm } from "../features/admin/DocumentRegistrationForm";
 import { DocumentTable } from "../features/admin/DocumentTable";
 import { IngestionJobPanel } from "../features/admin/IngestionJobPanel";
+import { UserImportPanel } from "../features/admin/UserImportPanel";
+import { UserTable } from "../features/admin/UserTable";
 import { useAdminArtifacts } from "../hooks/useAdminArtifacts";
 import { useAdminDocuments } from "../hooks/useAdminDocuments";
+import { useAdminUsers } from "../hooks/useAdminUsers";
 import { useMe } from "../hooks/useMe";
 import { queryClient } from "../lib/queryClient";
 
@@ -14,6 +17,7 @@ export function AdminDashboardContent() {
   const me = useMe();
   const artifacts = useAdminArtifacts();
   const documents = useAdminDocuments();
+  const users = useAdminUsers();
   const csrfToken = me.data?.csrf_token ?? "";
 
   return (
@@ -26,6 +30,16 @@ export function AdminDashboardContent() {
             id: "evaluation",
             label: "評価",
             content: <AdminActions csrfToken={csrfToken} />
+          },
+          {
+            id: "users",
+            label: "ユーザー",
+            content: (
+              <Panel aria-label="ユーザー">
+                <UserImportPanel csrfToken={csrfToken} />
+                <UserTable users={users.data?.users ?? []} />
+              </Panel>
+            )
           },
           {
             id: "artifacts",

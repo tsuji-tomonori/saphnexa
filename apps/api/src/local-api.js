@@ -47,8 +47,7 @@ export function createLocalApi() {
           case "listLlmModels":
             return ok({ models: store.listLlmModels() });
           case "adminListUsers":
-            requireAdmin(actor);
-            return ok({ users: store.state.users });
+            return ok({ users: store.listAdminUsers(actor) });
           case "startUserImport":
             return accepted({ import: store.startUserImport(actor, input.rows || []) });
           case "getUserImport":

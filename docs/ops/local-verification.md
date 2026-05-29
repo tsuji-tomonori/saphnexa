@@ -118,7 +118,8 @@ git diff --check
 - Agent TypeScript runtime が query rewrite、DSQL ACL scope 解決、BM25 / KB retrieve、ACL check、reference expand、evidence pack、context packing、answer generation、citation binding の責務境界を持ち、evidence 不足時は回答生成に進まず refusal とすること。
 - `apps/web` が React + Vite + TypeScript package として成立し、TanStack Query hook、assistant-ui runtime adapter/provider 境界、Atomic Design UI package を通して chat/admin source gate を満たすこと。Chat UI は `AssistantRuntimeProvider` / `useLocalRuntime`、`Sidebar` / `MessageThread` organism を通して runtime 境界、navigation、event thread を表示すること。
 - `packages/ui` が shadcn/ui 系の所有 component 方針に沿って、vanilla-extract の `createThemeContract` / recipes、Radix Dialog primitive、Vite vanilla-extract plugin 境界を source gate で確認できること。実ブラウザ visual regression は別途確認する。
-- Admin Dashboard が Saphnexa UI package の Radix Tabs organism を使い、評価操作と公開成果物一覧を実データ由来の管理領域として分割すること。ユーザー取込、実 PDF upload、取り込み監視の未実装 backend を架空 UI で実装済みに見せないこと。
+- Admin Dashboard が Saphnexa UI package の Radix Tabs organism を使い、評価操作と公開成果物一覧を実データ由来の管理領域として分割すること。CSV/Excel 実アップロード、実 PDF upload、取り込み監視の未実装 backend を架空 UI で実装済みに見せないこと。
+- Admin Dashboard のユーザータブが `adminListUsers` / `startUserImport` / `getUserImport` route helper / generated operation helper を使い、JSON rows 入力で local user import 結果と行別エラーを確認できること。CSV/Excel 実アップロード、Cognito 実反映、AppSync 通知は未接続であることを表示すること。
 - Admin Dashboard の文書タブが `adminListDocuments` route helper / generated operation helper を使い、local API と DSQL query plan の管理者限定文書一覧境界を source gate で確認できること。文書がない場合は正直な empty state を表示すること。
 - Admin Dashboard の文書登録フォームが React Hook Form + Zod と `createDocument` route helper / generated operation helper を使い、登録後に文書一覧 query を再取得する境界を source gate で確認できること。実 PDF upload は未接続であることを表示すること。
 - Admin Dashboard の取り込みジョブ確認が React Hook Form + Zod と `getIngestionJob` / `retryIngestionJob` route helper / generated operation helper を使い、retryable な失敗ジョブだけを再実行できる境界を source gate で確認できること。実 Step Functions / S3 / KB ingestion は未接続であること。
@@ -212,7 +213,8 @@ git diff --check
 - GitHub issue tracker の最終再取得と、AC-153 の最終 PASS 判定。
 - axe/Playwright の実 DOM accessibility report、Lighthouse CI、本番 bundler の analyzer report、AWS load test。
 - UI theme / recipe / Radix primitive 境界は source gate、`tsc --noEmit`、Vite production build で確認する。実ブラウザ visual regression、dark/density theme の実切替、全 shadcn/ui component 群の網羅は別途確認する。
-- Admin Tabs の source gate は評価操作と公開成果物一覧の画面構造を確認する。ユーザー取込、実 PDF upload、取り込み監視の実 backend/API/UI は別途実装・検証する。
+- Admin ユーザー取込の source gate は `adminListUsers`、JSON rows による `startUserImport`、`getUserImport` の結果集計と行別エラー、管理者ロール境界を確認する。CSV/Excel binary upload、S3 import file 配置、Cognito 実反映、AppSync 完了通知は別途実装・検証する。
+- Admin Tabs の source gate は評価操作と公開成果物一覧の画面構造を確認する。CSV/Excel 実アップロード、実 PDF upload、取り込み監視の実 backend/API/UI は別途実装・検証する。
 - Admin 文書一覧の source gate は既存文書の表示と `adminListDocuments` 境界を確認する。実 PDF upload、ACL 編集、取り込みジョブ詳細は別途実装・検証する。
 - Admin 文書登録フォームの source gate は `createDocument` API 境界、CSRF disabled state、local ingestion job 受付、文書一覧再取得を確認する。実 S3 PDF upload、文書種別、有効期間、ACL 編集、取り込みジョブ詳細は別途実装・検証する。
 - Admin 取り込みジョブ確認の source gate は job ID 指定の `getIngestionJob`、retryable state、`retryIngestionJob`、管理者ロール境界を確認する。実 Step Functions 実行、S3 raw/parsed 実配置、Bedrock KB / S3 Vectors ingestion、進捗 percentage、job 一覧 API は別途実装・検証する。

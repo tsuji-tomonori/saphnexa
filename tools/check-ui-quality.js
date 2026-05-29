@@ -37,6 +37,9 @@ for (const file of files) {
   }
   if (file.includes("AdminDashboardPage")) {
     assert(body.includes("className=\"sx-admin-shell\""), "AdminApp must expose admin shell landmark through AppShell");
+    assert(body.includes("useAdminUsers"), "Admin page must use TanStack Query users hook");
+    assert(body.includes("UserImportPanel"), "Admin page must render user import panel through feature component");
+    assert(body.includes("UserTable"), "Admin page must render user table through feature component");
     assert(body.includes("useAdminArtifacts"), "Admin page must use TanStack Query artifact hook");
     assert(body.includes("useAdminDocuments"), "Admin page must use TanStack Query document hook");
     assert(body.includes("DocumentRegistrationForm"), "Admin page must render document registration form through feature component");
@@ -67,6 +70,16 @@ for (const file of files) {
     assert(body.includes("zodResolver"), "Admin ingestion job monitor must use Zod validation");
     assert(body.includes("retryable"), "Admin ingestion retry must depend on retryable state");
     assert(!body.includes("ing-local"), "Admin ingestion job monitor must not hard-code local job ids");
+  }
+  if (file.includes("UserImportPanel")) {
+    assert(body.includes("useForm"), "Admin user import must use React Hook Form");
+    assert(body.includes("zodResolver"), "Admin user import must use Zod validation");
+    assert(body.includes("CSV/Excel実アップロード: 未接続"), "Admin user import must not imply binary CSV/Excel upload is implemented");
+    assert(!body.includes("user-local"), "Admin user import must not hard-code local user ids");
+  }
+  if (file.includes("UserTable")) {
+    assert(body.includes("ユーザーはありません"), "Admin users must render an honest empty user state");
+    assert(body.includes("DataTable"), "Admin users must render through DataTable");
   }
 }
 

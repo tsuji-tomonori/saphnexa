@@ -25,9 +25,13 @@ const artifactTableSource = readText("apps/web/src/features/admin/ArtifactTable.
 const documentRegistrationFormSource = readText("apps/web/src/features/admin/DocumentRegistrationForm.tsx");
 const documentTableSource = readText("apps/web/src/features/admin/DocumentTable.tsx");
 const ingestionJobPanelSource = readText("apps/web/src/features/admin/IngestionJobPanel.tsx");
+const userImportPanelSource = readText("apps/web/src/features/admin/UserImportPanel.tsx");
+const userTableSource = readText("apps/web/src/features/admin/UserTable.tsx");
 const assistantRuntimeSource = readText("apps/web/src/lib/assistantRuntime.ts");
 const meHookSource = readText("apps/web/src/hooks/useMe.ts");
 const chatSessionsHookSource = readText("apps/web/src/hooks/useChatSessions.ts");
+const adminUsersHookSource = readText("apps/web/src/hooks/useAdminUsers.ts");
+const userImportHookSource = readText("apps/web/src/hooks/useUserImport.ts");
 const artifactsHookSource = readText("apps/web/src/hooks/useAdminArtifacts.ts");
 const createDocumentHookSource = readText("apps/web/src/hooks/useCreateDocument.ts");
 const documentsHookSource = readText("apps/web/src/hooks/useAdminDocuments.ts");
@@ -169,6 +173,9 @@ scenario("admin UI source contract", () => {
   }
   for (const token of [
     "useAdminArtifacts",
+    "useAdminUsers",
+    "UserImportPanel",
+    "UserTable",
     "useAdminDocuments",
     "DocumentRegistrationForm",
     "IngestionJobPanel",
@@ -181,7 +188,16 @@ scenario("admin UI source contract", () => {
   assert(meHookSource.includes("apiGetOperation(\"getMe\""), "useMe hook must use generated getMe operation helper");
   assert(artifactsHookSource.includes("apiRoutes.listPublishedArtifacts()"), "useAdminArtifacts hook must use listPublishedArtifacts route helper");
   assert(artifactsHookSource.includes("apiGetOperation(\"listPublishedArtifacts\""), "useAdminArtifacts hook must use generated artifacts operation helper");
+  assert(adminUsersHookSource.includes("apiRoutes.adminListUsers()"), "useAdminUsers hook must use adminListUsers route helper");
+  assert(adminUsersHookSource.includes("apiGetOperation(\"adminListUsers\""), "useAdminUsers hook must use generated adminListUsers operation helper");
+  assert(userImportHookSource.includes("apiRoutes.startUserImport()"), "useStartUserImport hook must use startUserImport route helper");
+  assert(userImportHookSource.includes("apiPostOperation(\"startUserImport\""), "useStartUserImport hook must use generated startUserImport operation helper");
+  assert(userImportHookSource.includes("apiRoutes.getUserImport(importId)"), "useUserImportResult hook must use getUserImport route helper");
+  assert(userImportHookSource.includes("apiGetOperation(\"getUserImport\""), "useUserImportResult hook must use generated getUserImport operation helper");
+  assert(userImportHookSource.includes("invalidateQueries({ queryKey: [\"admin-users\"] })"), "user import hook must refresh admin users query");
   assert(apiClientSource.includes("/api/admin/artifacts"), "API client artifacts helper must call /api/admin/artifacts");
+  assert(apiClientSource.includes("/api/admin/users"), "API client admin users helper must call /api/admin/users");
+  assert(apiClientSource.includes("/api/admin/user-imports"), "API client user import helper must call /api/admin/user-imports");
   assert(documentsHookSource.includes("apiRoutes.adminListDocuments()"), "useAdminDocuments hook must use adminListDocuments route helper");
   assert(documentsHookSource.includes("apiGetOperation(\"adminListDocuments\""), "useAdminDocuments hook must use generated documents operation helper");
   assert(createDocumentHookSource.includes("apiRoutes.createDocument()"), "useCreateDocument hook must use createDocument route helper");
@@ -237,6 +253,26 @@ scenario("admin UI source contract", () => {
     assert(ingestionJobPanelSource.includes(token), `IngestionJobPanel missing token: ${token}`);
   }
   for (const token of [
+    "useForm",
+    "zodResolver",
+    "userImportSchema",
+    "ユーザー取込フォーム",
+    "CSV/Excel実アップロード: 未接続",
+    "DataTable",
+    "role=\"alert\"",
+    "disabled={!props.csrfToken || startImport.isPending}"
+  ]) {
+    assert(userImportPanelSource.includes(token), `UserImportPanel missing token: ${token}`);
+  }
+  for (const token of [
+    "DataTable",
+    "ユーザーはありません",
+    "user.email",
+    "StatusBadge"
+  ]) {
+    assert(userTableSource.includes(token), `UserTable missing token: ${token}`);
+  }
+  for (const token of [
     "DataTable",
     "Drawer",
     "成果物はありません",
@@ -252,6 +288,24 @@ scenario("admin UI source contract", () => {
 
 scenario("admin local API flow", () => {
   const csrf = api.request("admin-1", "getMe").body.csrf_token;
+  assert(api.request("user-owner", "adminListUsers").status === 403, "general user must not list admin users");
+  const usersBefore = api.request("admin-1", "adminListUsers");
+  assert(usersBefore.status === 200 && usersBefore.body.users.length >= 2, "admin users list failed");
+  const userImport = api.request("admin-1", "startUserImport", {
+    csrf_token: csrf,
+    rows: [
+      { action: "create", email: "flow-import@example.com", display_name: "flow import" },
+      { action: "create", display_name: "missing email" }
+    ]
+  });
+  assert(userImport.status === 202, "admin user import failed");
+  const userImportResult = api.request("admin-1", "getUserImport", { import_id: userImport.body.import.import_id });
+  assert(userImportResult.status === 200, "admin user import result failed");
+  assert(userImportResult.body.import.result_report_json.created === 1, "admin user import created count mismatch");
+  assert(userImportResult.body.import.result_report_json.failed === 1, "admin user import failed count mismatch");
+  assert(userImportResult.body.rows.some((row) => row.error_message === "email is required"), "admin user import row error missing");
+  assert(api.request("user-owner", "startUserImport", { csrf_token: "csrf-user-owner", rows: [] }).status === 403, "general user must not start user import");
+  assert(api.request("user-owner", "getUserImport", { import_id: userImport.body.import.import_id }).status === 403, "general user must not get user import");
   assert(api.request("user-owner", "listPublishedArtifacts").status === 403, "general user must not list admin artifacts");
   assert(api.request("user-owner", "adminListDocuments").status === 403, "general user must not list admin documents");
   const artifacts = api.request("admin-1", "listPublishedArtifacts");

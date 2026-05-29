@@ -267,6 +267,7 @@ export interface LocalStore {
   getChat(actor: LocalActor, chat_id: string): ChatSession & { participants: ChatParticipant[]; messages: ChatMessage[] };
   submitQuestion(actor: LocalActor, chat_id: string, input: { question: string; retrieval_policy?: RetrievalPolicyJson; model_id?: string; failure_injection?: string }, ragAdapter?: RagAdapter): { message_id: string; run_id: string; status: Status };
   listEvents(actor: LocalActor, chat_id: string, message_id: string, after_seq?: number): ChatMessageEvent[];
+  listAdminUsers(actor: LocalActor): LocalUser[];
   listDocuments(actor: LocalActor): DocumentRecord[];
   getDocument(actor: LocalActor, document_id: string): DocumentRecord | undefined;
   getIngestionJob(actor: LocalActor, job_id: string): IngestionJob | undefined;

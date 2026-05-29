@@ -61,6 +61,7 @@ export function createLocalStore() {
     listEvents,
     addFavorite,
     listFavorites,
+    listAdminUsers,
     startUserImport,
     listDocuments,
     getDocument,
@@ -368,6 +369,11 @@ export function createLocalStore() {
     recordAdminEvent(actor, "admin.user_import.updated", { import_id, status: job.status, failed_rows: job.result_report_json.failed });
     recordAuditEvent(actor, "admin.user_import.completed", "admin_operation", import_id, job.result_report_json);
     return job;
+  }
+
+  function listAdminUsers(actor) {
+    requireAdmin(actor);
+    return state.users.filter((item) => item.tenant_id === actor.tenant_id);
   }
 
   function createDocument(actor, input) {

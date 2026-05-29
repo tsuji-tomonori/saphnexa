@@ -41,6 +41,9 @@ checkFile("AdminApp", "apps/web/src/admin/AdminApp.tsx", [
 checkFile("AdminDashboardPage", "apps/web/src/pages/AdminDashboardPage.tsx", [
   rule("main landmark", (body) => body.includes("className=\"sx-admin-shell\"")),
   rule("admin tabs", (body) => body.includes("Tabs") && body.includes("aria-label=\"管理領域\"")),
+  rule("user panel label", (body) => body.includes("aria-label=\"ユーザー\"")),
+  rule("user import panel", (body) => body.includes("UserImportPanel")),
+  rule("user table", (body) => body.includes("UserTable")),
   rule("artifact panel label", (body) => body.includes("aria-label=\"成果物\"")),
   rule("document panel label", (body) => body.includes("aria-label=\"文書\"")),
   rule("document registration form", (body) => body.includes("DocumentRegistrationForm")),
@@ -50,6 +53,20 @@ checkFile("AdminActions", "apps/web/src/features/admin/AdminActions.tsx", [
   rule("admin action label", (body) => body.includes("aria-label=\"管理操作\"")),
   rule("evaluation disabled state", (body) => body.includes("disabled={!props.csrfToken || !datasetId}")),
   rule("evaluation progress status", (body) => body.includes("<p role=\"status\">評価実行を開始しています</p>"))
+]);
+checkFile("UserImportPanel", "apps/web/src/features/admin/UserImportPanel.tsx", [
+  rule("section label", (body) => body.includes("aria-label=\"ユーザー取込\"")),
+  rule("form label", (body) => body.includes("aria-label=\"ユーザー取込フォーム\"")),
+  rule("textarea label", (body) => body.includes("aria-label=\"JSON rows\"")),
+  rule("honest upload state", (body) => body.includes("CSV/Excel実アップロード: 未接続")),
+  rule("pending status", (body) => body.includes("<p role=\"status\">ユーザー取込を確認しています</p>")),
+  rule("error alert", (body) => body.includes("role=\"alert\"")),
+  rule("button disabled state", (body) => body.includes("disabled={!props.csrfToken || startImport.isPending}"))
+]);
+checkFile("UserTable", "apps/web/src/features/admin/UserTable.tsx", [
+  rule("empty user status", (body) => body.includes("ユーザーはありません")),
+  rule("user rows from API data", (body) => body.includes("user.email") && body.includes("user.user_id")),
+  rule("status badge", (body) => body.includes("StatusBadge"))
 ]);
 checkFile("ArtifactTable", "apps/web/src/features/admin/ArtifactTable.tsx", [
   rule("empty artifact status", (body) => body.includes("成果物はありません")),

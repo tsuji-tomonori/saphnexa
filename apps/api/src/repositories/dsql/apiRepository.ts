@@ -234,6 +234,38 @@ const dsqlOperationMappings = {
       return { artifacts: rows };
     }
   },
+  adminListUsers: {
+    plan(request) {
+      return {
+        operationId: "adminListUsers",
+        resultTable: "users",
+        sql: `
+          SELECT
+            target.tenant_id,
+            target.user_id,
+            target.email,
+            target.display_name,
+            target.role,
+            target.department,
+            target.employment_type,
+            target.status,
+            target.created_at,
+            target.updated_at
+          FROM users actor
+          JOIN users target
+            ON target.tenant_id = actor.tenant_id
+          WHERE actor.user_id = :actor_id
+            AND actor.role = 'admin'
+            AND actor.status = 'active'
+          ORDER BY target.email ASC
+        `,
+        params: { actor_id: request.actorId }
+      };
+    },
+    map(rows) {
+      return { users: rows };
+    }
+  },
   adminListDocuments: {
     plan(request) {
       return {
