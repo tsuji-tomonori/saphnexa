@@ -100,6 +100,7 @@ git diff --check
 
 - 公開 API 38 件と Tools API 6 件の contract metadata。
 - API route、Tools API、model catalog、required DB tables の TypeScript source が既存 JS runtime mirror と件数・主要 ID で同期していること。
+- `packages/db-schema` が required table 名に加えて主要 DB table metadata を TypeScript source として持ち、Flyway SQL migration の主要 table/column token と同期していること。
 - `npm run typecheck` が source gate と `tsc --noEmit --project tsconfig.typecheck.json` の両方を実行し、API / Agent / Tools API / Web / UI / shared contract の TypeScript source を実コンパイルすること。
 - `packages/rag-core` が typed RAG adapter/tools boundary を TypeScript source として持ち、既存 `.js` runtime mirror と主要 tool/policy token が同期していること。
 - `packages/domain` が role/status/event/helper、observability catalog、local store 境界を TypeScript source として持ち、既存 `.js` runtime mirror と主要 token が同期していること。
@@ -201,6 +202,7 @@ git diff --check
 - Bedrock KB、S3 Vectors、AgentCore Runtime、Bedrock Evaluations を使った実 RAG 品質評価。
 - TypeScript framework 境界は local/source gate、実 `tsc --noEmit`、Vite production build で確認する。assistant-ui runtime の実ブラウザ streaming 挙動、AppSync Events の実 subscribe は、実 runtime が揃った環境で別途確認する。
 - Shared contract TypeScript source は source gate で確認する。OpenAPI からの自動型生成、DB introspection/codegen、`.ts` source からの runtime artifact 生成は別途確認する。
+- DB table metadata TypeScript source は migration source 由来の static metadata として検査する。実 DSQL introspection、生成 DB types、Flyway 実適用は別途確認する。
 - Agent runtime pipeline は source-level の責務境界と local fixture tests で確認する。実 Bedrock Runtime 生成、AgentCore Gateway Target 経由の Tools API 呼び出し、Aurora DSQL ACL query は AWS 接続後に別途確認する。
 - Aurora DSQL への Flyway 実適用、CloudWatch metrics/alarms、S3 lifecycle、DSQL retention settings の実リソース確認。
 - CloudFront Function、WAF、IAM policy、KMS key policy、SQS/DLQ、AppSync Events、cdk-nag の実リソース/実行結果確認。

@@ -34,6 +34,7 @@ for (const file of [
   "packages/model-catalog/src/models.ts",
   "packages/model-catalog/src/cost-estimate.ts",
   "packages/db-schema/src/tables.ts",
+  "packages/db-schema/src/table-metadata.ts",
   "packages/rag-core/src/fixture-rag.ts",
   "packages/domain/src/index.ts",
   "packages/domain/src/observability.ts",
@@ -102,6 +103,44 @@ assert(extractStringArray(dbSchemaTs, "requiredTableNames").length === requiredT
 for (const table of requiredTables) {
   assert(dbSchemaTs.includes(`"${table}"`), `DB schema TS source missing ${table}`);
 }
+
+const dbTableMetadataTs = readText("packages/db-schema/src/table-metadata.ts");
+const dbMigrationSql = readText("packages/db-migrations/migrations/V001__initial_saphnexa_schema.sql");
+for (const tableName of [
+  "chat_sessions",
+  "chat_participants",
+  "chat_messages",
+  "chat_runs",
+  "chat_message_events",
+  "citation_records",
+  "document_acl_entries",
+  "ws_tickets",
+  "tool_invocations",
+  "published_artifacts"
+]) {
+  assert(dbTableMetadataTs.includes(`"${tableName}"`), `DB table metadata TS source missing ${tableName}`);
+  assert(dbMigrationSql.includes(`CREATE TABLE ${tableName}`), `DB migration missing ${tableName}`);
+}
+for (const columnName of [
+  "tenant_id",
+  "chat_id",
+  "message_id",
+  "event_seq",
+  "retrieval_policy_json",
+  "payload_json",
+  "display_json",
+  "acl_scope_id",
+  "channel_scope_json",
+  "tool_name",
+  "viewer_path",
+  "s3_prefix",
+  "published_by"
+]) {
+  assert(dbTableMetadataTs.includes(`"${columnName}"`), `DB table metadata TS source missing ${columnName}`);
+  assert(dbMigrationSql.includes(columnName), `DB migration missing column ${columnName}`);
+}
+assert(dbTableMetadataTs.includes("export interface DbTableMetadata"), "DB table metadata TS source must type DbTableMetadata");
+assert(dbTableMetadataTs.includes("export function getDbTableMetadata"), "DB table metadata TS source must expose getDbTableMetadata");
 
 const ragCoreTs = readText("packages/rag-core/src/fixture-rag.ts");
 const ragCoreJs = readText("packages/rag-core/src/fixture-rag.js");
