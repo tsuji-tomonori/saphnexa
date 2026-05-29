@@ -2,5 +2,11 @@
   "name": "@saphnexa/workers",
   "version": "0.1.0",
   "type": "module",
-  "private": true
+  "private": true,
+  "scripts": {
+    "typecheck": "tsc --noEmit --project tsconfig.json"
+  },
+  "devDependencies": {
+    "typescript": "^5.8.0"
+  }
 }

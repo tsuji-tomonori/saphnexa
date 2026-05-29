@@ -20,6 +20,7 @@ for (const [pkgFile, script] of [
   ["apps/api/package.json", "typecheck"],
   ["apps/agent/package.json", "typecheck"],
   ["apps/tools-api/package.json", "typecheck"],
+  ["apps/workers/package.json", "typecheck"],
   ["apps/web/package.json", "typecheck"],
   ["packages/ui/package.json", "typecheck"]
 ]) {
@@ -59,6 +60,7 @@ for (const file of [
   "apps/agent/src/agent/answerGeneration.ts",
   "apps/agent/src/agent/citationBinding.ts",
   "apps/tools-api/src/app.ts",
+  "apps/workers/src/event-publisher.ts",
   "apps/web/src/main.tsx",
   "apps/web/src/pages/ChatPage.tsx",
   "apps/web/src/pages/AdminDashboardPage.tsx",
@@ -232,6 +234,26 @@ assert(answerGenerationSource.includes("packedContext.evidence.length === 0"), "
 const citationBindingSource = readText("apps/agent/src/agent/citationBinding.ts");
 assert(citationBindingSource.includes("citationFormat"), "citation binding must use citation formatter");
 assert(citationBindingSource.includes("evidence: input.evidence"), "citation binding must bind citations to evidence");
+
+const workerEventPublisherTs = readText("apps/workers/src/event-publisher.ts");
+const workerEventPublisherJs = readText("apps/workers/src/event-publisher.js");
+for (const token of [
+  "createLightweightNotification",
+  "assertNotificationIsLightweight",
+  "detail_url",
+  "/api/chat-sessions/",
+  "answer_text",
+  "citation_text",
+  "retrieved_chunk_text",
+  "content_text",
+  "4096"
+]) {
+  assert(workerEventPublisherTs.includes(token), `Workers event publisher TS source missing ${token}`);
+  assert(workerEventPublisherJs.includes(token), `Workers event publisher JS runtime mirror missing ${token}`);
+}
+assert(workerEventPublisherTs.includes("export interface LightweightNotification"), "Workers event publisher TS source must type LightweightNotification");
+assert(workerEventPublisherTs.includes("export const forbiddenNotificationFields"), "Workers event publisher TS source must export forbiddenNotificationFields");
+assert(workerEventPublisherTs.includes("export const maxNotificationPayloadBytes"), "Workers event publisher TS source must export maxNotificationPayloadBytes");
 
 const webMainSource = readText("apps/web/src/main.tsx");
 assert(webMainSource.includes("createRoot"), "Web browser entrypoint must mount React root");
