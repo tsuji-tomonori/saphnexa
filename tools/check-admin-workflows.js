@@ -69,6 +69,10 @@ const ownerModels = api.request("user-owner", "listLlmModels");
 assert(ownerModels.status === 200, "model list must be available to general user");
 assert(ownerModels.body.models.some((model) => model.model_id === "logical-chat-default"), "general chat model missing for general user");
 assert(!ownerModels.body.models.some((model) => model.model_id === "logical-evaluation-judge"), "admin judge model must not be listed to general user");
+assert(api.request("admin-1", "startEvaluationRun", { csrf_token: adminCsrf, dataset_id: "dataset-local-golden", model_id: "unknown-model" }).status === 403, "unknown evaluation model must be rejected");
+assert(api.request("admin-1", "startEvaluationRun", { csrf_token: adminCsrf, dataset_id: "dataset-local-golden", model_id: "logical-embedding-default" }).status === 403, "system embedding model must be rejected for evaluation");
+const defaultEvaluation = api.request("admin-1", "startEvaluationRun", { csrf_token: adminCsrf, dataset_id: "dataset-local-golden" });
+assert(defaultEvaluation.status === 202 && defaultEvaluation.body.evaluation_run.model_id === "logical-chat-default", "evaluation default model mismatch");
 for (let index = 0; index < 3; index += 1) {
   const evaluation = api.request("admin-1", "startEvaluationRun", { csrf_token: adminCsrf, dataset_id: "dataset-local-golden", model_id: "logical-evaluation-judge" });
   assert(evaluation.status === 202, "evaluation run must be accepted");
@@ -80,8 +84,8 @@ for (let index = 0; index < 3; index += 1) {
   assert(detail.status === 200 && detail.body.items.length >= 2, "evaluation run detail must include case items");
   assert(detail.body.items.every((item) => item.evaluation_run_id === evaluation.body.evaluation_run.evaluation_run_id), "evaluation items must belong to run");
 }
-assert(api.store.state.evaluation_runs.length === 3, "evaluation run count mismatch");
-assert(api.store.state.evaluation_run_items.length === 6, "evaluation run item count mismatch");
+assert(api.store.state.evaluation_runs.length === 4, "evaluation run count mismatch");
+assert(api.store.state.evaluation_run_items.length === 8, "evaluation run item count mismatch");
 
 const chatId = api.request("user-owner", "createChatSession", { csrf_token: ownerCsrf, title: "audit chat" }).body.chat.chat_id;
 assert(api.request("user-owner", "addChatParticipant", { csrf_token: ownerCsrf, chat_id: chatId, user_id: "user-viewer" }).status === 201, "chat share must succeed");

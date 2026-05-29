@@ -1404,7 +1404,7 @@ const dsqlOperationMappings = {
     }
   },
   startEvaluationRun: {
-    notFoundErrorCode: "DSQL_EVALUATION_DATASET_NOT_FOUND",
+    notFoundErrorCode: "DSQL_EVALUATION_INPUT_NOT_FOUND",
     plan(request) {
       return {
         operationId: "startEvaluationRun",
@@ -1424,6 +1424,17 @@ const dsqlOperationMappings = {
               ON a.tenant_id = d.tenant_id
             WHERE d.dataset_id = :dataset_id
               AND d.status = 'active'
+          ),
+          target_model AS (
+            SELECT m.tenant_id, m.model_id
+            FROM llm_models m
+            JOIN admin_actor a
+              ON m.tenant_id IN ('global', a.tenant_id)
+            WHERE m.model_id = COALESCE(NULLIF(:model_id, ''), 'logical-chat-default')
+              AND m.status = 'active'
+              AND m.model_type IN ('chat', 'judge')
+              AND (m.visible_to_user = true OR m.allowed_role = 'admin')
+              AND m.allowed_role IN ('general_user', 'admin')
           )
           INSERT INTO evaluation_runs (
             tenant_id,
@@ -1441,7 +1452,7 @@ const dsqlOperationMappings = {
             a.tenant_id,
             'eval-' || gen_random_uuid()::text,
             td.dataset_id,
-            COALESCE(NULLIF(:model_id, ''), 'logical-chat-default'),
+            tm.model_id,
             'rag-chat-v1',
             json_build_object('top_k', 10),
             's3://saphnexa-local/evaluation/' || td.dataset_id || '/',
@@ -1455,6 +1466,8 @@ const dsqlOperationMappings = {
           FROM admin_actor a
           JOIN target_dataset td
             ON td.tenant_id = a.tenant_id
+          JOIN target_model tm
+            ON tm.tenant_id IN ('global', a.tenant_id)
           RETURNING *
         `,
         params: {

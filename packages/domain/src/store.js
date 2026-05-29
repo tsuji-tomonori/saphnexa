@@ -685,12 +685,13 @@ export function createLocalStore() {
 
   function startEvaluationRun(actor, input = {}) {
     requireAdmin(actor);
+    const model = resolveEvaluationModel(actor, input.model_id);
     const evaluation_run_id = nextId("eval");
     const run = {
       tenant_id: actor.tenant_id,
       evaluation_run_id,
       dataset_id: input.dataset_id || "dataset-local-golden",
-      model_id: input.model_id || "logical-chat-default",
+      model_id: model.model_id,
       prompt_version: "rag-chat-v1",
       retrieval_config_json: { top_k: 10 },
       artifact_s3_prefix: `s3://saphnexa-local/evaluation/${evaluation_run_id}/`,
@@ -709,6 +710,14 @@ export function createLocalStore() {
       metrics: Object.keys(run.metrics_json)
     });
     return run;
+  }
+
+  function resolveEvaluationModel(actor, model_id = "") {
+    const targetModelId = model_id || "logical-chat-default";
+    const model = listLlmModels(actor).find((item) => item.model_id === targetModelId);
+    if (!model) throw forbidden("EVALUATION_MODEL_NOT_AVAILABLE", "評価実行に利用できないモデルです。");
+    if (!["chat", "judge"].includes(model.model_type)) throw forbidden("EVALUATION_MODEL_NOT_AVAILABLE", "評価実行に利用できないモデルです。");
+    return model;
   }
 
   function getEvaluationRun(actor, evaluation_run_id) {

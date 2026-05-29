@@ -578,6 +578,8 @@ for (const token of [
   "FROM llm_models",
   "FROM evaluation_datasets",
   "FROM evaluation_runs",
+  "target_model",
+  "m.model_type IN ('chat', 'judge')",
   "JOIN evaluation_run_items",
   "JOIN ingestion_jobs",
   "JOIN chat_participants",

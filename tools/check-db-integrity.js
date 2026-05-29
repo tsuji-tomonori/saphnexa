@@ -22,6 +22,8 @@ const evaluation = api.request("admin-1", "startEvaluationRun", { csrf_token: ad
 assert(accepted.status === 202, "question submit must be accepted");
 assert(document.status === 202, "document create must be accepted");
 assert(evaluation.status === 202, "evaluation run must be accepted");
+assert(api.request("admin-1", "startEvaluationRun", { csrf_token: adminCsrf, dataset_id: "dataset-local-golden", model_id: "unknown-model" }).status === 403, "evaluation run must reject unknown model");
+assert(api.request("admin-1", "startEvaluationRun", { csrf_token: adminCsrf, dataset_id: "dataset-local-golden", model_id: "logical-embedding-default" }).status === 403, "evaluation run must reject embedding model");
 
 const state = api.store.state;
 const violations = [];

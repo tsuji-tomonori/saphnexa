@@ -642,6 +642,10 @@ scenario("admin local API flow", () => {
   assert(!userModels.body.models.some((model) => model.model_id === "logical-evaluation-judge"), "general user model list must not expose admin judge model");
   assert(!userModels.body.models.some((model) => model.model_id === "logical-embedding-default"), "general user model list must not expose system embedding model");
   assert(api.request("user-owner", "startEvaluationRun", { csrf_token: "csrf-user-owner", dataset_id: "dataset-local-golden", model_id: "logical-evaluation-judge" }).status === 403, "general user must not start evaluation runs");
+  assert(api.request("admin-1", "startEvaluationRun", { csrf_token: csrf, dataset_id: "dataset-local-golden", model_id: "unknown-model" }).status === 403, "admin evaluation run must reject unknown model ids");
+  assert(api.request("admin-1", "startEvaluationRun", { csrf_token: csrf, dataset_id: "dataset-local-golden", model_id: "logical-embedding-default" }).status === 403, "admin evaluation run must reject system embedding model");
+  const defaultEvaluation = api.request("admin-1", "startEvaluationRun", { csrf_token: csrf, dataset_id: "dataset-local-golden" });
+  assert(defaultEvaluation.status === 202 && defaultEvaluation.body.evaluation_run.model_id === "logical-chat-default", "evaluation run must resolve default model");
   const evaluation = api.request("admin-1", "startEvaluationRun", { csrf_token: csrf, dataset_id: "dataset-local-golden", model_id: "logical-evaluation-judge" });
   assert(evaluation.status === 202, "evaluation run failed");
   assert(evaluation.body.evaluation_run.model_id === "logical-evaluation-judge", "evaluation run must preserve selected model_id");
