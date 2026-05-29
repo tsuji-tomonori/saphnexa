@@ -77,6 +77,7 @@ scenario("chat UI source contract", () => {
   }
   for (const token of [
     "useChatSessions",
+    "useCreateChatSession",
     "useUpdateChatSession",
     "useDeleteChatSession",
     "useChatParticipants",
@@ -108,6 +109,8 @@ scenario("chat UI source contract", () => {
   assert(meHookSource.includes("apiRoutes.getMe()"), "useMe hook must use getMe route helper");
   assert(apiClientSource.includes("/api/me"), "API client getMe helper must call /api/me");
   assert(chatSessionsHookSource.includes("apiRoutes.listChatSessions()"), "useChatSessions hook must use listChatSessions route helper");
+  assert(chatSessionsHookSource.includes("apiRoutes.createChatSession()"), "useCreateChatSession hook must use createChatSession route helper");
+  assert(chatSessionsHookSource.includes("apiPostOperation(\"createChatSession\""), "useCreateChatSession hook must use generated createChatSession helper");
   assert(chatSessionsHookSource.includes("apiRoutes.updateChatSession(input.chat_id)"), "useUpdateChatSession hook must use updateChatSession route helper");
   assert(chatSessionsHookSource.includes("apiPatchOperation(\"updateChatSession\""), "useUpdateChatSession hook must use generated updateChatSession helper");
   assert(chatSessionsHookSource.includes("apiRoutes.deleteChatSession(input.chat_id)"), "useDeleteChatSession hook must use deleteChatSession route helper");
@@ -148,6 +151,12 @@ scenario("chat UI source contract", () => {
     "aria-label=\"チャット一覧\"",
     "role=\"status\"",
     "チャットはありません",
+    "aria-label=\"新規チャット作成フォーム\"",
+    "newChatSchema",
+    "新規チャット名",
+    "新規チャット",
+    "初回質問送信時の自動チャット作成、/chat/:chat_id routing、chat event append: 未接続",
+    "disabled={!props.csrfToken || props.isMutating}",
     "aria-label=\"チャットタイトル更新フォーム\"",
     "chatTitleSchema",
     "チャットタイトル",
@@ -271,6 +280,9 @@ scenario("chat local API flow", () => {
   const csrf = api.request("user-owner", "getMe").body.csrf_token;
   const chat = api.request("user-owner", "createChatSession", { csrf_token: csrf, title: "flow chat" });
   assert(chat.status === 201, "chat creation failed");
+  const createdDetail = api.request("user-owner", "getChatSession", { chat_id: chat.body.chat.chat_id });
+  assert(createdDetail.status === 200 && createdDetail.body.chat.participants.some((item) => item.user_id === "user-owner" && item.participant_role === "owner"), "created chat detail must include owner participant");
+  assert(api.request("user-outsider", "getChatSession", { chat_id: chat.body.chat.chat_id }).status === 403, "outsider must not get unreadable chat detail");
   const renamed = api.request("user-owner", "updateChatSession", { csrf_token: csrf, chat_id: chat.body.chat.chat_id, title: "renamed flow chat" });
   assert(renamed.status === 200 && renamed.body.chat.title === "renamed flow chat", "owner must update chat title");
   assert(api.request("user-outsider", "updateChatSession", { csrf_token: "csrf-user-outsider", chat_id: chat.body.chat.chat_id, title: "outsider title" }).status === 403, "outsider must not update unreadable chat");

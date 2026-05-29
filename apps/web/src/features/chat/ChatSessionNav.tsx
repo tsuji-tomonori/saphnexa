@@ -10,6 +10,10 @@ const chatTitleSchema = z.object({
 });
 
 type ChatTitleFormValues = z.infer<typeof chatTitleSchema>;
+const newChatSchema = z.object({
+  title: z.string().min(1, "新規チャット名は必須です")
+});
+type NewChatFormValues = z.infer<typeof newChatSchema>;
 
 export function ChatSessionNav(props: {
   chats: Chat[];
@@ -17,6 +21,7 @@ export function ChatSessionNav(props: {
   csrfToken: string;
   isMutating: boolean;
   onSelect: (chatId: string) => void;
+  onCreate: (input: { title: string }) => Promise<unknown>;
   onUpdate: (input: { chat_id: string; title: string }) => Promise<unknown>;
   onDelete: (chatId: string) => void;
 }) {
@@ -24,6 +29,10 @@ export function ChatSessionNav(props: {
   const form = useForm<ChatTitleFormValues>({
     resolver: zodResolver(chatTitleSchema),
     defaultValues: { title: selectedChat?.title ?? "" }
+  });
+  const createForm = useForm<NewChatFormValues>({
+    resolver: zodResolver(newChatSchema),
+    defaultValues: { title: "" }
   });
 
   useEffect(() => {
@@ -35,8 +44,26 @@ export function ChatSessionNav(props: {
     await props.onUpdate({ chat_id: props.selectedChatId, title: values.title });
   }
 
+  async function create(values: NewChatFormValues) {
+    await props.onCreate({ title: values.title });
+    createForm.reset({ title: "" });
+  }
+
   return (
     <Sidebar aria-label="チャット一覧">
+      <form aria-label="新規チャット作成フォーム" onSubmit={createForm.handleSubmit(create)}>
+        <Controller
+          control={createForm.control}
+          name="title"
+          render={({ field, fieldState }) => (
+            <FormField label="新規チャット名" htmlFor="new-chat-title" help={fieldState.error?.message}>
+              <Input id="new-chat-title" value={field.value} onChange={field.onChange} />
+            </FormField>
+          )}
+        />
+        <p role="status">初回質問送信時の自動チャット作成、/chat/:chat_id routing、chat event append: 未接続</p>
+        <Button type="submit" disabled={!props.csrfToken || props.isMutating}>新規チャット</Button>
+      </form>
       <form aria-label="チャットタイトル更新フォーム" onSubmit={form.handleSubmit(submit)}>
         <Controller
           control={form.control}

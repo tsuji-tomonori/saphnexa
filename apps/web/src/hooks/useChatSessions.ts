@@ -1,5 +1,5 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { apiDeleteOperation, apiGetOperation, apiPatchOperation, apiRoutes } from "@saphnexa/api-client";
+import { apiDeleteOperation, apiGetOperation, apiPatchOperation, apiPostOperation, apiRoutes } from "@saphnexa/api-client";
 import type { Chat } from "../types";
 
 export function useChatSessions() {
@@ -8,6 +8,17 @@ export function useChatSessions() {
     queryFn: async () => {
       const response = await apiGetOperation("listChatSessions", apiRoutes.listChatSessions());
       return { chats: response.chats satisfies Chat[] };
+    }
+  });
+}
+
+export function useCreateChatSession(csrfToken: string) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (input: { title: string }) =>
+      apiPostOperation("createChatSession", apiRoutes.createChatSession(), { title: input.title }, csrfToken),
+    onSuccess: async () => {
+      await queryClient.invalidateQueries({ queryKey: ["chat-sessions"] });
     }
   });
 }

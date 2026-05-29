@@ -14,6 +14,7 @@ for (const file of files) {
   if (file.includes("ChatPage")) {
     assert(body.includes("className=\"sx-chat-shell\""), "ChatPage must expose chat shell landmark through AppShell");
     assert(body.includes("useChatSessions"), "ChatPage must use TanStack Query chat hook");
+    assert(body.includes("useCreateChatSession"), "ChatPage must use chat session create mutation hook");
     assert(body.includes("useUpdateChatSession"), "ChatPage must use chat session update mutation hook");
     assert(body.includes("useDeleteChatSession"), "ChatPage must use chat session delete mutation hook");
     assert(body.includes("useChatParticipants"), "ChatPage must use TanStack Query participants hook");
@@ -40,6 +41,12 @@ for (const file of files) {
   if (file.includes("ChatSessionNav")) {
     assert(body.includes("<nav") && body.includes("aria-label=\"チャット一覧\""), "ChatApp must expose labelled chat navigation");
     assert(body.includes("<p role=\"status\">チャットはありません</p>"), "ChatApp must render an honest empty chat state");
+    assert(body.includes("useForm") && body.includes("zodResolver") && body.includes("newChatSchema"), "Chat session create form must use React Hook Form + Zod validation");
+    assert(body.includes("aria-label=\"新規チャット作成フォーム\""), "Chat session create form must expose a labelled form");
+    assert(body.includes("label=\"新規チャット名\""), "Chat session create form must expose a field label");
+    assert(body.includes("新規チャット"), "Chat session nav must expose create action");
+    assert(body.includes("初回質問送信時の自動チャット作成、/chat/:chat_id routing、chat event append: 未接続"), "Chat session nav must not imply route or event append is implemented");
+    assert(body.includes("disabled={!props.csrfToken || props.isMutating}"), "Chat session create action must require token");
     assert(body.includes("useForm") && body.includes("zodResolver") && body.includes("chatTitleSchema"), "Chat session title form must use React Hook Form + Zod validation");
     assert(body.includes("aria-label=\"チャットタイトル更新フォーム\""), "Chat session title form must expose a labelled form");
     assert(body.includes("label=\"チャットタイトル\""), "Chat session title form must expose a field label");

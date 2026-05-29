@@ -10,7 +10,7 @@ import { FavoritePanel } from "../features/chat/FavoritePanel";
 import { MessageComposer } from "../features/chat/MessageComposer";
 import { MessageEventsPanel } from "../features/chat/MessageEventsPanel";
 import { MessageHistoryPanel } from "../features/chat/MessageHistoryPanel";
-import { useChatSessions, useDeleteChatSession, useUpdateChatSession } from "../hooks/useChatSessions";
+import { useChatSessions, useCreateChatSession, useDeleteChatSession, useUpdateChatSession } from "../hooks/useChatSessions";
 import { useAddFavorite, useDeleteFavorite, useFavorites } from "../hooks/useFavorites";
 import { useCreateFeedback } from "../hooks/useCreateFeedback";
 import { useMe } from "../hooks/useMe";
@@ -28,6 +28,7 @@ export function ChatPage() {
   const addFavorite = useAddFavorite(csrfToken);
   const deleteFavorite = useDeleteFavorite(csrfToken);
   const createFeedback = useCreateFeedback(csrfToken);
+  const createChatSession = useCreateChatSession(csrfToken);
   const updateChatSession = useUpdateChatSession(csrfToken);
   const deleteChatSession = useDeleteChatSession(csrfToken);
   const cancelAnswerGeneration = useCancelAnswerGeneration(csrfToken);
@@ -71,8 +72,12 @@ export function ChatPage() {
           chats={chats}
           selectedChatId={activeChatId}
           csrfToken={csrfToken}
-          isMutating={updateChatSession.isPending || deleteChatSession.isPending}
+          isMutating={createChatSession.isPending || updateChatSession.isPending || deleteChatSession.isPending}
           onSelect={setSelectedChatId}
+          onCreate={async (input) => {
+            const created = await createChatSession.mutateAsync(input);
+            setSelectedChatId(created.chat.chat_id);
+          }}
           onUpdate={(input) => updateChatSession.mutateAsync(input)}
           onDelete={(chatId) => {
             deleteChatSession.mutate({ chat_id: chatId });

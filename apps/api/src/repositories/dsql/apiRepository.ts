@@ -160,6 +160,130 @@ const dsqlOperationMappings = {
       return { chats: rows };
     }
   },
+  createChatSession: {
+    notFoundErrorCode: "DSQL_CHAT_ACTOR_NOT_FOUND",
+    plan(request) {
+      return {
+        operationId: "createChatSession",
+        resultTable: "chat_sessions",
+        sql: `
+          WITH actor AS (
+            SELECT tenant_id, user_id
+            FROM users
+            WHERE user_id = :actor_id
+              AND status = 'active'
+          ),
+          created_chat AS (
+            INSERT INTO chat_sessions (
+              tenant_id, chat_id, title, status, last_message_at, created_by_user_id, created_at, updated_at, deleted_at
+            )
+            SELECT
+              a.tenant_id,
+              gen_random_uuid(),
+              COALESCE(NULLIF(:title, ''), '新規チャット'),
+              'active',
+              NULL,
+              a.user_id,
+              now(),
+              now(),
+              NULL
+            FROM actor a
+            RETURNING *
+          ),
+          owner_participant AS (
+            INSERT INTO chat_participants (
+              tenant_id, chat_id, user_id, participant_role, status, added_by_user_id, added_at, removed_at
+            )
+            SELECT
+              c.tenant_id,
+              c.chat_id,
+              c.created_by_user_id,
+              'owner',
+              'active',
+              c.created_by_user_id,
+              now(),
+              NULL
+            FROM created_chat c
+            RETURNING chat_id
+          )
+          SELECT c.*
+          FROM created_chat c
+          JOIN owner_participant op
+            ON op.chat_id = c.chat_id
+        `,
+        params: {
+          actor_id: request.actorId,
+          title: request.input.title ?? ""
+        }
+      };
+    },
+    map(rows) {
+      return { chat: firstRow(rows) };
+    }
+  },
+  getChatSession: {
+    notFoundErrorCode: "DSQL_CHAT_NOT_FOUND",
+    plan(request) {
+      return {
+        operationId: "getChatSession",
+        resultTable: "chat_sessions",
+        sql: `
+          SELECT
+            c.tenant_id,
+            c.chat_id,
+            c.title,
+            c.status,
+            c.last_message_at,
+            c.created_by_user_id,
+            c.created_at,
+            c.updated_at,
+            c.deleted_at,
+            COALESCE(participants.participants_json, '[]'::json) AS participants_json,
+            COALESCE(messages.messages_json, '[]'::json) AS messages_json
+          FROM chat_sessions c
+          JOIN chat_participants requester
+            ON requester.tenant_id = c.tenant_id
+           AND requester.chat_id = c.chat_id
+           AND requester.user_id = :actor_id
+           AND requester.status = 'active'
+          LEFT JOIN LATERAL (
+            SELECT json_agg(p ORDER BY p.added_at ASC) AS participants_json
+            FROM chat_participants p
+            WHERE p.tenant_id = c.tenant_id
+              AND p.chat_id = c.chat_id
+              AND p.status = 'active'
+          ) participants ON TRUE
+          LEFT JOIN LATERAL (
+            SELECT json_agg(m ORDER BY m.created_at ASC, m.message_id ASC) AS messages_json
+            FROM chat_messages m
+            WHERE m.tenant_id = c.tenant_id
+              AND m.chat_id = c.chat_id
+          ) messages ON TRUE
+          WHERE c.chat_id = :chat_id
+            AND c.status <> 'deleted'
+          LIMIT 1
+        `,
+        params: {
+          actor_id: request.actorId,
+          chat_id: request.input.chat_id
+        }
+      };
+    },
+    map(rows) {
+      const row = firstRow(rows) as DbRow<"chat_sessions"> & {
+        participants_json?: unknown[];
+        messages_json?: unknown[];
+      };
+      const { participants_json, messages_json, ...chat } = row;
+      return {
+        chat: {
+          ...chat,
+          participants: participants_json ?? [],
+          messages: messages_json ?? []
+        }
+      };
+    }
+  },
   updateChatSession: {
     notFoundErrorCode: "DSQL_CHAT_OWNER_OR_SESSION_NOT_FOUND",
     plan(request) {

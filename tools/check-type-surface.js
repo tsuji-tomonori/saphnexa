@@ -232,6 +232,7 @@ for (const file of listFiles(["apps/web/src"], (path) => path.endsWith(".ts") ||
 for (const token of [
   'apiGetOperation("getMe"',
   'apiGetOperation("listChatSessions"',
+  'apiPostOperation("createChatSession"',
   'apiPatchOperation("updateChatSession"',
   'apiDeleteOperation("deleteChatSession"',
   'apiGetOperation("listChatParticipants"',
@@ -500,6 +501,8 @@ assert(apiRepositorySource.includes("DSQL_OPERATION_NOT_MAPPED"), "API DSQL repo
 for (const token of [
   "getMe",
   "listChatSessions",
+  "createChatSession",
+  "getChatSession",
   "updateChatSession",
   "deleteChatSession",
   "listChatParticipants",
