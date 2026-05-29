@@ -1,6 +1,6 @@
 # Chat route selection 境界
 
-状態: do
+状態: done
 タスク種別: 機能追加
 
 ## 背景
