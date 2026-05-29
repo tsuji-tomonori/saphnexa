@@ -208,6 +208,7 @@ function successResponseSchema(route: ApiRoute) {
     getDocument: objectSchema(["document"], { document: documentDetailSchema() }),
     createDocumentVersion: objectSchema(["document_id", "version_id", "job_id", "raw_s3_uri"], { document_id: stringSchema(), version_id: stringSchema(), job_id: stringSchema(), raw_s3_uri: stringSchema(), idempotent: booleanSchema() }),
     activateDocumentVersion: objectSchema(["version"], { version: documentVersionSchema() }),
+    suspendDocument: objectSchema(["document"], { document: documentDetailSchema() }),
     getIngestionJob: objectSchema(["job"], { job: ingestionJobSchema() }),
     retryIngestionJob: objectSchema(["job"], { job: ingestionJobSchema() }),
     listEvaluationDatasets: objectSchema(["datasets"], { datasets: arrayOf(evaluationDatasetSchema()) }),
@@ -395,7 +396,7 @@ function documentVersionSchema() {
     document_id: stringSchema(),
     version_id: stringSchema(),
     version_label: stringSchema(),
-    status: enumStringSchema(["active", "archived", "failed", "queued", "succeeded", "uploaded"]),
+    status: enumStringSchema(["active", "archived", "deleted", "failed", "queued", "succeeded", "uploaded"]),
     raw_s3_uri: stringSchema(),
     metadata_json: jsonObjectSchema(),
     created_at: stringSchema()

@@ -88,6 +88,7 @@ function responseSchema(route) {
     getDocument: z.object({ document: documentDetailSchema().optional() }),
     createDocumentVersion: documentMutationSchema(),
     activateDocumentVersion: z.object({ version: documentVersionSchema().optional() }),
+    suspendDocument: z.object({ document: documentDetailSchema() }),
     getIngestionJob: z.object({ job: ingestionJobSchema().optional() }),
     retryIngestionJob: z.object({ job: ingestionJobSchema() }),
     listEvaluationDatasets: z.object({ datasets: z.array(evaluationDatasetSchema()) }),

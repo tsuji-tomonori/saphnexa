@@ -28,7 +28,7 @@
 | AC-019 | local_verified | `npm run admin:workflow:check` で evaluation run 3件、retrieval/generation/end-to-end metrics、artifact prefix を検査。AWS 評価 report は未実施。 |
 | AC-020 | local_verified | `npm run artifacts:check` で local API の admin artifact 一覧/アクセス cookie が admin のみ許可、一般/未認証は拒否されることを検査。`npm run edge:identity:realtime:check` で CloudFront KeyGroup trusted behavior を検査。CloudFront Cookie 実公開は未実施。 |
 | AC-021 | local_verified | `dist/admin/test-reports/allure/latest/` と local API admin artifact policy を `npm run artifacts:check` で検査し、`npm run admin-artifacts:publish:check` で Allure latest/run/raw results prefix と CloudFront signed cookie path を検査。Allure/CloudFront 実公開は未実施。 |
-| AC-030 | local_verified | `packages/api-contract/src/routes.js` 38 routes and `tools/check-contracts.js`. |
+| AC-030 | local_verified | `packages/api-contract/src/routes.js` 39 routes and `tools/check-contracts.js`. |
 | AC-031 | local_verified | `packages/tool-contract/src/tools.js` 6 tools and audit table metadata. |
 | AC-032 | local_verified | `errorResponseSchema` and local API error response shape. |
 | AC-033 | local_verified | state-changing route metadata has `csrfRequired`; `apps/api/src/local-api.js` の runtime guard と `tests/integration-local.test.js` で token 欠落/不一致 403 を検証。 |

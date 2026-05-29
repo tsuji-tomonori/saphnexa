@@ -51,6 +51,10 @@ const activated = api.request("admin-1", "activateDocumentVersion", { csrf_token
 assert(activated.status === 200, "document version activation must succeed");
 assert(api.store.state.document_versions.find((item) => item.document_id === "doc-versioned" && item.version_id === "ver-2").status === "active", "new version must be active");
 assert(api.store.state.document_versions.find((item) => item.document_id === "doc-versioned" && item.version_id === "ver-1").status === "archived", "old version must be archived");
+const suspended = api.request("admin-1", "suspendDocument", { csrf_token: adminCsrf, document_id: "doc-versioned" });
+assert(suspended.status === 200, "document suspension must succeed");
+assert(suspended.body.document.status === "deleted", "suspended document must be deleted");
+assert(suspended.body.document.versions.every((version) => version.status === "deleted"), "suspended document versions must be deleted");
 
 for (let index = 0; index < 3; index += 1) {
   const evaluation = api.request("admin-1", "startEvaluationRun", { csrf_token: adminCsrf, dataset_id: "dataset-local-golden" });

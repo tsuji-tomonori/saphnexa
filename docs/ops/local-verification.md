@@ -99,10 +99,10 @@ git diff --check
 
 ## ローカルで確認できること
 
-- 公開 API 38 件と Tools API 6 件の contract metadata。
+- 公開 API 39 件と Tools API 6 件の contract metadata。
 - API route、Tools API、model catalog、required DB tables の TypeScript source が既存 JS runtime mirror と件数・主要 ID で同期していること。
 - Tools API 6 件が `toolContracts` の operationId / path に沿った Zod request/response schema を持ち、invalid request は 400、handler response schema drift は 500 として分離されること。
-- `@saphnexa/api-client` が API contract 由来の全 38 public route helper と viewer path template を TypeScript source として持ち、Web の主要 fetch が `/api/*` typed route helper を使うこと。
+- `@saphnexa/api-client` が API contract 由来の全 39 public route helper と viewer path template を TypeScript source として持ち、Web の主要 fetch が `/api/*` typed route helper を使うこと。
 - `@saphnexa/api-client` が API contract / OpenAPI document 由来の generated operation type map を持ち、method、viewer path、internal path、params、query、request body、success response、error response、主要 outer fields、代表的な nested object / array item fields を drift check で同期確認すること。
 - Web の主要 API 呼び出しが `apiGetOperation` / `apiPostOperation` を使い、手書き response generic や配列要素 cast ではなく generated operation response 型から受け取ること。
 - `packages/db-schema` が required table 名に加えて主要 DB table metadata を TypeScript source として持ち、Flyway SQL migration の主要 table/column token と同期していること。
@@ -111,7 +111,7 @@ git diff --check
 - `packages/rag-core` が typed RAG adapter/tools boundary を TypeScript source として持ち、既存 `.js` runtime mirror と主要 tool/policy token が同期していること。
 - `packages/domain` が role/status/event/helper、observability catalog、local store 境界を TypeScript source として持ち、既存 `.js` runtime mirror と主要 token が同期していること。
 - `apps/workers` が lightweight notification boundary を TypeScript source として持ち、既存 `.js` runtime mirror と禁止フィールド、4KB payload 上限、REST detail URL が同期していること。
-- Hono/Zod/OpenAPI 実装 entrypoint が 38 route と `/openapi.json` を route contract から生成し、CSRF/role/Zod validation metadata と主要 success response の runtime validation 境界を保持すること。
+- Hono/Zod/OpenAPI 実装 entrypoint が 39 route と `/openapi.json` を route contract から生成し、CSRF/role/Zod validation metadata と主要 success response の runtime validation 境界を保持すること。
 - API が `hono/aws-lambda` handler entrypoint、request log / origin / error / session / CSRF middleware 境界、dispatch service、DSQL repository interface、operation-level SQL plan、DSQL query executor interface、shared DB row type boundary を TypeScript source として持つこと。
 - API の Hono app factory、OpenAPI document builder、Zod schema catalog が TypeScript source of record を持ち、主要 success response の concrete Zod schema と既存 Node local tools 用の `.js` runtime mirror が同期していること。
 - `apps/api`、`apps/tools-api`、`apps/agent` が TypeScript entry を持ち、AgentCore Runtime 互換の `/ping` / `/invocations` contract、invocation input/output validation、runtime failure containment、Agent から Tools API HTTP endpoint への client boundary を source-level で確認できること。
@@ -123,6 +123,7 @@ git diff --check
 - Admin Dashboard の文書タブが `adminListDocuments` route helper / generated operation helper を使い、local API と DSQL query plan の管理者限定文書一覧境界を source gate で確認できること。文書がない場合は正直な empty state を表示すること。
 - Admin Dashboard の文書登録フォームが React Hook Form + Zod と `createDocument` route helper / generated operation helper を使い、登録後に文書一覧 query を再取得する境界を source gate で確認できること。実 PDF upload は未接続であることを表示すること。
 - Admin Dashboard の文書版 lifecycle が React Hook Form + Zod と `getDocument` / `createDocumentVersion` / `activateDocumentVersion` route helper / generated operation helper を使い、文書詳細、文書版、ACL、取り込みジョブ、取り込み完了済み版だけの active 化を source gate で確認できること。実 PDF upload、Step Functions 実行、Bedrock KB / S3 Vectors ingestion は未接続であることを表示すること。
+- Admin Dashboard の文書公開停止が `suspendDocument` route helper / generated operation helper を使い、管理者だけが文書と文書版を logical delete 状態へ更新する境界を source gate で確認できること。物理削除、S3 object delete、Bedrock KB / S3 Vectors delete、保持期間後 lifecycle 実行は未接続であることを表示すること。
 - Admin Dashboard の取り込みジョブ確認が React Hook Form + Zod と `getIngestionJob` / `retryIngestionJob` route helper / generated operation helper を使い、retryable な失敗ジョブだけを再実行できる境界を source gate で確認できること。実 Step Functions / S3 / KB ingestion は未接続であること。
 - `npm run web:build` が Vite production build を実行し、Chat/Admin browser entrypoint を bundle できること。
 - `npm run web:build:check` が Vite production build output の `apps/web/dist/index.html`、hashed JS asset、JS sourcemap、gzip size 上限を検査すること。
@@ -219,6 +220,7 @@ git diff --check
 - Admin 文書一覧の source gate は既存文書の表示と `adminListDocuments` 境界を確認する。実 PDF upload、ACL 編集、取り込みジョブ詳細は別途実装・検証する。
 - Admin 文書登録フォームの source gate は `createDocument` API 境界、CSRF disabled state、local ingestion job 受付、文書一覧再取得を確認する。実 S3 PDF upload、文書種別、有効期間、ACL 編集、取り込みジョブ詳細は別途実装・検証する。
 - Admin 文書版 lifecycle の source gate は `getDocument` の versions / ingestion jobs / ACL entries、`createDocumentVersion` による local 版追加、`activateDocumentVersion` の取り込み完了条件、管理者ロール境界を確認する。文書停止・削除、実 S3 PDF upload、実 Step Functions 実行、Bedrock KB / S3 Vectors ingestion は別途実装・検証する。
+- Admin 文書公開停止の source gate は `suspendDocument` の CSRF / admin role boundary、文書と文書版の logical delete、文書一覧からの除外を確認する。物理削除、S3 object delete、Bedrock KB / S3 Vectors delete、保持期間後 lifecycle 実行は別途実装・検証する。
 - Admin 取り込みジョブ確認の source gate は job ID 指定の `getIngestionJob`、retryable state、`retryIngestionJob`、管理者ロール境界を確認する。実 Step Functions 実行、S3 raw/parsed 実配置、Bedrock KB / S3 Vectors ingestion、進捗 percentage、job 一覧 API は別途実装・検証する。
 - 実ブラウザ操作による chat/admin E2E、CloudFront 経由のロール別導線確認。
 - Bedrock KB、S3 Vectors、AgentCore Runtime、Bedrock Evaluations を使った実 RAG 品質評価。

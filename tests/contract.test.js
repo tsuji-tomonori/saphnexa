@@ -6,10 +6,10 @@ import { requiredTables } from "../packages/db-schema/src/tables.js";
 import { saphnexaConstructs } from "../infra/stacks/saphnexa-app-stack.js";
 import { buildOpenApiDocument } from "../apps/api/src/openapi-document.js";
 
-test("public API contract covers the 38 designed routes", () => {
+test("public API contract covers the 39 designed routes", () => {
   assert.equal(assertPublicApiContract(), true);
-  assert.equal(publicApiRoutes.length, 38);
-  assert.equal(publicApiRoutes.filter((route) => route.viewerPath.startsWith("/api/admin/")).length, 15);
+  assert.equal(publicApiRoutes.length, 39);
+  assert.equal(publicApiRoutes.filter((route) => route.viewerPath.startsWith("/api/admin/")).length, 16);
   assert.deepEqual(errorResponseSchema.required, ["trace_id", "error_code", "message", "details"]);
 });
 

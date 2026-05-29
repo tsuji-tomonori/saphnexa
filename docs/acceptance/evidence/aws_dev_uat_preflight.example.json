@@ -25,7 +25,7 @@
     "status": "passed",
     "api_endpoint": "https://api.dev.saphnexa.awsapps.com",
     "openapi_url": "https://api.dev.saphnexa.awsapps.com/openapi.json",
-    "route_count": 38,
+    "route_count": 39,
     "zod_validation_enabled": true
   },
   "cloudformation": {

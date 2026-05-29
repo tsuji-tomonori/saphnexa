@@ -46,6 +46,19 @@ export function useActivateDocumentVersion(csrfToken: string) {
   });
 }
 
+export function useSuspendDocument(csrfToken: string) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (input: { document_id: string }) =>
+      apiPostOperation("suspendDocument", apiRoutes.suspendDocument(input.document_id), {}, csrfToken),
+    onSuccess: async (response, input) => {
+      response.document satisfies AdminDocumentDetail;
+      await queryClient.invalidateQueries({ queryKey: ["admin-documents"] });
+      await queryClient.invalidateQueries({ queryKey: ["admin-document-detail", input.document_id] });
+    }
+  });
+}
+
 function pruneEmpty(input: CreateDocumentVersionInput) {
   return {
     file_name: input.file_name,

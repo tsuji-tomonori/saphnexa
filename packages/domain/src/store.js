@@ -69,6 +69,7 @@ export function createLocalStore() {
     createDocument,
     createDocumentVersion,
     activateDocumentVersion,
+    suspendDocument,
     retryIngestionJob,
     issueArtifactAccessCookie,
     issueWsTicket,
@@ -471,6 +472,27 @@ export function createLocalStore() {
     }
     recordAuditEvent(actor, "document.version.activated", "document_publish", document_id, { version_id });
     return activeVersion;
+  }
+
+  function suspendDocument(actor, document_id) {
+    requireAdmin(actor);
+    const document = state.documents.find((item) => item.tenant_id === actor.tenant_id && item.document_id === document_id && item.status !== statuses.DELETED);
+    if (!document) throw forbidden("DOCUMENT_NOT_FOUND", "文書が存在しない。", 404);
+    document.status = statuses.DELETED;
+    document.updated_at = now();
+    for (const version of state.document_versions.filter((item) => item.tenant_id === actor.tenant_id && item.document_id === document_id)) {
+      version.status = statuses.DELETED;
+    }
+    recordAuditEvent(actor, "document.suspended", "document_publish", document_id, {
+      affected_versions: state.document_versions.filter((item) => item.tenant_id === actor.tenant_id && item.document_id === document_id).length,
+      physical_delete: false
+    });
+    return {
+      ...document,
+      versions: state.document_versions.filter((item) => item.tenant_id === actor.tenant_id && item.document_id === document_id),
+      ingestion_jobs: state.ingestion_jobs.filter((item) => item.tenant_id === actor.tenant_id && item.document_id === document_id),
+      acl_entries: state.document_acl_entries.filter((item) => item.tenant_id === actor.tenant_id && item.document_id === document_id)
+    };
   }
 
   function retryIngestionJob(actor, job_id) {

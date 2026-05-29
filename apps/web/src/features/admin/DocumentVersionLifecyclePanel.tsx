@@ -3,7 +3,7 @@ import { useState } from "react";
 import { Controller, useForm } from "react-hook-form";
 import { z } from "zod";
 import { Button, DataTable, Dialog, FormField, Input, StatusBadge } from "@saphnexa/ui";
-import { useActivateDocumentVersion, useCreateDocumentVersion, useDocumentDetail } from "../../hooks/useDocumentLifecycle";
+import { useActivateDocumentVersion, useCreateDocumentVersion, useDocumentDetail, useSuspendDocument } from "../../hooks/useDocumentLifecycle";
 
 const documentLookupSchema = z.object({
   document_id: z.string().min(1, "文書IDは必須です")
@@ -33,8 +33,9 @@ export function DocumentVersionLifecyclePanel(props: { csrfToken: string }) {
   const detail = useDocumentDetail(documentId);
   const createVersion = useCreateDocumentVersion(props.csrfToken);
   const activateVersion = useActivateDocumentVersion(props.csrfToken);
+  const suspendDocument = useSuspendDocument(props.csrfToken);
   const document = detail.data?.document;
-  const errorMessage = errorText(detail.error) || errorText(createVersion.error) || errorText(activateVersion.error);
+  const errorMessage = errorText(detail.error) || errorText(createVersion.error) || errorText(activateVersion.error) || errorText(suspendDocument.error);
 
   function submitLookup(values: DocumentLookupValues) {
     setDocumentId(values.document_id.trim());
@@ -73,6 +74,14 @@ export function DocumentVersionLifecyclePanel(props: { csrfToken: string }) {
               <dt>登録者</dt>
               <dd>{document.created_by_user_id}</dd>
             </dl>
+            <p role="status">物理削除、S3 object delete、Bedrock KB / S3 Vectors delete: 未接続</p>
+            <Button
+              type="button"
+              disabled={!props.csrfToken || document.status === "deleted" || suspendDocument.isPending}
+              onClick={() => suspendDocument.mutate({ document_id: document.document_id })}
+            >
+              文書を公開停止
+            </Button>
             <form aria-label="文書版追加フォーム" onSubmit={versionForm.handleSubmit(submitVersion)}>
               <Controller
                 control={versionForm.control}
@@ -162,7 +171,7 @@ export function DocumentVersionLifecyclePanel(props: { csrfToken: string }) {
         ) : null}
         {errorMessage ? <p role="alert">{errorMessage}</p> : null}
       </section>
-      <Dialog open={createVersion.isPending || activateVersion.isPending} title="文書版ライフサイクル">
+      <Dialog open={createVersion.isPending || activateVersion.isPending || suspendDocument.isPending} title="文書版ライフサイクル">
         <p role="status">文書版の状態を更新しています</p>
       </Dialog>
     </>

@@ -479,6 +479,90 @@ const dsqlOperationMappings = {
       return { version: firstRow(rows) };
     }
   },
+  suspendDocument: {
+    notFoundErrorCode: "DSQL_DOCUMENT_NOT_FOUND",
+    plan(request) {
+      return {
+        operationId: "suspendDocument",
+        resultTable: "documents",
+        sql: `
+          WITH actor AS (
+            SELECT tenant_id
+            FROM users
+            WHERE user_id = :actor_id
+              AND role = 'admin'
+              AND status = 'active'
+          ),
+          target_document AS (
+            UPDATE documents d
+               SET status = 'deleted',
+                   updated_at = now()
+              FROM actor a
+             WHERE d.tenant_id = a.tenant_id
+               AND d.document_id = :document_id
+               AND d.status <> 'deleted'
+            RETURNING d.*
+          ),
+          deleted_versions AS (
+            UPDATE document_versions dv
+               SET status = 'deleted'
+              FROM target_document td
+             WHERE dv.tenant_id = td.tenant_id
+               AND dv.document_id = td.document_id
+            RETURNING dv.*
+          )
+          SELECT
+            td.tenant_id,
+            td.document_id,
+            td.title,
+            td.status,
+            td.created_by_user_id,
+            td.created_at,
+            td.updated_at,
+            COALESCE(
+              json_agg(DISTINCT dv.*) FILTER (WHERE dv.version_id IS NOT NULL),
+              '[]'::json
+            ) AS versions,
+            COALESCE(
+              json_agg(DISTINCT j.*) FILTER (WHERE j.job_id IS NOT NULL),
+              '[]'::json
+            ) AS ingestion_jobs,
+            COALESCE(
+              json_agg(DISTINCT acl.*) FILTER (WHERE acl.acl_scope_id IS NOT NULL),
+              '[]'::json
+            ) AS acl_entries
+          FROM target_document td
+          LEFT JOIN deleted_versions dv
+            ON dv.tenant_id = td.tenant_id
+           AND dv.document_id = td.document_id
+          LEFT JOIN ingestion_jobs j
+            ON j.tenant_id = td.tenant_id
+           AND j.document_id = td.document_id
+          LEFT JOIN document_acl_entries acl
+            ON acl.tenant_id = td.tenant_id
+           AND acl.document_id = td.document_id
+          GROUP BY td.tenant_id, td.document_id, td.title, td.status, td.created_by_user_id, td.created_at, td.updated_at
+          LIMIT 1
+        `,
+        params: { actor_id: request.actorId, document_id: request.input.document_id }
+      };
+    },
+    map(rows) {
+      const row = firstRow(rows) as DbRow<"documents"> & {
+        versions?: unknown;
+        ingestion_jobs?: unknown;
+        acl_entries?: unknown;
+      };
+      return {
+        document: {
+          ...row,
+          versions: arrayValue(row.versions),
+          ingestion_jobs: arrayValue(row.ingestion_jobs),
+          acl_entries: arrayValue(row.acl_entries)
+        }
+      };
+    }
+  },
   getIngestionJob: {
     notFoundErrorCode: "DSQL_INGESTION_JOB_NOT_FOUND",
     plan(request) {

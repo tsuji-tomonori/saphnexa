@@ -71,7 +71,9 @@ for (const file of files) {
     assert(body.includes("zodResolver"), "Admin document lifecycle must use Zod validation");
     assert(body.includes("DataTable"), "Admin document lifecycle must render details through DataTable");
     assert(body.includes("PDF実アップロードとStep Functions実行: 未接続"), "Admin document lifecycle must not imply real ingestion is implemented");
+    assert(body.includes("物理削除、S3 object delete、Bedrock KB / S3 Vectors delete: 未接続"), "Admin document lifecycle must not imply physical document deletion is implemented");
     assert(body.includes("version.status !== \"succeeded\""), "Admin document lifecycle activation must depend on succeeded version status");
+    assert(body.includes("document.status === \"deleted\""), "Admin document suspension must depend on document status");
     assert(!body.includes("doc-local"), "Admin document lifecycle must not hard-code local document ids");
   }
   if (file.includes("IngestionJobPanel")) {

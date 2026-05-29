@@ -242,6 +242,7 @@ for (const token of [
   'apiPostOperation("createDocument"',
   'apiPostOperation("createDocumentVersion"',
   'apiPostOperation("activateDocumentVersion"',
+  'apiPostOperation("suspendDocument"',
   'apiPostOperation("retryIngestionJob"',
   'apiPostOperation("issueWsTicket"',
   'apiPostOperation("startEvaluationRun"'
@@ -421,7 +422,8 @@ for (const token of [
   "getDocument",
   "getIngestionJob",
   "createDocumentVersion",
-  "activateDocumentVersion"
+  "activateDocumentVersion",
+  "suspendDocument"
 ]) {
   assert(storeTypesTs.includes(token), `Domain store TS source missing ${token}`);
   assert(storeJs.includes(token), `Domain store JS runtime mirror missing ${token}`);
@@ -475,6 +477,7 @@ for (const token of [
   "getDocument",
   "createDocumentVersion",
   "activateDocumentVersion",
+  "suspendDocument",
   "getIngestionJob",
   'resultTable: "users"',
   'resultTable: "chat_sessions"',

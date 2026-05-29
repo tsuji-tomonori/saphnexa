@@ -4,7 +4,7 @@
     "title": "Saphnexa API",
     "version": "0.1.0"
   },
-  "x-saphnexa-route-count": 38,
+  "x-saphnexa-route-count": 39,
   "x-saphnexa-zod-validation": true,
   "paths": {
     "/health": { "get": {} },

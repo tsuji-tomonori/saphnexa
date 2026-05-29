@@ -49,6 +49,7 @@ export const apiRouteTemplates = {
   getDocument: "/api/admin/documents/{document_id}",
   createDocumentVersion: "/api/admin/documents/{document_id}/versions",
   activateDocumentVersion: "/api/admin/documents/{document_id}/versions/{version_id}/activate",
+  suspendDocument: "/api/admin/documents/{document_id}/suspend",
   getIngestionJob: "/api/admin/ingestion-jobs/{job_id}",
   retryIngestionJob: "/api/admin/ingestion-jobs/{job_id}/retry",
   listEvaluationDatasets: "/api/admin/evaluation-datasets",
@@ -109,6 +110,8 @@ export const apiRoutes = {
     pathFromTemplate(apiRouteTemplates.createDocumentVersion, { document_id: documentId }),
   activateDocumentVersion: (documentId: string, versionId: string) =>
     pathFromTemplate(apiRouteTemplates.activateDocumentVersion, { document_id: documentId, version_id: versionId }),
+  suspendDocument: (documentId: string) =>
+    pathFromTemplate(apiRouteTemplates.suspendDocument, { document_id: documentId }),
   getIngestionJob: (jobId: string) => pathFromTemplate(apiRouteTemplates.getIngestionJob, { job_id: jobId }),
   retryIngestionJob: (jobId: string) => pathFromTemplate(apiRouteTemplates.retryIngestionJob, { job_id: jobId }),
   listEvaluationDatasets: () => pathFromTemplate(apiRouteTemplates.listEvaluationDatasets),

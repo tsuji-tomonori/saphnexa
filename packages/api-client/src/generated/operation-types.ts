@@ -13,7 +13,7 @@ export interface ApiClientErrorResponse {
   details: ApiClientJsonObject;
 }
 
-export type ApiClientGeneratedOperationId = "loginStart" | "authCallback" | "logout" | "getMe" | "listChatSessions" | "createChatSession" | "getChatSession" | "updateChatSession" | "deleteChatSession" | "listChatParticipants" | "addChatParticipant" | "updateChatParticipant" | "removeChatParticipant" | "listMessages" | "submitQuestion" | "listMessageEvents" | "cancelAnswerGeneration" | "createFeedback" | "listFavorites" | "addFavorite" | "deleteFavorite" | "issueWsTicket" | "listLlmModels" | "adminListUsers" | "startUserImport" | "getUserImport" | "adminListDocuments" | "createDocument" | "getDocument" | "createDocumentVersion" | "activateDocumentVersion" | "getIngestionJob" | "retryIngestionJob" | "listEvaluationDatasets" | "startEvaluationRun" | "getEvaluationRun" | "listPublishedArtifacts" | "issueArtifactAccessCookie";
+export type ApiClientGeneratedOperationId = "loginStart" | "authCallback" | "logout" | "getMe" | "listChatSessions" | "createChatSession" | "getChatSession" | "updateChatSession" | "deleteChatSession" | "listChatParticipants" | "addChatParticipant" | "updateChatParticipant" | "removeChatParticipant" | "listMessages" | "submitQuestion" | "listMessageEvents" | "cancelAnswerGeneration" | "createFeedback" | "listFavorites" | "addFavorite" | "deleteFavorite" | "issueWsTicket" | "listLlmModels" | "adminListUsers" | "startUserImport" | "getUserImport" | "adminListDocuments" | "createDocument" | "getDocument" | "createDocumentVersion" | "activateDocumentVersion" | "suspendDocument" | "getIngestionJob" | "retryIngestionJob" | "listEvaluationDatasets" | "startEvaluationRun" | "getEvaluationRun" | "listPublishedArtifacts" | "issueArtifactAccessCookie";
 
 export interface ApiClientOperationTypes {
   loginStart: {
@@ -419,7 +419,7 @@ export interface ApiClientOperationTypes {
     query: ApiClientEmptyObject;
     requestBody: never;
     successStatus: 200;
-    successResponse: { document: { tenant_id: string; document_id: string; title: string; status: "active" | "archived" | "deleted" | "removed" | "queued" | "running" | "streaming" | "succeeded" | "failed" | "canceled"; created_by_user_id: string; created_at: string; updated_at: string; versions: { tenant_id: string; document_id: string; version_id: string; version_label: string; status: "active" | "archived" | "failed" | "queued" | "succeeded" | "uploaded"; raw_s3_uri: string; metadata_json: ApiClientJsonObject; created_at: string }[]; ingestion_jobs: { tenant_id: string; job_id: string; document_id: string; version_id: string; status: "active" | "archived" | "deleted" | "removed" | "queued" | "running" | "streaming" | "succeeded" | "failed" | "canceled"; raw_s3_uri: string; parsed_s3_prefix: string; error_code?: string | null; retryable: boolean }[]; acl_entries: { tenant_id: string; document_id: string; version_id: string; acl_scope_id: string; effect: "allow" | "deny" }[] } };
+    successResponse: { document: { tenant_id: string; document_id: string; title: string; status: "active" | "archived" | "deleted" | "removed" | "queued" | "running" | "streaming" | "succeeded" | "failed" | "canceled"; created_by_user_id: string; created_at: string; updated_at: string; versions: { tenant_id: string; document_id: string; version_id: string; version_label: string; status: "active" | "archived" | "deleted" | "failed" | "queued" | "succeeded" | "uploaded"; raw_s3_uri: string; metadata_json: ApiClientJsonObject; created_at: string }[]; ingestion_jobs: { tenant_id: string; job_id: string; document_id: string; version_id: string; status: "active" | "archived" | "deleted" | "removed" | "queued" | "running" | "streaming" | "succeeded" | "failed" | "canceled"; raw_s3_uri: string; parsed_s3_prefix: string; error_code?: string | null; retryable: boolean }[]; acl_entries: { tenant_id: string; document_id: string; version_id: string; acl_scope_id: string; effect: "allow" | "deny" }[] } };
     errorResponse: ApiClientErrorResponse;
   };
   createDocumentVersion: {
@@ -447,7 +447,21 @@ export interface ApiClientOperationTypes {
     query: ApiClientEmptyObject;
     requestBody: { csrf_token: string; title?: string; question?: string; user_id?: string; document_id?: string; version_id?: string; version_label?: string; file_name?: string; acl_scope_id?: string; dataset_id?: string; model_id?: string; import_id?: string; job_id?: string; now_ms?: number; rows?: ApiClientJsonObject[]; metadata?: ApiClientJsonObject; retrieval_policy?: { top_k?: number; allowed_acl_scope_ids?: string[] } } & ApiClientJsonObject;
     successStatus: 200;
-    successResponse: { version: { tenant_id: string; document_id: string; version_id: string; version_label: string; status: "active" | "archived" | "failed" | "queued" | "succeeded" | "uploaded"; raw_s3_uri: string; metadata_json: ApiClientJsonObject; created_at: string } };
+    successResponse: { version: { tenant_id: string; document_id: string; version_id: string; version_label: string; status: "active" | "archived" | "deleted" | "failed" | "queued" | "succeeded" | "uploaded"; raw_s3_uri: string; metadata_json: ApiClientJsonObject; created_at: string } };
+    errorResponse: ApiClientErrorResponse;
+  };
+  suspendDocument: {
+    operationId: "suspendDocument";
+    method: "POST";
+    viewerPath: "/api/admin/documents/{document_id}/suspend";
+    internalPath: "/v1/admin/documents/{document_id}/suspend";
+    roles: "admin";
+    csrfRequired: true;
+    params: { document_id: string };
+    query: ApiClientEmptyObject;
+    requestBody: { csrf_token: string; title?: string; question?: string; user_id?: string; document_id?: string; version_id?: string; version_label?: string; file_name?: string; acl_scope_id?: string; dataset_id?: string; model_id?: string; import_id?: string; job_id?: string; now_ms?: number; rows?: ApiClientJsonObject[]; metadata?: ApiClientJsonObject; retrieval_policy?: { top_k?: number; allowed_acl_scope_ids?: string[] } } & ApiClientJsonObject;
+    successStatus: 200;
+    successResponse: { document: { tenant_id: string; document_id: string; title: string; status: "active" | "archived" | "deleted" | "removed" | "queued" | "running" | "streaming" | "succeeded" | "failed" | "canceled"; created_by_user_id: string; created_at: string; updated_at: string; versions: { tenant_id: string; document_id: string; version_id: string; version_label: string; status: "active" | "archived" | "deleted" | "failed" | "queued" | "succeeded" | "uploaded"; raw_s3_uri: string; metadata_json: ApiClientJsonObject; created_at: string }[]; ingestion_jobs: { tenant_id: string; job_id: string; document_id: string; version_id: string; status: "active" | "archived" | "deleted" | "removed" | "queued" | "running" | "streaming" | "succeeded" | "failed" | "canceled"; raw_s3_uri: string; parsed_s3_prefix: string; error_code?: string | null; retryable: boolean }[]; acl_entries: { tenant_id: string; document_id: string; version_id: string; acl_scope_id: string; effect: "allow" | "deny" }[] } };
     errorResponse: ApiClientErrorResponse;
   };
   getIngestionJob: {

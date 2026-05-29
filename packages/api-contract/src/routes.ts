@@ -31,7 +31,7 @@ export const apiRouteIds = [
   "API-1", "API-2", "API-3", "API-4", "API-5", "API-6", "API-7", "API-8", "API-9", "API-10",
   "API-11", "API-12", "API-13", "API-14", "API-15", "API-16", "API-17", "API-18", "API-19", "API-20",
   "API-21", "API-22", "API-23", "API-24", "API-25", "API-26", "API-27", "API-28", "API-29", "API-30",
-  "API-31", "API-32", "API-33", "API-34", "API-35", "API-36", "API-37", "API-38"
+  "API-31", "API-32", "API-33", "API-34", "API-35", "API-36", "API-37", "API-38", "API-39"
 ] as const;
 
 export type ApiRouteId = (typeof apiRouteIds)[number];
@@ -68,6 +68,7 @@ export const apiOperationIds = [
   "getDocument",
   "createDocumentVersion",
   "activateDocumentVersion",
+  "suspendDocument",
   "getIngestionJob",
   "retryIngestionJob",
   "listEvaluationDatasets",
@@ -125,13 +126,14 @@ export const publicApiRoutes = [
   route("API-29", "getDocument", "GET", "/api/admin/documents/{document_id}", "/v1/admin/documents/{document_id}", ["admin"], false, [200]),
   route("API-30", "createDocumentVersion", "POST", "/api/admin/documents/{document_id}/versions", "/v1/admin/documents/{document_id}/versions", ["admin"], csrf, [202]),
   route("API-31", "activateDocumentVersion", "POST", "/api/admin/documents/{document_id}/versions/{version_id}/activate", "/v1/admin/documents/{document_id}/versions/{version_id}/activate", ["admin"], csrf, [200]),
-  route("API-32", "getIngestionJob", "GET", "/api/admin/ingestion-jobs/{job_id}", "/v1/admin/ingestion-jobs/{job_id}", ["admin"], false, [200]),
-  route("API-33", "retryIngestionJob", "POST", "/api/admin/ingestion-jobs/{job_id}/retry", "/v1/admin/ingestion-jobs/{job_id}/retry", ["admin"], csrf, [202]),
-  route("API-34", "listEvaluationDatasets", "GET", "/api/admin/evaluation-datasets", "/v1/admin/evaluation-datasets", ["admin"], false, [200]),
-  route("API-35", "startEvaluationRun", "POST", "/api/admin/evaluation-runs", "/v1/admin/evaluation-runs", ["admin"], csrf, [202]),
-  route("API-36", "getEvaluationRun", "GET", "/api/admin/evaluation-runs/{evaluation_run_id}", "/v1/admin/evaluation-runs/{evaluation_run_id}", ["admin"], false, [200]),
-  route("API-37", "listPublishedArtifacts", "GET", "/api/admin/artifacts", "/v1/admin/artifacts", ["admin"], false, [200]),
-  route("API-38", "issueArtifactAccessCookie", "POST", "/api/admin/artifacts/access-cookie", "/v1/admin/artifacts/access-cookie", ["admin"], csrf, [201])
+  route("API-32", "suspendDocument", "POST", "/api/admin/documents/{document_id}/suspend", "/v1/admin/documents/{document_id}/suspend", ["admin"], csrf, [200]),
+  route("API-33", "getIngestionJob", "GET", "/api/admin/ingestion-jobs/{job_id}", "/v1/admin/ingestion-jobs/{job_id}", ["admin"], false, [200]),
+  route("API-34", "retryIngestionJob", "POST", "/api/admin/ingestion-jobs/{job_id}/retry", "/v1/admin/ingestion-jobs/{job_id}/retry", ["admin"], csrf, [202]),
+  route("API-35", "listEvaluationDatasets", "GET", "/api/admin/evaluation-datasets", "/v1/admin/evaluation-datasets", ["admin"], false, [200]),
+  route("API-36", "startEvaluationRun", "POST", "/api/admin/evaluation-runs", "/v1/admin/evaluation-runs", ["admin"], csrf, [202]),
+  route("API-37", "getEvaluationRun", "GET", "/api/admin/evaluation-runs/{evaluation_run_id}", "/v1/admin/evaluation-runs/{evaluation_run_id}", ["admin"], false, [200]),
+  route("API-38", "listPublishedArtifacts", "GET", "/api/admin/artifacts", "/v1/admin/artifacts", ["admin"], false, [200]),
+  route("API-39", "issueArtifactAccessCookie", "POST", "/api/admin/artifacts/access-cookie", "/v1/admin/artifacts/access-cookie", ["admin"], csrf, [201])
 ] satisfies PublicApiRoute[];
 
 export function route(

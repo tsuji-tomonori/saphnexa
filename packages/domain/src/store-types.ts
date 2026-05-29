@@ -280,6 +280,7 @@ export interface LocalStore {
   createDocument(actor: LocalActor, input: Record<string, unknown>): Record<string, unknown>;
   createDocumentVersion(actor: LocalActor, document_id: string, input: Record<string, unknown>): Record<string, unknown>;
   activateDocumentVersion(actor: LocalActor, document_id: string, version_id: string): DocumentVersion;
+  suspendDocument(actor: LocalActor, document_id: string): DocumentDetail;
   retryIngestionJob(actor: LocalActor, job_id: string): IngestionJob;
   issueWsTicket(actor: LocalActor, input?: { now_ms?: number }): { ticket: string; expires_in_seconds: number; channels: string[] };
   consumeWsTicket(actor: LocalActor, ticket_id: string, now_ms?: number): { ticket_id: string; channels: string[]; status: string };

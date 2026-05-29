@@ -212,6 +212,8 @@ scenario("admin UI source contract", () => {
   assert(documentLifecycleHookSource.includes("apiPostOperation(\"createDocumentVersion\""), "useCreateDocumentVersion hook must use generated createDocumentVersion operation helper");
   assert(documentLifecycleHookSource.includes("apiRoutes.activateDocumentVersion(input.document_id, input.version_id)"), "useActivateDocumentVersion hook must use activateDocumentVersion route helper");
   assert(documentLifecycleHookSource.includes("apiPostOperation(\"activateDocumentVersion\""), "useActivateDocumentVersion hook must use generated activateDocumentVersion operation helper");
+  assert(documentLifecycleHookSource.includes("apiRoutes.suspendDocument(input.document_id)"), "useSuspendDocument hook must use suspendDocument route helper");
+  assert(documentLifecycleHookSource.includes("apiPostOperation(\"suspendDocument\""), "useSuspendDocument hook must use generated suspendDocument operation helper");
   assert(documentLifecycleHookSource.includes("invalidateQueries({ queryKey: [\"admin-document-detail\", input.document_id] })"), "document lifecycle hook must refresh document detail query");
   assert(ingestionJobHookSource.includes("apiRoutes.getIngestionJob(jobId)"), "useIngestionJob hook must use getIngestionJob route helper");
   assert(ingestionJobHookSource.includes("apiGetOperation(\"getIngestionJob\""), "useIngestionJob hook must use generated getIngestionJob operation helper");
@@ -243,7 +245,9 @@ scenario("admin UI source contract", () => {
     "文書ACL一覧",
     "文書取り込みジョブ一覧",
     "PDF実アップロードとStep Functions実行: 未接続",
+    "物理削除、S3 object delete、Bedrock KB / S3 Vectors delete: 未接続",
     "disabled={!props.csrfToken || version.status !== \"succeeded\" || activateVersion.isPending}",
+    "disabled={!props.csrfToken || document.status === \"deleted\" || suspendDocument.isPending}",
     "role=\"alert\""
   ]) {
     assert(documentVersionLifecycleSource.includes(token), `DocumentVersionLifecyclePanel missing token: ${token}`);
@@ -349,6 +353,8 @@ scenario("admin local API flow", () => {
   assert(registeredDetail.body.document.versions.length === 1, "admin document detail must include versions");
   assert(registeredDetail.body.document.ingestion_jobs.length === 1, "admin document detail must include ingestion jobs");
   assert(registeredDetail.body.document.acl_entries.some((entry) => entry.acl_scope_id === "group:admin"), "admin document detail must include ACL entries");
+  const documentsBeforeSuspension = api.request("admin-1", "adminListDocuments");
+  assert(documentsBeforeSuspension.body.documents.some((document) => document.document_id === registered.body.document_id), "registered document missing from admin documents list before suspension");
   const notReadyActivation = api.request("admin-1", "activateDocumentVersion", { csrf_token: csrf, document_id: registered.body.document_id, version_id: registered.body.version_id });
   assert(notReadyActivation.status === 403, "queued document version must not activate");
   const completedVersion = api.request("admin-1", "createDocumentVersion", {
@@ -365,6 +371,12 @@ scenario("admin local API flow", () => {
   assert(api.request("user-owner", "activateDocumentVersion", { csrf_token: "csrf-user-owner", document_id: registered.body.document_id, version_id: "ver-flow-complete" }).status === 403, "general user must not activate document versions");
   const activatedVersion = api.request("admin-1", "activateDocumentVersion", { csrf_token: csrf, document_id: registered.body.document_id, version_id: "ver-flow-complete" });
   assert(activatedVersion.status === 200 && activatedVersion.body.version.status === "active", "completed document version must activate");
+  assert(api.request("user-owner", "suspendDocument", { csrf_token: "csrf-user-owner", document_id: registered.body.document_id }).status === 403, "general user must not suspend documents");
+  const suspended = api.request("admin-1", "suspendDocument", { csrf_token: csrf, document_id: registered.body.document_id });
+  assert(suspended.status === 200 && suspended.body.document.status === "deleted", "admin document suspension failed");
+  assert(suspended.body.document.versions.every((version) => version.status === "deleted"), "document suspension must mark versions deleted");
+  const documentsAfterSuspension = api.request("admin-1", "adminListDocuments");
+  assert(!documentsAfterSuspension.body.documents.some((document) => document.document_id === registered.body.document_id), "suspended document must leave admin active document list");
   const invalid = api.request("admin-1", "createDocument", { csrf_token: csrf, title: "invalid metadata", document_id: "doc-invalid-flow", version_id: "ver-invalid-flow", metadata: { document_id: "doc-invalid-flow" } });
   const failedJob = api.request("admin-1", "getIngestionJob", { job_id: invalid.body.job_id });
   assert(failedJob.status === 200, "admin ingestion job fetch failed");
@@ -376,7 +388,6 @@ scenario("admin local API flow", () => {
   api.request("admin-1", "createDocument", { csrf_token: csrf, title: "flow document", document_id: "doc-flow", version_id: "ver-flow" });
   const documents = api.request("admin-1", "adminListDocuments");
   assert(documents.body.documents.some((document) => document.document_id === "doc-flow"), "created document missing from admin documents list");
-  assert(documents.body.documents.some((document) => document.document_id === registered.body.document_id), "registered document missing from admin documents list");
   const evaluation = api.request("admin-1", "startEvaluationRun", { csrf_token: csrf, dataset_id: "dataset-local-golden" });
   assert(evaluation.status === 202, "evaluation run failed");
   const cookie = api.request("admin-1", "issueArtifactAccessCookie", { csrf_token: csrf });
