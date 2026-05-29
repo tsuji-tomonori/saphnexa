@@ -1,6 +1,6 @@
 # OpenAPI client operation types
 
-- 状態: doing
+- 状態: done
 - タスク種別: 機能追加
 - 作成日時: 2026-05-29 11:10 JST
 - 対象ブランチ: `codex/typescript-framework-implementation`
@@ -67,6 +67,11 @@ API route contract は変えない。local verification docs に、API client �
 - `npm run docs:check`: pass。
 - `git diff --check`: pass。
 - `rg -c '^  [a-zA-Z].*: \\{$' packages/api-client/src/generated/operation-types.ts`: 38。
+
+## PR コメント
+
+- 受け入れ条件確認: https://github.com/tsuji-tomonori/saphnexa/pull/3#issuecomment-4569895953
+- セルフレビュー: https://github.com/tsuji-tomonori/saphnexa/pull/3#issuecomment-4569897461
 
 ## PR レビュー観点
 
