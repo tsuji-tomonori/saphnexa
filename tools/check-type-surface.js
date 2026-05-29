@@ -85,6 +85,8 @@ for (const file of [
   "apps/web/src/main.tsx",
   "apps/web/src/pages/ChatPage.tsx",
   "apps/web/src/features/chat/AssistantRuntimeBoundary.tsx",
+  "apps/web/src/features/admin/DocumentTable.tsx",
+  "apps/web/src/hooks/useAdminDocuments.ts",
   "apps/web/src/pages/AdminDashboardPage.tsx",
   "packages/ui/src/theme.css.ts",
   "packages/ui/src/atoms/Button.tsx",
@@ -214,12 +216,14 @@ for (const file of listFiles(["apps/web/src"], (path) => path.endsWith(".ts") ||
   assert(!source.includes(" as Chat[]"), `${file} must use generated chat response item fields instead of Chat[] cast`);
   assert(!source.includes(" as EventRow[]"), `${file} must use generated event response item fields instead of EventRow[] cast`);
   assert(!source.includes(" as Artifact[]"), `${file} must use generated artifact response item fields instead of Artifact[] cast`);
+  assert(!source.includes(" as AdminDocument[]"), `${file} must use generated document response item fields instead of AdminDocument[] cast`);
 }
 for (const token of [
   'apiGetOperation("getMe"',
   'apiGetOperation("listChatSessions"',
   'apiGetOperation("listMessageEvents"',
   'apiGetOperation("listPublishedArtifacts"',
+  'apiGetOperation("adminListDocuments"',
   'apiPostOperation("issueWsTicket"',
   'apiPostOperation("startEvaluationRun"'
 ]) {
@@ -394,6 +398,13 @@ for (const token of [
   assert(storeJs.includes(token), `Domain store JS runtime mirror missing ${token}`);
 }
 for (const token of [
+  "listDocuments",
+  "getDocument"
+]) {
+  assert(storeTypesTs.includes(token), `Domain store TS source missing ${token}`);
+  assert(storeJs.includes(token), `Domain store JS runtime mirror missing ${token}`);
+}
+for (const token of [
   "LocalDomainState",
   "ChatSession",
   "ChatParticipant",
@@ -437,14 +448,17 @@ for (const token of [
   "listChatSessions",
   "listMessageEvents",
   "listPublishedArtifacts",
+  "adminListDocuments",
   'resultTable: "users"',
   'resultTable: "chat_sessions"',
   'resultTable: "chat_message_events"',
   'resultTable: "published_artifacts"',
+  'resultTable: "documents"',
   "FROM users",
   "FROM chat_sessions",
   "FROM chat_message_events",
   "FROM published_artifacts",
+  "FROM documents",
   "JOIN chat_participants",
   "u.role = 'admin'"
 ]) {

@@ -100,6 +100,15 @@ export interface DbRowByTable {
     display_json: DbJson;
     created_at: DbTimestamp;
   };
+  documents: {
+    tenant_id: string;
+    document_id: string;
+    title: string;
+    status: string;
+    created_by_user_id: string;
+    created_at: DbTimestamp;
+    updated_at: DbTimestamp;
+  };
   document_acl_entries: {
     tenant_id: string;
     document_id: string;

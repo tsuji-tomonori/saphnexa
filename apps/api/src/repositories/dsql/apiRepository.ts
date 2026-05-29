@@ -233,6 +233,36 @@ const dsqlOperationMappings = {
     map(rows) {
       return { artifacts: rows };
     }
+  },
+  adminListDocuments: {
+    plan(request) {
+      return {
+        operationId: "adminListDocuments",
+        resultTable: "documents",
+        sql: `
+          SELECT
+            d.tenant_id,
+            d.document_id,
+            d.title,
+            d.status,
+            d.created_by_user_id,
+            d.created_at,
+            d.updated_at
+          FROM documents d
+          JOIN users u
+            ON u.tenant_id = d.tenant_id
+           AND u.user_id = :actor_id
+           AND u.role = 'admin'
+           AND u.status = 'active'
+          WHERE d.status <> 'deleted'
+          ORDER BY d.updated_at DESC
+        `,
+        params: { actor_id: request.actorId }
+      };
+    },
+    map(rows) {
+      return { documents: rows };
+    }
   }
 } satisfies Partial<Record<ApiOperationId, DsqlOperationMapping>>;
 

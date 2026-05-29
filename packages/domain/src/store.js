@@ -62,6 +62,8 @@ export function createLocalStore() {
     addFavorite,
     listFavorites,
     startUserImport,
+    listDocuments,
+    getDocument,
     createDocument,
     createDocumentVersion,
     activateDocumentVersion,
@@ -411,6 +413,16 @@ export function createLocalStore() {
       status: metadataError ? statuses.FAILED : statuses.QUEUED
     });
     return { document_id, version_id, job_id, raw_s3_uri };
+  }
+
+  function listDocuments(actor) {
+    requireAdmin(actor);
+    return state.documents.filter((item) => item.tenant_id === actor.tenant_id && item.status !== statuses.DELETED);
+  }
+
+  function getDocument(actor, document_id) {
+    requireAdmin(actor);
+    return state.documents.find((item) => item.tenant_id === actor.tenant_id && item.document_id === document_id && item.status !== statuses.DELETED);
   }
 
   function createDocumentVersion(actor, document_id, input) {

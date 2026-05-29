@@ -2,13 +2,16 @@ import { QueryClientProvider } from "@tanstack/react-query";
 import { AppShell, Panel, Tabs } from "@saphnexa/ui";
 import { AdminActions } from "../features/admin/AdminActions";
 import { ArtifactTable } from "../features/admin/ArtifactTable";
+import { DocumentTable } from "../features/admin/DocumentTable";
 import { useAdminArtifacts } from "../hooks/useAdminArtifacts";
+import { useAdminDocuments } from "../hooks/useAdminDocuments";
 import { useMe } from "../hooks/useMe";
 import { queryClient } from "../lib/queryClient";
 
 export function AdminDashboardContent() {
   const me = useMe();
   const artifacts = useAdminArtifacts();
+  const documents = useAdminDocuments();
   const csrfToken = me.data?.csrf_token ?? "";
 
   return (
@@ -28,6 +31,15 @@ export function AdminDashboardContent() {
             content: (
               <Panel aria-label="成果物">
                 <ArtifactTable artifacts={artifacts.data?.artifacts ?? []} />
+              </Panel>
+            )
+          },
+          {
+            id: "documents",
+            label: "文書",
+            content: (
+              <Panel aria-label="文書">
+                <DocumentTable documents={documents.data?.documents ?? []} />
               </Panel>
             )
           }

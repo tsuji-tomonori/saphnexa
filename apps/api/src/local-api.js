@@ -59,6 +59,10 @@ export function createLocalApi() {
             });
           case "createDocument":
             return accepted(store.createDocument(actor, input));
+          case "adminListDocuments":
+            return ok({ documents: store.listDocuments(actor) });
+          case "getDocument":
+            return ok({ document: store.getDocument(actor, input.document_id) });
           case "createDocumentVersion":
             return accepted(store.createDocumentVersion(actor, input.document_id, input));
           case "activateDocumentVersion":

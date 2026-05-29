@@ -41,7 +41,8 @@ checkFile("AdminApp", "apps/web/src/admin/AdminApp.tsx", [
 checkFile("AdminDashboardPage", "apps/web/src/pages/AdminDashboardPage.tsx", [
   rule("main landmark", (body) => body.includes("className=\"sx-admin-shell\"")),
   rule("admin tabs", (body) => body.includes("Tabs") && body.includes("aria-label=\"管理領域\"")),
-  rule("artifact panel label", (body) => body.includes("aria-label=\"成果物\""))
+  rule("artifact panel label", (body) => body.includes("aria-label=\"成果物\"")),
+  rule("document panel label", (body) => body.includes("aria-label=\"文書\""))
 ]);
 checkFile("AdminActions", "apps/web/src/features/admin/AdminActions.tsx", [
   rule("admin action label", (body) => body.includes("aria-label=\"管理操作\"")),
@@ -52,6 +53,11 @@ checkFile("ArtifactTable", "apps/web/src/features/admin/ArtifactTable.tsx", [
   rule("empty artifact status", (body) => body.includes("成果物はありません")),
   rule("artifact links from API data", (body) => body.includes("href={artifact.viewer_path}") && body.includes("{artifact.title}")),
   rule("details drawer status", (body) => body.includes("<p role=\"status\">成果物を選択すると詳細を表示します</p>"))
+]);
+checkFile("DocumentTable", "apps/web/src/features/admin/DocumentTable.tsx", [
+  rule("empty document status", (body) => body.includes("文書はありません")),
+  rule("document rows from API data", (body) => body.includes("document.title") && body.includes("document.document_id")),
+  rule("status badge", (body) => body.includes("StatusBadge"))
 ]);
 checkFile("UI components", "packages/ui/src/components.tsx", [
   rule("data table export", (body) => body.includes("export { DataTable }")),
