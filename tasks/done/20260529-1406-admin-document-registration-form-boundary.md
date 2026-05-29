@@ -36,11 +36,11 @@ Admin Dashboard の文書タブから、既存 `createDocument` API を generate
 
 ## 受け入れ条件
 
-- [ ] Admin UI が `createDocument` route helper / generated operation helper 経由で文書登録を実行する。
-- [ ] 登録フォームが React Hook Form + Zod と共通 UI components を使い、必須入力と empty/error/pending/success state を表示する。
-- [ ] 登録成功後に `adminListDocuments` の query が再取得され、架空文書や固定件数を表示しない。
-- [ ] local API flow と source/UI/web/docs gate が Admin 文書登録フォーム境界を検査する。
-- [ ] 選定した検証コマンドが pass し、実 S3 PDF upload / 文書種別 / 有効期間 / ACL 編集 / 取り込みジョブ詳細を実施済み扱いしない。
+- [x] Admin UI が `createDocument` route helper / generated operation helper 経由で文書登録を実行する。
+- [x] 登録フォームが React Hook Form + Zod と共通 UI components を使い、必須入力と empty/error/pending/success state を表示する。
+- [x] 登録成功後に `adminListDocuments` の query が再取得され、架空文書や固定件数を表示しない。
+- [x] local API flow と source/UI/web/docs gate が Admin 文書登録フォーム境界を検査する。
+- [x] 選定した検証コマンドが pass し、実 S3 PDF upload / 文書種別 / 有効期間 / ACL 編集 / 取り込みジョブ詳細を実施済み扱いしない。
 
 ## 検証計画
 
@@ -54,6 +54,25 @@ Admin Dashboard の文書タブから、既存 `createDocument` API を generate
 - `npm run web:build:check`
 - `npm run test:integration:local`
 - `git diff --check`
+
+## 検証結果
+
+- `npm run typecheck -w @saphnexa/api`: pass
+- `npm run typecheck -w @saphnexa/web`: fail -> 修正後 pass
+- `npm run typecheck -w @saphnexa/ui`: pass
+- `npm run ui:check`: pass
+- `npm run web:flow:check`: pass
+- `npm run web:a11y:check`: pass
+- `npm run typecheck:source`: pass
+- `npm run docs:check`: pass
+- `npm run web:build:check`: pass
+- `npm run test:integration:local`: pass
+- `git diff --check`: pass
+
+## PR コメント
+
+- 受け入れ条件確認: https://github.com/tsuji-tomonori/saphnexa/pull/3#issuecomment-4570871584
+- セルフレビュー結果: https://github.com/tsuji-tomonori/saphnexa/pull/3#issuecomment-4570871609
 
 ## PR レビュー観点
 
@@ -70,4 +89,4 @@ Admin Dashboard の文書タブから、既存 `createDocument` API を generate
 
 ## 状態
 
-do
+done
