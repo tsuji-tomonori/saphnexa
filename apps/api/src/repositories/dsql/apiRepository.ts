@@ -1500,6 +1500,79 @@ const dsqlOperationMappings = {
       return undefined;
     }
   },
+  issueWsTicket: {
+    status: 201,
+    notFoundErrorCode: "DSQL_WS_TICKET_ACTOR_NOT_FOUND",
+    plan(request) {
+      return {
+        operationId: "issueWsTicket",
+        resultTable: "ws_tickets",
+        sql: `
+          WITH actor AS (
+            SELECT tenant_id, user_id
+            FROM users
+            WHERE user_id = :actor_id
+              AND status = 'active'
+          ),
+          created_ticket AS (
+            INSERT INTO ws_tickets (
+              tenant_id, ticket_id, session_id, user_id, channel_scope_json, status, expires_at, used_at
+            )
+            SELECT
+              a.tenant_id,
+              gen_random_uuid()::varchar,
+              gen_random_uuid()::varchar,
+              a.user_id,
+              json_build_object('channels', json_build_array(concat('/', a.user_id, '/chat/*'))),
+              'active',
+              now() + interval '60 seconds',
+              NULL
+            FROM actor a
+            RETURNING *
+          ),
+          ws_ticket_event AS (
+            INSERT INTO ws_ticket_events (
+              tenant_id, event_id, aggregate_id, aggregate_type, event_seq, event_name,
+              occurred_at, actor_user_id, correlation_id, causation_id, idempotency_key, payload_json
+            )
+            SELECT
+              t.tenant_id,
+              gen_random_uuid(),
+              t.ticket_id,
+              'ws_ticket',
+              1,
+              'ws.ticket.issued',
+              now(),
+              t.user_id,
+              NULL,
+              NULL,
+              concat('ws-ticket:issue:', t.ticket_id),
+              json_build_object(
+                'ticket_id', t.ticket_id,
+                'user_id', t.user_id,
+                'channels', t.channel_scope_json -> 'channels',
+                'expires_at', t.expires_at
+              )
+            FROM created_ticket t
+            RETURNING aggregate_id
+          )
+          SELECT t.*
+          FROM created_ticket t
+          JOIN ws_ticket_event wte
+            ON wte.aggregate_id = t.ticket_id
+        `,
+        params: { actor_id: request.actorId }
+      };
+    },
+    map(rows) {
+      const ticket = firstRow(rows) as DbRow<"ws_tickets">;
+      return {
+        ticket: ticket.ticket_id,
+        expires_in_seconds: 60,
+        channels: channelScope(ticket.channel_scope_json)
+      };
+    }
+  },
   listPublishedArtifacts: {
     plan(request) {
       return {
@@ -2331,4 +2404,10 @@ function messagePageLimit(limit: unknown): number {
 
 function arrayValue(value: unknown): unknown[] {
   return Array.isArray(value) ? value : [];
+}
+
+function channelScope(value: unknown): string[] {
+  if (!value || typeof value !== "object") return [];
+  const channels = (value as { channels?: unknown }).channels;
+  return Array.isArray(channels) ? channels.filter((channel): channel is string => typeof channel === "string") : [];
 }
