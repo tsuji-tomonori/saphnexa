@@ -1,5 +1,6 @@
 import { assert, listFiles, readText } from "./lib.js";
-import { apiImplementationCoverage, toolImplementationCoverage } from "./implementation-coverage-manifest.js";
+import { apiImplementationCoverage } from "../packages/api-contract/src/implementation-coverage.js";
+import { toolImplementationCoverage } from "../packages/tool-contract/src/implementation-coverage.js";
 
 const strict = process.argv.includes("--strict");
 const violations = [];

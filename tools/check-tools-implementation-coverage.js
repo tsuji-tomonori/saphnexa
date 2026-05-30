@@ -1,5 +1,5 @@
 import { toolContracts } from "../packages/tool-contract/src/tools.js";
-import { toolImplementationCoverage } from "./implementation-coverage-manifest.js";
+import { toolImplementationCoverage } from "../packages/tool-contract/src/implementation-coverage.js";
 import { assert } from "./lib.js";
 
 const productionReady = process.argv.includes("--production-ready");

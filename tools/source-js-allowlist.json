@@ -35,6 +35,10 @@
       "reason": "runtime compatibility contract surface used by current Node tests; TypeScript source exists at packages/api-contract/src/routes.ts"
     },
     {
+      "path": "packages/api-contract/src/implementation-coverage.js",
+      "reason": "runtime compatibility implementation coverage manifest used by current Node checks; planned for TypeScript contract source migration"
+    },
+    {
       "path": "packages/db-schema/src/table-metadata.js",
       "reason": "runtime compatibility metadata surface used by current Node checks; TypeScript source exists at packages/db-schema/src/table-metadata.ts"
     },
@@ -81,6 +85,10 @@
     {
       "path": "packages/tool-contract/src/tools.js",
       "reason": "runtime compatibility tool contract surface used by current Node tests; TypeScript source exists at packages/tool-contract/src/tools.ts"
+    },
+    {
+      "path": "packages/tool-contract/src/implementation-coverage.js",
+      "reason": "runtime compatibility tool implementation coverage manifest used by current Node checks; planned for TypeScript contract source migration"
     }
   ]
 }

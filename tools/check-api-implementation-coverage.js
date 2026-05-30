@@ -1,5 +1,5 @@
 import { publicApiRoutes } from "../packages/api-contract/src/routes.js";
-import { apiImplementationCoverage } from "./implementation-coverage-manifest.js";
+import { apiImplementationCoverage } from "../packages/api-contract/src/implementation-coverage.js";
 import { assert, readText } from "./lib.js";
 
 const productionReady = process.argv.includes("--production-ready");
