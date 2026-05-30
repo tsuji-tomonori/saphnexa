@@ -55,7 +55,7 @@ export const apiImplementationCoverage = {
   listLlmModels: api("aggregate", "aggregate", "aggregate", "aggregate", "implemented", { unitTest: "aggregate", dsqlSmoke: "aggregate" }),
   adminListUsers: api("aggregate", "aggregate", "aggregate", "aggregate", "implemented", { audit: "implemented", unitTest: "aggregate", localIntegrationTest: "implemented", dsqlSmoke: "aggregate" }),
   startUserImport: api("aggregate", "aggregate", "aggregate", "aggregate", "planned", { domainEvent: "planned", audit: "planned" }),
-  getUserImport: api("aggregate", "aggregate", "aggregate", "aggregate", "planned"),
+  getUserImport: api("aggregate", "aggregate", "aggregate", "aggregate", "implemented", { unitTest: "aggregate", localIntegrationTest: "implemented", dsqlSmoke: "aggregate" }),
   adminListDocuments: api("aggregate", "aggregate", "aggregate", "aggregate", "implemented", { audit: "implemented", unitTest: "aggregate", localIntegrationTest: "implemented", dsqlSmoke: "aggregate" }),
   createDocument: api("aggregate", "aggregate", "aggregate", "aggregate", "planned", { domainEvent: "planned", audit: "planned" }),
   getDocument: api("aggregate", "aggregate", "aggregate", "aggregate", "implemented", { unitTest: "aggregate", localIntegrationTest: "implemented", dsqlSmoke: "aggregate" }),

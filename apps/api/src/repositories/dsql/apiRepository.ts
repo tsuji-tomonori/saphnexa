@@ -1790,6 +1790,59 @@ const dsqlOperationMappings = {
       return { users: rows };
     }
   },
+  getUserImport: {
+    plan(request) {
+      return {
+        operationId: "getUserImport",
+        resultTable: "user_import_jobs",
+        sql: `
+          SELECT
+            j.tenant_id,
+            j.import_id,
+            j.status,
+            j.result_s3_prefix,
+            j.created_by_user_id,
+            j.created_at,
+            COALESCE(
+              json_agg(
+                json_build_object(
+                  'tenant_id', r.tenant_id,
+                  'import_id', r.import_id,
+                  'row_number', r.row_number,
+                  'status', r.status,
+                  'error_message', r.error_message
+                )
+                ORDER BY r.row_number
+              ) FILTER (WHERE r.row_number IS NOT NULL),
+              '[]'::json
+            ) AS rows
+          FROM user_import_jobs j
+          JOIN users u
+            ON u.tenant_id = j.tenant_id
+           AND u.user_id = :actor_id
+           AND u.role = 'admin'
+           AND u.status = 'active'
+          LEFT JOIN user_import_rows r
+            ON r.tenant_id = j.tenant_id
+           AND r.import_id = j.import_id
+          WHERE j.import_id = :import_id
+          GROUP BY j.tenant_id, j.import_id, j.status, j.result_s3_prefix, j.created_by_user_id, j.created_at
+          LIMIT 1
+        `,
+        params: { actor_id: request.actorId, import_id: request.input.import_id }
+      };
+    },
+    map(rows) {
+      const row = rows[0] as
+        | (DbRow<"user_import_jobs"> & {
+            rows?: unknown;
+          })
+        | undefined;
+      if (!row) return { import: undefined, rows: [] };
+      const { rows: importRows, ...job } = row;
+      return { import: job, rows: arrayValue(importRows) };
+    }
+  },
   adminListDocuments: {
     plan(request) {
       return {
