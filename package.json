@@ -49,6 +49,8 @@
     "rag:perf:local": "node tools/check-rag-performance.js",
     "rag-core:generate": "node tools/generate-rag-core-runtime-mirror.js",
     "rag-core:check": "node tools/generate-rag-core-runtime-mirror.js --check",
+    "workers:generate": "node tools/generate-workers-runtime-mirror.js",
+    "workers:check": "node tools/generate-workers-runtime-mirror.js --check",
     "db:metadata:build": "node tools/build-db-metadata-source.js",
     "db:metadata:check": "node tools/check-db-metadata.js",
     "db-schema:tables:generate": "node tools/generate-db-tables-runtime-mirror.js",

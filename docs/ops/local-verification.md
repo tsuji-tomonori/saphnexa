@@ -43,6 +43,7 @@ npm run rag:security:check
 npm run rag:aws-binding:check
 npm run rag:perf:local
 npm run rag-core:check
+npm run workers:check
 npm run db-schema:tables:check
 npm run domain:check
 npm run db:migration:check
@@ -122,7 +123,7 @@ git diff --check
 - `npm run typecheck` が source gate と `tsc --noEmit --project tsconfig.typecheck.json` の両方を実行し、API / Agent / Tools API / Web / UI / shared contract の TypeScript source を実コンパイルすること。
 - `packages/rag-core` が typed RAG adapter/tools boundary を TypeScript source として持ち、`npm run rag-core:check` で生成される `.js` runtime mirror と主要 tool/policy token が同期していること。
 - `packages/domain` が role/status/event/helper、observability catalog、local store 境界を TypeScript source として持ち、既存 `.js` runtime mirror と主要 token が同期していること。
-- `apps/workers` が lightweight notification boundary を TypeScript source として持ち、既存 `.js` runtime mirror と禁止フィールド、4KB payload 上限、REST detail URL が同期していること。
+- `apps/workers` が lightweight notification boundary を TypeScript source として持ち、`npm run workers:check` で生成される `.js` runtime mirror と禁止フィールド、4KB payload 上限、REST detail URL が同期していること。
 - Hono/Zod/OpenAPI 実装 entrypoint が 40 route と `/openapi.json` を route contract から生成し、CSRF/role/Zod validation metadata と主要 success response の runtime validation 境界を保持すること。
 - `npm run check:no-src-js` が `apps/**/src` と `packages/**/src` の JavaScript runtime compatibility surface を allowlist で明示し、`--strict` では production-ready TypeScript source-of-truth として残存 JS を拒否すること。
 - `npm run api:implementation:check` が `packages/api-contract/src/implementation-coverage.js` の 40 public API operation について route、schema、usecase、local fixture、production、repository、event、audit、test の coverage metadata と planned marker を検査すること。`npm run api:implementation:check:production` は planned marker を拒否する。
@@ -131,6 +132,7 @@ git diff --check
 - `npm run check:implementation-coverage-source` が coverage manifest の TypeScript source 型制約、generated `.js` runtime mirror marker、operation/status token drift がないことを検査すること。
 - `npm run model-catalog:check` が `packages/model-catalog/src/models.ts` と `packages/model-catalog/src/cost-estimate.ts` から生成される `.js` runtime mirror と committed mirror の一致を検査すること。
 - `npm run rag-core:check` が `packages/rag-core/src/fixture-rag.ts` から生成される `.js` runtime mirror と committed mirror の一致を検査すること。
+- `npm run workers:check` が `apps/workers/src/event-publisher.ts` から生成される `.js` runtime mirror と committed mirror の一致を検査すること。
 - `npm run check:atomicity` が API route/schema/repository、Web page、UI package、Agent retrieval/data access の依存境界を検査し、現行 aggregate implementation は planned marker として追跡すること。`npm run check:atomicity:strict` は移行猶予の違反を拒否する。
 - API が `hono/aws-lambda` handler entrypoint、request log / origin / error / session / CSRF middleware 境界、dispatch service、DSQL repository interface、operation-level SQL plan、DSQL query executor interface、shared DB row type boundary を TypeScript source として持つこと。
 - API の Hono app factory、OpenAPI document builder、Zod schema catalog が TypeScript source of record を持ち、主要 success response の concrete Zod schema と既存 Node local tools 用の `.js` runtime mirror が同期していること。
@@ -251,7 +253,7 @@ git diff --check
 - API TypeScript source of record は source gate と実 `tsc --noEmit` で検査する。DSQL repository は read系 operation の SQL plan と executor interface までを検査し、実 Aurora DSQL driver、IAM auth token、connection pool、`.ts` からの runtime bundle 生成は別途確認する。既存 local tools/tests は標準 `node` 実行のため `.js` runtime mirror を使う。
 - RAG core TypeScript source は source gate と実 `tsc --noEmit` で検査する。既存 local tools/tests は標準 `node` 実行のため `.js` runtime mirror を使い、`npm run rag-core:check` で `.ts` からの runtime artifact 生成 drift を確認する。
 - Domain TypeScript source は source gate と実 `tsc --noEmit` で検査する。既存 local tools/tests は標準 `node` 実行のため `.js` runtime mirror を使う。`.ts` からの runtime artifact 生成、実 DSQL/Cognito/AppSync 接続は別途確認する。
-- Workers TypeScript source は source gate と実 `tsc --noEmit` で検査する。既存 local tools/tests は標準 `node` 実行のため `.js` runtime mirror を使う。`.ts` からの runtime artifact 生成、実 AppSync Events publish / WebSocket push は別途確認する。
+- Workers TypeScript source は source gate と実 `tsc --noEmit` で検査する。既存 local tools/tests は標準 `node` 実行のため `.js` runtime mirror を使い、`npm run workers:check` で `.ts` からの runtime artifact 生成 drift を確認する。実 AppSync Events publish / WebSocket push は別途確認する。
 - `aws-cdk-lib` / `constructs` install 後の実 `cdk synth`、CDK bootstrap、CDK deploy、CloudFormation change set 実行。
 - CDK deploy、CloudFormation outputs、S3 inventory、CloudWatch logs、CloudFront/S3/Docusaurus/Allure 公開 URL。
 - `aws s3 sync dist/admin/docs/versions/v0.17/ ...` と Allure run別 publish の実行結果。

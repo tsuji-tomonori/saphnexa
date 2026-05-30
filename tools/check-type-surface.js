@@ -671,6 +671,7 @@ for (const tool of toolContracts) {
 
 const workerEventPublisherTs = readText("apps/workers/src/event-publisher.ts");
 const workerEventPublisherJs = readText("apps/workers/src/event-publisher.js");
+execFileSync("node", ["tools/generate-workers-runtime-mirror.js", "--check"], { stdio: "inherit" });
 for (const token of [
   "createLightweightNotification",
   "assertNotificationIsLightweight",

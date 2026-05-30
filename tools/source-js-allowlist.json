@@ -28,7 +28,7 @@
     },
     {
       "path": "apps/workers/src/event-publisher.js",
-      "reason": "runtime compatibility mirror used by current Node tests; TypeScript source exists at apps/workers/src/event-publisher.ts"
+      "reason": "generated runtime compatibility Workers event publisher mirror used by current Node tests; TypeScript source exists at apps/workers/src/event-publisher.ts"
     },
     {
       "path": "packages/api-contract/src/routes.js",

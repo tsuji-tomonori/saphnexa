@@ -162,6 +162,14 @@ tasks:
     desc: Verify generated RAG core JavaScript runtime mirror is current
     cmds:
       - npm run rag-core:check
+  workers:generate:
+    desc: Generate Workers JavaScript runtime mirrors from TypeScript source
+    cmds:
+      - npm run workers:generate
+  workers:check:
+    desc: Verify generated Workers JavaScript runtime mirrors are current
+    cmds:
+      - npm run workers:check
   db:migration:check:
     desc: Verify local Flyway SQL migration naming and schema coverage
     cmds:
