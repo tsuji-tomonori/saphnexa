@@ -29,6 +29,7 @@ export function buildAwsDevUatPreflightEvidence(inputPath, outputPath = prefligh
   const input = readJson(inputPath);
   const captureProvenance = assertCaptureProvenance(input.capture_provenance, inputPath, preflightCaptureCommandIds);
   const outputs = stackOutputs(input.cloudformation);
+  const flyway = dsqlFlywayInput(input, inputPath, captureProvenance);
   const accountId = accountIdFrom(input.aws?.account_id, input.aws?.account_id_parts, input.aws_identity?.Account, input.aws_identity?.AccountParts);
   const region = input.aws?.region || "ap-northeast-1";
   const stackName = input.cloudformation?.StackName || input.cloudformation?.stack_name;
@@ -45,13 +46,17 @@ export function buildAwsDevUatPreflightEvidence(inputPath, outputPath = prefligh
     },
     source: source(input.source),
     dsql_flyway: {
-      status: input.dsql_flyway?.status || "passed",
-      cluster_identifier: input.dsql_flyway?.cluster_identifier,
-      endpoint: input.dsql_flyway?.endpoint || outputs.DsqlEndpoint,
-      flyway_schema_history_table: input.dsql_flyway?.flyway_schema_history_table || "schema_migrations",
-      latest_version: input.dsql_flyway?.latest_version,
-      checksum_status: input.dsql_flyway?.checksum_status,
-      applied_by: input.dsql_flyway?.applied_by || "flyway"
+      status: flyway.status || "passed",
+      cluster_identifier: flyway.cluster_identifier,
+      endpoint: flyway.endpoint || outputs.DsqlEndpoint,
+      flyway_schema_history_table: flyway.flyway_schema_history_table || "schema_migrations",
+      latest_version: flyway.latest_version,
+      checksum_status: flyway.checksum_status,
+      applied_by: flyway.applied_by || "flyway",
+      applied_migrations: flyway.applied_migrations,
+      schema: flyway.schema,
+      comment_on: flyway.comment_on,
+      crud_smoke: flyway.crud_smoke
     },
     hono_openapi: {
       status: input.hono_openapi?.status || "passed",
@@ -150,6 +155,31 @@ function source(input = {}) {
     git_tag: input.git_tag,
     github_release_url: input.github_release_url
   };
+}
+
+function dsqlFlywayInput(input, inputPath, captureProvenance) {
+  const inline = input.dsql_flyway || {};
+  if (inline.applied_migrations && inline.schema && inline.comment_on && inline.crud_smoke) return inline;
+  const raw = rawOutputById(inputPath, captureProvenance, "flyway-info");
+  return {
+    status: inline.status || "passed",
+    cluster_identifier: inline.cluster_identifier,
+    endpoint: inline.endpoint,
+    flyway_schema_history_table: inline.flyway_schema_history_table || raw.schemaHistoryTable,
+    latest_version: inline.latest_version || raw.latestVersion || raw.schemaVersion,
+    checksum_status: inline.checksum_status || raw.checksumStatus || raw.checksum_status,
+    applied_by: inline.applied_by || "flyway",
+    applied_migrations: inline.applied_migrations || raw.appliedMigrations,
+    schema: inline.schema || raw.schema,
+    comment_on: inline.comment_on || raw.commentOn,
+    crud_smoke: inline.crud_smoke || raw.crudSmoke
+  };
+}
+
+function rawOutputById(inputPath, captureProvenance, id) {
+  const command = captureProvenance.commands.find((item) => item.id === id);
+  assert(command, `capture_provenance.commands missing ${id}`);
+  return readJson(resolve(dirname(inputPath), command.output_ref));
 }
 
 function stackOutputs(section = {}) {

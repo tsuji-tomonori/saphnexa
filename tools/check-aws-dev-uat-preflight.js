@@ -1,4 +1,11 @@
 import { existsSync } from "node:fs";
+import {
+  requiredCoreTables,
+  requiredCrudSmokeFlows,
+  requiredEventTables,
+  requiredMigrationVersions,
+  requiredProjectionColumns
+} from "./dsql-flyway-evidence-requirements.js";
 import { assert, readJson } from "./lib.js";
 
 const args = new Set(process.argv.slice(2));
@@ -53,6 +60,62 @@ function assertDsqlFlyway(section) {
   assert(section.latest_version === "V003", "dsql_flyway.latest_version must be V003");
   assert(section.checksum_status === "matched", "dsql_flyway.checksum_status must be matched");
   assert(section.applied_by === "flyway", "dsql_flyway.applied_by must be flyway");
+  if (isFixture) return;
+  assertAppliedMigrations(section.applied_migrations);
+  assertDsqlSchema(section.schema);
+  assertCommentOn(section.comment_on);
+  assertCrudSmoke(section.crud_smoke);
+}
+
+function assertAppliedMigrations(appliedMigrations) {
+  assert(Array.isArray(appliedMigrations), "dsql_flyway.applied_migrations must be an array");
+  const byVersion = new Map(appliedMigrations.map((item) => [item.version, item]));
+  for (const version of requiredMigrationVersions) {
+    const item = byVersion.get(version);
+    assert(item, `dsql_flyway.applied_migrations missing ${version}`);
+    assert(item.success === true, `dsql_flyway.applied_migrations ${version} must be successful`);
+  }
+}
+
+function assertDsqlSchema(schema) {
+  assert(schema && typeof schema === "object", "dsql_flyway.schema is required");
+  assertIncludesAll(schema.coreTables, requiredCoreTables, "dsql_flyway.schema.coreTables");
+  assertIncludesAll(schema.eventTables, requiredEventTables, "dsql_flyway.schema.eventTables");
+  assertProjectionColumns(schema.projectionColumns);
+}
+
+function assertProjectionColumns(columns) {
+  assert(Array.isArray(columns), "dsql_flyway.schema.projectionColumns must be an array");
+  const actual = new Set(columns.map((item) => `${item.table}.${item.column}`));
+  for (const item of requiredProjectionColumns) {
+    assert(actual.has(`${item.table}.${item.column}`), `dsql_flyway.schema.projectionColumns missing ${item.table}.${item.column}`);
+  }
+}
+
+function assertCommentOn(commentOn) {
+  assert(commentOn && typeof commentOn === "object", "dsql_flyway.comment_on is required");
+  for (const scope of ["table", "column"]) {
+    const item = commentOn[scope];
+    assert(item && typeof item === "object", `dsql_flyway.comment_on.${scope} is required`);
+    assert(item.attempted === true, `dsql_flyway.comment_on.${scope}.attempted must be true`);
+    assert(typeof item.supported === "boolean", `dsql_flyway.comment_on.${scope}.supported must be boolean`);
+    if (item.supported === false) {
+      assertFinalText(item.error, `dsql_flyway.comment_on.${scope}.error`);
+    }
+  }
+}
+
+function assertCrudSmoke(crudSmoke) {
+  assert(crudSmoke && typeof crudSmoke === "object", "dsql_flyway.crud_smoke is required");
+  for (const flow of requiredCrudSmokeFlows) {
+    assert(crudSmoke[flow]?.status === "passed", `dsql_flyway.crud_smoke.${flow}.status must be passed`);
+  }
+}
+
+function assertIncludesAll(actual, expected, label) {
+  assert(Array.isArray(actual), `${label} must be an array`);
+  const actualSet = new Set(actual);
+  for (const item of expected) assert(actualSet.has(item), `${label} missing ${item}`);
 }
 
 function assertHonoOpenApi(section) {
