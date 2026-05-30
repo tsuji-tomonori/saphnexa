@@ -52,6 +52,8 @@
     "rag-core:check": "node tools/generate-rag-core-runtime-mirror.js --check",
     "agent:policy:generate": "node tools/generate-agent-policy-runtime-mirror.js",
     "agent:policy:check": "node tools/generate-agent-policy-runtime-mirror.js --check",
+    "tools-api:local:generate": "node tools/generate-tools-local-runtime-mirror.js",
+    "tools-api:local:check": "node tools/generate-tools-local-runtime-mirror.js --check",
     "workers:generate": "node tools/generate-workers-runtime-mirror.js",
     "workers:check": "node tools/generate-workers-runtime-mirror.js --check",
     "db:metadata:build": "node tools/build-db-metadata-source.js",

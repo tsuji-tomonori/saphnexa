@@ -681,6 +681,13 @@ for (const tool of toolContracts) {
   assert(toolsApiSource.includes(tool.operationId), `Tools API source missing ${tool.operationId}`);
 }
 
+const toolsLocalTsSource = readText("apps/tools-api/src/local-tools-api.ts");
+const toolsLocalJsSource = readText("apps/tools-api/src/local-tools-api.js");
+execFileSync("node", ["tools/generate-tools-local-runtime-mirror.js", "--check"], { stdio: "inherit" });
+assert(toolsLocalTsSource.includes("toolContracts.map"), "Tools local TS source must derive handlers from tool contracts");
+assert(toolsLocalJsSource.includes("toolContracts.map"), "Tools local runtime mirror must derive handlers from tool contracts");
+assert(toolsLocalJsSource.includes("TOOL_NOT_FOUND"), "Tools local runtime mirror must keep not found response");
+
 const workerEventPublisherTs = readText("apps/workers/src/event-publisher.ts");
 const workerEventPublisherJs = readText("apps/workers/src/event-publisher.js");
 execFileSync("node", ["tools/generate-workers-runtime-mirror.js", "--check"], { stdio: "inherit" });

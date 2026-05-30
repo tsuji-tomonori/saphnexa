@@ -44,7 +44,7 @@
     },
     {
       "path": "apps/tools-api/src/local-tools-api.js",
-      "reason": "runtime compatibility local tool fixture used by package export; planned for TypeScript tool runtime split"
+      "reason": "generated runtime compatibility Tools API local fixture mirror used by package export; TypeScript source exists at apps/tools-api/src/local-tools-api.ts"
     },
     {
       "path": "apps/workers/src/event-publisher.js",
