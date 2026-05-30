@@ -2565,25 +2565,84 @@ const dsqlOperationMappings = {
             WHERE user_id = :actor_id
               AND role = 'admin'
               AND status = 'active'
+          ),
+          retried_job AS (
+            UPDATE ingestion_jobs j
+               SET status = 'queued',
+                   error_code = NULL
+              FROM admin_actor a
+             WHERE j.tenant_id = a.tenant_id
+               AND j.job_id = :job_id
+               AND j.status = 'failed'
+            RETURNING
+              j.tenant_id,
+              j.job_id,
+              j.document_id,
+              j.version_id,
+              j.status,
+              10 AS progress_percent,
+              j.raw_s3_uri,
+              j.parsed_s3_prefix,
+              j.error_code,
+              j.created_at
+          ),
+          ingestion_job_event AS (
+            INSERT INTO ingestion_job_events (
+              tenant_id, event_id, aggregate_id, aggregate_type, event_seq, event_name,
+              occurred_at, actor_user_id, correlation_id, causation_id, idempotency_key, payload_json
+            )
+            SELECT
+              rj.tenant_id,
+              gen_random_uuid(),
+              rj.job_id,
+              'ingestion_job',
+              COALESCE((
+                SELECT max(e.event_seq)
+                FROM ingestion_job_events e
+                WHERE e.tenant_id = rj.tenant_id
+                  AND e.aggregate_id = rj.job_id
+              ), 0) + 1,
+              'document.ingestion.retried',
+              now(),
+              a.user_id,
+              NULL,
+              NULL,
+              NULL,
+              json_build_object(
+                'job_id', rj.job_id,
+                'document_id', rj.document_id,
+                'version_id', rj.version_id,
+                'status', rj.status
+              )
+            FROM retried_job rj
+            JOIN admin_actor a
+              ON a.tenant_id = rj.tenant_id
+            RETURNING aggregate_id
+          ),
+          audit_event AS (
+            INSERT INTO audit_events (
+              tenant_id, audit_event_id, actor_user_id, event_name, category, resource_id, payload_json, created_at
+            )
+            SELECT
+              rj.tenant_id,
+              gen_random_uuid(),
+              a.user_id,
+              'document.ingestion.retried',
+              'admin_operation',
+              rj.job_id,
+              json_build_object('document_id', rj.document_id, 'version_id', rj.version_id),
+              now()
+            FROM retried_job rj
+            JOIN admin_actor a
+              ON a.tenant_id = rj.tenant_id
+            RETURNING resource_id
           )
-          UPDATE ingestion_jobs j
-             SET status = 'queued',
-                 error_code = NULL
-            FROM admin_actor a
-           WHERE j.tenant_id = a.tenant_id
-             AND j.job_id = :job_id
-             AND j.status = 'failed'
-          RETURNING
-            j.tenant_id,
-            j.job_id,
-            j.document_id,
-            j.version_id,
-            j.status,
-            10 AS progress_percent,
-            j.raw_s3_uri,
-            j.parsed_s3_prefix,
-            j.error_code,
-            j.created_at
+          SELECT rj.*
+          FROM retried_job rj
+          JOIN ingestion_job_event ije
+            ON ije.aggregate_id = rj.job_id
+          JOIN audit_event ae
+            ON ae.resource_id = rj.job_id
         `,
         params: { actor_id: request.actorId, job_id: request.input.job_id }
       };
