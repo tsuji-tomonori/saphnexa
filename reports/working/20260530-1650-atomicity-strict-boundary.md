@@ -33,7 +33,7 @@
 - `apps/agent/src/agent/ragAgent.ts`
 - `tools/check-atomicity.js`
 - `tools/check-type-surface.js`
-- `tasks/do/20260530-1650-atomicity-strict-boundary.md`
+- `tasks/done/20260530-1650-atomicity-strict-boundary.md`
 
 ## 検証
 
@@ -41,6 +41,7 @@
 - `npm run typecheck:source`: 成功
 - `npm run check:static`: 成功
 - `git diff --check`: 成功
+- GitHub Actions PR checks: 成功
 
 ## fit 評価
 
@@ -50,4 +51,3 @@
 ## 未対応・制約・リスク
 
 - retrieval policy client の実接続先はまだ local policy 相当であり、Tools API / production policy service への実接続は後続タスクとして残る。
-- GitHub Actions の再実行結果は push 後に確認する。

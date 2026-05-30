@@ -1,6 +1,6 @@
 # Atomicity strict boundary cleanup
 
-- 状態: doing
+- 状態: done
 - 作業ブランチ: `codex/ts-atomic-coverage`
 - 対象PR: #6
 - 開始: 2026-05-30 16:50 JST
@@ -42,6 +42,15 @@ Web page / Agent runtime の atomic dependency boundary を strict gate で通�
 - [x] `npm run typecheck:source`
 - [x] `npm run check:static`
 - [x] `git diff --check`
-- [ ] PR 受け入れ条件確認コメント
-- [ ] PR セルフレビューコメント
-- [ ] GitHub Actions の PR check 成功
+- [x] PR 受け入れ条件確認コメント
+- [x] PR セルフレビューコメント
+- [x] GitHub Actions の PR check 成功
+
+## PR コメント
+
+- 受け入れ条件確認: https://github.com/tsuji-tomonori/saphnexa/pull/6#issuecomment-4582166829
+- セルフレビュー: https://github.com/tsuji-tomonori/saphnexa/pull/6#issuecomment-4582168595
+
+## CI
+
+- PR checks: 2026-05-30 16:56 JST 時点で全 job pass
