@@ -1,6 +1,6 @@
 # DB metadata generation drift check
 
-状態: doing
+状態: done
 タスク種別: 機能追加
 
 ## 背景
@@ -45,7 +45,12 @@ DB metadata を migration source 由来の生成物として明示し、`table-m
 - [x] `docs/ops/local-verification.md` が DB metadata 生成・検証導線を説明する。
 - [x] `npm run db:metadata:build`、`npm run db:metadata:check`、`npm run typecheck:source` が pass する。
 - [x] `npm run check:no-src-js`、`npm run check:static`、`npm run ci:check`、`git diff --check` が pass する。
-- [ ] PR に受け入れ条件確認コメントとセルフレビューコメントを日本語で投稿する。
+- [x] PR に受け入れ条件確認コメントとセルフレビューコメントを日本語で投稿する。
+
+PR コメント:
+
+- 受け入れ条件確認: https://github.com/tsuji-tomonori/saphnexa/pull/6#issuecomment-4581958110
+- セルフレビュー: https://github.com/tsuji-tomonori/saphnexa/pull/6#issuecomment-4581958148
 
 ## 検証計画
 
