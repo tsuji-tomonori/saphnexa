@@ -23,7 +23,7 @@ export const apiImplementationCoverage = {
   addFavorite: api("aggregate", "aggregate", "aggregate", "aggregate", "implemented", { domainEvent: "planned" }),
   deleteFavorite: api("aggregate", "aggregate", "aggregate", "aggregate", "implemented", { domainEvent: "planned" }),
   issueWsTicket: api("aggregate", "aggregate", "aggregate", "aggregate", "planned"),
-  listLlmModels: api("aggregate", "aggregate", "aggregate", "aggregate", "planned"),
+  listLlmModels: api("aggregate", "aggregate", "aggregate", "aggregate", "implemented", { unitTest: "aggregate", dsqlSmoke: "aggregate" }),
   adminListUsers: api("aggregate", "aggregate", "aggregate", "aggregate", "planned", { audit: "planned" }),
   startUserImport: api("aggregate", "aggregate", "aggregate", "aggregate", "planned", { domainEvent: "planned", audit: "planned" }),
   getUserImport: api("aggregate", "aggregate", "aggregate", "aggregate", "planned"),
