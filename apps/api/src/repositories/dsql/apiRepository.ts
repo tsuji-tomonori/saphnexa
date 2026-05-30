@@ -1541,6 +1541,29 @@ const dsqlOperationMappings = {
         operationId: "adminListUsers",
         resultTable: "users",
         sql: `
+          WITH actor AS (
+            SELECT tenant_id, user_id
+            FROM users
+            WHERE user_id = :actor_id
+              AND role = 'admin'
+              AND status = 'active'
+          ),
+          audit_event AS (
+            INSERT INTO audit_events (
+              tenant_id, audit_event_id, actor_user_id, event_name, category, resource_id, payload_json, created_at
+            )
+            SELECT
+              a.tenant_id,
+              gen_random_uuid(),
+              a.user_id,
+              'admin.users.listed',
+              'admin_user',
+              a.tenant_id,
+              json_build_object('scope', 'tenant_users'),
+              now()
+            FROM actor a
+            RETURNING actor_user_id
+          )
           SELECT
             target.tenant_id,
             target.user_id,
@@ -1552,12 +1575,11 @@ const dsqlOperationMappings = {
             target.status,
             target.created_at,
             target.updated_at
-          FROM users actor
+          FROM actor
           JOIN users target
             ON target.tenant_id = actor.tenant_id
-          WHERE actor.user_id = :actor_id
-            AND actor.role = 'admin'
-            AND actor.status = 'active'
+          JOIN audit_event ae
+            ON ae.actor_user_id = actor.user_id
           ORDER BY target.email ASC
         `,
         params: { actor_id: request.actorId }
@@ -1573,6 +1595,29 @@ const dsqlOperationMappings = {
         operationId: "adminListDocuments",
         resultTable: "documents",
         sql: `
+          WITH actor AS (
+            SELECT tenant_id, user_id
+            FROM users
+            WHERE user_id = :actor_id
+              AND role = 'admin'
+              AND status = 'active'
+          ),
+          audit_event AS (
+            INSERT INTO audit_events (
+              tenant_id, audit_event_id, actor_user_id, event_name, category, resource_id, payload_json, created_at
+            )
+            SELECT
+              a.tenant_id,
+              gen_random_uuid(),
+              a.user_id,
+              'admin.documents.listed',
+              'document',
+              a.tenant_id,
+              json_build_object('scope', 'tenant_documents'),
+              now()
+            FROM actor a
+            RETURNING actor_user_id
+          )
           SELECT
             d.tenant_id,
             d.document_id,
@@ -1582,11 +1627,10 @@ const dsqlOperationMappings = {
             d.created_at,
             d.updated_at
           FROM documents d
-          JOIN users u
-            ON u.tenant_id = d.tenant_id
-           AND u.user_id = :actor_id
-           AND u.role = 'admin'
-           AND u.status = 'active'
+          JOIN actor a
+            ON a.tenant_id = d.tenant_id
+          JOIN audit_event ae
+            ON ae.actor_user_id = a.user_id
           WHERE d.status <> 'deleted'
           ORDER BY d.updated_at DESC
         `,
