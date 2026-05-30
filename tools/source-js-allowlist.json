@@ -1,0 +1,86 @@
+{
+  "version": 1,
+  "policy": "apps/**/src and packages/**/src JavaScript files are transition-only compatibility surfaces. They must be removed, generated, or moved out of source before production-ready TypeScript source-of-truth.",
+  "allowed": [
+    {
+      "path": "apps/agent/src/rag-agent.js",
+      "reason": "runtime compatibility wrapper used by current Node tests; TypeScript source exists under apps/agent/src/agent"
+    },
+    {
+      "path": "apps/api/src/hono-openapi-app.js",
+      "reason": "runtime compatibility mirror for current Node OpenAPI checks; TypeScript source exists at apps/api/src/hono-openapi-app.ts"
+    },
+    {
+      "path": "apps/api/src/local-api.js",
+      "reason": "runtime compatibility local fixture dispatcher used by current Node tests; planned for TypeScript runtime/localFixture split"
+    },
+    {
+      "path": "apps/api/src/openapi-document.js",
+      "reason": "runtime compatibility mirror for current Node OpenAPI checks; TypeScript source exists at apps/api/src/openapi-document.ts"
+    },
+    {
+      "path": "apps/api/src/zod-openapi-schemas.js",
+      "reason": "runtime compatibility mirror for current Node OpenAPI checks; TypeScript source exists at apps/api/src/zod-openapi-schemas.ts"
+    },
+    {
+      "path": "apps/tools-api/src/local-tools-api.js",
+      "reason": "runtime compatibility local tool fixture used by package export; planned for TypeScript tool runtime split"
+    },
+    {
+      "path": "apps/workers/src/event-publisher.js",
+      "reason": "runtime compatibility mirror used by current Node tests; TypeScript source exists at apps/workers/src/event-publisher.ts"
+    },
+    {
+      "path": "packages/api-contract/src/routes.js",
+      "reason": "runtime compatibility contract surface used by current Node tests; TypeScript source exists at packages/api-contract/src/routes.ts"
+    },
+    {
+      "path": "packages/db-schema/src/table-metadata.js",
+      "reason": "runtime compatibility metadata surface used by current Node checks; TypeScript source exists at packages/db-schema/src/table-metadata.ts"
+    },
+    {
+      "path": "packages/db-schema/src/tables.js",
+      "reason": "runtime compatibility schema surface used by current Node checks; TypeScript source exists at packages/db-schema/src/tables.ts"
+    },
+    {
+      "path": "packages/domain/src/index.js",
+      "reason": "runtime compatibility domain surface used by current Node checks; TypeScript source exists at packages/domain/src/index.ts"
+    },
+    {
+      "path": "packages/domain/src/observability.js",
+      "reason": "runtime compatibility observability surface used by current Node checks; TypeScript source exists at packages/domain/src/observability.ts"
+    },
+    {
+      "path": "packages/domain/src/store.js",
+      "reason": "runtime compatibility local store surface used by current Node checks; planned for TypeScript source-of-truth runtime"
+    },
+    {
+      "path": "packages/model-catalog/src/cost-estimate.js",
+      "reason": "runtime compatibility model catalog surface used by current Node checks; TypeScript source exists at packages/model-catalog/src/cost-estimate.ts"
+    },
+    {
+      "path": "packages/model-catalog/src/models.js",
+      "reason": "runtime compatibility model catalog surface used by current Node checks; TypeScript source exists at packages/model-catalog/src/models.ts"
+    },
+    {
+      "path": "packages/rag-core/src/fixture-rag.js",
+      "reason": "runtime compatibility fixture RAG surface used by current Node checks; TypeScript source exists at packages/rag-core/src/fixture-rag.ts"
+    },
+    {
+      "path": "packages/testing/src/pairwise.js",
+      "reason": "runtime compatibility testing helper used by current Node checks; planned for TypeScript test-helper migration"
+    },
+    {
+      "path": "packages/testing/src/rag-evaluation.js",
+      "reason": "runtime compatibility testing helper used by current Node checks; planned for TypeScript test-helper migration"
+    },
+    {
+      "path": "packages/testing/src/search-fixtures.js",
+      "reason": "runtime compatibility testing fixture used by current Node checks; planned for TypeScript test-helper migration"
+    },
+    {
+      "path": "packages/tool-contract/src/tools.js",
+      "reason": "runtime compatibility tool contract surface used by current Node tests; TypeScript source exists at packages/tool-contract/src/tools.ts"
+    }
+  ]
+}
