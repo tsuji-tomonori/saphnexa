@@ -144,10 +144,25 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: "22"
+      - run: npm run db:metadata:check
+      - run: npm run db:comments:check
+      - run: npm run db:event-source:check
+      - run: npm run db:docs:check
+      - run: npm run db:dsql-compat:check
       - run: npm run db:migration:check
       - run: npm run db:integrity:check
       - run: npm run search:local:check
       - run: npm run observability:check
+
+  static-analysis:
+    name: static analysis
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+      - run: npm run check:static
 
   admin-offline-restore:
     name: admin offline restore

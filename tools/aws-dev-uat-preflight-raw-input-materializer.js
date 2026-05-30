@@ -206,7 +206,7 @@ function assertStackResources(rawResources) {
 function flywayStatus(rawFlyway) {
   const latestVersion = rawFlyway.latestVersion || rawFlyway.schemaVersion;
   const checksumStatus = rawFlyway.checksumStatus || rawFlyway.checksum_status;
-  assert(latestVersion === "V001", "flyway latestVersion must be V001");
+  assert(latestVersion === "V003", "flyway latestVersion must be V003");
   assert(checksumStatus === "matched", "flyway checksumStatus must be matched");
   return {
     schemaHistoryTable: rawFlyway.schemaHistoryTable || "schema_migrations",

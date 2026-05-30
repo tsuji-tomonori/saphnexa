@@ -55,11 +55,11 @@
 | AC-062 | local_verified | event notification points to REST detail and auth is rechecked. |
 | AC-063 | local_verified | `npm run admin:workflow:check` で user_import/ingestion/evaluation/artifact の admin event を検査。実 publisher integration は未実装。 |
 | AC-064 | local_verified | `after_seq` local event API と viewer REST detail 取得を `tests/e2e-local.test.js` で検証。実 WebSocket disconnect は未実施。 |
-| AC-070 | local_verified | `npm run db:migration:check` で Flyway versioned SQL、schema_migrations、checksum算出、required tables を静的検査。Aurora DSQL/Flyway 実適用は未実施。 |
+| AC-070 | local_verified | `npm run db:migration:check` で Flyway versioned SQL、schema_migrations、checksum算出、required tables を静的検査。`npm run db:metadata:check` / `npm run db:comments:check` / `npm run db:event-source:check` / `npm run db:docs:check` / `npm run db:dsql-compat:check` で v0.17 案Bの metadata、COMMENT SQL生成、event正本/projection境界、generated DB docs、Aurora DSQL COMMENT ON TODOを検査。Aurora DSQL/Flyway 実適用と COMMENT ON 実機可否は未実施。 |
 | AC-071 | local_verified | `npm run db:migration:check` で migration が手書き SQL で、ORM auto migration command/marker がないことを検査。 |
 | AC-072 | local_verified | `npm run db:integrity:check` で local DB-like store の tenant/user/chat/participant/message/run/document/version/ingestion/evaluation/artifact invariant violation 0件を検査。DSQL query report は未実施。 |
 | AC-073 | local_verified | owner/viewer DB-like store relation and denial tested. |
-| AC-074 | local_verified | `npm run db:integrity:check` で local event_seq 重複0件、payload/status 更新なしを検査。DB trigger/audit query は未実施。 |
+| AC-074 | local_verified | `npm run db:integrity:check` で local event_seq 重複0件、payload/status 更新なしを検査。`npm run db:event-source:check` で domain event table migration と projection lineage columns、状態系カラムが正本ではなくprojectionであることを検査。DB trigger/audit query は未実施。 |
 | AC-075 | local_verified | `npm run search:local:check` で reference graph sample 10件中10件展開成功を検査。実 DSQL reference_nodes/reference_edges query は未実施。 |
 | AC-076 | local_verified | `npm run search:local:check` で BM25F golden recall@10 = 1.00 を検査。実 DSQL BM25F posting/stats 生成は未実施。 |
 | AC-077 | local_verified | model catalog shared by API/store. |
@@ -92,7 +92,7 @@
 | AC-112 | local_verified | `npm run observability:check` で API latency、5xx、RAG latency、retrieval count、DLQ count、ingestion failed、evaluation failed の required metrics 7/7 を catalog と local sample で検査。CloudWatch metrics は未実施。 |
 | AC-113 | local_verified | `npm run observability:check` で 5xx、DLQ、RAG失敗率、ingestion失敗、評価失敗、WAF block急増の required alarms 6/6 を catalog 検査。CloudWatch alarms は未実施。 |
 | AC-114 | local_verified | `audit_events` table/store と `npm run admin:workflow:check` で admin 操作、文書公開/成果物、チャット共有、Tools execution、評価の audit category を検査。 |
-| AC-120 | local_verified | `.github/workflows/ci.yml` に 14 jobs を追加し `npm run ci:check` で workflow shape を検査。PR #1 の GitHub Actions `Saphnexa CI` で lint/typecheck/unit/integration/e2e/cdk synth/cdk diff/security scan/license scan/admin artifacts/quality gates/db observability/admin offline restore/contract generation diff が pass。 |
+| AC-120 | local_verified | `.github/workflows/ci.yml` に static-analysis job と DB v0.17 gates を追加し `npm run ci:check` で workflow shape を検査。`npm run check:static` で typecheck/lint、Knip相当、dependency-cruiser相当、Gitleaks相当、DB metadata/comment/event/docs/DSQL、functional lint をまとめて検査する。GitHub Actions 実行結果はPR上で別途確認する。 |
 | AC-121 | local_verified | `npm run coverage:check` で Node test coverage line >=80% / branch >=70% と test pass 100% を検査。Allure unit artifact への publish は未実施。 |
 | AC-122 | local_verified | `npm run test:integration:local`、`npm run rag:aws-binding:check`、`npm run verify` で local API/store/RAG/tools/admin artifact/edge intent と AWS binding source の統合 smoke を検査。AWS/DSQL/S3/AppSync/Tools 実結合は未実施。 |
 | AC-123 | local_verified | `tests/e2e-local.test.js` と `npm run web:flow:check` を CI 対象化し、local API/source gate の E2E smoke を検査。`npm run aws:dev-uat:validation:check` で AWS E2E 主要6 flow pass 100% evidence contract を fixture 検査。ブラウザ/CloudFront E2E は未実施。 |

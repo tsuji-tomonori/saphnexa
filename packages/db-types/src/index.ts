@@ -7,6 +7,13 @@ export type DbUuid = string;
 export type DbTableName = keyof DbRowByTable;
 
 export interface DbRowByTable {
+  tenants: {
+    tenant_id: string;
+    tenant_name: string;
+    status: string;
+    created_at: DbTimestamp;
+    updated_at: DbTimestamp;
+  };
   users: {
     tenant_id: string;
     user_id: string;
@@ -18,6 +25,21 @@ export interface DbRowByTable {
     status: string;
     created_at: DbTimestamp;
     updated_at: DbTimestamp;
+  };
+  user_groups: {
+    tenant_id: string;
+    group_id: string;
+    group_name: string;
+    group_type: string;
+    status: string;
+    created_at: DbTimestamp;
+  };
+  user_group_memberships: {
+    tenant_id: string;
+    user_id: string;
+    group_id: string;
+    source: string;
+    created_at: DbTimestamp;
   };
   web_sessions: {
     tenant_id: string;
@@ -156,6 +178,49 @@ export interface DbRowByTable {
     error_code: string | null;
     created_at: DbTimestamp;
   };
+  reference_nodes: {
+    tenant_id: string;
+    node_id: string;
+    document_id: string;
+    version_id: string;
+    node_type: string;
+    title: string | null;
+    page_number: number | null;
+    section_label: string | null;
+    chunk_id: string | null;
+  };
+  reference_edges: {
+    tenant_id: string;
+    source_node_id: string;
+    target_node_id: string;
+    edge_type: string;
+    confidence: number | null;
+  };
+  ws_tickets: {
+    tenant_id: string;
+    ticket_id: string;
+    session_id: string;
+    user_id: string;
+    channel_scope_json: DbJson;
+    status: string;
+    expires_at: DbTimestamp;
+    used_at: DbTimestamp | null;
+  };
+  user_import_jobs: {
+    tenant_id: string;
+    import_id: string;
+    status: string;
+    result_s3_prefix: string;
+    created_by_user_id: string;
+    created_at: DbTimestamp;
+  };
+  user_import_rows: {
+    tenant_id: string;
+    import_id: string;
+    row_number: number;
+    status: string;
+    error_message: string | null;
+  };
   evaluation_datasets: {
     tenant_id: string;
     dataset_id: string;
@@ -163,6 +228,15 @@ export interface DbRowByTable {
     status: string;
     source_s3_uri: string;
     created_at: DbTimestamp;
+  };
+  evaluation_cases: {
+    tenant_id: string;
+    case_id: DbUuid;
+    dataset_id: string;
+    question: string;
+    expected_answer: string | null;
+    expected_citation_json: DbJson | null;
+    answerability: string;
   };
   evaluation_runs: {
     tenant_id: string;
@@ -179,7 +253,7 @@ export interface DbRowByTable {
   evaluation_run_items: {
     tenant_id: string;
     evaluation_run_id: string;
-    case_id: string;
+    case_id: DbUuid;
     status: string;
     answer_text: string | null;
     retrieved_context_json: DbJson | null;
@@ -201,25 +275,90 @@ export interface DbRowByTable {
     created_at: DbTimestamp;
     updated_at: DbTimestamp;
   };
-  ws_tickets: {
+  bm25_search_documents: {
     tenant_id: string;
-    ticket_id: string;
-    session_id: string;
-    user_id: string;
-    channel_scope_json: DbJson;
+    collection_id: DbUuid;
+    doc_id: DbUuid;
+    source_chunk_id: string;
+    title: string | null;
+    snippet: string | null;
+    doc_type: string | null;
+    is_deleted: boolean;
+  };
+  bm25_postings: {
+    tenant_id: string;
+    collection_id: DbUuid;
+    term_id: DbUuid;
+    doc_id: DbUuid;
+    field_id: number;
+    tf: number;
+    field_len: number;
+  };
+  bm25_term_stats: {
+    tenant_id: string;
+    collection_id: DbUuid;
+    stats_version: DbUuid;
+    term_id: DbUuid;
+    df: number;
+    idf: number;
+  };
+  bm25_field_stats: {
+    tenant_id: string;
+    collection_id: DbUuid;
+    stats_version: DbUuid;
+    field_id: number;
+    avg_len: number;
+  };
+  event_delivery_logs: {
+    tenant_id: string;
+    delivery_id: DbUuid;
+    channel_path: string;
+    event_id: DbUuid;
     status: string;
-    expires_at: DbTimestamp;
-    used_at: DbTimestamp | null;
+    attempt_count: number;
+    error_message: string | null;
+    created_at: DbTimestamp;
+    updated_at: DbTimestamp;
+  };
+  audit_events: {
+    tenant_id: string;
+    audit_event_id: DbUuid;
+    actor_user_id: string;
+    event_name: string;
+    category: string;
+    resource_id: string;
+    payload_json: DbJson | null;
+    created_at: DbTimestamp;
+  };
+  agent_tools: {
+    tenant_id: string;
+    tool_name: string;
+    display_name: string;
+    description: string;
+    input_schema_json: DbJson;
+    output_schema_json: DbJson;
+    tool_scope: string;
+    side_effect_type: string;
+    timeout_ms: number;
+    status: string;
+    created_at: DbTimestamp;
+    updated_at: DbTimestamp;
   };
   tool_invocations: {
     tenant_id: string;
-    invocation_id: string;
+    invocation_id: DbUuid;
     run_id: DbUuid;
+    chat_id: DbUuid | null;
+    message_id: DbUuid | null;
     tool_name: string;
+    request_hash: string;
+    response_summary_json: DbJson | null;
     status: string;
-    input_json: DbJson;
-    output_json: DbJson | null;
+    latency_ms: number | null;
+    error_code: string | null;
+    error_message: string | null;
     created_at: DbTimestamp;
+    completed_at: DbTimestamp | null;
   };
   published_artifacts: {
     tenant_id: string;
@@ -238,6 +377,37 @@ export interface DbRowByTable {
     expires_at: DbTimestamp | null;
     created_at: DbTimestamp;
     updated_at: DbTimestamp;
+  };
+  test_report_runs: {
+    tenant_id: string;
+    test_run_id: DbUuid;
+    artifact_id: string;
+    workflow_run_id: string | null;
+    commit_sha: string;
+    branch_name: string;
+    environment: string;
+    test_suite: string;
+    status: string;
+    total_count: number;
+    passed_count: number;
+    failed_count: number;
+    skipped_count: number;
+    duration_ms: number | null;
+    started_at: DbTimestamp;
+    completed_at: DbTimestamp | null;
+    created_at: DbTimestamp;
+  };
+  schema_migrations: {
+    installed_rank: number;
+    version: string | null;
+    description: string;
+    type: string;
+    script: string;
+    checksum: number | null;
+    installed_by: string;
+    installed_on: DbTimestamp;
+    execution_time: number;
+    success: boolean;
   };
 }
 

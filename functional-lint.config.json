@@ -1,0 +1,17 @@
+{
+  "policy": "class / this / let / mutation は原則禁止し、UI primitives と CDK/infra のように class が必要な境界だけ明示的に許可する。",
+  "allowedClassBoundaries": [
+    "infra/**",
+    "packages/ui/**",
+    "apps/web/**",
+    "apps/agent/src/clients/toolsApiClient.ts",
+    "tools/**"
+  ],
+  "allowedMutationBoundaries": [
+    "tools/**",
+    "tests/**",
+    "infra/**",
+    "packages/ui/**",
+    "apps/web/**"
+  ]
+}

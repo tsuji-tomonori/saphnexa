@@ -150,6 +150,30 @@ tasks:
     desc: Verify local Flyway SQL migration naming and schema coverage
     cmds:
       - npm run db:migration:check
+  db:metadata:check:
+    desc: Verify DB v0.17 table and column metadata coverage
+    cmds:
+      - npm run db:metadata:check
+  db:comments:check:
+    desc: Generate and verify DB schema COMMENT SQL from metadata
+    cmds:
+      - npm run db:comments:check
+  db:event-source:check:
+    desc: Verify event-source and projection boundary metadata
+    cmds:
+      - npm run db:event-source:check
+  db:docs:check:
+    desc: Generate and verify DB generated docs
+    cmds:
+      - npm run db:docs:check
+  db:dsql-compat:check:
+    desc: Verify Aurora DSQL-compatible migration assumptions
+    cmds:
+      - npm run db:dsql-compat:check
+  check:static:
+    desc: Run repository static analysis gates
+    cmds:
+      - npm run check:static
   db:integrity:check:
     desc: Verify local DB-like domain invariants and append-only events
     cmds:
