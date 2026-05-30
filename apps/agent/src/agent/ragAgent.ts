@@ -1,6 +1,6 @@
 import { AgentInvocationSchema, type AgentInvocation, type AgentInvocationResult } from "../schemas/invocation";
 import { createUnavailableBedrockRuntimeClient, type BedrockRuntimeClient } from "../clients/bedrockRuntimeClient";
-import { createInvocationPolicyDsqlClient, type DsqlClient } from "../clients/dsqlClient";
+import { createInvocationPolicyClient, type RetrievalPolicyClient } from "../clients/retrievalPolicyClient";
 import { createUnavailableToolsApiClient, type ToolsApiClient } from "../clients/toolsApiClient";
 import { generateAnswer } from "./answerGeneration";
 import { bindCitations } from "./citationBinding";
@@ -15,18 +15,18 @@ export interface RagAgentRuntime {
 export interface RagAgentRuntimeOptions {
   tools?: ToolsApiClient;
   bedrock?: BedrockRuntimeClient;
-  dsql?: DsqlClient;
+  retrievalPolicy?: RetrievalPolicyClient;
 }
 
 export function createRagAgentRuntime(options: RagAgentRuntimeOptions = {}): RagAgentRuntime {
   const tools = options.tools ?? createUnavailableToolsApiClient();
   const bedrock = options.bedrock ?? createUnavailableBedrockRuntimeClient();
-  const dsql = options.dsql ?? createInvocationPolicyDsqlClient();
+  const retrievalPolicy = options.retrievalPolicy ?? createInvocationPolicyClient();
 
   return {
     async invoke(input) {
       const invocation = AgentInvocationSchema.parse(input);
-      const allowedScopes = await dsql.resolveAllowedAclScopeIds({
+      const allowedScopes = await retrievalPolicy.resolveAllowedAclScopeIds({
         user_id: invocation.user_id,
         requested_scope_ids: invocation.retrieval_policy.allowed_acl_scope_ids
       });

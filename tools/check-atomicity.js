@@ -9,7 +9,7 @@ checkForbiddenImports("apps/api/src/routes", [/repositories\//, /@aws-sdk\//, /h
 checkForbiddenImports("apps/api/src/schemas", [/repositories\//, /@aws-sdk\//, /hono(\/|")/], "API schemas must stay runtime independent");
 checkForbiddenImports("apps/api/src/repositories", [/from "hono/, /from "react/, /apps\/web/], "API repositories must not depend on HTTP or React");
 checkForbiddenImports("packages/ui/src", [/apps\//, /packages\/api-client/, /packages\/domain/, /@saphnexa\/api-client/, /@saphnexa\/domain/], "packages/ui must not import app, API client, or domain code");
-checkForbiddenImports("apps/web/src/pages", [/packages\/api-client/, /@saphnexa\/api-client/, /fetch\(/], "Web pages must use hooks/features instead of direct API calls");
+checkForbiddenImports("apps/web/src/pages", [/packages\/api-client/, /@saphnexa\/api-client/, /\bfetch\(/], "Web pages must use hooks/features instead of direct API calls");
 
 const agentFiles = listFiles(["apps/agent/src"], (path) => /\.(ts|tsx|js)$/.test(path));
 for (const file of agentFiles) {

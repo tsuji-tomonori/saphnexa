@@ -1,6 +1,5 @@
 import { useCallback, useEffect, useState } from "react";
 import { useQueryClient } from "@tanstack/react-query";
-import { apiPostOperation, apiRoutes } from "@saphnexa/api-client";
 import { AppShell } from "@saphnexa/ui";
 import { AssistantRuntimeBoundary } from "../features/chat/AssistantRuntimeBoundary";
 import { ChatParticipantsPanel } from "../features/chat/ChatParticipantsPanel";
@@ -20,6 +19,7 @@ import { useMessageEvents } from "../hooks/useMessageEvents";
 import { useMessageRealtime } from "../hooks/useMessageRealtime";
 import { submitAssistantQuestion } from "../lib/assistantRuntime";
 import { useAddChatParticipant, useChatParticipants, useRemoveChatParticipant, useUpdateChatParticipant } from "../hooks/useChatParticipants";
+import { useIssueWsTicket } from "../hooks/useWsTicket";
 
 export function ChatPage() {
   const queryClient = useQueryClient();
@@ -34,6 +34,7 @@ export function ChatPage() {
   const updateChatSession = useUpdateChatSession(csrfToken);
   const deleteChatSession = useDeleteChatSession(csrfToken);
   const cancelAnswerGeneration = useCancelAnswerGeneration(csrfToken);
+  const issueWsTicket = useIssueWsTicket(csrfToken);
   const addChatParticipant = useAddChatParticipant(csrfToken);
   const updateChatParticipant = useUpdateChatParticipant(csrfToken);
   const removeChatParticipant = useRemoveChatParticipant(csrfToken);
@@ -78,7 +79,7 @@ export function ChatPage() {
     setMessageId(accepted.message_id);
     if (hadActiveChat) void messages.refetch();
     void queryClient.invalidateQueries({ queryKey: ["chat-messages", chatId] });
-    const ticket = await apiPostOperation("issueWsTicket", apiRoutes.issueWsTicket(), { chat_id: chatId, message_id: accepted.message_id }, csrfToken);
+    const ticket = await issueWsTicket.mutateAsync({ chat_id: chatId, message_id: accepted.message_id });
     setWsTicket(ticket.ticket);
     setWsChannels(ticket.channels);
   }
