@@ -1,6 +1,6 @@
 # DB v0.17 event source / projection 整合
 
-状態: doing
+状態: done
 
 ## 背景
 
@@ -87,3 +87,10 @@
 
 - Aurora DSQL の `COMMENT ON` 実機検証は、この環境で DSQL 接続先がない場合は TODO / runbook 記録に留まる。
 - Knip / dependency-cruiser / Gitleaks 等の実ツール導入は依存追加を伴う可能性があるため、既存の repository-local static gate として代替実装する場合がある。
+
+## 完了確認
+
+- PR: https://github.com/tsuji-tomonori/saphnexa/pull/4
+- 受け入れ条件コメント: https://github.com/tsuji-tomonori/saphnexa/pull/4#issuecomment-4580939408
+- セルフレビューコメント: https://github.com/tsuji-tomonori/saphnexa/pull/4#issuecomment-4580939383
+- 検証: `npm run verify` pass、`npm run check:static` pass、`git diff --check` pass。
