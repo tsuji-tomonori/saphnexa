@@ -1,6 +1,7 @@
 import { writeFileSync } from "node:fs";
-import { readText } from "./lib.js";
+import { assert, readText } from "./lib.js";
 
+const check = process.argv.includes("--check");
 const schema = readText("packages/db-migrations/migrations/V001__initial_saphnexa_schema.sql");
 const tables = parseTables(schema);
 
@@ -150,11 +151,26 @@ const metadata = tables.map((table) => {
   };
 });
 
-writeFileSync("packages/db-schema/src/table-metadata.js", `${headerJs()}export const dbTableMetadata = ${JSON.stringify(metadata, null, 2)};\n\nexport function getDbTableMetadata(tableName) {\n  const metadata = dbTableMetadata.find((item) => item.tableName === tableName);\n  if (!metadata) throw new Error(\`unknown DB table metadata \${tableName}\`);\n  return metadata;\n}\n`);
+const outputs = [
+  {
+    path: "packages/db-schema/src/table-metadata.js",
+    body: `${headerJs()}export const dbTableMetadata = ${JSON.stringify(metadata, null, 2)};\n\nexport function getDbTableMetadata(tableName) {\n  const metadata = dbTableMetadata.find((item) => item.tableName === tableName);\n  if (!metadata) throw new Error(\`unknown DB table metadata \${tableName}\`);\n  return metadata;\n}\n`
+  },
+  {
+    path: "packages/db-schema/src/table-metadata.ts",
+    body: `${headerTs()}${typeSurfaceComment(metadata)}import type { RequiredTableName } from "./tables";\nimport { dbTableMetadata as runtimeDbTableMetadata } from "./table-metadata.js";\n\nexport type DbLogicalType = "string" | "uuid" | "integer" | "bigint" | "float" | "json" | "timestamp" | "text" | "boolean";\nexport type DbDomain = "tenant" | "identity" | "chat" | "document" | "rag" | "evaluation" | "artifact" | "audit" | "operations" | "migration";\nexport type SourceOfTruthKind = "master" | "event" | "projection" | "audit" | "artifact_index" | "migration_history";\nexport type DataClassification = "public" | "internal" | "confidential" | "pii" | "secret_ref";\nexport type UpdateOwner = "api" | "worker" | "agent" | "projector" | "migration" | "ci";\n\nexport interface DbColumnMetadata {\n  name: string;\n  japaneseName: string;\n  logicalType: DbLogicalType;\n  nullable: boolean;\n  description: string;\n  dataClassification: DataClassification;\n  sourceOfTruthKind: SourceOfTruthKind;\n  derivedFrom?: string;\n  updateOwner: UpdateOwner;\n}\n\nexport interface DbTableMetadata {\n  tableName: RequiredTableName;\n  japaneseName: string;\n  description: string;\n  domain: DbDomain;\n  sourceOfTruthKind: SourceOfTruthKind;\n  primaryKey: readonly string[];\n  lifecycle: string;\n  retentionPolicy: string;\n  columns: readonly DbColumnMetadata[];\n}\n\nexport const dbTableMetadata = runtimeDbTableMetadata as readonly DbTableMetadata[];\nexport type DbMetadataTableName = (typeof dbTableMetadata)[number]["tableName"];\n\nexport function getDbTableMetadata(tableName: DbMetadataTableName): DbTableMetadata {\n  const metadata = dbTableMetadata.find((item) => item.tableName === tableName);\n  if (!metadata) throw new Error(\`unknown DB table metadata \${tableName}\`);\n  return metadata;\n}\n`
+  }
+];
 
-writeFileSync("packages/db-schema/src/table-metadata.ts", `${headerTs()}${typeSurfaceComment(metadata)}import type { RequiredTableName } from "./tables";\nimport { dbTableMetadata as runtimeDbTableMetadata } from "./table-metadata.js";\n\nexport type DbLogicalType = "string" | "uuid" | "integer" | "bigint" | "float" | "json" | "timestamp" | "text" | "boolean";\nexport type DbDomain = "tenant" | "identity" | "chat" | "document" | "rag" | "evaluation" | "artifact" | "audit" | "operations" | "migration";\nexport type SourceOfTruthKind = "master" | "event" | "projection" | "audit" | "artifact_index" | "migration_history";\nexport type DataClassification = "public" | "internal" | "confidential" | "pii" | "secret_ref";\nexport type UpdateOwner = "api" | "worker" | "agent" | "projector" | "migration" | "ci";\n\nexport interface DbColumnMetadata {\n  name: string;\n  japaneseName: string;\n  logicalType: DbLogicalType;\n  nullable: boolean;\n  description: string;\n  dataClassification: DataClassification;\n  sourceOfTruthKind: SourceOfTruthKind;\n  derivedFrom?: string;\n  updateOwner: UpdateOwner;\n}\n\nexport interface DbTableMetadata {\n  tableName: RequiredTableName;\n  japaneseName: string;\n  description: string;\n  domain: DbDomain;\n  sourceOfTruthKind: SourceOfTruthKind;\n  primaryKey: readonly string[];\n  lifecycle: string;\n  retentionPolicy: string;\n  columns: readonly DbColumnMetadata[];\n}\n\nexport const dbTableMetadata = runtimeDbTableMetadata as readonly DbTableMetadata[];\nexport type DbMetadataTableName = (typeof dbTableMetadata)[number]["tableName"];\n\nexport function getDbTableMetadata(tableName: DbMetadataTableName): DbTableMetadata {\n  const metadata = dbTableMetadata.find((item) => item.tableName === tableName);\n  if (!metadata) throw new Error(\`unknown DB table metadata \${tableName}\`);\n  return metadata;\n}\n`);
-
-console.log(`wrote DB metadata source for ${metadata.length} tables`);
+if (check) {
+  for (const output of outputs) {
+    assert(readText(output.path) === output.body, `${output.path} is out of date. Run npm run db:metadata:build.`);
+  }
+  console.log(`DB metadata source check passed (${metadata.length} tables)`);
+} else {
+  for (const output of outputs) writeFileSync(output.path, output.body);
+  console.log(`wrote DB metadata source for ${metadata.length} tables`);
+}
 
 function parseTables(sql) {
   const results = [];

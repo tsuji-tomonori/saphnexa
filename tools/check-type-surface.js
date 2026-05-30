@@ -313,6 +313,7 @@ execFileSync("node", ["tools/generate-db-tables-runtime-mirror.js", "--check"], 
 
 const dbTableMetadataTs = readText("packages/db-schema/src/table-metadata.ts");
 const dbMigrationSql = readText("packages/db-migrations/migrations/V001__initial_saphnexa_schema.sql");
+execFileSync("node", ["tools/build-db-metadata-source.js", "--check"], { stdio: "inherit" });
 for (const tableName of [
   "chat_sessions",
   "chat_participants",

@@ -44,6 +44,7 @@ npm run rag:aws-binding:check
 npm run rag:perf:local
 npm run rag-core:check
 npm run workers:check
+npm run db:metadata:check
 npm run db-schema:tables:check
 npm run domain:check
 npm run db:migration:check
@@ -133,6 +134,7 @@ git diff --check
 - `npm run model-catalog:check` が `packages/model-catalog/src/models.ts` と `packages/model-catalog/src/cost-estimate.ts` から生成される `.js` runtime mirror と committed mirror の一致を検査すること。
 - `npm run rag-core:check` が `packages/rag-core/src/fixture-rag.ts` から生成される `.js` runtime mirror と committed mirror の一致を検査すること。
 - `npm run workers:check` が `apps/workers/src/event-publisher.ts` から生成される `.js` runtime mirror と committed mirror の一致を検査すること。
+- `npm run db:metadata:check` が `packages/db-migrations/migrations/V001__initial_saphnexa_schema.sql` から生成される `packages/db-schema/src/table-metadata.js` と `.ts` の一致を検査すること。
 - `npm run check:atomicity` が API route/schema/repository、Web page、UI package、Agent retrieval/data access の依存境界を検査し、現行 aggregate implementation は planned marker として追跡すること。`npm run check:atomicity:strict` は移行猶予の違反を拒否する。
 - API が `hono/aws-lambda` handler entrypoint、request log / origin / error / session / CSRF middleware 境界、dispatch service、DSQL repository interface、operation-level SQL plan、DSQL query executor interface、shared DB row type boundary を TypeScript source として持つこと。
 - API の Hono app factory、OpenAPI document builder、Zod schema catalog が TypeScript source of record を持ち、主要 success response の concrete Zod schema と既存 Node local tools 用の `.js` runtime mirror が同期していること。
@@ -232,7 +234,7 @@ git diff --check
 - `npm run aws:dev-uat:validation:check` が E2E・性能・RAG品質結果の fixture 構造と閾値を検査し、`npm run aws:dev-uat:validation:fixture:check` が fixture/negative path を検査し、実証跡では `npm run test:e2e:aws`、`npm run perf:aws`、`npm run rag:quality:aws`、`npm run aws:dev-uat:validation:final` が必要であること。
 - `npm run aws:dev-uat:evidence:fixture:check` が sample raw input を一時ディレクトリへ変換し、既存 final checker で builder output を検査すること。raw input の `capture_provenance` 欠落時と `output_ref` 参照先欠落時に builder が fail することも検査する。
 - GitHub issue tracker snapshot に基づく Blocker/Critical open defect 0 件の defect list draft。最終検収では `gh issue list --state open --json number,title,labels,state` による defect-snapshot-refresh が必要であり、ローカル snapshot だけでは完了扱いにしないこと。
-- `npm run db:metadata:check` が V001 全テーブル・全カラムの metadata、日本語説明、domain、sourceOfTruth、保持方針、PII分類、更新主体を検査すること。
+- `npm run db:metadata:check` が V001 全テーブル・全カラムの metadata、日本語説明、domain、sourceOfTruth、保持方針、PII分類、更新主体と generated metadata source drift を検査すること。
 - `npm run db:comments:check` が `packages/db-schema` metadata から `packages/db-migrations/generated/schema-comments.sql` と `docs/generated/db/schema-comments.sql` を生成し、`COMMENT ON TABLE/COLUMN` 件数が table/column 件数と一致することを検査すること。
 - `npm run db:event-source:check` が v0.17 案Bの domain event table、projection metadata columns、状態系カラムの「正本ではなくprojection」分類、`chat_message_events` と domain event 正本の違いを検査すること。
 - `npm run db:docs:check` が `docs/generated/db/tables.md`、`columns.md`、`er.md`、`lifecycle.md`、`projections.md`、`schema-comments.sql` を生成・検査すること。
@@ -280,7 +282,7 @@ git diff --check
 - TypeScript framework 境界は local/source gate、実 `tsc --noEmit`、Vite production build と build output check で確認する。assistant-ui runtime provider は source gate と Vite production build で React tree への接続を確認するが、assistant-ui runtime の実ブラウザ streaming 挙動、AppSync Events の実 subscribe は、実 runtime が揃った環境で別途確認する。`/event/realtime` の browser source contract は検査するが、実 AppSync Events 接続成功の証跡ではない。
 - Shared contract TypeScript source は source gate で確認する。DB introspection/codegen、`.ts` source からの runtime artifact 生成は別途確認する。
 - API client route helper、generated operation type map、operation-aware Web request helper は source gate と実 `tsc --noEmit` で全 public route の operation/path/request/response、主要 outer field、代表的な chat/event/artifact/evaluation の nested object / array item field 同期を確認する。全 route 全 field の完全 schema 化、実 CloudFront/Cognito 経由 HTTP request は別途確認する。
-- DB table metadata TypeScript source は migration source 由来の static metadata として検査する。実 DSQL introspection、生成 DB types、Flyway 実適用は別途確認する。
+- DB table metadata TypeScript source は migration source 由来の static metadata として検査する。`npm run db:metadata:build` は `packages/db-schema/src/table-metadata.js` と `.ts` を生成し、`npm run db:metadata:check` は committed generated source との drift を検査する。実 DSQL introspection、生成 DB types、Flyway 実適用は別途確認する。
 - Agent runtime pipeline は source-level の責務境界、invocation schema validation、runtime failure containment、local fixture tests で確認する。実 Bedrock Runtime 生成、AgentCore Runtime `/invocations` の AWS HTTP 実行、AgentCore Gateway Target 経由の Tools API 呼び出し、Aurora DSQL ACL query は AWS 接続後に別途確認する。
 - Aurora DSQL への Flyway 実適用、CloudWatch metrics/alarms、S3 lifecycle、DSQL retention settings の実リソース確認。
 - CloudFront Function、WAF、IAM policy、KMS key policy、SQS/DLQ、AppSync Events、cdk-nag の実リソース/実行結果確認。

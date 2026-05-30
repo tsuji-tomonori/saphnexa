@@ -174,8 +174,12 @@ tasks:
     desc: Verify local Flyway SQL migration naming and schema coverage
     cmds:
       - npm run db:migration:check
+  db:metadata:build:
+    desc: Generate DB v0.17 table and column metadata source from migration SQL
+    cmds:
+      - npm run db:metadata:build
   db:metadata:check:
-    desc: Verify DB v0.17 table and column metadata coverage
+    desc: Verify generated DB v0.17 table and column metadata source is current
     cmds:
       - npm run db:metadata:check
   db-schema:tables:generate:

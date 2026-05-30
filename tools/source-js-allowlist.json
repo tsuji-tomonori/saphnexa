@@ -40,7 +40,7 @@
     },
     {
       "path": "packages/db-schema/src/table-metadata.js",
-      "reason": "runtime compatibility metadata surface used by current Node checks; TypeScript source exists at packages/db-schema/src/table-metadata.ts"
+      "reason": "generated runtime compatibility DB metadata surface used by current Node checks; generated TypeScript type surface exists at packages/db-schema/src/table-metadata.ts"
     },
     {
       "path": "packages/db-schema/src/tables.js",

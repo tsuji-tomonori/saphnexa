@@ -3,6 +3,7 @@ import { assertMetadataMatchesV001, metadataTables, stateProjectionColumnNames }
 import { execFileSync } from "node:child_process";
 
 execFileSync("node", ["tools/generate-db-tables-runtime-mirror.js", "--check"], { stdio: "inherit" });
+execFileSync("node", ["tools/build-db-metadata-source.js", "--check"], { stdio: "inherit" });
 assertMetadataMatchesV001(assert);
 
 for (const table of metadataTables()) {
