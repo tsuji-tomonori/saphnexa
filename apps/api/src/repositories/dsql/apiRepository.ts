@@ -41,6 +41,7 @@ interface DsqlOperationMapping {
   notFoundErrorCode?: string;
   plan: DsqlOperationPlanner;
   map: DsqlOperationMapper;
+  status?: number;
 }
 
 export function createDsqlApiRepository(options: DsqlApiRepositoryOptions = {}): DsqlApiRepository {
@@ -69,7 +70,7 @@ export function createDsqlApiRepository(options: DsqlApiRepositoryOptions = {}):
         });
       }
       return {
-        status: 200,
+        status: mapping.status ?? 200,
         body: await mapping.map(rows, request, options)
       };
     }
@@ -87,6 +88,142 @@ export function createUnboundDsqlApiRepository(): DsqlApiRepository {
 }
 
 const dsqlOperationMappings = {
+  authCallback: {
+    status: 302,
+    notFoundErrorCode: "DSQL_AUTH_USER_NOT_FOUND",
+    plan(request) {
+      return {
+        operationId: "authCallback",
+        resultTable: "web_sessions",
+        sql: `
+          WITH authenticated_user AS (
+            SELECT tenant_id, user_id
+            FROM users
+            WHERE user_id = COALESCE(:user_id, :actor_id)
+              AND status = 'active'
+            LIMIT 1
+          ),
+          created_session AS (
+            INSERT INTO web_sessions (
+              tenant_id, session_id, user_id, refresh_token_ref, csrf_secret_hash, status, expires_at, created_at, updated_at
+            )
+            SELECT
+              u.tenant_id,
+              gen_random_uuid()::varchar,
+              u.user_id,
+              :refresh_token_ref,
+              :csrf_secret_hash,
+              'active',
+              now() + interval '8 hours',
+              now(),
+              now()
+            FROM authenticated_user u
+            RETURNING *
+          ),
+          web_session_event AS (
+            INSERT INTO web_session_events (
+              tenant_id, event_id, aggregate_id, aggregate_type, event_seq, event_name, occurred_at,
+              actor_user_id, correlation_id, causation_id, idempotency_key, payload_json
+            )
+            SELECT
+              s.tenant_id,
+              gen_random_uuid(),
+              s.session_id,
+              'web_session',
+              1,
+              'web_session.started',
+              now(),
+              s.user_id,
+              :state,
+              NULL,
+              :idempotency_key,
+              json_build_object('session_id', s.session_id, 'user_id', s.user_id)
+            FROM created_session s
+            RETURNING aggregate_id
+          )
+          SELECT s.*
+          FROM created_session s
+          JOIN web_session_event e
+            ON e.aggregate_id = s.session_id
+        `,
+        params: {
+          actor_id: request.actorId,
+          user_id: request.input.user_id,
+          state: request.input.state,
+          refresh_token_ref: request.input.refresh_token_ref ?? "cognito-refresh-token-ref",
+          csrf_secret_hash: request.input.csrf_secret_hash ?? "csrf-secret-hash",
+          idempotency_key: `auth-callback:${String(request.input.code ?? "")}`
+        }
+      };
+    },
+    map(rows) {
+      const session = firstRow(rows) as DbRow<"web_sessions">;
+      return { redirect_url: "/chat", session_id: session.session_id };
+    }
+  },
+  logout: {
+    status: 204,
+    plan(request) {
+      return {
+        operationId: "logout",
+        resultTable: "web_sessions",
+        sql: `
+          WITH revoked_session AS (
+            UPDATE web_sessions s
+               SET status = 'revoked',
+                   updated_at = now()
+             WHERE s.user_id = :actor_id
+               AND s.status = 'active'
+               AND (:session_id IS NULL OR s.session_id = :session_id)
+             RETURNING *
+          ),
+          next_event_seq AS (
+            SELECT
+              s.tenant_id,
+              s.session_id,
+              COALESCE(MAX(e.event_seq), 0) + 1 AS event_seq
+            FROM revoked_session s
+            LEFT JOIN web_session_events e
+              ON e.tenant_id = s.tenant_id
+             AND e.aggregate_id = s.session_id
+            GROUP BY s.tenant_id, s.session_id
+          ),
+          web_session_event AS (
+            INSERT INTO web_session_events (
+              tenant_id, event_id, aggregate_id, aggregate_type, event_seq, event_name, occurred_at,
+              actor_user_id, correlation_id, causation_id, idempotency_key, payload_json
+            )
+            SELECT
+              s.tenant_id,
+              gen_random_uuid(),
+              s.session_id,
+              'web_session',
+              n.event_seq,
+              'web_session.logged_out',
+              now(),
+              s.user_id,
+              NULL,
+              NULL,
+              CONCAT('logout:', s.session_id, ':', n.event_seq),
+              json_build_object('session_id', s.session_id)
+            FROM revoked_session s
+            JOIN next_event_seq n
+              ON n.tenant_id = s.tenant_id
+             AND n.session_id = s.session_id
+            RETURNING aggregate_id
+          )
+          SELECT s.*
+          FROM revoked_session s
+          LEFT JOIN web_session_event e
+            ON e.aggregate_id = s.session_id
+        `,
+        params: { actor_id: request.actorId, session_id: request.input.session_id ?? null }
+      };
+    },
+    map() {
+      return null;
+    }
+  },
   getMe: {
     notFoundErrorCode: "DSQL_USER_NOT_FOUND",
     plan(request) {

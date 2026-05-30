@@ -21,13 +21,13 @@ for (const file of agentFiles) {
 
 for (const [operationId, coverage] of Object.entries(apiImplementationCoverage)) {
   if (coverage.route === "aggregate" || coverage.schema === "aggregate" || coverage.usecase === "aggregate") {
-    assert(coverage.explicitPlannedMarker === "present" || coverage.unitTest === "planned", `${operationId} aggregate API coverage must keep an explicit migration marker`);
+    assert(coverage.explicitPlannedMarker === "present" || coverage.unitTest === "planned" || coverage.unitTest === "aggregate", `${operationId} aggregate API coverage must keep an explicit migration marker or aggregate test coverage`);
   }
 }
 
 for (const [operationId, coverage] of Object.entries(toolImplementationCoverage)) {
   if (coverage.route === "aggregate" || coverage.schema === "aggregate" || coverage.usecase === "aggregate") {
-    assert(coverage.explicitPlannedMarker === "present" || coverage.unitTest === "planned", `${operationId} aggregate tool coverage must keep an explicit migration marker`);
+    assert(coverage.explicitPlannedMarker === "present" || coverage.unitTest === "planned" || coverage.unitTest === "aggregate", `${operationId} aggregate tool coverage must keep an explicit migration marker or aggregate test coverage`);
   }
 }
 

@@ -16,7 +16,7 @@ export interface ApiImplementationCoverage {
   localIntegrationTest: ApiImplementationCoverageStatus;
   dsqlSmoke: ApiImplementationCoverageStatus;
   explicitPlannedMarker: "present" | "not_required";
-  externalReason?: "cognito_redirect" | "cookie_clear" | "handled_by_worker";
+  externalReason?: "cognito_redirect" | "cognito_callback" | "cookie_clear" | "handled_by_worker";
 }
 
 interface ApiCoverageOverrides {
@@ -30,9 +30,9 @@ interface ApiCoverageOverrides {
 }
 
 export const apiImplementationCoverage = {
-  loginStart: api("aggregate", "aggregate", "planned", "planned", "external", { externalReason: "cognito_redirect" }),
-  authCallback: api("aggregate", "aggregate", "planned", "planned", "planned"),
-  logout: api("aggregate", "aggregate", "planned", "planned", "planned"),
+  loginStart: api("aggregate", "aggregate", "aggregate", "implemented", "external", { repository: "not_required", unitTest: "aggregate", localIntegrationTest: "implemented", dsqlSmoke: "not_required", externalReason: "cognito_redirect" }),
+  authCallback: api("aggregate", "aggregate", "aggregate", "implemented", "external", { repository: "implemented", domainEvent: "implemented", unitTest: "aggregate", localIntegrationTest: "implemented", dsqlSmoke: "aggregate", externalReason: "cognito_callback" }),
+  logout: api("aggregate", "aggregate", "aggregate", "implemented", "implemented", { repository: "implemented", domainEvent: "implemented", unitTest: "aggregate", localIntegrationTest: "implemented", dsqlSmoke: "aggregate" }),
   getMe: api("aggregate", "aggregate", "aggregate", "aggregate", "implemented"),
   listChatSessions: api("aggregate", "aggregate", "aggregate", "aggregate", "implemented"),
   createChatSession: api("aggregate", "aggregate", "aggregate", "aggregate", "implemented", { domainEvent: "planned", audit: "implemented" }),

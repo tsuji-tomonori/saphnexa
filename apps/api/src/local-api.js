@@ -15,6 +15,18 @@ export function createLocalApi() {
             try {
                 enforceCsrf(actor, operationId, input);
                 switch (operationId) {
+                    case "loginStart":
+                        return {
+                            status: 302,
+                            body: {
+                                redirect_url: `/auth/callback?code=local-auth-code&state=${encodeURIComponent(String(input.state ?? "local-state"))}`,
+                                state: input.state ?? "local-state"
+                            }
+                        };
+                    case "authCallback":
+                        return authCallback(store.state, input);
+                    case "logout":
+                        return logout(store.state, actor, input);
                     case "getMe":
                         if (!actor) {
                             throw localApiError("認証が必要。", 401, "UNAUTHENTICATED");
@@ -132,6 +144,70 @@ function requireAdmin(actor) {
     if (!actor || actor.role !== "admin") {
         throw localApiError("管理者権限が必要。", actor ? 403 : 401, actor ? "ADMIN_REQUIRED" : "UNAUTHENTICATED");
     }
+}
+function authCallback(state, input) {
+    if (!input.code)
+        return { status: 400, body: createErrorResponse("AUTH_CODE_MISSING", "Authorization code is required") };
+    const userId = String(input.user_id ?? "user-owner");
+    const user = state.users.find((item) => item.user_id === userId && item.status === "active");
+    if (!user)
+        return { status: 400, body: createErrorResponse("AUTH_USER_NOT_FOUND", "Authenticated user was not found", { user_id: userId }) };
+    const session = {
+        tenant_id: user.tenant_id,
+        session_id: `session-${user.user_id}`,
+        user_id: user.user_id,
+        refresh_token_ref: `local-refresh-${user.user_id}`,
+        csrf_secret_hash: `local-csrf-${user.user_id}`,
+        status: "active",
+        expires_at: "2026-05-27T01:00:00.000Z",
+        created_at: "2026-05-27T00:00:00.000Z",
+        updated_at: "2026-05-27T00:00:00.000Z"
+    };
+    state.web_sessions = (state.web_sessions ?? []).filter((item) => item.session_id !== session.session_id);
+    state.web_sessions.push(session);
+    state.web_session_events = state.web_session_events ?? [];
+    state.web_session_events.push({
+        tenant_id: user.tenant_id,
+        event_id: `event-${session.session_id}`,
+        aggregate_id: session.session_id,
+        aggregate_type: "web_session",
+        event_seq: 1,
+        event_name: "web_session.started",
+        occurred_at: session.created_at,
+        actor_user_id: user.user_id,
+        correlation_id: input.state ?? null,
+        causation_id: null,
+        idempotency_key: `auth-callback-${input.code}`,
+        payload_json: { user_id: user.user_id, session_id: session.session_id }
+    });
+    return { status: 302, body: { redirect_url: "/chat", session_id: session.session_id, csrf_token: `csrf-${user.user_id}` } };
+}
+function logout(state, actor, input) {
+    if (!actor)
+        throw localApiError("認証が必要。", 401, "UNAUTHENTICATED");
+    const sessionId = String(input.session_id ?? `session-${actor.user_id}`);
+    const sessions = state.web_sessions ?? [];
+    const session = sessions.find((item) => item.session_id === sessionId && item.user_id === actor.user_id);
+    if (session) {
+        session.status = "revoked";
+        session.updated_at = "2026-05-27T00:00:00.000Z";
+    }
+    state.web_session_events = state.web_session_events ?? [];
+    state.web_session_events.push({
+        tenant_id: actor.tenant_id,
+        event_id: `event-${sessionId}-logout`,
+        aggregate_id: sessionId,
+        aggregate_type: "web_session",
+        event_seq: state.web_session_events.filter((item) => item.aggregate_id === sessionId).length + 1,
+        event_name: "web_session.logged_out",
+        occurred_at: "2026-05-27T00:00:00.000Z",
+        actor_user_id: actor.user_id,
+        correlation_id: null,
+        causation_id: null,
+        idempotency_key: `logout-${sessionId}`,
+        payload_json: { session_id: sessionId }
+    });
+    return noContent();
 }
 function localApiError(message, status, error_code) {
     const error = new Error(message);
