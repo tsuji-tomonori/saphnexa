@@ -32,7 +32,7 @@
     },
     {
       "path": "apps/api/src/local-api.js",
-      "reason": "runtime compatibility local fixture dispatcher used by current Node tests; planned for TypeScript runtime/localFixture split"
+      "reason": "generated runtime compatibility API local fixture dispatcher mirror used by current Node tests; TypeScript source exists at apps/api/src/local-api.ts"
     },
     {
       "path": "apps/api/src/openapi-document.js",

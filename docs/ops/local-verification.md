@@ -12,6 +12,7 @@ npm run test:contract
 npm run contract-mirror:check
 npm run api:openapi:generate
 npm run api:openapi:check
+npm run api:local:check
 npm run check:no-src-js
 npm run api:implementation:check
 npm run tools:implementation:check
@@ -132,6 +133,7 @@ git diff --check
 - `apps/workers` が lightweight notification boundary を TypeScript source として持ち、`npm run workers:check` で生成される `.js` runtime mirror と禁止フィールド、4KB payload 上限、REST detail URL が同期していること。
 - Hono/Zod/OpenAPI 実装 entrypoint が 40 route と `/openapi.json` を route contract から生成し、CSRF/role/Zod validation metadata と主要 success response の runtime validation 境界を保持すること。
 - `npm run api:openapi:check` が `apps/api/src/hono-openapi-app.ts`、`openapi-document.ts`、`zod-openapi-schemas.ts`、middleware TS から生成される `.js` runtime mirror と committed mirror の一致を検査すること。
+- `npm run api:local:check` が `apps/api/src/local-api.ts` から生成される `.js` runtime mirror と committed mirror の一致を検査すること。
 - `npm run check:no-src-js` が `apps/**/src` と `packages/**/src` の JavaScript runtime compatibility surface を allowlist で明示し、`--strict` では production-ready TypeScript source-of-truth として残存 JS を拒否すること。
 - `npm run api:implementation:check` が `packages/api-contract/src/implementation-coverage.js` の 40 public API operation について route、schema、usecase、local fixture、production、repository、event、audit、test の coverage metadata と planned marker を検査すること。`npm run api:implementation:check:production` は planned marker を拒否する。
 - `npm run tools:implementation:check` が `packages/tool-contract/src/implementation-coverage.js` の 6 Tools API operation について route、schema、usecase、policy、runtime validation、audit、timeout、production の coverage metadata と planned marker を検査すること。`npm run tools:implementation:check:production` は planned marker を拒否する。
@@ -260,7 +262,7 @@ git diff --check
 - Aurora DSQL へのFlyway実適用。local gateは `flyway.executeInTransaction=false` 方針と `1 DDL / transaction` 制約への静的対応を検査するが、実DSQL clusterへのapply証跡ではない。
 - AWS dev/UAT での Cognito、DSQL、S3、CloudFront、AppSync Events、Bedrock KB、S3 Vectors、AgentCore の実接続。
 - Hono runtime の実 Lambda 起動、Cognito authorizer、CSRF cookie integration、CloudFront 経由の実 HTTP request。`apps/api/src/index.ts` は Lambda handler source と local success response validation boundary を持つが、AWS 上での起動確認と実 HTTP validation は別途行う。
-- API TypeScript source of record は source gate と実 `tsc --noEmit` で検査する。DSQL repository は read系 operation の SQL plan と executor interface までを検査し、実 Aurora DSQL driver、IAM auth token、connection pool、`.ts` からの runtime bundle 生成は別途確認する。既存 local tools/tests は標準 `node` 実行のため `.js` runtime mirror を使う。
+- API TypeScript source of record は source gate と実 `tsc --noEmit` で検査する。DSQL repository は read系 operation の SQL plan と executor interface までを検査し、実 Aurora DSQL driver、IAM auth token、connection pool、`.ts` からの runtime bundle 生成は別途確認する。既存 local tools/tests は標準 `node` 実行のため `.js` runtime mirror を使い、`npm run api:local:check` で local dispatcher の `.ts` からの runtime artifact 生成 drift を確認する。
 - RAG core TypeScript source は source gate と実 `tsc --noEmit` で検査する。既存 local tools/tests は標準 `node` 実行のため `.js` runtime mirror を使い、`npm run rag-core:check` で `.ts` からの runtime artifact 生成 drift を確認する。
 - Agent policy TypeScript source は source gate と実 `tsc --noEmit` で検査する。既存 local tests は標準 `node` 実行のため `.js` runtime mirror を使い、`npm run agent:policy:check` で `.ts` からの runtime artifact 生成 drift を確認する。
 - Tools API local TypeScript source は source gate と実 `tsc --noEmit` で検査する。既存 package export は標準 `node` 実行のため `.js` runtime mirror を使い、`npm run tools-api:local:check` で `.ts` からの runtime artifact 生成 drift を確認する。

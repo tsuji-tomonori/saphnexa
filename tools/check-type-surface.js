@@ -621,6 +621,14 @@ const apiDispatchServiceSource = readText("apps/api/src/services/apiDispatchServ
 assert(apiDispatchServiceSource.includes("createApiDispatchServiceFromEnvironment"), "API must expose environment-based dispatch service factory");
 assert(apiDispatchServiceSource.includes("createDsqlApiRepository"), "API dispatch service must use DSQL repository factory in dsql mode");
 
+const apiLocalTsSource = readText("apps/api/src/local-api.ts");
+const apiLocalJsSource = readText("apps/api/src/local-api.js");
+execFileSync("node", ["tools/generate-api-local-runtime-mirror.js", "--check"], { stdio: "inherit" });
+for (const token of ["createLocalApi", "enforceCsrf", "createFixtureRagAdapter", "submitQuestion", "issueWsTicket", "consumeWsTicket"]) {
+  assert(apiLocalTsSource.includes(token), `API local TS source missing ${token}`);
+  assert(apiLocalJsSource.includes(token), `API local runtime mirror missing ${token}`);
+}
+
 const ragAgentSource = readText("apps/agent/src/agent/ragAgent.ts");
 const agentCoreAppSource = readText("apps/agent/src/app.ts");
 const agentCoreHandlerSource = readText("apps/agent/src/runtime/agentCoreHandler.ts");

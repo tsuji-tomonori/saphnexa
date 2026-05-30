@@ -17,6 +17,8 @@
     "test:contract": "node tools/check-contracts.js",
     "api:openapi:generate": "node tools/generate-api-openapi-runtime-mirror.js",
     "api:openapi:check": "node tools/check-api-openapi.js",
+    "api:local:generate": "node tools/generate-api-local-runtime-mirror.js",
+    "api:local:check": "node tools/generate-api-local-runtime-mirror.js --check",
     "api-client:operation-types:build": "node tools/build-api-client-operation-types.js",
     "api-client:operation-types:check": "node tools/build-api-client-operation-types.js --check",
     "contract-mirror:generate": "node tools/generate-contract-runtime-mirror.js",
