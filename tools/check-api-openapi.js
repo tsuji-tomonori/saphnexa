@@ -2,7 +2,9 @@ import { readJson, readText, assert } from "./lib.js";
 import { createSaphnexaHonoOpenApiApp } from "../apps/api/src/hono-openapi-app.js";
 import { buildHonoRouteDefinitions, buildOpenApiDocument } from "../apps/api/src/openapi-document.js";
 import { publicApiRoutes } from "../packages/api-contract/src/routes.js";
+import { execFileSync } from "node:child_process";
 
+execFileSync("node", ["tools/generate-api-openapi-runtime-mirror.js", "--check"], { stdio: "inherit" });
 const apiPackage = readJson("apps/api/package.json");
 const appSource = readText("apps/api/src/hono-openapi-app.ts");
 const appWrapperSource = readText("apps/api/src/hono-openapi-app.js");
@@ -34,6 +36,10 @@ assert(zodSource.includes("getEvaluationRun: z.object({ evaluation_run: evaluati
 assert(appSource.includes("validateSuccessResponse"), "Hono app must validate dispatcher success responses at runtime");
 assert(appSource.includes("RESPONSE_VALIDATION_FAILED"), "Hono response validation failures must use a standard error response");
 assert(appWrapperSource.includes("OpenAPIHono"), "Hono JS runtime mirror must keep OpenAPIHono compatibility");
+for (const middleware of ["errorMiddleware", "requestLogMiddleware", "originMiddleware", "sessionMiddleware", "csrfBoundaryMiddleware"]) {
+  assert(appWrapperSource.includes(middleware), `Hono JS runtime mirror must attach ${middleware}`);
+}
+assert(appWrapperSource.includes("API_DISPATCHER_NOT_BOUND") && appWrapperSource.includes("500"), "Hono JS runtime mirror must match TS dispatcher failure boundary");
 assert(openApiWrapperSource.includes("buildOpenApiDocument"), "OpenAPI JS runtime mirror must keep existing Node compatibility");
 assert(zodWrapperSource.includes("buildRouteZodSchemas"), "Zod JS runtime mirror must keep existing Node compatibility");
 assert(zodWrapperSource.includes("function responseSchema"), "Zod JS runtime mirror must keep response schema compatibility");

@@ -8,7 +8,27 @@
     },
     {
       "path": "apps/api/src/hono-openapi-app.js",
-      "reason": "runtime compatibility mirror for current Node OpenAPI checks; TypeScript source exists at apps/api/src/hono-openapi-app.ts"
+      "reason": "generated runtime compatibility API Hono/OpenAPI mirror for current Node checks; TypeScript source exists at apps/api/src/hono-openapi-app.ts"
+    },
+    {
+      "path": "apps/api/src/middleware/csrf.js",
+      "reason": "generated runtime compatibility API middleware mirror for current Node OpenAPI checks; TypeScript source exists at apps/api/src/middleware/csrf.ts"
+    },
+    {
+      "path": "apps/api/src/middleware/error.js",
+      "reason": "generated runtime compatibility API middleware mirror for current Node OpenAPI checks; TypeScript source exists at apps/api/src/middleware/error.ts"
+    },
+    {
+      "path": "apps/api/src/middleware/origin.js",
+      "reason": "generated runtime compatibility API middleware mirror for current Node OpenAPI checks; TypeScript source exists at apps/api/src/middleware/origin.ts"
+    },
+    {
+      "path": "apps/api/src/middleware/request-log.js",
+      "reason": "generated runtime compatibility API middleware mirror for current Node OpenAPI checks; TypeScript source exists at apps/api/src/middleware/request-log.ts"
+    },
+    {
+      "path": "apps/api/src/middleware/session.js",
+      "reason": "generated runtime compatibility API middleware mirror for current Node OpenAPI checks; TypeScript source exists at apps/api/src/middleware/session.ts"
     },
     {
       "path": "apps/api/src/local-api.js",
@@ -16,11 +36,11 @@
     },
     {
       "path": "apps/api/src/openapi-document.js",
-      "reason": "runtime compatibility mirror for current Node OpenAPI checks; TypeScript source exists at apps/api/src/openapi-document.ts"
+      "reason": "generated runtime compatibility API OpenAPI document mirror for current Node checks; TypeScript source exists at apps/api/src/openapi-document.ts"
     },
     {
       "path": "apps/api/src/zod-openapi-schemas.js",
-      "reason": "runtime compatibility mirror for current Node OpenAPI checks; TypeScript source exists at apps/api/src/zod-openapi-schemas.ts"
+      "reason": "generated runtime compatibility API Zod schema mirror for current Node checks; TypeScript source exists at apps/api/src/zod-openapi-schemas.ts"
     },
     {
       "path": "apps/tools-api/src/local-tools-api.js",

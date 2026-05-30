@@ -512,6 +512,8 @@ assert(apiLambdaSource.includes("hono/aws-lambda"), "API Lambda entry must use H
 assert(apiLambdaSource.includes("export const handler"), "API Lambda entry must export handler");
 
 const honoOpenApiSource = readText("apps/api/src/hono-openapi-app.ts");
+const honoOpenApiMirror = readText("apps/api/src/hono-openapi-app.js");
+execFileSync("node", ["tools/generate-api-openapi-runtime-mirror.js", "--check"], { stdio: "inherit" });
 assert(honoOpenApiSource.includes("interface ApiDispatcher"), "API Hono source must type dispatcher boundary");
 assert(honoOpenApiSource.includes("buildRouteZodSchemas"), "API Hono source must use Zod route schemas");
 assert(honoOpenApiSource.includes("buildOpenApiDocument"), "API Hono source must use OpenAPI document builder");
@@ -519,6 +521,7 @@ assert(honoOpenApiSource.includes("validateSuccessResponse"), "API Hono source m
 assert(honoOpenApiSource.includes("RESPONSE_VALIDATION_FAILED"), "API Hono source must map response validation failures to standard errors");
 for (const middleware of ["errorMiddleware", "requestLogMiddleware", "originMiddleware", "sessionMiddleware", "csrfBoundaryMiddleware"]) {
   assert(honoOpenApiSource.includes(middleware), `API Hono source must attach ${middleware}`);
+  assert(honoOpenApiMirror.includes(middleware), `API Hono runtime mirror must attach ${middleware}`);
 }
 
 const apiRepositorySource = readText("apps/api/src/repositories/dsql/apiRepository.ts");

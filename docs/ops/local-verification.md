@@ -10,6 +10,7 @@
 npm run typecheck
 npm run test:contract
 npm run contract-mirror:check
+npm run api:openapi:generate
 npm run api:openapi:check
 npm run check:no-src-js
 npm run api:implementation:check
@@ -114,7 +115,7 @@ git diff --check
 
 - 公開 API 40 件と Tools API 6 件の contract metadata。
 - `npm run contract-mirror:check` が `packages/api-contract/src/routes.ts` と `packages/tool-contract/src/tools.ts` から生成される `.js` runtime mirror と committed mirror の一致を検査すること。
-- API route、Tools API、model catalog、required DB tables の TypeScript source が既存 JS runtime mirror と件数・主要 ID で同期していること。
+- API route、Tools API、model catalog、required DB tables の TypeScript source が generated JS runtime mirror と件数・主要 ID で同期していること。
 - Tools API 6 件が `toolContracts` の operationId / path に沿った Zod request/response schema を持ち、invalid request は 400、handler response schema drift は 500 として分離されること。
 - `@saphnexa/api-client` が API contract 由来の全 40 public route helper と viewer path template を TypeScript source として持ち、Web の主要 fetch が `/api/*` typed route helper を使うこと。
 - `@saphnexa/api-client` が API contract / OpenAPI document 由来の generated operation type map を持ち、method、viewer path、internal path、params、query、request body、success response、error response、主要 outer fields、代表的な nested object / array item fields を drift check で同期確認すること。
@@ -126,6 +127,7 @@ git diff --check
 - `packages/domain` が role/status/event/helper、observability catalog、local store 境界を TypeScript source として持ち、既存 `.js` runtime mirror と主要 token が同期していること。
 - `apps/workers` が lightweight notification boundary を TypeScript source として持ち、`npm run workers:check` で生成される `.js` runtime mirror と禁止フィールド、4KB payload 上限、REST detail URL が同期していること。
 - Hono/Zod/OpenAPI 実装 entrypoint が 40 route と `/openapi.json` を route contract から生成し、CSRF/role/Zod validation metadata と主要 success response の runtime validation 境界を保持すること。
+- `npm run api:openapi:check` が `apps/api/src/hono-openapi-app.ts`、`openapi-document.ts`、`zod-openapi-schemas.ts`、middleware TS から生成される `.js` runtime mirror と committed mirror の一致を検査すること。
 - `npm run check:no-src-js` が `apps/**/src` と `packages/**/src` の JavaScript runtime compatibility surface を allowlist で明示し、`--strict` では production-ready TypeScript source-of-truth として残存 JS を拒否すること。
 - `npm run api:implementation:check` が `packages/api-contract/src/implementation-coverage.js` の 40 public API operation について route、schema、usecase、local fixture、production、repository、event、audit、test の coverage metadata と planned marker を検査すること。`npm run api:implementation:check:production` は planned marker を拒否する。
 - `npm run tools:implementation:check` が `packages/tool-contract/src/implementation-coverage.js` の 6 Tools API operation について route、schema、usecase、policy、runtime validation、audit、timeout、production の coverage metadata と planned marker を検査すること。`npm run tools:implementation:check:production` は planned marker を拒否する。
