@@ -1,6 +1,6 @@
 # API OpenAPI runtime mirror CI import fix
 
-- 状態: doing
+- 状態: done
 - 作業ブランチ: `codex/ts-atomic-coverage`
 - 対象PR: #6
 - 開始: 2026-05-30 15:41 JST
@@ -69,6 +69,15 @@ PR #6 の `contract generation diff` CI job で `npm run test:contract` が失�
 - [x] `npm run check:static`
 - [x] `npm run ci:check`
 - [x] `git diff --check`
-- [ ] PR 受け入れ条件確認コメント
-- [ ] PR セルフレビューコメント
-- [ ] GitHub Actions の PR check 成功
+- [x] PR 受け入れ条件確認コメント
+- [x] PR セルフレビューコメント
+- [x] GitHub Actions の PR check 成功
+
+## PR コメント
+
+- 受け入れ条件確認: https://github.com/tsuji-tomonori/saphnexa/pull/6#issuecomment-4582016901
+- セルフレビュー: https://github.com/tsuji-tomonori/saphnexa/pull/6#issuecomment-4582018024
+
+## CI
+
+- PR checks: 2026-05-30 15:50 JST 時点で全 job pass

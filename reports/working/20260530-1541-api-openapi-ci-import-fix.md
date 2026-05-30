@@ -31,7 +31,7 @@
 - `apps/api/src/middleware/csrf.js`
 - `apps/api/src/middleware/error.js`
 - `apps/api/src/middleware/origin.js`
-- `tasks/do/20260530-1541-api-openapi-ci-import-fix.md`
+- `tasks/done/20260530-1541-api-openapi-ci-import-fix.md`
 
 ## 検証
 
@@ -44,6 +44,7 @@
 - `npm run check:static`: 成功
 - `npm run ci:check`: 成功
 - `git diff --check`: 成功
+- GitHub Actions PR checks: 成功
 
 ## fit 評価
 
@@ -52,5 +53,4 @@
 
 ## 未対応・制約・リスク
 
-- GitHub Actions の再実行結果は push 後に確認する。
 - この修正は API OpenAPI runtime mirror の CI import 問題への対応であり、`.workspace/plam-20260530-01.txt` 全体の未完了項目は別途継続する。
