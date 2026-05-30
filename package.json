@@ -64,6 +64,8 @@
     "api:implementation:check:production": "node tools/check-api-implementation-coverage.js --production-ready",
     "tools:implementation:check": "node tools/check-tools-implementation-coverage.js",
     "tools:implementation:check:production": "node tools/check-tools-implementation-coverage.js --production-ready",
+    "implementation-coverage:generate": "node tools/generate-implementation-coverage-mirror.js",
+    "implementation-coverage:check": "node tools/generate-implementation-coverage-mirror.js --check",
     "check:implementation-coverage-source": "node tools/check-implementation-coverage-source.js",
     "check:atomicity": "node tools/check-atomicity.js",
     "check:atomicity:strict": "node tools/check-atomicity.js --strict",

@@ -194,6 +194,14 @@ tasks:
     desc: Verify implementation coverage TypeScript source and JavaScript runtime mirror stay synchronized
     cmds:
       - npm run check:implementation-coverage-source
+  implementation-coverage:generate:
+    desc: Generate implementation coverage JavaScript runtime mirrors from TypeScript source
+    cmds:
+      - npm run implementation-coverage:generate
+  implementation-coverage:check:
+    desc: Verify generated implementation coverage JavaScript runtime mirrors are current
+    cmds:
+      - npm run implementation-coverage:check
   db:integrity:check:
     desc: Verify local DB-like domain invariants and append-only events
     cmds:

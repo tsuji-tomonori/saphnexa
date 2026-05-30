@@ -36,7 +36,7 @@
     },
     {
       "path": "packages/api-contract/src/implementation-coverage.js",
-      "reason": "runtime compatibility implementation coverage mirror used by current Node checks; TypeScript source exists at packages/api-contract/src/implementation-coverage.ts"
+      "reason": "generated runtime compatibility implementation coverage mirror used by current Node checks; TypeScript source exists at packages/api-contract/src/implementation-coverage.ts"
     },
     {
       "path": "packages/db-schema/src/table-metadata.js",
@@ -88,7 +88,7 @@
     },
     {
       "path": "packages/tool-contract/src/implementation-coverage.js",
-      "reason": "runtime compatibility tool implementation coverage mirror used by current Node checks; TypeScript source exists at packages/tool-contract/src/implementation-coverage.ts"
+      "reason": "generated runtime compatibility tool implementation coverage mirror used by current Node checks; TypeScript source exists at packages/tool-contract/src/implementation-coverage.ts"
     }
   ]
 }
