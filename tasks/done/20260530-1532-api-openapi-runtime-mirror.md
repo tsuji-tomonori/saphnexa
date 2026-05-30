@@ -1,6 +1,6 @@
 # API OpenAPI runtime mirror generation
 
-状態: doing
+状態: done
 タスク種別: 機能追加
 
 ## 背景
@@ -47,7 +47,12 @@
 - [x] `docs/ops/local-verification.md` と `Taskfile.yml` が新しい検証導線を説明する。
 - [x] `npm run api:openapi:generate`、`npm run api:openapi:check`、`npm run test:contract`、`npm run typecheck:source` が pass する。
 - [x] `npm run check:no-src-js`、`npm run check:static`、`npm run ci:check`、`git diff --check` が pass する。
-- [ ] PR に受け入れ条件確認コメントとセルフレビューコメントを日本語で投稿する。
+- [x] PR に受け入れ条件確認コメントとセルフレビューコメントを日本語で投稿する。
+
+PR コメント:
+
+- 受け入れ条件確認: https://github.com/tsuji-tomonori/saphnexa/pull/6#issuecomment-4581977307
+- セルフレビュー: https://github.com/tsuji-tomonori/saphnexa/pull/6#issuecomment-4581977352
 
 ## 検証計画
 
