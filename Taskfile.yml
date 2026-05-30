@@ -154,6 +154,14 @@ tasks:
     desc: Verify local RAG first notification and final answer timing gates
     cmds:
       - npm run rag:perf:local
+  rag-core:generate:
+    desc: Generate RAG core JavaScript runtime mirror from TypeScript source
+    cmds:
+      - npm run rag-core:generate
+  rag-core:check:
+    desc: Verify generated RAG core JavaScript runtime mirror is current
+    cmds:
+      - npm run rag-core:check
   db:migration:check:
     desc: Verify local Flyway SQL migration naming and schema coverage
     cmds:

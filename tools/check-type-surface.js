@@ -393,6 +393,7 @@ for (const metadataTable of extractTableNamesFromMetadata(dbTableMetadataTs)) {
 
 const ragCoreTs = readText("packages/rag-core/src/fixture-rag.ts");
 const ragCoreJs = readText("packages/rag-core/src/fixture-rag.js");
+execFileSync("node", ["tools/generate-rag-core-runtime-mirror.js", "--check"], { stdio: "inherit" });
 for (const token of [
   "createFixtureRagAdapter",
   "createLocalTools",

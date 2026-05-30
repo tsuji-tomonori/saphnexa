@@ -68,7 +68,7 @@
     },
     {
       "path": "packages/rag-core/src/fixture-rag.js",
-      "reason": "runtime compatibility fixture RAG surface used by current Node checks; TypeScript source exists at packages/rag-core/src/fixture-rag.ts"
+      "reason": "generated runtime compatibility RAG core mirror used by current Node checks; TypeScript source exists at packages/rag-core/src/fixture-rag.ts"
     },
     {
       "path": "packages/testing/src/pairwise.js",
