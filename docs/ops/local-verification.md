@@ -42,6 +42,7 @@ npm run rag:quality:check
 npm run rag:security:check
 npm run rag:aws-binding:check
 npm run rag:perf:local
+npm run db-schema:tables:check
 npm run db:migration:check
 npm run db:integrity:check
 npm run search:local:check
@@ -178,6 +179,7 @@ git diff --check
 - Bedrock KB / S3 Vectors / AgentCore Runtime / AgentCore Gateway Target が Tools API、ACL precheck、S3 Vectors metadata、DSQL endpoint と source-level で接続されていること。実 AgentCore Gateway 認可、実 Bedrock KB Retrieve、実 DSQL ACL query、実 HTTP logs による結合確認は AWS dev/UAT 検証で別途実施する。
 - local RAG timing smoke で初回通知と最終回答の p95 が基準を満たすこと。
 - Flyway versioned SQL migration の命名、schema_migrations、required tables、checksum、自動 migration 不採用。実 Aurora DSQL introspection 由来の完全生成 DB type と実 Flyway apply は AWS dev/UAT 検証で別途確認する。
+- `npm run db-schema:tables:check` が `packages/db-schema/src/tables.ts` から生成される `.js` runtime mirror と committed mirror の一致を検査すること。
 - local DB-like store の主要ドメイン整合性と chat event append-only invariant。
 - 参照グラフ sample 10/10 と BM25F golden recall@10 >= 0.80。
 - required metrics 7/7、alarms 6/6、retention 未設定 0件の catalog。

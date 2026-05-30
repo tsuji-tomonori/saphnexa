@@ -309,6 +309,7 @@ assert(extractStringArray(dbSchemaTs, "requiredTableNames").length === requiredT
 for (const table of requiredTables) {
   assert(dbSchemaTs.includes(`"${table}"`), `DB schema TS source missing ${table}`);
 }
+execFileSync("node", ["tools/generate-db-tables-runtime-mirror.js", "--check"], { stdio: "inherit" });
 
 const dbTableMetadataTs = readText("packages/db-schema/src/table-metadata.ts");
 const dbMigrationSql = readText("packages/db-migrations/migrations/V001__initial_saphnexa_schema.sql");

@@ -49,6 +49,8 @@
     "rag:perf:local": "node tools/check-rag-performance.js",
     "db:metadata:build": "node tools/build-db-metadata-source.js",
     "db:metadata:check": "node tools/check-db-metadata.js",
+    "db-schema:tables:generate": "node tools/generate-db-tables-runtime-mirror.js",
+    "db-schema:tables:check": "node tools/generate-db-tables-runtime-mirror.js --check",
     "db:comments:generate": "node tools/generate-db-comments.js",
     "db:comments:check": "node tools/check-db-comments.js",
     "db:event-source:check": "node tools/check-db-event-source.js",

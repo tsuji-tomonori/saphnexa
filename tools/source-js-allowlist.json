@@ -44,7 +44,7 @@
     },
     {
       "path": "packages/db-schema/src/tables.js",
-      "reason": "runtime compatibility schema surface used by current Node checks; TypeScript source exists at packages/db-schema/src/tables.ts"
+      "reason": "generated runtime compatibility schema mirror used by current Node checks; TypeScript source exists at packages/db-schema/src/tables.ts"
     },
     {
       "path": "packages/domain/src/index.js",

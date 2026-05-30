@@ -162,6 +162,14 @@ tasks:
     desc: Verify DB v0.17 table and column metadata coverage
     cmds:
       - npm run db:metadata:check
+  db-schema:tables:generate:
+    desc: Generate DB tables JavaScript runtime mirror from TypeScript source
+    cmds:
+      - npm run db-schema:tables:generate
+  db-schema:tables:check:
+    desc: Verify generated DB tables JavaScript runtime mirror is current
+    cmds:
+      - npm run db-schema:tables:check
   db:comments:check:
     desc: Generate and verify DB schema COMMENT SQL from metadata
     cmds:
