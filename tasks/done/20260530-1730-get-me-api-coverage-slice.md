@@ -1,6 +1,6 @@
 # getMe API coverage slice
 
-- 状態: doing
+- 状態: done
 - 作業ブランチ: `codex/ts-atomic-coverage`
 - 対象PR: #6
 - 開始: 2026-05-30 17:30 JST
@@ -30,8 +30,8 @@
 - [x] `npm run typecheck:source` が成功する。
 - [x] `npm run check:static` が成功する。
 - [x] `git diff --check` が成功する。
-- [ ] PR に受け入れ条件確認コメントとセルフレビューコメントを日本語で追加する。
-- [ ] GitHub Actions の PR check が成功する。
+- [x] PR に受け入れ条件確認コメントとセルフレビューコメントを日本語で追加する。
+- [x] GitHub Actions の PR check が成功する。
 
 ## 実施結果
 
@@ -50,3 +50,15 @@
 - [x] `npm run typecheck:source`
 - [x] `npm run check:static`
 - [x] `git diff --check`
+- [x] PR 受け入れ条件確認コメント
+- [x] PR セルフレビューコメント
+- [x] GitHub Actions の PR check 成功
+
+## PR コメント
+
+- 受け入れ条件確認: https://github.com/tsuji-tomonori/saphnexa/pull/6#issuecomment-4582305632
+- セルフレビュー: https://github.com/tsuji-tomonori/saphnexa/pull/6#issuecomment-4582306052
+
+## CI
+
+- PR checks: 2026-05-30 17:35 JST 時点で全 job pass
