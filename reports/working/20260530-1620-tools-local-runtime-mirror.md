@@ -34,7 +34,7 @@
 - `tools/check-type-surface.js`
 - `tools/source-js-allowlist.json`
 - `docs/ops/local-verification.md`
-- `tasks/do/20260530-1620-tools-local-runtime-mirror.md`
+- `tasks/done/20260530-1620-tools-local-runtime-mirror.md`
 
 ## 検証
 
@@ -44,6 +44,7 @@
 - `npm run check:no-src-js`: 成功
 - `npm run check:static`: 成功
 - `git diff --check`: 成功
+- GitHub Actions PR checks: 成功
 
 ## fit 評価
 
@@ -53,4 +54,3 @@
 ## 未対応・制約・リスク
 
 - Tools API 本体の 1 tool = route/schema/usecase/policy 分割と production adapter 境界強化は後続タスクとして残る。
-- GitHub Actions の再実行結果は push 後に確認する。
