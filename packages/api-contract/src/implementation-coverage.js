@@ -29,17 +29,17 @@ export const apiImplementationCoverage = {
   getUserImport: api("aggregate", "aggregate", "aggregate", "aggregate", "planned"),
   adminListDocuments: api("aggregate", "aggregate", "aggregate", "aggregate", "planned", { audit: "planned" }),
   createDocument: api("aggregate", "aggregate", "aggregate", "aggregate", "planned", { domainEvent: "planned", audit: "planned" }),
-  getDocument: api("aggregate", "aggregate", "aggregate", "aggregate", "planned"),
+  getDocument: api("aggregate", "aggregate", "aggregate", "aggregate", "implemented", { unitTest: "aggregate", localIntegrationTest: "implemented", dsqlSmoke: "aggregate" }),
   createDocumentVersion: api("aggregate", "aggregate", "aggregate", "aggregate", "planned", { domainEvent: "planned", audit: "planned" }),
   activateDocumentVersion: api("aggregate", "aggregate", "aggregate", "aggregate", "planned", { domainEvent: "planned", audit: "planned" }),
   updateDocumentAcl: api("aggregate", "aggregate", "aggregate", "aggregate", "planned", { domainEvent: "planned", audit: "planned" }),
   suspendDocument: api("aggregate", "aggregate", "aggregate", "aggregate", "planned", { domainEvent: "planned", audit: "planned" }),
-  getIngestionJob: api("aggregate", "aggregate", "aggregate", "aggregate", "planned"),
+  getIngestionJob: api("aggregate", "aggregate", "aggregate", "aggregate", "implemented", { unitTest: "aggregate", localIntegrationTest: "implemented", dsqlSmoke: "aggregate" }),
   retryIngestionJob: api("aggregate", "aggregate", "aggregate", "aggregate", "planned", { domainEvent: "planned", audit: "planned" }),
-  listEvaluationDatasets: api("aggregate", "aggregate", "aggregate", "aggregate", "planned"),
+  listEvaluationDatasets: api("aggregate", "aggregate", "aggregate", "aggregate", "implemented", { unitTest: "aggregate", localIntegrationTest: "implemented", dsqlSmoke: "aggregate" }),
   startEvaluationRun: api("aggregate", "aggregate", "aggregate", "aggregate", "planned", { domainEvent: "planned", audit: "planned" }),
-  getEvaluationRun: api("aggregate", "aggregate", "aggregate", "aggregate", "planned"),
-  listPublishedArtifacts: api("aggregate", "aggregate", "aggregate", "aggregate", "planned"),
+  getEvaluationRun: api("aggregate", "aggregate", "aggregate", "aggregate", "implemented", { unitTest: "aggregate", localIntegrationTest: "implemented", dsqlSmoke: "aggregate" }),
+  listPublishedArtifacts: api("aggregate", "aggregate", "aggregate", "aggregate", "implemented", { unitTest: "aggregate", localIntegrationTest: "implemented", dsqlSmoke: "aggregate" }),
   issueArtifactAccessCookie: api("aggregate", "aggregate", "aggregate", "aggregate", "planned", { audit: "planned" })
 };
 
