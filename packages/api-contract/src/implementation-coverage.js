@@ -4,7 +4,7 @@ export const apiImplementationCoverage = {
   loginStart: api("aggregate", "aggregate", "aggregate", "implemented", "external", { repository: "not_required", unitTest: "aggregate", localIntegrationTest: "implemented", dsqlSmoke: "not_required", externalReason: "cognito_redirect" }),
   authCallback: api("aggregate", "aggregate", "aggregate", "implemented", "external", { repository: "implemented", domainEvent: "implemented", unitTest: "aggregate", localIntegrationTest: "implemented", dsqlSmoke: "aggregate", externalReason: "cognito_callback" }),
   logout: api("aggregate", "aggregate", "aggregate", "implemented", "implemented", { repository: "implemented", domainEvent: "implemented", unitTest: "aggregate", localIntegrationTest: "implemented", dsqlSmoke: "aggregate" }),
-  getMe: api("aggregate", "aggregate", "aggregate", "aggregate", "implemented"),
+  getMe: api("aggregate", "aggregate", "aggregate", "aggregate", "implemented", { unitTest: "aggregate", localIntegrationTest: "implemented", dsqlSmoke: "aggregate" }),
   listChatSessions: api("aggregate", "aggregate", "aggregate", "aggregate", "implemented"),
   createChatSession: api("aggregate", "aggregate", "aggregate", "aggregate", "implemented", { domainEvent: "planned", audit: "implemented" }),
   getChatSession: api("aggregate", "aggregate", "aggregate", "aggregate", "implemented"),
