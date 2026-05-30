@@ -343,6 +343,29 @@ const dsqlOperationMappings = {
             FROM created_chat c
             RETURNING chat_id
           ),
+          chat_session_event AS (
+            INSERT INTO chat_session_events (
+              tenant_id, event_id, aggregate_id, aggregate_type, event_seq, event_name,
+              occurred_at, actor_user_id, correlation_id, causation_id, idempotency_key, payload_json
+            )
+            SELECT
+              c.tenant_id,
+              gen_random_uuid(),
+              c.chat_id::varchar,
+              'chat_session',
+              1,
+              'chat.session.created',
+              now(),
+              c.created_by_user_id,
+              NULL,
+              NULL,
+              concat('chat-session:create:', c.chat_id::varchar),
+              json_build_object('chat_id', c.chat_id, 'title', c.title, 'created_by_user_id', c.created_by_user_id)
+            FROM created_chat c
+            JOIN owner_participant op
+              ON op.chat_id = c.chat_id
+            RETURNING aggregate_id
+          ),
           audit_event AS (
             INSERT INTO audit_events (
               tenant_id, audit_event_id, actor_user_id, event_name, category, resource_id, payload_json, created_at
@@ -365,6 +388,8 @@ const dsqlOperationMappings = {
           FROM created_chat c
           JOIN owner_participant op
             ON op.chat_id = c.chat_id
+          JOIN chat_session_event cse
+            ON cse.aggregate_id = c.chat_id::varchar
           JOIN audit_event ae
             ON ae.resource_id = c.chat_id::varchar
         `,
@@ -466,6 +491,32 @@ const dsqlOperationMappings = {
                AND c.status <> 'deleted'
             RETURNING c.*
           ),
+          chat_session_event AS (
+            INSERT INTO chat_session_events (
+              tenant_id, event_id, aggregate_id, aggregate_type, event_seq, event_name,
+              occurred_at, actor_user_id, correlation_id, causation_id, idempotency_key, payload_json
+            )
+            SELECT
+              uc.tenant_id,
+              gen_random_uuid(),
+              uc.chat_id::varchar,
+              'chat_session',
+              COALESCE((
+                SELECT max(e.event_seq)
+                FROM chat_session_events e
+                WHERE e.tenant_id = uc.tenant_id
+                  AND e.aggregate_id = uc.chat_id::varchar
+              ), 0) + 1,
+              'chat.session.title_updated',
+              now(),
+              :actor_id,
+              NULL,
+              NULL,
+              NULL,
+              json_build_object('chat_id', uc.chat_id, 'title', uc.title)
+            FROM updated_chat uc
+            RETURNING aggregate_id
+          ),
           audit_event AS (
             INSERT INTO audit_events (
               tenant_id, audit_event_id, actor_user_id, event_name, category, resource_id, payload_json, created_at
@@ -484,6 +535,8 @@ const dsqlOperationMappings = {
           )
           SELECT uc.*
           FROM updated_chat uc
+          JOIN chat_session_event cse
+            ON cse.aggregate_id = uc.chat_id::varchar
           JOIN audit_event ae
             ON ae.resource_id = uc.chat_id::varchar
         `,
@@ -534,6 +587,37 @@ const dsqlOperationMappings = {
                AND c.status <> 'deleted'
             RETURNING c.*
           ),
+          chat_session_event AS (
+            INSERT INTO chat_session_events (
+              tenant_id, event_id, aggregate_id, aggregate_type, event_seq, event_name,
+              occurred_at, actor_user_id, correlation_id, causation_id, idempotency_key, payload_json
+            )
+            SELECT
+              dc.tenant_id,
+              gen_random_uuid(),
+              dc.chat_id::varchar,
+              'chat_session',
+              COALESCE((
+                SELECT max(e.event_seq)
+                FROM chat_session_events e
+                WHERE e.tenant_id = dc.tenant_id
+                  AND e.aggregate_id = dc.chat_id::varchar
+              ), 0) + 1,
+              'chat.session.deleted',
+              now(),
+              :actor_id,
+              NULL,
+              NULL,
+              NULL,
+              json_build_object(
+                'chat_id', dc.chat_id,
+                'deleted_at', dc.deleted_at,
+                'physical_delete', false,
+                'removed_participants', (SELECT count(*) FROM removed_participants)
+              )
+            FROM deleted_chat dc
+            RETURNING aggregate_id
+          ),
           audit_event AS (
             INSERT INTO audit_events (
               tenant_id, audit_event_id, actor_user_id, event_name, category, resource_id, payload_json, created_at
@@ -557,6 +641,8 @@ const dsqlOperationMappings = {
           )
           SELECT dc.*
           FROM deleted_chat dc
+          JOIN chat_session_event cse
+            ON cse.aggregate_id = dc.chat_id::varchar
           JOIN audit_event ae
             ON ae.resource_id = dc.chat_id::varchar
         `,
