@@ -1,9 +1,10 @@
 # Chat message event coverage slice
 
-- 状態: doing
+- 状態: done
 - 作業ブランチ: `codex/ts-atomic-coverage`
 - 対象PR: #6
 - 開始: 2026-05-30 18:40 JST
+- 完了: 2026-05-30 18:47 JST
 - タスク種別: 機能追加
 
 ## 背景
@@ -38,23 +39,43 @@ WebSocket ticket DSQL slice 後も `cancelAnswerGeneration`、`createFeedback` �
 
 ## 受け入れ条件
 
-- [ ] `cancelAnswerGeneration` の DSQL query plan が `chat_run_events` に domain event を append する。
-- [ ] `cancelAnswerGeneration` の DSQL query plan が `chat_message_lifecycle_events` に domain event を append する。
-- [ ] `createFeedback` の DSQL query plan が `chat_message_lifecycle_events` と `chat_message_events` に feedback event を append する。
-- [ ] 対象 API 2件の既存 reader / owner / requester 境界を弱めない。
-- [ ] `packages/api-contract/src/implementation-coverage.ts` 上で対象 API 2件に planned marker が残らない。
-- [ ] generated coverage mirror が更新される。
-- [ ] `npm run implementation-coverage:generate` が成功する。
-- [ ] `npm run implementation-coverage:check` が成功する。
-- [ ] `npm run api:implementation:check` が成功し、planned marker 数が 11 件になる。
-- [ ] `npm run api:implementation:check:production` の失敗リストから対象 API 2件が消える。
-- [ ] `npm run test:integration:local` が成功する。
-- [ ] `npm run web:flow:check` が成功する。
-- [ ] `npm run typecheck:source` が成功する。
-- [ ] `npm run check:static` が成功する。
-- [ ] `git diff --check` が成功する。
-- [ ] PR に受け入れ条件確認コメントとセルフレビューコメントを日本語で追加する。
-- [ ] GitHub Actions の PR check が成功する。
+- [x] `cancelAnswerGeneration` の DSQL query plan が `chat_run_events` に domain event を append する。
+- [x] `cancelAnswerGeneration` の DSQL query plan が `chat_message_lifecycle_events` に domain event を append する。
+- [x] `createFeedback` の DSQL query plan が `chat_message_lifecycle_events` と `chat_message_events` に feedback event を append する。
+- [x] 対象 API 2件の既存 reader / owner / requester 境界を弱めない。
+- [x] `packages/api-contract/src/implementation-coverage.ts` 上で対象 API 2件に planned marker が残らない。
+- [x] generated coverage mirror が更新される。
+- [x] `npm run implementation-coverage:generate` が成功する。
+- [x] `npm run implementation-coverage:check` が成功する。
+- [x] `npm run api:implementation:check` が成功し、planned marker 数が 11 件になる。
+- [x] `npm run api:implementation:check:production` の失敗リストから対象 API 2件が消える。
+- [x] `npm run test:integration:local` が成功する。
+- [x] `npm run web:flow:check` が成功する。
+- [x] `npm run typecheck:source` が成功する。
+- [x] `npm run check:static` が成功する。
+- [x] `git diff --check` が成功する。
+- [x] PR に受け入れ条件確認コメントとセルフレビューコメントを日本語で追加する。
+- [x] GitHub Actions の PR check が成功する。
+
+## 実施結果
+
+- 実装 commit: `1575021`
+- 作業レポート: `reports/working/20260530-1840-chat-message-event-coverage.md`
+- PR 受け入れ条件確認コメント: https://github.com/tsuji-tomonori/saphnexa/pull/6#issuecomment-4582464487
+- PR セルフレビューコメント: https://github.com/tsuji-tomonori/saphnexa/pull/6#issuecomment-4582465993
+- GitHub Actions: `gh pr checks 6 --watch --interval 10` で pass を確認。
+
+## 検証結果
+
+- `npm run implementation-coverage:generate`: pass
+- `npm run implementation-coverage:check`: pass
+- `npm run api:implementation:check`: pass（40 operations, 11 planned markers）
+- `npm run api:implementation:check:production`: expected fail。失敗リストは `submitQuestion`, `startUserImport`, `getUserImport`, `createDocument`, `createDocumentVersion`, `activateDocumentVersion`, `updateDocumentAcl`, `suspendDocument`, `retryIngestionJob`, `startEvaluationRun`, `issueArtifactAccessCookie` の 11 件で、対象 API 2件は消えている。
+- `npm run test:integration:local`: pass
+- `npm run web:flow:check`: pass
+- `npm run typecheck:source`: pass
+- `npm run check:static`: pass
+- `git diff --check`: pass
 
 ## PR レビュー観点
 
