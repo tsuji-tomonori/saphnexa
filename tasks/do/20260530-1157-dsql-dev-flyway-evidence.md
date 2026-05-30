@@ -80,6 +80,7 @@
 - 実cluster接続、Flyway適用、schema_migrations確認、COMMENT ON確認、CRUD smoke、final preflight evidence生成は未実施。
 - cluster作成後に実行できるよう、`flyway-info` raw outputを DSQL/Flyway詳細証跡へ拡張し、preflight materializer / final checker で migration履歴、主要table、event table、projection lineage columns、COMMENT ON可否、CRUD smokeを検査するようにした。
 - `node tools/capture-dsql-flyway-evidence.js` を追加し、CloudFormation `DsqlEndpoint`、AWS DSQL admin auth token、`packages/db-migrations/flyway-dsql.conf`、Flyway、psql を使って raw evidenceを採取する入口を用意した。
+- PR #5 CI の `contract generation diff` で `aws:dev-uat:raw-input:fixture:check` が失敗したため、`aws_dev_uat_preflight.capture.sample.json` のような raw-input-first 経路でも `capture_provenance` の `raw/flyway-info.json` から DSQL/Flyway詳細を取り込むよう builder を修正した。
 
 ## 現時点の受け入れ条件状況
 
@@ -102,3 +103,4 @@
 - `node tools/capture-dsql-flyway-evidence.js --help`: 成功
 - `git diff --check`: 成功
 - `npm run check:static`: 初回は新規worktreeで `tsc: not found` により失敗。`npm ci` 後に再実行して成功。
+- `npm run aws:dev-uat:raw-input:fixture:check`: CI失敗後に修正して成功。

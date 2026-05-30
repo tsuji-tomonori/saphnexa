@@ -24,6 +24,7 @@
 - `tools/capture-dsql-flyway-evidence.js` を追加し、Flyway migrate/info、`schema_migrations`、information_schema、COMMENT ON probe、smoke結果を raw JSON にまとめる入口を作成。
 - `tools/aws-dev-uat-preflight-raw-input-materializer.js` と `tools/check-aws-dev-uat-preflight.js` を更新し、aws-captured final evidenceでは DSQL/Flyway詳細証跡を必須化。
 - `tools/aws-dev-uat-evidence-builders.js` を更新し、DSQL詳細証跡を final preflight evidence に保持。
+- `aws_dev_uat_preflight.capture.sample.json` のような raw-input-first 経路でも、`capture_provenance` の `raw/flyway-info.json` から DSQL詳細証跡を取り込むようにした。
 - `tools/aws-dev-uat-raw-capture-plan.js` を更新し、`flyway-info` captureを新 helper に差し替え。
 - `docs/acceptance/evidence/raw/flyway-info.json` fixture と `docs/ops/runbooks/aws-dev-uat-validation.md` を更新。
 
@@ -43,6 +44,7 @@
 - `npm run aws:dev-uat:raw-capture-plan:check`: 成功
 - `npm run aws:dev-uat:preflight-raw-input:fixture:check`: 成功
 - `npm run aws:dev-uat:raw-input-scaffold:check`: 成功
+- `npm run aws:dev-uat:raw-input:fixture:check`: CI失敗後に修正して成功
 - `npm run docs:check`: 成功
 - `node tools/capture-dsql-flyway-evidence.js --help`: 成功
 - `git diff --check`: 成功
