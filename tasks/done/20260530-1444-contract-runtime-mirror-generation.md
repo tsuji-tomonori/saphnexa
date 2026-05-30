@@ -48,7 +48,7 @@ API contract と Tool contract の runtime `.js` mirror を `.ts` source から�
 - [x] AC5: `npm run check:no-src-js` が pass する。
 - [x] AC6: `npm run check:static` が pass する。
 - [x] AC7: `git diff --check` が pass する。
-- [ ] AC8: PR に受け入れ条件確認とセルフレビュー更新を日本語で投稿する。
+- [x] AC8: PR に受け入れ条件確認とセルフレビュー更新を日本語で投稿する。
 
 ## 検証計画
 
@@ -70,4 +70,4 @@ API contract と Tool contract の runtime `.js` mirror を `.ts` source から�
 
 ## 状態
 
-in_progress
+done
