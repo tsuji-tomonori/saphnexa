@@ -1736,6 +1736,42 @@ const dsqlOperationMappings = {
       return { artifacts: rows };
     }
   },
+  issueArtifactAccessCookie: {
+    status: 201,
+    plan(request) {
+      return {
+        operationId: "issueArtifactAccessCookie",
+        resultTable: "audit_events",
+        sql: `
+          WITH actor AS (
+            SELECT tenant_id, user_id
+            FROM users
+            WHERE user_id = :actor_id
+              AND role = 'admin'
+              AND status = 'active'
+          )
+          INSERT INTO audit_events (
+            tenant_id, audit_event_id, actor_user_id, event_name, category, resource_id, payload_json, created_at
+          )
+          SELECT
+            a.tenant_id,
+            gen_random_uuid(),
+            a.user_id,
+            'admin.artifact.cookie_issued',
+            'artifact_access',
+            'artifact-cookie',
+            json_build_object('expires_in_seconds', 300),
+            now()
+          FROM actor a
+          RETURNING *
+        `,
+        params: { actor_id: request.actorId }
+      };
+    },
+    map() {
+      return { cookie_issued: true, expires_in_seconds: 300 };
+    }
+  },
   adminListUsers: {
     plan(request) {
       return {

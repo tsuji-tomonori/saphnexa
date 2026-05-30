@@ -40,7 +40,7 @@ export const apiImplementationCoverage = {
   startEvaluationRun: api("aggregate", "aggregate", "aggregate", "aggregate", "planned", { domainEvent: "planned", audit: "planned" }),
   getEvaluationRun: api("aggregate", "aggregate", "aggregate", "aggregate", "implemented", { unitTest: "aggregate", localIntegrationTest: "implemented", dsqlSmoke: "aggregate" }),
   listPublishedArtifacts: api("aggregate", "aggregate", "aggregate", "aggregate", "implemented", { unitTest: "aggregate", localIntegrationTest: "implemented", dsqlSmoke: "aggregate" }),
-  issueArtifactAccessCookie: api("aggregate", "aggregate", "aggregate", "aggregate", "planned", { audit: "planned" })
+  issueArtifactAccessCookie: api("aggregate", "aggregate", "aggregate", "aggregate", "implemented", { audit: "implemented", unitTest: "aggregate", localIntegrationTest: "implemented", dsqlSmoke: "aggregate" })
 };
 
 function api(route, schema, usecase, localFixture, production, overrides = {}) {
