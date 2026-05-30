@@ -51,7 +51,11 @@ export function buildAwsDevUatPreflightEvidence(inputPath, outputPath = prefligh
       flyway_schema_history_table: input.dsql_flyway?.flyway_schema_history_table || "schema_migrations",
       latest_version: input.dsql_flyway?.latest_version,
       checksum_status: input.dsql_flyway?.checksum_status,
-      applied_by: input.dsql_flyway?.applied_by || "flyway"
+      applied_by: input.dsql_flyway?.applied_by || "flyway",
+      applied_migrations: input.dsql_flyway?.applied_migrations,
+      schema: input.dsql_flyway?.schema,
+      comment_on: input.dsql_flyway?.comment_on,
+      crud_smoke: input.dsql_flyway?.crud_smoke
     },
     hono_openapi: {
       status: input.hono_openapi?.status || "passed",

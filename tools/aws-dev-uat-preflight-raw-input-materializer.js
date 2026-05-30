@@ -1,6 +1,13 @@
 import { existsSync, mkdirSync, writeFileSync } from "node:fs";
 import { dirname, resolve } from "node:path";
 import { preflightCaptureCommandIds } from "./aws-dev-uat-evidence-builders.js";
+import {
+  requiredCoreTables,
+  requiredCrudSmokeFlows,
+  requiredEventTables,
+  requiredMigrationVersions,
+  requiredProjectionColumns
+} from "./dsql-flyway-evidence-requirements.js";
 import { assert, readJson } from "./lib.js";
 
 const requiredOutputs = [
@@ -82,7 +89,11 @@ export function buildAwsDevUatPreflightRawInput(options = {}) {
       flyway_schema_history_table: flyway.schemaHistoryTable,
       latest_version: flyway.latestVersion,
       checksum_status: flyway.checksumStatus,
-      applied_by: "flyway"
+      applied_by: "flyway",
+      applied_migrations: flyway.appliedMigrations,
+      schema: flyway.schema,
+      comment_on: flyway.commentOn,
+      crud_smoke: flyway.crudSmoke
     },
     hono_openapi: {
       status: "passed",
@@ -208,11 +219,74 @@ function flywayStatus(rawFlyway) {
   const checksumStatus = rawFlyway.checksumStatus || rawFlyway.checksum_status;
   assert(latestVersion === "V003", "flyway latestVersion must be V003");
   assert(checksumStatus === "matched", "flyway checksumStatus must be matched");
+  const appliedMigrations = assertAppliedMigrations(rawFlyway.appliedMigrations);
+  const schema = assertDsqlSchema(rawFlyway.schema);
+  const commentOn = assertCommentOn(rawFlyway.commentOn);
+  const crudSmoke = assertCrudSmoke(rawFlyway.crudSmoke);
   return {
     schemaHistoryTable: rawFlyway.schemaHistoryTable || "schema_migrations",
     latestVersion,
-    checksumStatus
+    checksumStatus,
+    appliedMigrations,
+    schema,
+    commentOn,
+    crudSmoke
   };
+}
+
+function assertAppliedMigrations(appliedMigrations) {
+  assert(Array.isArray(appliedMigrations), "flyway appliedMigrations must be an array");
+  const byVersion = new Map(appliedMigrations.map((item) => [item.version, item]));
+  for (const version of requiredMigrationVersions) {
+    const item = byVersion.get(version);
+    assert(item, `flyway appliedMigrations missing ${version}`);
+    assert(item.success === true, `flyway appliedMigrations ${version} must be successful`);
+  }
+  return appliedMigrations;
+}
+
+function assertDsqlSchema(schema) {
+  assert(schema && typeof schema === "object", "flyway schema section is required");
+  assertIncludesAll(schema.coreTables, requiredCoreTables, "flyway schema.coreTables");
+  assertIncludesAll(schema.eventTables, requiredEventTables, "flyway schema.eventTables");
+  assertProjectionColumns(schema.projectionColumns);
+  return schema;
+}
+
+function assertProjectionColumns(columns) {
+  assert(Array.isArray(columns), "flyway schema.projectionColumns must be an array");
+  const actual = new Set(columns.map((item) => `${item.table}.${item.column}`));
+  for (const item of requiredProjectionColumns) {
+    assert(actual.has(`${item.table}.${item.column}`), `flyway schema.projectionColumns missing ${item.table}.${item.column}`);
+  }
+}
+
+function assertCommentOn(commentOn) {
+  assert(commentOn && typeof commentOn === "object", "flyway commentOn section is required");
+  for (const scope of ["table", "column"]) {
+    const item = commentOn[scope];
+    assert(item && typeof item === "object", `flyway commentOn.${scope} is required`);
+    assert(item.attempted === true, `flyway commentOn.${scope}.attempted must be true`);
+    assert(typeof item.supported === "boolean", `flyway commentOn.${scope}.supported must be boolean`);
+    if (item.supported === false) {
+      assert(typeof item.error === "string" && item.error.trim().length > 0, `flyway commentOn.${scope}.error is required when unsupported`);
+    }
+  }
+  return commentOn;
+}
+
+function assertCrudSmoke(crudSmoke) {
+  assert(crudSmoke && typeof crudSmoke === "object", "flyway crudSmoke section is required");
+  for (const flow of requiredCrudSmokeFlows) {
+    assert(crudSmoke[flow]?.status === "passed", `flyway crudSmoke.${flow}.status must be passed`);
+  }
+  return crudSmoke;
+}
+
+function assertIncludesAll(actual, expected, label) {
+  assert(Array.isArray(actual), `${label} must be an array`);
+  const actualSet = new Set(actual);
+  for (const item of expected) assert(actualSet.has(item), `${label} missing ${item}`);
 }
 
 function openApiStatus(openApi) {

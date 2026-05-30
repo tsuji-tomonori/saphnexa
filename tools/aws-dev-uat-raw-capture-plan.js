@@ -49,7 +49,7 @@ export function buildAwsDevUatRawCapturePlan(options = {}) {
           "final_command"
         ],
         required_command_ids: preflightCaptureCommandIds,
-        commands: preflightCommands({ environment, region, stackName, runId })
+        commands: preflightCommands({ captureRoot, environment, region, stackName, runId })
       },
       validation: {
         raw_input_path: `${captureRoot}/aws_dev_uat_validation.raw.json`,
@@ -79,12 +79,12 @@ export function buildAwsDevUatRawCapturePlan(options = {}) {
   return plan;
 }
 
-function preflightCommands({ environment, region, stackName, runId }) {
+function preflightCommands({ captureRoot, environment, region, stackName, runId }) {
   return [
     command("aws-sts", "aws sts get-caller-identity --output json", "raw/aws-sts-get-caller-identity.json", "json"),
     command("cloudformation-describe-stacks", `aws cloudformation describe-stacks --stack-name ${stackName} --region ${region} --output json`, "raw/cloudformation-describe-stacks.json", "json"),
     command("cloudformation-list-stack-resources", `aws cloudformation list-stack-resources --stack-name ${stackName} --region ${region} --output json`, "raw/cloudformation-list-stack-resources.json", "json"),
-    command("flyway-info", `flyway info -configFiles=conf/flyway-${environment}.conf -outputType=json`, "raw/flyway-info.json", "json"),
+    command("flyway-info", `node tools/capture-dsql-flyway-evidence.js --env ${environment} --region ${region} --stack-name ${stackName} --output ${captureRoot}/raw/flyway-info.json`, "raw/flyway-info.json", "json"),
     command("hono-openapi", `curl -fsS https://api.${environment}.saphnexa.awsapps.com/openapi.json`, "raw/openapi.json", "json"),
     command("edge-realtime", `node tools/capture-edge-realtime-smoke.js --env ${environment} --run-id ${runId}`, "raw/edge-realtime-smoke.json", "json"),
     command("rag-runtime", `node tools/capture-rag-runtime-smoke.js --env ${environment} --run-id ${runId}`, "raw/rag-runtime-smoke.json", "json"),

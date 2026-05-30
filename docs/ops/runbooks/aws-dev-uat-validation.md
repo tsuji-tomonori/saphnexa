@@ -114,7 +114,17 @@ npm run aws:dev-uat:operator-runbook:check
 npm run aws:dev-uat:capture-helpers:check
 ```
 
-`edge-realtime`、`rag-runtime`、`published-artifacts` の raw output は repo 内 helper で取得する。helper は実環境値を env から受け取り、必須 env がない場合は fail する。架空値や fallback 成功は出さない。
+`flyway-info`、`edge-realtime`、`rag-runtime`、`published-artifacts` の raw output は repo 内 helper で取得する。helper は実環境値を env、CloudFormation outputs、または AWS CLI から受け取り、必須値がない場合は fail する。架空値や fallback 成功は出さない。
+
+`flyway-info` は `node tools/capture-dsql-flyway-evidence.js --env <dev|uat> --region ap-northeast-1 --stack-name <stack-name> --output <raw/flyway-info.json>` で取得する。この helper は `packages/db-migrations/flyway-dsql.conf`、`packages/db-migrations/migrations/`、Flyway、`psql`、`aws dsql generate-db-connect-admin-auth-token` を使い、次の実cluster結果を 1 つの raw JSON にまとめる。
+
+- `schema_migrations` の V001/V002/V003 成功履歴。
+- 主要tableと event table の存在。
+- `projection_event_id` / `projection_event_seq` / `projected_at` の対象table存在。
+- `COMMENT ON TABLE` / `COMMENT ON COLUMN` の試行結果。unsupported の場合も error を記録し、成功扱いにしない。
+- `chat` / `document` / `ingestion` / `evaluation` / `tool_invocation` の最小 smoke 結果。
+
+Aurora DSQL dev cluster が未作成の場合、`flyway-info` raw output は取得できず、`aws_dev_uat_preflight` final evidence は未達として扱う。fixture や sample raw output で final evidence を代替しない。
 
 `npm run aws:dev-uat:raw-input-scaffold:build` は raw capture plan から次の draft input を生成する。
 

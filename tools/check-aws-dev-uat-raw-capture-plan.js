@@ -121,6 +121,10 @@ function validateMode(mode, context) {
       assert(!/(npm run test:e2e:aws|npm run perf:aws|npm run rag:quality:aws)/.test(item.command), `${context.label}.${item.id}.command must not call final suite gate as raw capture`);
     }
     assertNodeHelperExists(item.command, `${context.label}.${item.id}.command`);
+    if (item.id === "flyway-info") {
+      assert(item.command.includes("tools/capture-dsql-flyway-evidence.js"), "preflight.flyway-info.command must capture DSQL/Flyway schema evidence");
+      assert(item.command.includes("packages/db-migrations/flyway-dsql.conf") || item.command.includes("capture-dsql-flyway-evidence.js"), "preflight.flyway-info.command must use the DSQL Flyway profile through the capture helper");
+    }
     assert(typeof item.output_ref === "string" && item.output_ref.startsWith("raw/"), `${context.label}.${item.id}.output_ref must stay under raw/`);
     assert(!isAbsolute(item.output_ref), `${context.label}.${item.id}.output_ref must be relative`);
     assert(!item.output_ref.split(/[\\/]/).includes(".."), `${context.label}.${item.id}.output_ref must not traverse directories`);
