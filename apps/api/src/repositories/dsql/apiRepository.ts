@@ -1266,6 +1266,64 @@ const dsqlOperationMappings = {
              AND e.chat_id = cr.chat_id
              AND e.message_id = cr.message_id
             GROUP BY cr.tenant_id, cr.chat_id, cr.message_id, cr.run_id
+          ),
+          chat_run_event AS (
+            INSERT INTO chat_run_events (
+              tenant_id, event_id, aggregate_id, aggregate_type, event_seq, event_name,
+              occurred_at, actor_user_id, correlation_id, causation_id, idempotency_key, payload_json
+            )
+            SELECT
+              cr.tenant_id,
+              gen_random_uuid(),
+              cr.run_id::varchar,
+              'chat_run',
+              COALESCE((
+                SELECT max(e.event_seq)
+                FROM chat_run_events e
+                WHERE e.tenant_id = cr.tenant_id
+                  AND e.aggregate_id = cr.run_id::varchar
+              ), 0) + 1,
+              'chat.run.canceled',
+              now(),
+              :actor_id,
+              NULL,
+              NULL,
+              NULL,
+              json_build_object(
+                'run_id', cr.run_id,
+                'chat_id', cr.chat_id,
+                'message_id', cr.message_id,
+                'status', 'canceled',
+                'reason', :reason
+              )
+            FROM canceled_run cr
+            RETURNING aggregate_id
+          ),
+          chat_message_lifecycle_event AS (
+            INSERT INTO chat_message_lifecycle_events (
+              tenant_id, event_id, aggregate_id, aggregate_type, event_seq, event_name,
+              occurred_at, actor_user_id, correlation_id, causation_id, idempotency_key, payload_json
+            )
+            SELECT
+              ne.tenant_id,
+              gen_random_uuid(),
+              concat(ne.chat_id::varchar, ':', ne.message_id::varchar),
+              'chat_message',
+              COALESCE((
+                SELECT max(e.event_seq)
+                FROM chat_message_lifecycle_events e
+                WHERE e.tenant_id = ne.tenant_id
+                  AND e.aggregate_id = concat(ne.chat_id::varchar, ':', ne.message_id::varchar)
+              ), 0) + 1,
+              'chat.run.canceled',
+              now(),
+              :actor_id,
+              NULL,
+              NULL,
+              NULL,
+              json_build_object('run_id', ne.run_id, 'status', 'canceled', 'reason', :reason)
+            FROM next_event ne
+            RETURNING aggregate_id
           )
           INSERT INTO chat_message_events (
             tenant_id, chat_id, message_id, event_seq, event_id, event_name, event_type, payload_json, created_at
@@ -1281,6 +1339,10 @@ const dsqlOperationMappings = {
             json_build_object('run_id', ne.run_id, 'status', 'canceled', 'reason', :reason),
             now()
           FROM next_event ne
+          JOIN chat_run_event cre
+            ON cre.aggregate_id = ne.run_id::varchar
+          JOIN chat_message_lifecycle_event cmle
+            ON cmle.aggregate_id = concat(ne.chat_id::varchar, ':', ne.message_id::varchar)
           RETURNING (
             SELECT row_to_json(cr)
             FROM canceled_run cr
@@ -1325,34 +1387,100 @@ const dsqlOperationMappings = {
               AND m.message_id = :message_id
               AND m.sender_type = 'assistant'
               AND :rating IN ('positive', 'negative')
+          ),
+          upserted_feedback AS (
+            INSERT INTO message_feedback (
+              tenant_id, feedback_id, chat_id, message_id, user_id, rating, comment, problem_type, created_at
+            )
+            SELECT
+              a.tenant_id,
+              COALESCE(existing.feedback_id, gen_random_uuid()),
+              rm.chat_id,
+              rm.message_id,
+              a.user_id,
+              :rating,
+              :comment,
+              :problem_type,
+              COALESCE(existing.created_at, now())
+            FROM actor a
+            JOIN readable_message rm
+              ON rm.tenant_id = a.tenant_id
+            LEFT JOIN message_feedback existing
+              ON existing.tenant_id = a.tenant_id
+             AND existing.chat_id = rm.chat_id
+             AND existing.message_id = rm.message_id
+             AND existing.user_id = a.user_id
+            ON CONFLICT (tenant_id, chat_id, message_id, user_id)
+            DO UPDATE SET
+              rating = EXCLUDED.rating,
+              comment = EXCLUDED.comment,
+              problem_type = EXCLUDED.problem_type
+            RETURNING *
+          ),
+          next_event AS (
+            SELECT
+              uf.tenant_id,
+              uf.chat_id,
+              uf.message_id,
+              COALESCE(MAX(e.event_seq), 0) + 1 AS event_seq,
+              uf.feedback_id,
+              uf.rating
+            FROM upserted_feedback uf
+            LEFT JOIN chat_message_events e
+              ON e.tenant_id = uf.tenant_id
+             AND e.chat_id = uf.chat_id
+             AND e.message_id = uf.message_id
+            GROUP BY uf.tenant_id, uf.chat_id, uf.message_id, uf.feedback_id, uf.rating
+          ),
+          chat_message_lifecycle_event AS (
+            INSERT INTO chat_message_lifecycle_events (
+              tenant_id, event_id, aggregate_id, aggregate_type, event_seq, event_name,
+              occurred_at, actor_user_id, correlation_id, causation_id, idempotency_key, payload_json
+            )
+            SELECT
+              ne.tenant_id,
+              gen_random_uuid(),
+              concat(ne.chat_id::varchar, ':', ne.message_id::varchar),
+              'chat_message',
+              COALESCE((
+                SELECT max(e.event_seq)
+                FROM chat_message_lifecycle_events e
+                WHERE e.tenant_id = ne.tenant_id
+                  AND e.aggregate_id = concat(ne.chat_id::varchar, ':', ne.message_id::varchar)
+              ), 0) + 1,
+              'chat.feedback.recorded',
+              now(),
+              :actor_id,
+              NULL,
+              NULL,
+              NULL,
+              json_build_object('feedback_id', ne.feedback_id, 'rating', ne.rating)
+            FROM next_event ne
+            RETURNING aggregate_id
+          ),
+          message_event AS (
+            INSERT INTO chat_message_events (
+              tenant_id, chat_id, message_id, event_seq, event_id, event_name, event_type, payload_json, created_at
+            )
+            SELECT
+              ne.tenant_id,
+              ne.chat_id,
+              ne.message_id,
+              ne.event_seq,
+              gen_random_uuid(),
+              'chat.feedback.recorded',
+              'progress',
+              json_build_object('feedback_id', ne.feedback_id, 'rating', ne.rating),
+              now()
+            FROM next_event ne
+            JOIN chat_message_lifecycle_event cmle
+              ON cmle.aggregate_id = concat(ne.chat_id::varchar, ':', ne.message_id::varchar)
+            RETURNING message_id
           )
-          INSERT INTO message_feedback (
-            tenant_id, feedback_id, chat_id, message_id, user_id, rating, comment, problem_type, created_at
-          )
-          SELECT
-            a.tenant_id,
-            COALESCE(existing.feedback_id, gen_random_uuid()),
-            rm.chat_id,
-            rm.message_id,
-            a.user_id,
-            :rating,
-            :comment,
-            :problem_type,
-            COALESCE(existing.created_at, now())
-          FROM actor a
-          JOIN readable_message rm
-            ON rm.tenant_id = a.tenant_id
-          LEFT JOIN message_feedback existing
-            ON existing.tenant_id = a.tenant_id
-           AND existing.chat_id = rm.chat_id
-           AND existing.message_id = rm.message_id
-           AND existing.user_id = a.user_id
-          ON CONFLICT (tenant_id, chat_id, message_id, user_id)
-          DO UPDATE SET
-            rating = EXCLUDED.rating,
-            comment = EXCLUDED.comment,
-            problem_type = EXCLUDED.problem_type
-          RETURNING *
+          SELECT uf.*
+          FROM upserted_feedback uf
+          JOIN message_event me
+            ON me.message_id = uf.message_id
         `,
         params: {
           actor_id: request.actorId,
