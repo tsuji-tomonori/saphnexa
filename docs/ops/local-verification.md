@@ -18,6 +18,7 @@ npm run tools:implementation:check
 npm run implementation-coverage:check
 npm run check:implementation-coverage-source
 npm run model-catalog:check
+npm run agent:policy:check
 npm run check:atomicity
 npm run test:integration:local
 npm run scan:bundle-domains
@@ -124,6 +125,7 @@ git diff --check
 - `packages/db-types` が DB metadata 由来の主要 table row/insert/update 型を TypeScript source として持ち、API DSQL query plan が result table と shared DB row 型を参照すること。
 - `npm run typecheck` が source gate と `tsc --noEmit --project tsconfig.typecheck.json` の両方を実行し、API / Agent / Tools API / Web / UI / shared contract の TypeScript source を実コンパイルすること。
 - `packages/rag-core` が typed RAG adapter/tools boundary を TypeScript source として持ち、`npm run rag-core:check` で生成される `.js` runtime mirror と主要 tool/policy token が同期していること。
+- `apps/agent` が retrieval policy guard を TypeScript source として持ち、`npm run agent:policy:check` で生成される `.js` runtime mirror と policy relaxation token が同期していること。
 - `packages/domain` が role/status/event/helper、observability catalog、local store 境界を TypeScript source として持ち、既存 `.js` runtime mirror と主要 token が同期していること。
 - `apps/workers` が lightweight notification boundary を TypeScript source として持ち、`npm run workers:check` で生成される `.js` runtime mirror と禁止フィールド、4KB payload 上限、REST detail URL が同期していること。
 - Hono/Zod/OpenAPI 実装 entrypoint が 40 route と `/openapi.json` を route contract から生成し、CSRF/role/Zod validation metadata と主要 success response の runtime validation 境界を保持すること。
@@ -134,6 +136,7 @@ git diff --check
 - `npm run implementation-coverage:check` が `packages/api-contract/src/implementation-coverage.ts` と `packages/tool-contract/src/implementation-coverage.ts` から生成される `.js` runtime mirror と committed mirror の一致を検査すること。
 - `npm run check:implementation-coverage-source` が coverage manifest の TypeScript source 型制約、generated `.js` runtime mirror marker、operation/status token drift がないことを検査すること。
 - `npm run model-catalog:check` が `packages/model-catalog/src/models.ts` と `packages/model-catalog/src/cost-estimate.ts` から生成される `.js` runtime mirror と committed mirror の一致を検査すること。
+- `npm run agent:policy:check` が `apps/agent/src/agent/retrievalPolicy.ts` から生成される `.js` runtime mirror と committed mirror の一致を検査すること。
 - `npm run rag-core:check` が `packages/rag-core/src/fixture-rag.ts` から生成される `.js` runtime mirror と committed mirror の一致を検査すること。
 - `npm run workers:check` が `apps/workers/src/event-publisher.ts` から生成される `.js` runtime mirror と committed mirror の一致を検査すること。
 - `npm run db:metadata:check` が `packages/db-migrations/migrations/V001__initial_saphnexa_schema.sql` から生成される `packages/db-schema/src/table-metadata.js` と `.ts` の一致を検査すること。
@@ -256,6 +259,7 @@ git diff --check
 - Hono runtime の実 Lambda 起動、Cognito authorizer、CSRF cookie integration、CloudFront 経由の実 HTTP request。`apps/api/src/index.ts` は Lambda handler source と local success response validation boundary を持つが、AWS 上での起動確認と実 HTTP validation は別途行う。
 - API TypeScript source of record は source gate と実 `tsc --noEmit` で検査する。DSQL repository は read系 operation の SQL plan と executor interface までを検査し、実 Aurora DSQL driver、IAM auth token、connection pool、`.ts` からの runtime bundle 生成は別途確認する。既存 local tools/tests は標準 `node` 実行のため `.js` runtime mirror を使う。
 - RAG core TypeScript source は source gate と実 `tsc --noEmit` で検査する。既存 local tools/tests は標準 `node` 実行のため `.js` runtime mirror を使い、`npm run rag-core:check` で `.ts` からの runtime artifact 生成 drift を確認する。
+- Agent policy TypeScript source は source gate と実 `tsc --noEmit` で検査する。既存 local tests は標準 `node` 実行のため `.js` runtime mirror を使い、`npm run agent:policy:check` で `.ts` からの runtime artifact 生成 drift を確認する。
 - Domain TypeScript source は source gate と実 `tsc --noEmit` で検査する。既存 local tools/tests は標準 `node` 実行のため `.js` runtime mirror を使う。`.ts` からの runtime artifact 生成、実 DSQL/Cognito/AppSync 接続は別途確認する。
 - Workers TypeScript source は source gate と実 `tsc --noEmit` で検査する。既存 local tools/tests は標準 `node` 実行のため `.js` runtime mirror を使い、`npm run workers:check` で `.ts` からの runtime artifact 生成 drift を確認する。実 AppSync Events publish / WebSocket push は別途確認する。
 - `aws-cdk-lib` / `constructs` install 後の実 `cdk synth`、CDK bootstrap、CDK deploy、CloudFormation change set 実行。

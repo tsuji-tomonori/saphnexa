@@ -656,6 +656,14 @@ const citationBindingSource = readText("apps/agent/src/agent/citationBinding.ts"
 assert(citationBindingSource.includes("citationFormat"), "citation binding must use citation formatter");
 assert(citationBindingSource.includes("evidence: input.evidence"), "citation binding must bind citations to evidence");
 
+const agentPolicyTsSource = readText("apps/agent/src/agent/retrievalPolicy.ts");
+const agentPolicyJsSource = readText("apps/agent/src/rag-agent.js");
+execFileSync("node", ["tools/generate-agent-policy-runtime-mirror.js", "--check"], { stdio: "inherit" });
+for (const token of ["assertRetrievalPolicyNotRelaxed", "normalizeRetrievalPolicy", "retrieval_policy top_k was relaxed", "retrieval_policy scope was relaxed"]) {
+  assert(agentPolicyTsSource.includes(token), `Agent policy TS source missing ${token}`);
+  assert(agentPolicyJsSource.includes(token), `Agent policy runtime mirror missing ${token}`);
+}
+
 assert(agentToolsClientSource.includes("createHttpToolsApiClient"), "Agent Tools client must expose HTTP Tools API client");
 assert(agentToolsClientSource.includes("toolPathByOperation"), "Agent Tools client must use contract paths by operation");
 assert(agentToolsClientSource.includes("ToolsApiHttpError"), "Agent Tools client must distinguish HTTP tool failures");

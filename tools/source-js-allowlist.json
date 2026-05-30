@@ -4,7 +4,7 @@
   "allowed": [
     {
       "path": "apps/agent/src/rag-agent.js",
-      "reason": "runtime compatibility wrapper used by current Node tests; TypeScript source exists under apps/agent/src/agent"
+      "reason": "generated runtime compatibility Agent policy mirror used by current Node tests; TypeScript source exists at apps/agent/src/agent/retrievalPolicy.ts"
     },
     {
       "path": "apps/api/src/hono-openapi-app.js",
