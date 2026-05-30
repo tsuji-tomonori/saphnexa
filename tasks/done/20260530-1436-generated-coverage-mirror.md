@@ -46,7 +46,7 @@ API / Tools implementation coverage の `.js` runtime mirror を `.ts` source �
 - [x] AC4: `npm run check:implementation-coverage-source` が生成一致検査を含み、pass する。
 - [x] AC5: `npm run check:static` が pass する。
 - [x] AC6: `git diff --check` が pass する。
-- [ ] AC7: PR に受け入れ条件確認とセルフレビュー更新を日本語で投稿する。
+- [x] AC7: PR に受け入れ条件確認とセルフレビュー更新を日本語で投稿する。
 
 ## 検証計画
 
@@ -69,4 +69,4 @@ API / Tools implementation coverage の `.js` runtime mirror を `.ts` source �
 
 ## 状態
 
-in_progress
+done
