@@ -19,12 +19,12 @@ COMMENT ON COLUMN users.status IS '現在状態projection。user_events から�
 COMMENT ON COLUMN users.created_at IS '作成日時。レコードが初めて作成された日時。業務イベントの発生日時とは区別する。';
 COMMENT ON COLUMN users.updated_at IS '更新at。user_events から導出される読み取り最適化値であり、状態の正本ではなくprojectionである。';
 
-COMMENT ON TABLE user_groups IS '管理者が扱うユーザー集合と権限付与単位を表す。状態はprojectionとして扱う。';
+COMMENT ON TABLE user_groups IS '管理者が扱うユーザー集合と権限付与単位を表す。状態は user_group_events から導出されるprojectionとして扱う。';
 COMMENT ON COLUMN user_groups.tenant_id IS 'テナントID。データ分離の最小単位。全業務テーブルで必須のスコープキー。';
 COMMENT ON COLUMN user_groups.group_id IS 'グループID。user_groups における group_id の値を保持する。分類と更新主体はmetadataで管理する。';
 COMMENT ON COLUMN user_groups.group_name IS 'グループ名称。user_groups における group_name の値を保持する。分類と更新主体はmetadataで管理する。';
 COMMENT ON COLUMN user_groups.group_type IS 'グループtype。user_groups における group_type の値を保持する。分類と更新主体はmetadataで管理する。';
-COMMENT ON COLUMN user_groups.status IS '現在状態projection。対応するdomain eventから導出される読み取り最適化値であり、状態の正本ではなくprojectionである。';
+COMMENT ON COLUMN user_groups.status IS '現在状態projection。user_group_events から導出される読み取り最適化値であり、状態の正本ではなくprojectionである。';
 COMMENT ON COLUMN user_groups.created_at IS '作成日時。レコードが初めて作成された日時。業務イベントの発生日時とは区別する。';
 
 COMMENT ON TABLE user_group_memberships IS 'ユーザーとグループの所属関係を保持する。所属変更イベントから同期されるread modelとして扱う。';
@@ -75,9 +75,9 @@ COMMENT ON COLUMN chat_messages.sender_user_id IS 'senderユーザーID。chat_m
 COMMENT ON COLUMN chat_messages.sender_type IS 'sendertype。chat_messages における sender_type の値を保持する。分類と更新主体はmetadataで管理する。';
 COMMENT ON COLUMN chat_messages.content_text IS 'contenttext。chat_messages における content_text の値を保持する。分類と更新主体はmetadataで管理する。';
 COMMENT ON COLUMN chat_messages.run_id IS '実行ID。chat_messages における run_id の値を保持する。分類と更新主体はmetadataで管理する。';
-COMMENT ON COLUMN chat_messages.status IS '現在状態projection。対応するdomain eventから導出される読み取り最適化値であり、状態の正本ではなくprojectionである。';
+COMMENT ON COLUMN chat_messages.status IS '現在状態projection。chat_message_lifecycle_events から導出される読み取り最適化値であり、状態の正本ではなくprojectionである。';
 COMMENT ON COLUMN chat_messages.created_at IS '作成日時。レコードが初めて作成された日時。業務イベントの発生日時とは区別する。';
-COMMENT ON COLUMN chat_messages.completed_at IS '完了at。対応するdomain eventから導出される読み取り最適化値であり、状態の正本ではなくprojectionである。';
+COMMENT ON COLUMN chat_messages.completed_at IS '完了at。chat_message_lifecycle_events から導出される読み取り最適化値であり、状態の正本ではなくprojectionである。';
 
 COMMENT ON TABLE chat_runs IS '1つのassistant回答生成処理の実行単位。retrieval policy、model、prompt version、エラーを追跡する。';
 COMMENT ON COLUMN chat_runs.tenant_id IS 'テナントID。データ分離の最小単位。全業務テーブルで必須のスコープキー。';
@@ -93,16 +93,16 @@ COMMENT ON COLUMN chat_runs.started_at IS '開始at。chat_run_events から導�
 COMMENT ON COLUMN chat_runs.completed_at IS '完了at。chat_run_events から導出される読み取り最適化値であり、状態の正本ではなくprojectionである。';
 COMMENT ON COLUMN chat_runs.error_code IS 'errorcode。chat_runs における error_code の値を保持する。分類と更新主体はmetadataで管理する。';
 
-COMMENT ON TABLE chat_message_events IS 'UIへ返す軽量イベント列。domain event正本とは分け、通知・REST取得のための時系列read modelとして扱う。';
-COMMENT ON COLUMN chat_message_events.tenant_id IS 'テナントID。データ分離の最小単位。全業務テーブルで必須のスコープキー。';
-COMMENT ON COLUMN chat_message_events.chat_id IS 'チャットID。chat_message_events における chat_id の値を保持する。分類と更新主体はmetadataで管理する。';
-COMMENT ON COLUMN chat_message_events.message_id IS 'メッセージID。chat_message_events における message_id の値を保持する。分類と更新主体はmetadataで管理する。';
-COMMENT ON COLUMN chat_message_events.event_seq IS 'イベント連番。aggregate内の順序を表す。append-only eventの並びを検証する。';
-COMMENT ON COLUMN chat_message_events.event_id IS 'イベントID。イベントを一意に識別するID。冪等性確認と監査で利用する。';
-COMMENT ON COLUMN chat_message_events.event_name IS 'イベント名。発生した業務イベントの種類。payload_json のschema選択に利用する。';
-COMMENT ON COLUMN chat_message_events.event_type IS 'イベントtype。chat_message_events における event_type の値を保持する。分類と更新主体はmetadataで管理する。';
-COMMENT ON COLUMN chat_message_events.payload_json IS 'payload JSON。event_nameごとのschemaはアプリケーション側で検証する。';
-COMMENT ON COLUMN chat_message_events.created_at IS '作成日時。レコードが初めて作成された日時。業務イベントの発生日時とは区別する。';
+COMMENT ON TABLE chat_message_events IS 'UIへ返す軽量イベント列。domain event正本とは分け、chat_message_lifecycle_events から導出される時系列read modelとして扱う。';
+COMMENT ON COLUMN chat_message_events.tenant_id IS 'テナントID。chat_message_lifecycle_events から導出される読み取り最適化値であり、状態の正本ではなくprojectionである。';
+COMMENT ON COLUMN chat_message_events.chat_id IS 'チャットID。chat_message_lifecycle_events から導出される読み取り最適化値であり、状態の正本ではなくprojectionである。';
+COMMENT ON COLUMN chat_message_events.message_id IS 'メッセージID。chat_message_lifecycle_events から導出される読み取り最適化値であり、状態の正本ではなくprojectionである。';
+COMMENT ON COLUMN chat_message_events.event_seq IS 'イベントseq。chat_message_lifecycle_events から導出される読み取り最適化値であり、状態の正本ではなくprojectionである。';
+COMMENT ON COLUMN chat_message_events.event_id IS 'イベントID。chat_message_lifecycle_events から導出される読み取り最適化値であり、状態の正本ではなくprojectionである。';
+COMMENT ON COLUMN chat_message_events.event_name IS 'イベント名称。chat_message_lifecycle_events から導出される読み取り最適化値であり、状態の正本ではなくprojectionである。';
+COMMENT ON COLUMN chat_message_events.event_type IS 'イベントtype。chat_message_lifecycle_events から導出される読み取り最適化値であり、状態の正本ではなくprojectionである。';
+COMMENT ON COLUMN chat_message_events.payload_json IS 'payloadJSON。chat_message_lifecycle_events から導出される読み取り最適化値であり、状態の正本ではなくprojectionである。';
+COMMENT ON COLUMN chat_message_events.created_at IS '作成at。chat_message_lifecycle_events から導出される読み取り最適化値であり、状態の正本ではなくprojectionである。';
 
 COMMENT ON TABLE citation_records IS '回答文が根拠として提示する文書版、chunk、表示情報を保持する。RAG根拠性の監査対象である。';
 COMMENT ON COLUMN citation_records.tenant_id IS 'テナントID。データ分離の最小単位。全業務テーブルで必須のスコープキー。';
@@ -189,15 +189,15 @@ COMMENT ON COLUMN reference_edges.target_node_id IS 'targetnodeID。reference_ed
 COMMENT ON COLUMN reference_edges.edge_type IS 'edgetype。reference_edges における edge_type の値を保持する。分類と更新主体はmetadataで管理する。';
 COMMENT ON COLUMN reference_edges.confidence IS 'confidence。reference_edges における confidence の値を保持する。分類と更新主体はmetadataで管理する。';
 
-COMMENT ON TABLE ws_tickets IS 'AppSync Events購読前にHono APIが発行する短期・単回利用ticketを表す。状態はprojectionとして扱う。';
+COMMENT ON TABLE ws_tickets IS 'AppSync Events購読前にHono APIが発行する短期・単回利用ticketを表す。状態は ws_ticket_events から導出されるprojectionとして扱う。';
 COMMENT ON COLUMN ws_tickets.tenant_id IS 'テナントID。データ分離の最小単位。全業務テーブルで必須のスコープキー。';
 COMMENT ON COLUMN ws_tickets.ticket_id IS 'ticketID。ws_tickets における ticket_id の値を保持する。分類と更新主体はmetadataで管理する。';
 COMMENT ON COLUMN ws_tickets.session_id IS 'セッションID。ws_tickets における session_id の値を保持する。分類と更新主体はmetadataで管理する。';
 COMMENT ON COLUMN ws_tickets.user_id IS 'ユーザーID。ws_tickets における user_id の値を保持する。分類と更新主体はmetadataで管理する。';
 COMMENT ON COLUMN ws_tickets.channel_scope_json IS 'channelscopeJSON。ws_tickets における channel_scope_json の値を保持する。分類と更新主体はmetadataで管理する。';
-COMMENT ON COLUMN ws_tickets.status IS '現在状態projection。対応するdomain eventから導出される読み取り最適化値であり、状態の正本ではなくprojectionである。';
-COMMENT ON COLUMN ws_tickets.expires_at IS '期限at。対応するdomain eventから導出される読み取り最適化値であり、状態の正本ではなくprojectionである。';
-COMMENT ON COLUMN ws_tickets.used_at IS 'usedat。対応するdomain eventから導出される読み取り最適化値であり、状態の正本ではなくprojectionである。';
+COMMENT ON COLUMN ws_tickets.status IS '現在状態projection。ws_ticket_events から導出される読み取り最適化値であり、状態の正本ではなくprojectionである。';
+COMMENT ON COLUMN ws_tickets.expires_at IS '期限at。ws_ticket_events から導出される読み取り最適化値であり、状態の正本ではなくprojectionである。';
+COMMENT ON COLUMN ws_tickets.used_at IS 'usedat。ws_ticket_events から導出される読み取り最適化値であり、状態の正本ではなくprojectionである。';
 
 COMMENT ON TABLE user_import_jobs IS '管理者によるユーザー一括取込の実行単位を表す。状態は user_import_job_events のprojectionとして扱う。';
 COMMENT ON COLUMN user_import_jobs.tenant_id IS 'テナントID。データ分離の最小単位。全業務テーブルで必須のスコープキー。';
@@ -207,18 +207,18 @@ COMMENT ON COLUMN user_import_jobs.result_s3_prefix IS 'results3prefix。user_im
 COMMENT ON COLUMN user_import_jobs.created_by_user_id IS '作成byユーザーID。user_import_jobs における created_by_user_id の値を保持する。分類と更新主体はmetadataで管理する。';
 COMMENT ON COLUMN user_import_jobs.created_at IS '作成日時。レコードが初めて作成された日時。業務イベントの発生日時とは区別する。';
 
-COMMENT ON TABLE user_import_rows IS 'ユーザー一括取込の行単位結果を保持する。行状態は取込ジョブ処理から導出されるprojectionである。';
+COMMENT ON TABLE user_import_rows IS 'ユーザー一括取込の行単位結果を保持する。行状態は user_import_row_events から導出されるprojectionである。';
 COMMENT ON COLUMN user_import_rows.tenant_id IS 'テナントID。データ分離の最小単位。全業務テーブルで必須のスコープキー。';
 COMMENT ON COLUMN user_import_rows.import_id IS 'importID。user_import_rows における import_id の値を保持する。分類と更新主体はmetadataで管理する。';
 COMMENT ON COLUMN user_import_rows.row_number IS 'rownumber。user_import_rows における row_number の値を保持する。分類と更新主体はmetadataで管理する。';
-COMMENT ON COLUMN user_import_rows.status IS '現在状態projection。対応するdomain eventから導出される読み取り最適化値であり、状態の正本ではなくprojectionである。';
+COMMENT ON COLUMN user_import_rows.status IS '現在状態projection。user_import_row_events から導出される読み取り最適化値であり、状態の正本ではなくprojectionである。';
 COMMENT ON COLUMN user_import_rows.error_message IS 'errorメッセージ。user_import_rows における error_message の値を保持する。分類と更新主体はmetadataで管理する。';
 
-COMMENT ON TABLE evaluation_datasets IS 'RAG評価またはLLM評価で使う問題集合を管理する。状態は管理操作から導出されるprojectionとして扱う。';
+COMMENT ON TABLE evaluation_datasets IS 'RAG評価またはLLM評価で使う問題集合を管理する。状態は evaluation_dataset_events から導出されるprojectionとして扱う。';
 COMMENT ON COLUMN evaluation_datasets.tenant_id IS 'テナントID。データ分離の最小単位。全業務テーブルで必須のスコープキー。';
 COMMENT ON COLUMN evaluation_datasets.dataset_id IS 'datasetID。evaluation_datasets における dataset_id の値を保持する。分類と更新主体はmetadataで管理する。';
 COMMENT ON COLUMN evaluation_datasets.dataset_name IS 'dataset名称。evaluation_datasets における dataset_name の値を保持する。分類と更新主体はmetadataで管理する。';
-COMMENT ON COLUMN evaluation_datasets.status IS '現在状態projection。対応するdomain eventから導出される読み取り最適化値であり、状態の正本ではなくprojectionである。';
+COMMENT ON COLUMN evaluation_datasets.status IS '現在状態projection。evaluation_dataset_events から導出される読み取り最適化値であり、状態の正本ではなくprojectionである。';
 COMMENT ON COLUMN evaluation_datasets.source_s3_uri IS 'sources3uri。evaluation_datasets における source_s3_uri の値を保持する。分類と更新主体はmetadataで管理する。';
 COMMENT ON COLUMN evaluation_datasets.created_at IS '作成日時。レコードが初めて作成された日時。業務イベントの発生日時とは区別する。';
 
@@ -243,75 +243,75 @@ COMMENT ON COLUMN evaluation_runs.status IS '現在状態projection。evaluation
 COMMENT ON COLUMN evaluation_runs.metrics_json IS 'metricsJSON。evaluation_runs における metrics_json の値を保持する。分類と更新主体はmetadataで管理する。';
 COMMENT ON COLUMN evaluation_runs.created_by_user_id IS '作成byユーザーID。evaluation_runs における created_by_user_id の値を保持する。分類と更新主体はmetadataで管理する。';
 
-COMMENT ON TABLE evaluation_run_items IS '評価実行に含まれるケース単位の回答、検索文脈、judge結果、metricsを保持する。';
+COMMENT ON TABLE evaluation_run_items IS '評価実行に含まれるケース単位の回答、検索文脈、judge結果、metricsを保持する。状態は evaluation_run_item_events から導出されるprojectionとして扱う。';
 COMMENT ON COLUMN evaluation_run_items.tenant_id IS 'テナントID。データ分離の最小単位。全業務テーブルで必須のスコープキー。';
 COMMENT ON COLUMN evaluation_run_items.evaluation_run_id IS '評価実行ID。evaluation_run_items における evaluation_run_id の値を保持する。分類と更新主体はmetadataで管理する。';
 COMMENT ON COLUMN evaluation_run_items.case_id IS 'caseID。evaluation_run_items における case_id の値を保持する。分類と更新主体はmetadataで管理する。';
-COMMENT ON COLUMN evaluation_run_items.status IS '現在状態projection。対応するdomain eventから導出される読み取り最適化値であり、状態の正本ではなくprojectionである。';
+COMMENT ON COLUMN evaluation_run_items.status IS '現在状態projection。evaluation_run_item_events から導出される読み取り最適化値であり、状態の正本ではなくprojectionである。';
 COMMENT ON COLUMN evaluation_run_items.answer_text IS 'answertext。evaluation_run_items における answer_text の値を保持する。分類と更新主体はmetadataで管理する。';
 COMMENT ON COLUMN evaluation_run_items.retrieved_context_json IS 'retrievedcontextJSON。evaluation_run_items における retrieved_context_json の値を保持する。分類と更新主体はmetadataで管理する。';
 COMMENT ON COLUMN evaluation_run_items.judge_result_json IS 'judgeresultJSON。evaluation_run_items における judge_result_json の値を保持する。分類と更新主体はmetadataで管理する。';
 COMMENT ON COLUMN evaluation_run_items.metrics_json IS 'metricsJSON。evaluation_run_items における metrics_json の値を保持する。分類と更新主体はmetadataで管理する。';
 
-COMMENT ON TABLE llm_models IS '一般ユーザーや評価基盤が利用可能なモデル定義を共有する。表示状態はカタログprojectionとして扱う。';
+COMMENT ON TABLE llm_models IS '一般ユーザーや評価基盤が利用可能なモデル定義を共有する。表示状態は llm_model_events から導出されるカタログprojectionとして扱う。';
 COMMENT ON COLUMN llm_models.tenant_id IS 'テナントID。データ分離の最小単位。全業務テーブルで必須のスコープキー。';
 COMMENT ON COLUMN llm_models.model_id IS 'modelID。llm_models における model_id の値を保持する。分類と更新主体はmetadataで管理する。';
 COMMENT ON COLUMN llm_models.display_name IS 'display名称。llm_models における display_name の値を保持する。分類と更新主体はmetadataで管理する。';
 COMMENT ON COLUMN llm_models.provider IS 'provider。llm_models における provider の値を保持する。分類と更新主体はmetadataで管理する。';
 COMMENT ON COLUMN llm_models.model_type IS 'modeltype。llm_models における model_type の値を保持する。分類と更新主体はmetadataで管理する。';
 COMMENT ON COLUMN llm_models.capability_json IS 'capabilityJSON。llm_models における capability_json の値を保持する。分類と更新主体はmetadataで管理する。';
-COMMENT ON COLUMN llm_models.status IS '現在状態projection。対応するdomain eventから導出される読み取り最適化値であり、状態の正本ではなくprojectionである。';
+COMMENT ON COLUMN llm_models.status IS '現在状態projection。llm_model_events から導出される読み取り最適化値であり、状態の正本ではなくprojectionである。';
 COMMENT ON COLUMN llm_models.visible_to_user IS 'visibletoユーザー。llm_models における visible_to_user の値を保持する。分類と更新主体はmetadataで管理する。';
 COMMENT ON COLUMN llm_models.allowed_role IS 'allowedrole。llm_models における allowed_role の値を保持する。分類と更新主体はmetadataで管理する。';
 COMMENT ON COLUMN llm_models.default_for_task IS 'defaultfortask。llm_models における default_for_task の値を保持する。分類と更新主体はmetadataで管理する。';
 COMMENT ON COLUMN llm_models.catalog_version IS 'catalog版。llm_models における catalog_version の値を保持する。分類と更新主体はmetadataで管理する。';
 COMMENT ON COLUMN llm_models.created_at IS '作成日時。レコードが初めて作成された日時。業務イベントの発生日時とは区別する。';
-COMMENT ON COLUMN llm_models.updated_at IS '更新at。対応するdomain eventから導出される読み取り最適化値であり、状態の正本ではなくprojectionである。';
+COMMENT ON COLUMN llm_models.updated_at IS '更新at。llm_model_events から導出される読み取り最適化値であり、状態の正本ではなくprojectionである。';
 
 COMMENT ON TABLE bm25_search_documents IS 'Sparse retrieval用の文書read model。is_deleted は検索除外projectionであり正本ではない。';
-COMMENT ON COLUMN bm25_search_documents.tenant_id IS 'テナントID。データ分離の最小単位。全業務テーブルで必須のスコープキー。';
-COMMENT ON COLUMN bm25_search_documents.collection_id IS 'collectionID。bm25_search_documents における collection_id の値を保持する。分類と更新主体はmetadataで管理する。';
-COMMENT ON COLUMN bm25_search_documents.doc_id IS 'docID。bm25_search_documents における doc_id の値を保持する。分類と更新主体はmetadataで管理する。';
-COMMENT ON COLUMN bm25_search_documents.source_chunk_id IS 'sourcechunkID。bm25_search_documents における source_chunk_id の値を保持する。分類と更新主体はmetadataで管理する。';
-COMMENT ON COLUMN bm25_search_documents.title IS 'タイトル。bm25_search_documents における title の値を保持する。分類と更新主体はmetadataで管理する。';
-COMMENT ON COLUMN bm25_search_documents.snippet IS 'snippet。bm25_search_documents における snippet の値を保持する。分類と更新主体はmetadataで管理する。';
-COMMENT ON COLUMN bm25_search_documents.doc_type IS 'doctype。bm25_search_documents における doc_type の値を保持する。分類と更新主体はmetadataで管理する。';
-COMMENT ON COLUMN bm25_search_documents.is_deleted IS 'is削除。対応するdomain eventから導出される読み取り最適化値であり、状態の正本ではなくprojectionである。';
+COMMENT ON COLUMN bm25_search_documents.tenant_id IS 'テナントID。bm25_search_document_events から導出される読み取り最適化値であり、状態の正本ではなくprojectionである。';
+COMMENT ON COLUMN bm25_search_documents.collection_id IS 'collectionID。bm25_search_document_events から導出される読み取り最適化値であり、状態の正本ではなくprojectionである。';
+COMMENT ON COLUMN bm25_search_documents.doc_id IS 'docID。bm25_search_document_events から導出される読み取り最適化値であり、状態の正本ではなくprojectionである。';
+COMMENT ON COLUMN bm25_search_documents.source_chunk_id IS 'sourcechunkID。bm25_search_document_events から導出される読み取り最適化値であり、状態の正本ではなくprojectionである。';
+COMMENT ON COLUMN bm25_search_documents.title IS 'タイトル。bm25_search_document_events から導出される読み取り最適化値であり、状態の正本ではなくprojectionである。';
+COMMENT ON COLUMN bm25_search_documents.snippet IS 'snippet。bm25_search_document_events から導出される読み取り最適化値であり、状態の正本ではなくprojectionである。';
+COMMENT ON COLUMN bm25_search_documents.doc_type IS 'doctype。bm25_search_document_events から導出される読み取り最適化値であり、状態の正本ではなくprojectionである。';
+COMMENT ON COLUMN bm25_search_documents.is_deleted IS 'is削除。bm25_search_document_events から導出される読み取り最適化値であり、状態の正本ではなくprojectionである。';
 
-COMMENT ON TABLE bm25_postings IS 'termと文書fieldの出現頻度を保持する転置インデックス本体。';
-COMMENT ON COLUMN bm25_postings.tenant_id IS 'テナントID。データ分離の最小単位。全業務テーブルで必須のスコープキー。';
-COMMENT ON COLUMN bm25_postings.collection_id IS 'collectionID。bm25_postings における collection_id の値を保持する。分類と更新主体はmetadataで管理する。';
-COMMENT ON COLUMN bm25_postings.term_id IS 'termID。bm25_postings における term_id の値を保持する。分類と更新主体はmetadataで管理する。';
-COMMENT ON COLUMN bm25_postings.doc_id IS 'docID。bm25_postings における doc_id の値を保持する。分類と更新主体はmetadataで管理する。';
-COMMENT ON COLUMN bm25_postings.field_id IS 'fieldID。bm25_postings における field_id の値を保持する。分類と更新主体はmetadataで管理する。';
-COMMENT ON COLUMN bm25_postings.tf IS 'tf。bm25_postings における tf の値を保持する。分類と更新主体はmetadataで管理する。';
-COMMENT ON COLUMN bm25_postings.field_len IS 'fieldlen。bm25_postings における field_len の値を保持する。分類と更新主体はmetadataで管理する。';
+COMMENT ON TABLE bm25_postings IS 'termと文書fieldの出現頻度を保持する転置インデックス本体。bm25_posting_events から導出されるread model。';
+COMMENT ON COLUMN bm25_postings.tenant_id IS 'テナントID。bm25_posting_events から導出される読み取り最適化値であり、状態の正本ではなくprojectionである。';
+COMMENT ON COLUMN bm25_postings.collection_id IS 'collectionID。bm25_posting_events から導出される読み取り最適化値であり、状態の正本ではなくprojectionである。';
+COMMENT ON COLUMN bm25_postings.term_id IS 'termID。bm25_posting_events から導出される読み取り最適化値であり、状態の正本ではなくprojectionである。';
+COMMENT ON COLUMN bm25_postings.doc_id IS 'docID。bm25_posting_events から導出される読み取り最適化値であり、状態の正本ではなくprojectionである。';
+COMMENT ON COLUMN bm25_postings.field_id IS 'fieldID。bm25_posting_events から導出される読み取り最適化値であり、状態の正本ではなくprojectionである。';
+COMMENT ON COLUMN bm25_postings.tf IS 'tf。bm25_posting_events から導出される読み取り最適化値であり、状態の正本ではなくprojectionである。';
+COMMENT ON COLUMN bm25_postings.field_len IS 'fieldlen。bm25_posting_events から導出される読み取り最適化値であり、状態の正本ではなくprojectionである。';
 
-COMMENT ON TABLE bm25_term_stats IS 'termごとのdf/idfを保持する検索用read model。';
-COMMENT ON COLUMN bm25_term_stats.tenant_id IS 'テナントID。データ分離の最小単位。全業務テーブルで必須のスコープキー。';
-COMMENT ON COLUMN bm25_term_stats.collection_id IS 'collectionID。bm25_term_stats における collection_id の値を保持する。分類と更新主体はmetadataで管理する。';
-COMMENT ON COLUMN bm25_term_stats.stats_version IS 'stats版。bm25_term_stats における stats_version の値を保持する。分類と更新主体はmetadataで管理する。';
-COMMENT ON COLUMN bm25_term_stats.term_id IS 'termID。bm25_term_stats における term_id の値を保持する。分類と更新主体はmetadataで管理する。';
-COMMENT ON COLUMN bm25_term_stats.df IS 'df。bm25_term_stats における df の値を保持する。分類と更新主体はmetadataで管理する。';
-COMMENT ON COLUMN bm25_term_stats.idf IS 'idf。bm25_term_stats における idf の値を保持する。分類と更新主体はmetadataで管理する。';
+COMMENT ON TABLE bm25_term_stats IS 'termごとのdf/idfを保持する検索用read model。bm25_term_stat_events から導出する。';
+COMMENT ON COLUMN bm25_term_stats.tenant_id IS 'テナントID。bm25_term_stat_events から導出される読み取り最適化値であり、状態の正本ではなくprojectionである。';
+COMMENT ON COLUMN bm25_term_stats.collection_id IS 'collectionID。bm25_term_stat_events から導出される読み取り最適化値であり、状態の正本ではなくprojectionである。';
+COMMENT ON COLUMN bm25_term_stats.stats_version IS 'stats版。bm25_term_stat_events から導出される読み取り最適化値であり、状態の正本ではなくprojectionである。';
+COMMENT ON COLUMN bm25_term_stats.term_id IS 'termID。bm25_term_stat_events から導出される読み取り最適化値であり、状態の正本ではなくprojectionである。';
+COMMENT ON COLUMN bm25_term_stats.df IS 'df。bm25_term_stat_events から導出される読み取り最適化値であり、状態の正本ではなくprojectionである。';
+COMMENT ON COLUMN bm25_term_stats.idf IS 'idf。bm25_term_stat_events から導出される読み取り最適化値であり、状態の正本ではなくprojectionである。';
 
-COMMENT ON TABLE bm25_field_stats IS 'fieldごとの平均長を保持する検索用read model。';
-COMMENT ON COLUMN bm25_field_stats.tenant_id IS 'テナントID。データ分離の最小単位。全業務テーブルで必須のスコープキー。';
-COMMENT ON COLUMN bm25_field_stats.collection_id IS 'collectionID。bm25_field_stats における collection_id の値を保持する。分類と更新主体はmetadataで管理する。';
-COMMENT ON COLUMN bm25_field_stats.stats_version IS 'stats版。bm25_field_stats における stats_version の値を保持する。分類と更新主体はmetadataで管理する。';
-COMMENT ON COLUMN bm25_field_stats.field_id IS 'fieldID。bm25_field_stats における field_id の値を保持する。分類と更新主体はmetadataで管理する。';
-COMMENT ON COLUMN bm25_field_stats.avg_len IS 'avglen。bm25_field_stats における avg_len の値を保持する。分類と更新主体はmetadataで管理する。';
+COMMENT ON TABLE bm25_field_stats IS 'fieldごとの平均長を保持する検索用read model。bm25_field_stat_events から導出する。';
+COMMENT ON COLUMN bm25_field_stats.tenant_id IS 'テナントID。bm25_field_stat_events から導出される読み取り最適化値であり、状態の正本ではなくprojectionである。';
+COMMENT ON COLUMN bm25_field_stats.collection_id IS 'collectionID。bm25_field_stat_events から導出される読み取り最適化値であり、状態の正本ではなくprojectionである。';
+COMMENT ON COLUMN bm25_field_stats.stats_version IS 'stats版。bm25_field_stat_events から導出される読み取り最適化値であり、状態の正本ではなくprojectionである。';
+COMMENT ON COLUMN bm25_field_stats.field_id IS 'fieldID。bm25_field_stat_events から導出される読み取り最適化値であり、状態の正本ではなくprojectionである。';
+COMMENT ON COLUMN bm25_field_stats.avg_len IS 'avglen。bm25_field_stat_events から導出される読み取り最適化値であり、状態の正本ではなくprojectionである。';
 
-COMMENT ON TABLE event_delivery_logs IS 'AppSync Eventsなどへの通知配信試行と結果を保持するoperations projection。';
-COMMENT ON COLUMN event_delivery_logs.tenant_id IS 'テナントID。データ分離の最小単位。全業務テーブルで必須のスコープキー。';
-COMMENT ON COLUMN event_delivery_logs.delivery_id IS 'deliveryID。event_delivery_logs における delivery_id の値を保持する。分類と更新主体はmetadataで管理する。';
-COMMENT ON COLUMN event_delivery_logs.channel_path IS 'channelpath。event_delivery_logs における channel_path の値を保持する。分類と更新主体はmetadataで管理する。';
-COMMENT ON COLUMN event_delivery_logs.event_id IS 'イベントID。イベントを一意に識別するID。冪等性確認と監査で利用する。';
-COMMENT ON COLUMN event_delivery_logs.status IS '現在状態projection。対応するdomain eventから導出される読み取り最適化値であり、状態の正本ではなくprojectionである。';
-COMMENT ON COLUMN event_delivery_logs.attempt_count IS 'attemptcount。event_delivery_logs における attempt_count の値を保持する。分類と更新主体はmetadataで管理する。';
-COMMENT ON COLUMN event_delivery_logs.error_message IS 'errorメッセージ。event_delivery_logs における error_message の値を保持する。分類と更新主体はmetadataで管理する。';
-COMMENT ON COLUMN event_delivery_logs.created_at IS '作成日時。レコードが初めて作成された日時。業務イベントの発生日時とは区別する。';
-COMMENT ON COLUMN event_delivery_logs.updated_at IS '更新at。対応するdomain eventから導出される読み取り最適化値であり、状態の正本ではなくprojectionである。';
+COMMENT ON TABLE event_delivery_logs IS 'AppSync Eventsなどへの通知配信試行と結果を保持するoperations projection。状態は event_delivery_events から導出する。';
+COMMENT ON COLUMN event_delivery_logs.tenant_id IS 'テナントID。event_delivery_events から導出される読み取り最適化値であり、状態の正本ではなくprojectionである。';
+COMMENT ON COLUMN event_delivery_logs.delivery_id IS 'deliveryID。event_delivery_events から導出される読み取り最適化値であり、状態の正本ではなくprojectionである。';
+COMMENT ON COLUMN event_delivery_logs.channel_path IS 'channelpath。event_delivery_events から導出される読み取り最適化値であり、状態の正本ではなくprojectionである。';
+COMMENT ON COLUMN event_delivery_logs.event_id IS 'イベントID。event_delivery_events から導出される読み取り最適化値であり、状態の正本ではなくprojectionである。';
+COMMENT ON COLUMN event_delivery_logs.status IS '現在状態projection。event_delivery_events から導出される読み取り最適化値であり、状態の正本ではなくprojectionである。';
+COMMENT ON COLUMN event_delivery_logs.attempt_count IS 'attemptcount。event_delivery_events から導出される読み取り最適化値であり、状態の正本ではなくprojectionである。';
+COMMENT ON COLUMN event_delivery_logs.error_message IS 'errorメッセージ。event_delivery_events から導出される読み取り最適化値であり、状態の正本ではなくprojectionである。';
+COMMENT ON COLUMN event_delivery_logs.created_at IS '作成at。event_delivery_events から導出される読み取り最適化値であり、状態の正本ではなくprojectionである。';
+COMMENT ON COLUMN event_delivery_logs.updated_at IS '更新at。event_delivery_events から導出される読み取り最適化値であり、状態の正本ではなくprojectionである。';
 
 COMMENT ON TABLE audit_events IS '管理操作、チャット共有、Tools実行、成果物アクセスなど監査対象のappend-onlyログ。';
 COMMENT ON COLUMN audit_events.tenant_id IS 'テナントID。データ分離の最小単位。全業務テーブルで必須のスコープキー。';
@@ -323,7 +323,7 @@ COMMENT ON COLUMN audit_events.resource_id IS 'resourceID。audit_events にお�
 COMMENT ON COLUMN audit_events.payload_json IS 'payload JSON。event_nameごとのschemaはアプリケーション側で検証する。';
 COMMENT ON COLUMN audit_events.created_at IS '作成日時。レコードが初めて作成された日時。業務イベントの発生日時とは区別する。';
 
-COMMENT ON TABLE agent_tools IS 'AgentCore Gatewayから利用するtoolのschema、scope、timeout、副作用分類を管理する。';
+COMMENT ON TABLE agent_tools IS 'AgentCore Gatewayから利用するtoolのschema、scope、timeout、副作用分類を管理する。状態は agent_tool_events から導出されるprojectionとして扱う。';
 COMMENT ON COLUMN agent_tools.tenant_id IS 'テナントID。データ分離の最小単位。全業務テーブルで必須のスコープキー。';
 COMMENT ON COLUMN agent_tools.tool_name IS 'Tool名称。agent_tools における tool_name の値を保持する。分類と更新主体はmetadataで管理する。';
 COMMENT ON COLUMN agent_tools.display_name IS 'display名称。agent_tools における display_name の値を保持する。分類と更新主体はmetadataで管理する。';
@@ -333,9 +333,9 @@ COMMENT ON COLUMN agent_tools.output_schema_json IS 'outputschemaJSON。agent_to
 COMMENT ON COLUMN agent_tools.tool_scope IS 'Toolscope。agent_tools における tool_scope の値を保持する。分類と更新主体はmetadataで管理する。';
 COMMENT ON COLUMN agent_tools.side_effect_type IS 'sideeffecttype。agent_tools における side_effect_type の値を保持する。分類と更新主体はmetadataで管理する。';
 COMMENT ON COLUMN agent_tools.timeout_ms IS 'timeoutms。agent_tools における timeout_ms の値を保持する。分類と更新主体はmetadataで管理する。';
-COMMENT ON COLUMN agent_tools.status IS '現在状態projection。対応するdomain eventから導出される読み取り最適化値であり、状態の正本ではなくprojectionである。';
+COMMENT ON COLUMN agent_tools.status IS '現在状態projection。agent_tool_events から導出される読み取り最適化値であり、状態の正本ではなくprojectionである。';
 COMMENT ON COLUMN agent_tools.created_at IS '作成日時。レコードが初めて作成された日時。業務イベントの発生日時とは区別する。';
-COMMENT ON COLUMN agent_tools.updated_at IS '更新at。対応するdomain eventから導出される読み取り最適化値であり、状態の正本ではなくprojectionである。';
+COMMENT ON COLUMN agent_tools.updated_at IS '更新at。agent_tool_events から導出される読み取り最適化値であり、状態の正本ではなくprojectionである。';
 
 COMMENT ON TABLE tool_invocations IS 'AgentまたはTools APIが実行したtool invocationを監査・性能分析するために記録する。';
 COMMENT ON COLUMN tool_invocations.tenant_id IS 'テナントID。データ分離の最小単位。全業務テーブルで必須のスコープキー。';

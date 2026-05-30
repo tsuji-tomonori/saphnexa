@@ -23,7 +23,7 @@
 | `user_groups` | `group_id` | グループID | string | no | internal | master | api |  | グループID。user_groups における group_id の値を保持する。分類と更新主体はmetadataで管理する。 |
 | `user_groups` | `group_name` | グループ名称 | string | no | internal | master | api |  | グループ名称。user_groups における group_name の値を保持する。分類と更新主体はmetadataで管理する。 |
 | `user_groups` | `group_type` | グループtype | string | no | internal | master | api |  | グループtype。user_groups における group_type の値を保持する。分類と更新主体はmetadataで管理する。 |
-| `user_groups` | `status` | 現在状態projection | string | no | internal | projection | api |  | 現在状態projection。対応するdomain eventから導出される読み取り最適化値であり、状態の正本ではなくprojectionである。 |
+| `user_groups` | `status` | 現在状態projection | string | no | internal | projection | projector | user_group_events | 現在状態projection。user_group_events から導出される読み取り最適化値であり、状態の正本ではなくprojectionである。 |
 | `user_groups` | `created_at` | 作成at | timestamp | no | internal | master | api |  | 作成日時。レコードが初めて作成された日時。業務イベントの発生日時とは区別する。 |
 | `user_group_memberships` | `tenant_id` | テナントID | string | no | internal | master | api |  | テナントID。データ分離の最小単位。全業務テーブルで必須のスコープキー。 |
 | `user_group_memberships` | `user_id` | ユーザーID | string | no | pii | master | api |  | ユーザーID。user_group_memberships における user_id の値を保持する。分類と更新主体はmetadataで管理する。 |
@@ -64,9 +64,9 @@
 | `chat_messages` | `sender_type` | sendertype | string | no | internal | master | api |  | sendertype。chat_messages における sender_type の値を保持する。分類と更新主体はmetadataで管理する。 |
 | `chat_messages` | `content_text` | contenttext | text | yes | confidential | master | api |  | contenttext。chat_messages における content_text の値を保持する。分類と更新主体はmetadataで管理する。 |
 | `chat_messages` | `run_id` | 実行ID | uuid | yes | internal | master | api |  | 実行ID。chat_messages における run_id の値を保持する。分類と更新主体はmetadataで管理する。 |
-| `chat_messages` | `status` | 現在状態projection | string | no | internal | projection | api |  | 現在状態projection。対応するdomain eventから導出される読み取り最適化値であり、状態の正本ではなくprojectionである。 |
+| `chat_messages` | `status` | 現在状態projection | string | no | internal | projection | projector | chat_message_lifecycle_events | 現在状態projection。chat_message_lifecycle_events から導出される読み取り最適化値であり、状態の正本ではなくprojectionである。 |
 | `chat_messages` | `created_at` | 作成at | timestamp | no | internal | master | api |  | 作成日時。レコードが初めて作成された日時。業務イベントの発生日時とは区別する。 |
-| `chat_messages` | `completed_at` | 完了at | timestamp | yes | internal | projection | api |  | 完了at。対応するdomain eventから導出される読み取り最適化値であり、状態の正本ではなくprojectionである。 |
+| `chat_messages` | `completed_at` | 完了at | timestamp | yes | internal | projection | projector | chat_message_lifecycle_events | 完了at。chat_message_lifecycle_events から導出される読み取り最適化値であり、状態の正本ではなくprojectionである。 |
 | `chat_runs` | `tenant_id` | テナントID | string | no | internal | master | api |  | テナントID。データ分離の最小単位。全業務テーブルで必須のスコープキー。 |
 | `chat_runs` | `run_id` | 実行ID | uuid | no | internal | master | api |  | 実行ID。chat_runs における run_id の値を保持する。分類と更新主体はmetadataで管理する。 |
 | `chat_runs` | `chat_id` | チャットID | uuid | no | internal | master | api |  | チャットID。chat_runs における chat_id の値を保持する。分類と更新主体はmetadataで管理する。 |
@@ -79,15 +79,15 @@
 | `chat_runs` | `started_at` | 開始at | timestamp | yes | internal | projection | projector | chat_run_events | 開始at。chat_run_events から導出される読み取り最適化値であり、状態の正本ではなくprojectionである。 |
 | `chat_runs` | `completed_at` | 完了at | timestamp | yes | internal | projection | projector | chat_run_events | 完了at。chat_run_events から導出される読み取り最適化値であり、状態の正本ではなくprojectionである。 |
 | `chat_runs` | `error_code` | errorcode | string | yes | internal | master | api |  | errorcode。chat_runs における error_code の値を保持する。分類と更新主体はmetadataで管理する。 |
-| `chat_message_events` | `tenant_id` | テナントID | string | no | internal | projection | api |  | テナントID。データ分離の最小単位。全業務テーブルで必須のスコープキー。 |
-| `chat_message_events` | `chat_id` | チャットID | uuid | no | internal | projection | api |  | チャットID。chat_message_events における chat_id の値を保持する。分類と更新主体はmetadataで管理する。 |
-| `chat_message_events` | `message_id` | メッセージID | uuid | no | internal | projection | api |  | メッセージID。chat_message_events における message_id の値を保持する。分類と更新主体はmetadataで管理する。 |
-| `chat_message_events` | `event_seq` | イベントseq | bigint | no | internal | projection | api |  | イベント連番。aggregate内の順序を表す。append-only eventの並びを検証する。 |
-| `chat_message_events` | `event_id` | イベントID | uuid | no | internal | projection | api |  | イベントID。イベントを一意に識別するID。冪等性確認と監査で利用する。 |
-| `chat_message_events` | `event_name` | イベント名称 | string | no | internal | projection | api |  | イベント名。発生した業務イベントの種類。payload_json のschema選択に利用する。 |
-| `chat_message_events` | `event_type` | イベントtype | string | no | internal | projection | api |  | イベントtype。chat_message_events における event_type の値を保持する。分類と更新主体はmetadataで管理する。 |
-| `chat_message_events` | `payload_json` | payloadJSON | json | no | confidential | projection | api |  | payload JSON。event_nameごとのschemaはアプリケーション側で検証する。 |
-| `chat_message_events` | `created_at` | 作成at | timestamp | no | internal | projection | api |  | 作成日時。レコードが初めて作成された日時。業務イベントの発生日時とは区別する。 |
+| `chat_message_events` | `tenant_id` | テナントID | string | no | internal | projection | projector | chat_message_lifecycle_events | テナントID。chat_message_lifecycle_events から導出される読み取り最適化値であり、状態の正本ではなくprojectionである。 |
+| `chat_message_events` | `chat_id` | チャットID | uuid | no | internal | projection | projector | chat_message_lifecycle_events | チャットID。chat_message_lifecycle_events から導出される読み取り最適化値であり、状態の正本ではなくprojectionである。 |
+| `chat_message_events` | `message_id` | メッセージID | uuid | no | internal | projection | projector | chat_message_lifecycle_events | メッセージID。chat_message_lifecycle_events から導出される読み取り最適化値であり、状態の正本ではなくprojectionである。 |
+| `chat_message_events` | `event_seq` | イベントseq | bigint | no | internal | projection | projector | chat_message_lifecycle_events | イベントseq。chat_message_lifecycle_events から導出される読み取り最適化値であり、状態の正本ではなくprojectionである。 |
+| `chat_message_events` | `event_id` | イベントID | uuid | no | internal | projection | projector | chat_message_lifecycle_events | イベントID。chat_message_lifecycle_events から導出される読み取り最適化値であり、状態の正本ではなくprojectionである。 |
+| `chat_message_events` | `event_name` | イベント名称 | string | no | internal | projection | projector | chat_message_lifecycle_events | イベント名称。chat_message_lifecycle_events から導出される読み取り最適化値であり、状態の正本ではなくprojectionである。 |
+| `chat_message_events` | `event_type` | イベントtype | string | no | internal | projection | projector | chat_message_lifecycle_events | イベントtype。chat_message_lifecycle_events から導出される読み取り最適化値であり、状態の正本ではなくprojectionである。 |
+| `chat_message_events` | `payload_json` | payloadJSON | json | no | confidential | projection | projector | chat_message_lifecycle_events | payloadJSON。chat_message_lifecycle_events から導出される読み取り最適化値であり、状態の正本ではなくprojectionである。 |
+| `chat_message_events` | `created_at` | 作成at | timestamp | no | internal | projection | projector | chat_message_lifecycle_events | 作成at。chat_message_lifecycle_events から導出される読み取り最適化値であり、状態の正本ではなくprojectionである。 |
 | `citation_records` | `tenant_id` | テナントID | string | no | internal | master | api |  | テナントID。データ分離の最小単位。全業務テーブルで必須のスコープキー。 |
 | `citation_records` | `chat_id` | チャットID | uuid | no | internal | master | api |  | チャットID。citation_records における chat_id の値を保持する。分類と更新主体はmetadataで管理する。 |
 | `citation_records` | `message_id` | メッセージID | uuid | no | internal | master | api |  | メッセージID。citation_records における message_id の値を保持する。分類と更新主体はmetadataで管理する。 |
@@ -160,9 +160,9 @@
 | `ws_tickets` | `session_id` | セッションID | string | no | internal | master | api |  | セッションID。ws_tickets における session_id の値を保持する。分類と更新主体はmetadataで管理する。 |
 | `ws_tickets` | `user_id` | ユーザーID | string | no | pii | master | api |  | ユーザーID。ws_tickets における user_id の値を保持する。分類と更新主体はmetadataで管理する。 |
 | `ws_tickets` | `channel_scope_json` | channelscopeJSON | json | no | confidential | master | api |  | channelscopeJSON。ws_tickets における channel_scope_json の値を保持する。分類と更新主体はmetadataで管理する。 |
-| `ws_tickets` | `status` | 現在状態projection | string | no | internal | projection | api |  | 現在状態projection。対応するdomain eventから導出される読み取り最適化値であり、状態の正本ではなくprojectionである。 |
-| `ws_tickets` | `expires_at` | 期限at | timestamp | no | internal | projection | api |  | 期限at。対応するdomain eventから導出される読み取り最適化値であり、状態の正本ではなくprojectionである。 |
-| `ws_tickets` | `used_at` | usedat | timestamp | yes | internal | projection | api |  | usedat。対応するdomain eventから導出される読み取り最適化値であり、状態の正本ではなくprojectionである。 |
+| `ws_tickets` | `status` | 現在状態projection | string | no | internal | projection | projector | ws_ticket_events | 現在状態projection。ws_ticket_events から導出される読み取り最適化値であり、状態の正本ではなくprojectionである。 |
+| `ws_tickets` | `expires_at` | 期限at | timestamp | no | internal | projection | projector | ws_ticket_events | 期限at。ws_ticket_events から導出される読み取り最適化値であり、状態の正本ではなくprojectionである。 |
+| `ws_tickets` | `used_at` | usedat | timestamp | yes | internal | projection | projector | ws_ticket_events | usedat。ws_ticket_events から導出される読み取り最適化値であり、状態の正本ではなくprojectionである。 |
 | `user_import_jobs` | `tenant_id` | テナントID | string | no | internal | master | api |  | テナントID。データ分離の最小単位。全業務テーブルで必須のスコープキー。 |
 | `user_import_jobs` | `import_id` | importID | string | no | internal | master | api |  | importID。user_import_jobs における import_id の値を保持する。分類と更新主体はmetadataで管理する。 |
 | `user_import_jobs` | `status` | 現在状態projection | string | no | internal | projection | worker | user_import_job_events | 現在状態projection。user_import_job_events から導出される読み取り最適化値であり、状態の正本ではなくprojectionである。 |
@@ -172,12 +172,12 @@
 | `user_import_rows` | `tenant_id` | テナントID | string | no | internal | master | api |  | テナントID。データ分離の最小単位。全業務テーブルで必須のスコープキー。 |
 | `user_import_rows` | `import_id` | importID | string | no | internal | master | api |  | importID。user_import_rows における import_id の値を保持する。分類と更新主体はmetadataで管理する。 |
 | `user_import_rows` | `row_number` | rownumber | integer | no | internal | master | api |  | rownumber。user_import_rows における row_number の値を保持する。分類と更新主体はmetadataで管理する。 |
-| `user_import_rows` | `status` | 現在状態projection | string | no | internal | projection | api |  | 現在状態projection。対応するdomain eventから導出される読み取り最適化値であり、状態の正本ではなくprojectionである。 |
+| `user_import_rows` | `status` | 現在状態projection | string | no | internal | projection | worker | user_import_row_events | 現在状態projection。user_import_row_events から導出される読み取り最適化値であり、状態の正本ではなくprojectionである。 |
 | `user_import_rows` | `error_message` | errorメッセージ | text | yes | pii | master | api |  | errorメッセージ。user_import_rows における error_message の値を保持する。分類と更新主体はmetadataで管理する。 |
 | `evaluation_datasets` | `tenant_id` | テナントID | string | no | internal | master | api |  | テナントID。データ分離の最小単位。全業務テーブルで必須のスコープキー。 |
 | `evaluation_datasets` | `dataset_id` | datasetID | string | no | internal | master | api |  | datasetID。evaluation_datasets における dataset_id の値を保持する。分類と更新主体はmetadataで管理する。 |
 | `evaluation_datasets` | `dataset_name` | dataset名称 | string | no | internal | master | api |  | dataset名称。evaluation_datasets における dataset_name の値を保持する。分類と更新主体はmetadataで管理する。 |
-| `evaluation_datasets` | `status` | 現在状態projection | string | no | internal | projection | worker |  | 現在状態projection。対応するdomain eventから導出される読み取り最適化値であり、状態の正本ではなくprojectionである。 |
+| `evaluation_datasets` | `status` | 現在状態projection | string | no | internal | projection | worker | evaluation_dataset_events | 現在状態projection。evaluation_dataset_events から導出される読み取り最適化値であり、状態の正本ではなくprojectionである。 |
 | `evaluation_datasets` | `source_s3_uri` | sources3uri | string | no | internal | master | api |  | sources3uri。evaluation_datasets における source_s3_uri の値を保持する。分類と更新主体はmetadataで管理する。 |
 | `evaluation_datasets` | `created_at` | 作成at | timestamp | no | internal | master | api |  | 作成日時。レコードが初めて作成された日時。業務イベントの発生日時とは区別する。 |
 | `evaluation_cases` | `tenant_id` | テナントID | string | no | internal | master | api |  | テナントID。データ分離の最小単位。全業務テーブルで必須のスコープキー。 |
@@ -200,7 +200,7 @@
 | `evaluation_run_items` | `tenant_id` | テナントID | string | no | internal | master | api |  | テナントID。データ分離の最小単位。全業務テーブルで必須のスコープキー。 |
 | `evaluation_run_items` | `evaluation_run_id` | 評価実行ID | string | no | internal | master | api |  | 評価実行ID。evaluation_run_items における evaluation_run_id の値を保持する。分類と更新主体はmetadataで管理する。 |
 | `evaluation_run_items` | `case_id` | caseID | uuid | no | internal | master | api |  | caseID。evaluation_run_items における case_id の値を保持する。分類と更新主体はmetadataで管理する。 |
-| `evaluation_run_items` | `status` | 現在状態projection | string | no | internal | projection | worker |  | 現在状態projection。対応するdomain eventから導出される読み取り最適化値であり、状態の正本ではなくprojectionである。 |
+| `evaluation_run_items` | `status` | 現在状態projection | string | no | internal | projection | worker | evaluation_run_item_events | 現在状態projection。evaluation_run_item_events から導出される読み取り最適化値であり、状態の正本ではなくprojectionである。 |
 | `evaluation_run_items` | `answer_text` | answertext | text | yes | confidential | master | api |  | answertext。evaluation_run_items における answer_text の値を保持する。分類と更新主体はmetadataで管理する。 |
 | `evaluation_run_items` | `retrieved_context_json` | retrievedcontextJSON | json | yes | confidential | master | api |  | retrievedcontextJSON。evaluation_run_items における retrieved_context_json の値を保持する。分類と更新主体はmetadataで管理する。 |
 | `evaluation_run_items` | `judge_result_json` | judgeresultJSON | json | yes | confidential | master | api |  | judgeresultJSON。evaluation_run_items における judge_result_json の値を保持する。分類と更新主体はmetadataで管理する。 |
@@ -211,48 +211,48 @@
 | `llm_models` | `provider` | provider | string | no | internal | master | api |  | provider。llm_models における provider の値を保持する。分類と更新主体はmetadataで管理する。 |
 | `llm_models` | `model_type` | modeltype | string | no | internal | master | api |  | modeltype。llm_models における model_type の値を保持する。分類と更新主体はmetadataで管理する。 |
 | `llm_models` | `capability_json` | capabilityJSON | json | no | confidential | master | api |  | capabilityJSON。llm_models における capability_json の値を保持する。分類と更新主体はmetadataで管理する。 |
-| `llm_models` | `status` | 現在状態projection | string | no | internal | projection | api |  | 現在状態projection。対応するdomain eventから導出される読み取り最適化値であり、状態の正本ではなくprojectionである。 |
+| `llm_models` | `status` | 現在状態projection | string | no | internal | projection | api | llm_model_events | 現在状態projection。llm_model_events から導出される読み取り最適化値であり、状態の正本ではなくprojectionである。 |
 | `llm_models` | `visible_to_user` | visibletoユーザー | boolean | no | internal | master | api |  | visibletoユーザー。llm_models における visible_to_user の値を保持する。分類と更新主体はmetadataで管理する。 |
 | `llm_models` | `allowed_role` | allowedrole | string | yes | internal | master | api |  | allowedrole。llm_models における allowed_role の値を保持する。分類と更新主体はmetadataで管理する。 |
 | `llm_models` | `default_for_task` | defaultfortask | string | yes | internal | master | api |  | defaultfortask。llm_models における default_for_task の値を保持する。分類と更新主体はmetadataで管理する。 |
 | `llm_models` | `catalog_version` | catalog版 | string | no | internal | master | api |  | catalog版。llm_models における catalog_version の値を保持する。分類と更新主体はmetadataで管理する。 |
 | `llm_models` | `created_at` | 作成at | timestamp | no | internal | master | api |  | 作成日時。レコードが初めて作成された日時。業務イベントの発生日時とは区別する。 |
-| `llm_models` | `updated_at` | 更新at | timestamp | no | internal | projection | api |  | 更新at。対応するdomain eventから導出される読み取り最適化値であり、状態の正本ではなくprojectionである。 |
-| `bm25_search_documents` | `tenant_id` | テナントID | string | no | internal | projection | api |  | テナントID。データ分離の最小単位。全業務テーブルで必須のスコープキー。 |
-| `bm25_search_documents` | `collection_id` | collectionID | uuid | no | internal | projection | api |  | collectionID。bm25_search_documents における collection_id の値を保持する。分類と更新主体はmetadataで管理する。 |
-| `bm25_search_documents` | `doc_id` | docID | uuid | no | internal | projection | api |  | docID。bm25_search_documents における doc_id の値を保持する。分類と更新主体はmetadataで管理する。 |
-| `bm25_search_documents` | `source_chunk_id` | sourcechunkID | string | no | internal | projection | api |  | sourcechunkID。bm25_search_documents における source_chunk_id の値を保持する。分類と更新主体はmetadataで管理する。 |
-| `bm25_search_documents` | `title` | タイトル | text | yes | confidential | projection | api |  | タイトル。bm25_search_documents における title の値を保持する。分類と更新主体はmetadataで管理する。 |
-| `bm25_search_documents` | `snippet` | snippet | text | yes | confidential | projection | api |  | snippet。bm25_search_documents における snippet の値を保持する。分類と更新主体はmetadataで管理する。 |
-| `bm25_search_documents` | `doc_type` | doctype | string | yes | internal | projection | api |  | doctype。bm25_search_documents における doc_type の値を保持する。分類と更新主体はmetadataで管理する。 |
-| `bm25_search_documents` | `is_deleted` | is削除 | boolean | no | internal | projection | api |  | is削除。対応するdomain eventから導出される読み取り最適化値であり、状態の正本ではなくprojectionである。 |
-| `bm25_postings` | `tenant_id` | テナントID | string | no | internal | projection | api |  | テナントID。データ分離の最小単位。全業務テーブルで必須のスコープキー。 |
-| `bm25_postings` | `collection_id` | collectionID | uuid | no | internal | projection | api |  | collectionID。bm25_postings における collection_id の値を保持する。分類と更新主体はmetadataで管理する。 |
-| `bm25_postings` | `term_id` | termID | uuid | no | internal | projection | api |  | termID。bm25_postings における term_id の値を保持する。分類と更新主体はmetadataで管理する。 |
-| `bm25_postings` | `doc_id` | docID | uuid | no | internal | projection | api |  | docID。bm25_postings における doc_id の値を保持する。分類と更新主体はmetadataで管理する。 |
-| `bm25_postings` | `field_id` | fieldID | integer | no | internal | projection | api |  | fieldID。bm25_postings における field_id の値を保持する。分類と更新主体はmetadataで管理する。 |
-| `bm25_postings` | `tf` | tf | integer | no | internal | projection | api |  | tf。bm25_postings における tf の値を保持する。分類と更新主体はmetadataで管理する。 |
-| `bm25_postings` | `field_len` | fieldlen | integer | no | internal | projection | api |  | fieldlen。bm25_postings における field_len の値を保持する。分類と更新主体はmetadataで管理する。 |
-| `bm25_term_stats` | `tenant_id` | テナントID | string | no | internal | projection | api |  | テナントID。データ分離の最小単位。全業務テーブルで必須のスコープキー。 |
-| `bm25_term_stats` | `collection_id` | collectionID | uuid | no | internal | projection | api |  | collectionID。bm25_term_stats における collection_id の値を保持する。分類と更新主体はmetadataで管理する。 |
-| `bm25_term_stats` | `stats_version` | stats版 | uuid | no | internal | projection | api |  | stats版。bm25_term_stats における stats_version の値を保持する。分類と更新主体はmetadataで管理する。 |
-| `bm25_term_stats` | `term_id` | termID | uuid | no | internal | projection | api |  | termID。bm25_term_stats における term_id の値を保持する。分類と更新主体はmetadataで管理する。 |
-| `bm25_term_stats` | `df` | df | integer | no | internal | projection | api |  | df。bm25_term_stats における df の値を保持する。分類と更新主体はmetadataで管理する。 |
-| `bm25_term_stats` | `idf` | idf | float | no | internal | projection | api |  | idf。bm25_term_stats における idf の値を保持する。分類と更新主体はmetadataで管理する。 |
-| `bm25_field_stats` | `tenant_id` | テナントID | string | no | internal | projection | api |  | テナントID。データ分離の最小単位。全業務テーブルで必須のスコープキー。 |
-| `bm25_field_stats` | `collection_id` | collectionID | uuid | no | internal | projection | api |  | collectionID。bm25_field_stats における collection_id の値を保持する。分類と更新主体はmetadataで管理する。 |
-| `bm25_field_stats` | `stats_version` | stats版 | uuid | no | internal | projection | api |  | stats版。bm25_field_stats における stats_version の値を保持する。分類と更新主体はmetadataで管理する。 |
-| `bm25_field_stats` | `field_id` | fieldID | integer | no | internal | projection | api |  | fieldID。bm25_field_stats における field_id の値を保持する。分類と更新主体はmetadataで管理する。 |
-| `bm25_field_stats` | `avg_len` | avglen | float | no | internal | projection | api |  | avglen。bm25_field_stats における avg_len の値を保持する。分類と更新主体はmetadataで管理する。 |
-| `event_delivery_logs` | `tenant_id` | テナントID | string | no | internal | projection | api |  | テナントID。データ分離の最小単位。全業務テーブルで必須のスコープキー。 |
-| `event_delivery_logs` | `delivery_id` | deliveryID | uuid | no | internal | projection | api |  | deliveryID。event_delivery_logs における delivery_id の値を保持する。分類と更新主体はmetadataで管理する。 |
-| `event_delivery_logs` | `channel_path` | channelpath | string | no | internal | projection | api |  | channelpath。event_delivery_logs における channel_path の値を保持する。分類と更新主体はmetadataで管理する。 |
-| `event_delivery_logs` | `event_id` | イベントID | uuid | no | internal | projection | api |  | イベントID。イベントを一意に識別するID。冪等性確認と監査で利用する。 |
-| `event_delivery_logs` | `status` | 現在状態projection | string | no | internal | projection | api |  | 現在状態projection。対応するdomain eventから導出される読み取り最適化値であり、状態の正本ではなくprojectionである。 |
-| `event_delivery_logs` | `attempt_count` | attemptcount | integer | no | internal | projection | api |  | attemptcount。event_delivery_logs における attempt_count の値を保持する。分類と更新主体はmetadataで管理する。 |
-| `event_delivery_logs` | `error_message` | errorメッセージ | text | yes | pii | projection | api |  | errorメッセージ。event_delivery_logs における error_message の値を保持する。分類と更新主体はmetadataで管理する。 |
-| `event_delivery_logs` | `created_at` | 作成at | timestamp | no | internal | projection | api |  | 作成日時。レコードが初めて作成された日時。業務イベントの発生日時とは区別する。 |
-| `event_delivery_logs` | `updated_at` | 更新at | timestamp | no | internal | projection | api |  | 更新at。対応するdomain eventから導出される読み取り最適化値であり、状態の正本ではなくprojectionである。 |
+| `llm_models` | `updated_at` | 更新at | timestamp | no | internal | projection | api | llm_model_events | 更新at。llm_model_events から導出される読み取り最適化値であり、状態の正本ではなくprojectionである。 |
+| `bm25_search_documents` | `tenant_id` | テナントID | string | no | internal | projection | worker | bm25_search_document_events | テナントID。bm25_search_document_events から導出される読み取り最適化値であり、状態の正本ではなくprojectionである。 |
+| `bm25_search_documents` | `collection_id` | collectionID | uuid | no | internal | projection | worker | bm25_search_document_events | collectionID。bm25_search_document_events から導出される読み取り最適化値であり、状態の正本ではなくprojectionである。 |
+| `bm25_search_documents` | `doc_id` | docID | uuid | no | internal | projection | worker | bm25_search_document_events | docID。bm25_search_document_events から導出される読み取り最適化値であり、状態の正本ではなくprojectionである。 |
+| `bm25_search_documents` | `source_chunk_id` | sourcechunkID | string | no | internal | projection | worker | bm25_search_document_events | sourcechunkID。bm25_search_document_events から導出される読み取り最適化値であり、状態の正本ではなくprojectionである。 |
+| `bm25_search_documents` | `title` | タイトル | text | yes | confidential | projection | worker | bm25_search_document_events | タイトル。bm25_search_document_events から導出される読み取り最適化値であり、状態の正本ではなくprojectionである。 |
+| `bm25_search_documents` | `snippet` | snippet | text | yes | confidential | projection | worker | bm25_search_document_events | snippet。bm25_search_document_events から導出される読み取り最適化値であり、状態の正本ではなくprojectionである。 |
+| `bm25_search_documents` | `doc_type` | doctype | string | yes | internal | projection | worker | bm25_search_document_events | doctype。bm25_search_document_events から導出される読み取り最適化値であり、状態の正本ではなくprojectionである。 |
+| `bm25_search_documents` | `is_deleted` | is削除 | boolean | no | internal | projection | worker | bm25_search_document_events | is削除。bm25_search_document_events から導出される読み取り最適化値であり、状態の正本ではなくprojectionである。 |
+| `bm25_postings` | `tenant_id` | テナントID | string | no | internal | projection | worker | bm25_posting_events | テナントID。bm25_posting_events から導出される読み取り最適化値であり、状態の正本ではなくprojectionである。 |
+| `bm25_postings` | `collection_id` | collectionID | uuid | no | internal | projection | worker | bm25_posting_events | collectionID。bm25_posting_events から導出される読み取り最適化値であり、状態の正本ではなくprojectionである。 |
+| `bm25_postings` | `term_id` | termID | uuid | no | internal | projection | worker | bm25_posting_events | termID。bm25_posting_events から導出される読み取り最適化値であり、状態の正本ではなくprojectionである。 |
+| `bm25_postings` | `doc_id` | docID | uuid | no | internal | projection | worker | bm25_posting_events | docID。bm25_posting_events から導出される読み取り最適化値であり、状態の正本ではなくprojectionである。 |
+| `bm25_postings` | `field_id` | fieldID | integer | no | internal | projection | worker | bm25_posting_events | fieldID。bm25_posting_events から導出される読み取り最適化値であり、状態の正本ではなくprojectionである。 |
+| `bm25_postings` | `tf` | tf | integer | no | internal | projection | worker | bm25_posting_events | tf。bm25_posting_events から導出される読み取り最適化値であり、状態の正本ではなくprojectionである。 |
+| `bm25_postings` | `field_len` | fieldlen | integer | no | internal | projection | worker | bm25_posting_events | fieldlen。bm25_posting_events から導出される読み取り最適化値であり、状態の正本ではなくprojectionである。 |
+| `bm25_term_stats` | `tenant_id` | テナントID | string | no | internal | projection | worker | bm25_term_stat_events | テナントID。bm25_term_stat_events から導出される読み取り最適化値であり、状態の正本ではなくprojectionである。 |
+| `bm25_term_stats` | `collection_id` | collectionID | uuid | no | internal | projection | worker | bm25_term_stat_events | collectionID。bm25_term_stat_events から導出される読み取り最適化値であり、状態の正本ではなくprojectionである。 |
+| `bm25_term_stats` | `stats_version` | stats版 | uuid | no | internal | projection | worker | bm25_term_stat_events | stats版。bm25_term_stat_events から導出される読み取り最適化値であり、状態の正本ではなくprojectionである。 |
+| `bm25_term_stats` | `term_id` | termID | uuid | no | internal | projection | worker | bm25_term_stat_events | termID。bm25_term_stat_events から導出される読み取り最適化値であり、状態の正本ではなくprojectionである。 |
+| `bm25_term_stats` | `df` | df | integer | no | internal | projection | worker | bm25_term_stat_events | df。bm25_term_stat_events から導出される読み取り最適化値であり、状態の正本ではなくprojectionである。 |
+| `bm25_term_stats` | `idf` | idf | float | no | internal | projection | worker | bm25_term_stat_events | idf。bm25_term_stat_events から導出される読み取り最適化値であり、状態の正本ではなくprojectionである。 |
+| `bm25_field_stats` | `tenant_id` | テナントID | string | no | internal | projection | worker | bm25_field_stat_events | テナントID。bm25_field_stat_events から導出される読み取り最適化値であり、状態の正本ではなくprojectionである。 |
+| `bm25_field_stats` | `collection_id` | collectionID | uuid | no | internal | projection | worker | bm25_field_stat_events | collectionID。bm25_field_stat_events から導出される読み取り最適化値であり、状態の正本ではなくprojectionである。 |
+| `bm25_field_stats` | `stats_version` | stats版 | uuid | no | internal | projection | worker | bm25_field_stat_events | stats版。bm25_field_stat_events から導出される読み取り最適化値であり、状態の正本ではなくprojectionである。 |
+| `bm25_field_stats` | `field_id` | fieldID | integer | no | internal | projection | worker | bm25_field_stat_events | fieldID。bm25_field_stat_events から導出される読み取り最適化値であり、状態の正本ではなくprojectionである。 |
+| `bm25_field_stats` | `avg_len` | avglen | float | no | internal | projection | worker | bm25_field_stat_events | avglen。bm25_field_stat_events から導出される読み取り最適化値であり、状態の正本ではなくprojectionである。 |
+| `event_delivery_logs` | `tenant_id` | テナントID | string | no | internal | projection | worker | event_delivery_events | テナントID。event_delivery_events から導出される読み取り最適化値であり、状態の正本ではなくprojectionである。 |
+| `event_delivery_logs` | `delivery_id` | deliveryID | uuid | no | internal | projection | worker | event_delivery_events | deliveryID。event_delivery_events から導出される読み取り最適化値であり、状態の正本ではなくprojectionである。 |
+| `event_delivery_logs` | `channel_path` | channelpath | string | no | internal | projection | worker | event_delivery_events | channelpath。event_delivery_events から導出される読み取り最適化値であり、状態の正本ではなくprojectionである。 |
+| `event_delivery_logs` | `event_id` | イベントID | uuid | no | internal | projection | worker | event_delivery_events | イベントID。event_delivery_events から導出される読み取り最適化値であり、状態の正本ではなくprojectionである。 |
+| `event_delivery_logs` | `status` | 現在状態projection | string | no | internal | projection | worker | event_delivery_events | 現在状態projection。event_delivery_events から導出される読み取り最適化値であり、状態の正本ではなくprojectionである。 |
+| `event_delivery_logs` | `attempt_count` | attemptcount | integer | no | internal | projection | worker | event_delivery_events | attemptcount。event_delivery_events から導出される読み取り最適化値であり、状態の正本ではなくprojectionである。 |
+| `event_delivery_logs` | `error_message` | errorメッセージ | text | yes | pii | projection | worker | event_delivery_events | errorメッセージ。event_delivery_events から導出される読み取り最適化値であり、状態の正本ではなくprojectionである。 |
+| `event_delivery_logs` | `created_at` | 作成at | timestamp | no | internal | projection | worker | event_delivery_events | 作成at。event_delivery_events から導出される読み取り最適化値であり、状態の正本ではなくprojectionである。 |
+| `event_delivery_logs` | `updated_at` | 更新at | timestamp | no | internal | projection | worker | event_delivery_events | 更新at。event_delivery_events から導出される読み取り最適化値であり、状態の正本ではなくprojectionである。 |
 | `audit_events` | `tenant_id` | テナントID | string | no | internal | audit | api |  | テナントID。データ分離の最小単位。全業務テーブルで必須のスコープキー。 |
 | `audit_events` | `audit_event_id` | auditイベントID | uuid | no | internal | audit | api |  | auditイベントID。audit_events における audit_event_id の値を保持する。分類と更新主体はmetadataで管理する。 |
 | `audit_events` | `actor_user_id` | actorユーザーID | string | no | pii | audit | api |  | actorユーザーID。audit_events における actor_user_id の値を保持する。分類と更新主体はmetadataで管理する。 |
@@ -270,9 +270,9 @@
 | `agent_tools` | `tool_scope` | Toolscope | string | no | confidential | master | api |  | Toolscope。agent_tools における tool_scope の値を保持する。分類と更新主体はmetadataで管理する。 |
 | `agent_tools` | `side_effect_type` | sideeffecttype | string | no | internal | master | api |  | sideeffecttype。agent_tools における side_effect_type の値を保持する。分類と更新主体はmetadataで管理する。 |
 | `agent_tools` | `timeout_ms` | timeoutms | integer | no | internal | master | api |  | timeoutms。agent_tools における timeout_ms の値を保持する。分類と更新主体はmetadataで管理する。 |
-| `agent_tools` | `status` | 現在状態projection | string | no | internal | projection | api |  | 現在状態projection。対応するdomain eventから導出される読み取り最適化値であり、状態の正本ではなくprojectionである。 |
+| `agent_tools` | `status` | 現在状態projection | string | no | internal | projection | api | agent_tool_events | 現在状態projection。agent_tool_events から導出される読み取り最適化値であり、状態の正本ではなくprojectionである。 |
 | `agent_tools` | `created_at` | 作成at | timestamp | no | internal | master | api |  | 作成日時。レコードが初めて作成された日時。業務イベントの発生日時とは区別する。 |
-| `agent_tools` | `updated_at` | 更新at | timestamp | no | internal | projection | api |  | 更新at。対応するdomain eventから導出される読み取り最適化値であり、状態の正本ではなくprojectionである。 |
+| `agent_tools` | `updated_at` | 更新at | timestamp | no | internal | projection | api | agent_tool_events | 更新at。agent_tool_events から導出される読み取り最適化値であり、状態の正本ではなくprojectionである。 |
 | `tool_invocations` | `tenant_id` | テナントID | string | no | internal | master | agent |  | テナントID。データ分離の最小単位。全業務テーブルで必須のスコープキー。 |
 | `tool_invocations` | `invocation_id` | invocationID | uuid | no | internal | master | agent |  | invocationID。tool_invocations における invocation_id の値を保持する。分類と更新主体はmetadataで管理する。 |
 | `tool_invocations` | `run_id` | 実行ID | uuid | no | internal | master | agent |  | 実行ID。tool_invocations における run_id の値を保持する。分類と更新主体はmetadataで管理する。 |

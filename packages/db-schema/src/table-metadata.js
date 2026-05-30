@@ -186,14 +186,14 @@ export const dbTableMetadata = [
   {
     "tableName": "user_groups",
     "japaneseName": "ユーザーグループ",
-    "description": "管理者が扱うユーザー集合と権限付与単位を表す。状態はprojectionとして扱う。",
+    "description": "管理者が扱うユーザー集合と権限付与単位を表す。状態は user_group_events から導出されるprojectionとして扱う。",
     "domain": "identity",
-    "sourceOfTruthKind": "master",
+    "sourceOfTruthKind": "projection",
     "primaryKey": [
       "tenant_id",
       "group_id"
     ],
-    "lifecycle": "APIまたは管理操作で作成し、業務ルールに従って更新する。",
+    "lifecycle": "user_group_events へのevent append後、projector がprojectionとして更新する。",
     "retentionPolicy": "テナントのデータ保持ポリシーに従って保持する。",
     "columns": [
       {
@@ -241,10 +241,11 @@ export const dbTableMetadata = [
         "logicalType": "string",
         "nullable": false,
         "japaneseName": "現在状態projection",
-        "description": "現在状態projection。対応するdomain eventから導出される読み取り最適化値であり、状態の正本ではなくprojectionである。",
+        "description": "現在状態projection。user_group_events から導出される読み取り最適化値であり、状態の正本ではなくprojectionである。",
         "dataClassification": "internal",
         "sourceOfTruthKind": "projection",
-        "updateOwner": "api"
+        "derivedFrom": "user_group_events",
+        "updateOwner": "projector"
       },
       {
         "name": "created_at",
@@ -644,13 +645,13 @@ export const dbTableMetadata = [
     "japaneseName": "チャットメッセージ",
     "description": "一般ユーザー発話とassistant回答を保持する。回答状態は chat_run_events などから導出されるprojectionとして扱う。",
     "domain": "chat",
-    "sourceOfTruthKind": "master",
+    "sourceOfTruthKind": "projection",
     "primaryKey": [
       "tenant_id",
       "chat_id",
       "message_id"
     ],
-    "lifecycle": "APIまたは管理操作で作成し、業務ルールに従って更新する。",
+    "lifecycle": "chat_message_lifecycle_events へのevent append後、projector がprojectionとして更新する。",
     "retentionPolicy": "テナントのデータ保持ポリシーに従って保持する。",
     "columns": [
       {
@@ -738,10 +739,11 @@ export const dbTableMetadata = [
         "logicalType": "string",
         "nullable": false,
         "japaneseName": "現在状態projection",
-        "description": "現在状態projection。対応するdomain eventから導出される読み取り最適化値であり、状態の正本ではなくprojectionである。",
+        "description": "現在状態projection。chat_message_lifecycle_events から導出される読み取り最適化値であり、状態の正本ではなくprojectionである。",
         "dataClassification": "internal",
         "sourceOfTruthKind": "projection",
-        "updateOwner": "api"
+        "derivedFrom": "chat_message_lifecycle_events",
+        "updateOwner": "projector"
       },
       {
         "name": "created_at",
@@ -758,10 +760,11 @@ export const dbTableMetadata = [
         "logicalType": "timestamp",
         "nullable": true,
         "japaneseName": "完了at",
-        "description": "完了at。対応するdomain eventから導出される読み取り最適化値であり、状態の正本ではなくprojectionである。",
+        "description": "完了at。chat_message_lifecycle_events から導出される読み取り最適化値であり、状態の正本ではなくprojectionである。",
         "dataClassification": "internal",
         "sourceOfTruthKind": "projection",
-        "updateOwner": "api"
+        "derivedFrom": "chat_message_lifecycle_events",
+        "updateOwner": "projector"
       }
     ]
   },
@@ -906,7 +909,7 @@ export const dbTableMetadata = [
   {
     "tableName": "chat_message_events",
     "japaneseName": "チャットメッセージUIイベント",
-    "description": "UIへ返す軽量イベント列。domain event正本とは分け、通知・REST取得のための時系列read modelとして扱う。",
+    "description": "UIへ返す軽量イベント列。domain event正本とは分け、chat_message_lifecycle_events から導出される時系列read modelとして扱う。",
     "domain": "chat",
     "sourceOfTruthKind": "projection",
     "primaryKey": [
@@ -915,7 +918,7 @@ export const dbTableMetadata = [
       "message_id",
       "event_seq"
     ],
-    "lifecycle": "APIまたは管理操作で作成し、業務ルールに従って更新する。",
+    "lifecycle": "chat_message_lifecycle_events へのevent append後、projector がprojectionとして更新する。",
     "retentionPolicy": "テナントのデータ保持ポリシーに従って保持する。",
     "columns": [
       {
@@ -923,90 +926,99 @@ export const dbTableMetadata = [
         "logicalType": "string",
         "nullable": false,
         "japaneseName": "テナントID",
-        "description": "テナントID。データ分離の最小単位。全業務テーブルで必須のスコープキー。",
+        "description": "テナントID。chat_message_lifecycle_events から導出される読み取り最適化値であり、状態の正本ではなくprojectionである。",
         "dataClassification": "internal",
         "sourceOfTruthKind": "projection",
-        "updateOwner": "api"
+        "derivedFrom": "chat_message_lifecycle_events",
+        "updateOwner": "projector"
       },
       {
         "name": "chat_id",
         "logicalType": "uuid",
         "nullable": false,
         "japaneseName": "チャットID",
-        "description": "チャットID。chat_message_events における chat_id の値を保持する。分類と更新主体はmetadataで管理する。",
+        "description": "チャットID。chat_message_lifecycle_events から導出される読み取り最適化値であり、状態の正本ではなくprojectionである。",
         "dataClassification": "internal",
         "sourceOfTruthKind": "projection",
-        "updateOwner": "api"
+        "derivedFrom": "chat_message_lifecycle_events",
+        "updateOwner": "projector"
       },
       {
         "name": "message_id",
         "logicalType": "uuid",
         "nullable": false,
         "japaneseName": "メッセージID",
-        "description": "メッセージID。chat_message_events における message_id の値を保持する。分類と更新主体はmetadataで管理する。",
+        "description": "メッセージID。chat_message_lifecycle_events から導出される読み取り最適化値であり、状態の正本ではなくprojectionである。",
         "dataClassification": "internal",
         "sourceOfTruthKind": "projection",
-        "updateOwner": "api"
+        "derivedFrom": "chat_message_lifecycle_events",
+        "updateOwner": "projector"
       },
       {
         "name": "event_seq",
         "logicalType": "bigint",
         "nullable": false,
         "japaneseName": "イベントseq",
-        "description": "イベント連番。aggregate内の順序を表す。append-only eventの並びを検証する。",
+        "description": "イベントseq。chat_message_lifecycle_events から導出される読み取り最適化値であり、状態の正本ではなくprojectionである。",
         "dataClassification": "internal",
         "sourceOfTruthKind": "projection",
-        "updateOwner": "api"
+        "derivedFrom": "chat_message_lifecycle_events",
+        "updateOwner": "projector"
       },
       {
         "name": "event_id",
         "logicalType": "uuid",
         "nullable": false,
         "japaneseName": "イベントID",
-        "description": "イベントID。イベントを一意に識別するID。冪等性確認と監査で利用する。",
+        "description": "イベントID。chat_message_lifecycle_events から導出される読み取り最適化値であり、状態の正本ではなくprojectionである。",
         "dataClassification": "internal",
         "sourceOfTruthKind": "projection",
-        "updateOwner": "api"
+        "derivedFrom": "chat_message_lifecycle_events",
+        "updateOwner": "projector"
       },
       {
         "name": "event_name",
         "logicalType": "string",
         "nullable": false,
         "japaneseName": "イベント名称",
-        "description": "イベント名。発生した業務イベントの種類。payload_json のschema選択に利用する。",
+        "description": "イベント名称。chat_message_lifecycle_events から導出される読み取り最適化値であり、状態の正本ではなくprojectionである。",
         "dataClassification": "internal",
         "sourceOfTruthKind": "projection",
-        "updateOwner": "api"
+        "derivedFrom": "chat_message_lifecycle_events",
+        "updateOwner": "projector"
       },
       {
         "name": "event_type",
         "logicalType": "string",
         "nullable": false,
         "japaneseName": "イベントtype",
-        "description": "イベントtype。chat_message_events における event_type の値を保持する。分類と更新主体はmetadataで管理する。",
+        "description": "イベントtype。chat_message_lifecycle_events から導出される読み取り最適化値であり、状態の正本ではなくprojectionである。",
         "dataClassification": "internal",
         "sourceOfTruthKind": "projection",
-        "updateOwner": "api"
+        "derivedFrom": "chat_message_lifecycle_events",
+        "updateOwner": "projector"
       },
       {
         "name": "payload_json",
         "logicalType": "json",
         "nullable": false,
         "japaneseName": "payloadJSON",
-        "description": "payload JSON。event_nameごとのschemaはアプリケーション側で検証する。",
+        "description": "payloadJSON。chat_message_lifecycle_events から導出される読み取り最適化値であり、状態の正本ではなくprojectionである。",
         "dataClassification": "confidential",
         "sourceOfTruthKind": "projection",
-        "updateOwner": "api"
+        "derivedFrom": "chat_message_lifecycle_events",
+        "updateOwner": "projector"
       },
       {
         "name": "created_at",
         "logicalType": "timestamp",
         "nullable": false,
         "japaneseName": "作成at",
-        "description": "作成日時。レコードが初めて作成された日時。業務イベントの発生日時とは区別する。",
+        "description": "作成at。chat_message_lifecycle_events から導出される読み取り最適化値であり、状態の正本ではなくprojectionである。",
         "dataClassification": "internal",
         "sourceOfTruthKind": "projection",
-        "updateOwner": "api"
+        "derivedFrom": "chat_message_lifecycle_events",
+        "updateOwner": "projector"
       }
     ]
   },
@@ -1831,14 +1843,14 @@ export const dbTableMetadata = [
   {
     "tableName": "ws_tickets",
     "japaneseName": "WebSocket ticket",
-    "description": "AppSync Events購読前にHono APIが発行する短期・単回利用ticketを表す。状態はprojectionとして扱う。",
+    "description": "AppSync Events購読前にHono APIが発行する短期・単回利用ticketを表す。状態は ws_ticket_events から導出されるprojectionとして扱う。",
     "domain": "operations",
-    "sourceOfTruthKind": "master",
+    "sourceOfTruthKind": "projection",
     "primaryKey": [
       "tenant_id",
       "ticket_id"
     ],
-    "lifecycle": "APIまたは管理操作で作成し、業務ルールに従って更新する。",
+    "lifecycle": "ws_ticket_events へのevent append後、projector がprojectionとして更新する。",
     "retentionPolicy": "期限切れ後に運用ポリシーに従って削除または匿名化する。",
     "columns": [
       {
@@ -1896,30 +1908,33 @@ export const dbTableMetadata = [
         "logicalType": "string",
         "nullable": false,
         "japaneseName": "現在状態projection",
-        "description": "現在状態projection。対応するdomain eventから導出される読み取り最適化値であり、状態の正本ではなくprojectionである。",
+        "description": "現在状態projection。ws_ticket_events から導出される読み取り最適化値であり、状態の正本ではなくprojectionである。",
         "dataClassification": "internal",
         "sourceOfTruthKind": "projection",
-        "updateOwner": "api"
+        "derivedFrom": "ws_ticket_events",
+        "updateOwner": "projector"
       },
       {
         "name": "expires_at",
         "logicalType": "timestamp",
         "nullable": false,
         "japaneseName": "期限at",
-        "description": "期限at。対応するdomain eventから導出される読み取り最適化値であり、状態の正本ではなくprojectionである。",
+        "description": "期限at。ws_ticket_events から導出される読み取り最適化値であり、状態の正本ではなくprojectionである。",
         "dataClassification": "internal",
         "sourceOfTruthKind": "projection",
-        "updateOwner": "api"
+        "derivedFrom": "ws_ticket_events",
+        "updateOwner": "projector"
       },
       {
         "name": "used_at",
         "logicalType": "timestamp",
         "nullable": true,
         "japaneseName": "usedat",
-        "description": "usedat。対応するdomain eventから導出される読み取り最適化値であり、状態の正本ではなくprojectionである。",
+        "description": "usedat。ws_ticket_events から導出される読み取り最適化値であり、状態の正本ではなくprojectionである。",
         "dataClassification": "internal",
         "sourceOfTruthKind": "projection",
-        "updateOwner": "api"
+        "derivedFrom": "ws_ticket_events",
+        "updateOwner": "projector"
       }
     ]
   },
@@ -2002,15 +2017,15 @@ export const dbTableMetadata = [
   {
     "tableName": "user_import_rows",
     "japaneseName": "ユーザー取込行",
-    "description": "ユーザー一括取込の行単位結果を保持する。行状態は取込ジョブ処理から導出されるprojectionである。",
+    "description": "ユーザー一括取込の行単位結果を保持する。行状態は user_import_row_events から導出されるprojectionである。",
     "domain": "identity",
-    "sourceOfTruthKind": "master",
+    "sourceOfTruthKind": "projection",
     "primaryKey": [
       "tenant_id",
       "import_id",
       "row_number"
     ],
-    "lifecycle": "APIまたは管理操作で作成し、業務ルールに従って更新する。",
+    "lifecycle": "user_import_row_events へのevent append後、worker がprojectionとして更新する。",
     "retentionPolicy": "テナントのデータ保持ポリシーに従って保持する。",
     "columns": [
       {
@@ -2048,10 +2063,11 @@ export const dbTableMetadata = [
         "logicalType": "string",
         "nullable": false,
         "japaneseName": "現在状態projection",
-        "description": "現在状態projection。対応するdomain eventから導出される読み取り最適化値であり、状態の正本ではなくprojectionである。",
+        "description": "現在状態projection。user_import_row_events から導出される読み取り最適化値であり、状態の正本ではなくprojectionである。",
         "dataClassification": "internal",
         "sourceOfTruthKind": "projection",
-        "updateOwner": "api"
+        "derivedFrom": "user_import_row_events",
+        "updateOwner": "worker"
       },
       {
         "name": "error_message",
@@ -2068,14 +2084,14 @@ export const dbTableMetadata = [
   {
     "tableName": "evaluation_datasets",
     "japaneseName": "評価データセット",
-    "description": "RAG評価またはLLM評価で使う問題集合を管理する。状態は管理操作から導出されるprojectionとして扱う。",
+    "description": "RAG評価またはLLM評価で使う問題集合を管理する。状態は evaluation_dataset_events から導出されるprojectionとして扱う。",
     "domain": "evaluation",
-    "sourceOfTruthKind": "master",
+    "sourceOfTruthKind": "projection",
     "primaryKey": [
       "tenant_id",
       "dataset_id"
     ],
-    "lifecycle": "APIまたは管理操作で作成し、業務ルールに従って更新する。",
+    "lifecycle": "evaluation_dataset_events へのevent append後、worker がprojectionとして更新する。",
     "retentionPolicy": "テナントのデータ保持ポリシーに従って保持する。",
     "columns": [
       {
@@ -2113,9 +2129,10 @@ export const dbTableMetadata = [
         "logicalType": "string",
         "nullable": false,
         "japaneseName": "現在状態projection",
-        "description": "現在状態projection。対応するdomain eventから導出される読み取り最適化値であり、状態の正本ではなくprojectionである。",
+        "description": "現在状態projection。evaluation_dataset_events から導出される読み取り最適化値であり、状態の正本ではなくprojectionである。",
         "dataClassification": "internal",
         "sourceOfTruthKind": "projection",
+        "derivedFrom": "evaluation_dataset_events",
         "updateOwner": "worker"
       },
       {
@@ -2344,15 +2361,15 @@ export const dbTableMetadata = [
   {
     "tableName": "evaluation_run_items",
     "japaneseName": "評価実行項目",
-    "description": "評価実行に含まれるケース単位の回答、検索文脈、judge結果、metricsを保持する。",
+    "description": "評価実行に含まれるケース単位の回答、検索文脈、judge結果、metricsを保持する。状態は evaluation_run_item_events から導出されるprojectionとして扱う。",
     "domain": "evaluation",
-    "sourceOfTruthKind": "master",
+    "sourceOfTruthKind": "projection",
     "primaryKey": [
       "tenant_id",
       "evaluation_run_id",
       "case_id"
     ],
-    "lifecycle": "APIまたは管理操作で作成し、業務ルールに従って更新する。",
+    "lifecycle": "evaluation_run_item_events へのevent append後、worker がprojectionとして更新する。",
     "retentionPolicy": "テナントのデータ保持ポリシーに従って保持する。",
     "columns": [
       {
@@ -2390,9 +2407,10 @@ export const dbTableMetadata = [
         "logicalType": "string",
         "nullable": false,
         "japaneseName": "現在状態projection",
-        "description": "現在状態projection。対応するdomain eventから導出される読み取り最適化値であり、状態の正本ではなくprojectionである。",
+        "description": "現在状態projection。evaluation_run_item_events から導出される読み取り最適化値であり、状態の正本ではなくprojectionである。",
         "dataClassification": "internal",
         "sourceOfTruthKind": "projection",
+        "derivedFrom": "evaluation_run_item_events",
         "updateOwner": "worker"
       },
       {
@@ -2440,14 +2458,14 @@ export const dbTableMetadata = [
   {
     "tableName": "llm_models",
     "japaneseName": "LLMモデルカタログ",
-    "description": "一般ユーザーや評価基盤が利用可能なモデル定義を共有する。表示状態はカタログprojectionとして扱う。",
+    "description": "一般ユーザーや評価基盤が利用可能なモデル定義を共有する。表示状態は llm_model_events から導出されるカタログprojectionとして扱う。",
     "domain": "rag",
-    "sourceOfTruthKind": "master",
+    "sourceOfTruthKind": "projection",
     "primaryKey": [
       "tenant_id",
       "model_id"
     ],
-    "lifecycle": "APIまたは管理操作で作成し、業務ルールに従って更新する。",
+    "lifecycle": "llm_model_events へのevent append後、api がprojectionとして更新する。",
     "retentionPolicy": "テナントのデータ保持ポリシーに従って保持する。",
     "columns": [
       {
@@ -2515,9 +2533,10 @@ export const dbTableMetadata = [
         "logicalType": "string",
         "nullable": false,
         "japaneseName": "現在状態projection",
-        "description": "現在状態projection。対応するdomain eventから導出される読み取り最適化値であり、状態の正本ではなくprojectionである。",
+        "description": "現在状態projection。llm_model_events から導出される読み取り最適化値であり、状態の正本ではなくprojectionである。",
         "dataClassification": "internal",
         "sourceOfTruthKind": "projection",
+        "derivedFrom": "llm_model_events",
         "updateOwner": "api"
       },
       {
@@ -2575,9 +2594,10 @@ export const dbTableMetadata = [
         "logicalType": "timestamp",
         "nullable": false,
         "japaneseName": "更新at",
-        "description": "更新at。対応するdomain eventから導出される読み取り最適化値であり、状態の正本ではなくprojectionである。",
+        "description": "更新at。llm_model_events から導出される読み取り最適化値であり、状態の正本ではなくprojectionである。",
         "dataClassification": "internal",
         "sourceOfTruthKind": "projection",
+        "derivedFrom": "llm_model_events",
         "updateOwner": "api"
       }
     ]
@@ -2593,7 +2613,7 @@ export const dbTableMetadata = [
       "collection_id",
       "doc_id"
     ],
-    "lifecycle": "APIまたは管理操作で作成し、業務ルールに従って更新する。",
+    "lifecycle": "bm25_search_document_events へのevent append後、worker がprojectionとして更新する。",
     "retentionPolicy": "検索index再構築で再生成可能なread modelとして保持する。",
     "columns": [
       {
@@ -2601,87 +2621,95 @@ export const dbTableMetadata = [
         "logicalType": "string",
         "nullable": false,
         "japaneseName": "テナントID",
-        "description": "テナントID。データ分離の最小単位。全業務テーブルで必須のスコープキー。",
+        "description": "テナントID。bm25_search_document_events から導出される読み取り最適化値であり、状態の正本ではなくprojectionである。",
         "dataClassification": "internal",
         "sourceOfTruthKind": "projection",
-        "updateOwner": "api"
+        "derivedFrom": "bm25_search_document_events",
+        "updateOwner": "worker"
       },
       {
         "name": "collection_id",
         "logicalType": "uuid",
         "nullable": false,
         "japaneseName": "collectionID",
-        "description": "collectionID。bm25_search_documents における collection_id の値を保持する。分類と更新主体はmetadataで管理する。",
+        "description": "collectionID。bm25_search_document_events から導出される読み取り最適化値であり、状態の正本ではなくprojectionである。",
         "dataClassification": "internal",
         "sourceOfTruthKind": "projection",
-        "updateOwner": "api"
+        "derivedFrom": "bm25_search_document_events",
+        "updateOwner": "worker"
       },
       {
         "name": "doc_id",
         "logicalType": "uuid",
         "nullable": false,
         "japaneseName": "docID",
-        "description": "docID。bm25_search_documents における doc_id の値を保持する。分類と更新主体はmetadataで管理する。",
+        "description": "docID。bm25_search_document_events から導出される読み取り最適化値であり、状態の正本ではなくprojectionである。",
         "dataClassification": "internal",
         "sourceOfTruthKind": "projection",
-        "updateOwner": "api"
+        "derivedFrom": "bm25_search_document_events",
+        "updateOwner": "worker"
       },
       {
         "name": "source_chunk_id",
         "logicalType": "string",
         "nullable": false,
         "japaneseName": "sourcechunkID",
-        "description": "sourcechunkID。bm25_search_documents における source_chunk_id の値を保持する。分類と更新主体はmetadataで管理する。",
+        "description": "sourcechunkID。bm25_search_document_events から導出される読み取り最適化値であり、状態の正本ではなくprojectionである。",
         "dataClassification": "internal",
         "sourceOfTruthKind": "projection",
-        "updateOwner": "api"
+        "derivedFrom": "bm25_search_document_events",
+        "updateOwner": "worker"
       },
       {
         "name": "title",
         "logicalType": "text",
         "nullable": true,
         "japaneseName": "タイトル",
-        "description": "タイトル。bm25_search_documents における title の値を保持する。分類と更新主体はmetadataで管理する。",
+        "description": "タイトル。bm25_search_document_events から導出される読み取り最適化値であり、状態の正本ではなくprojectionである。",
         "dataClassification": "confidential",
         "sourceOfTruthKind": "projection",
-        "updateOwner": "api"
+        "derivedFrom": "bm25_search_document_events",
+        "updateOwner": "worker"
       },
       {
         "name": "snippet",
         "logicalType": "text",
         "nullable": true,
         "japaneseName": "snippet",
-        "description": "snippet。bm25_search_documents における snippet の値を保持する。分類と更新主体はmetadataで管理する。",
+        "description": "snippet。bm25_search_document_events から導出される読み取り最適化値であり、状態の正本ではなくprojectionである。",
         "dataClassification": "confidential",
         "sourceOfTruthKind": "projection",
-        "updateOwner": "api"
+        "derivedFrom": "bm25_search_document_events",
+        "updateOwner": "worker"
       },
       {
         "name": "doc_type",
         "logicalType": "string",
         "nullable": true,
         "japaneseName": "doctype",
-        "description": "doctype。bm25_search_documents における doc_type の値を保持する。分類と更新主体はmetadataで管理する。",
+        "description": "doctype。bm25_search_document_events から導出される読み取り最適化値であり、状態の正本ではなくprojectionである。",
         "dataClassification": "internal",
         "sourceOfTruthKind": "projection",
-        "updateOwner": "api"
+        "derivedFrom": "bm25_search_document_events",
+        "updateOwner": "worker"
       },
       {
         "name": "is_deleted",
         "logicalType": "boolean",
         "nullable": false,
         "japaneseName": "is削除",
-        "description": "is削除。対応するdomain eventから導出される読み取り最適化値であり、状態の正本ではなくprojectionである。",
+        "description": "is削除。bm25_search_document_events から導出される読み取り最適化値であり、状態の正本ではなくprojectionである。",
         "dataClassification": "internal",
         "sourceOfTruthKind": "projection",
-        "updateOwner": "api"
+        "derivedFrom": "bm25_search_document_events",
+        "updateOwner": "worker"
       }
     ]
   },
   {
     "tableName": "bm25_postings",
     "japaneseName": "BM25F posting",
-    "description": "termと文書fieldの出現頻度を保持する転置インデックス本体。",
+    "description": "termと文書fieldの出現頻度を保持する転置インデックス本体。bm25_posting_events から導出されるread model。",
     "domain": "rag",
     "sourceOfTruthKind": "projection",
     "primaryKey": [
@@ -2691,7 +2719,7 @@ export const dbTableMetadata = [
       "doc_id",
       "field_id"
     ],
-    "lifecycle": "APIまたは管理操作で作成し、業務ルールに従って更新する。",
+    "lifecycle": "bm25_posting_events へのevent append後、worker がprojectionとして更新する。",
     "retentionPolicy": "検索index再構築で再生成可能なread modelとして保持する。",
     "columns": [
       {
@@ -2699,77 +2727,84 @@ export const dbTableMetadata = [
         "logicalType": "string",
         "nullable": false,
         "japaneseName": "テナントID",
-        "description": "テナントID。データ分離の最小単位。全業務テーブルで必須のスコープキー。",
+        "description": "テナントID。bm25_posting_events から導出される読み取り最適化値であり、状態の正本ではなくprojectionである。",
         "dataClassification": "internal",
         "sourceOfTruthKind": "projection",
-        "updateOwner": "api"
+        "derivedFrom": "bm25_posting_events",
+        "updateOwner": "worker"
       },
       {
         "name": "collection_id",
         "logicalType": "uuid",
         "nullable": false,
         "japaneseName": "collectionID",
-        "description": "collectionID。bm25_postings における collection_id の値を保持する。分類と更新主体はmetadataで管理する。",
+        "description": "collectionID。bm25_posting_events から導出される読み取り最適化値であり、状態の正本ではなくprojectionである。",
         "dataClassification": "internal",
         "sourceOfTruthKind": "projection",
-        "updateOwner": "api"
+        "derivedFrom": "bm25_posting_events",
+        "updateOwner": "worker"
       },
       {
         "name": "term_id",
         "logicalType": "uuid",
         "nullable": false,
         "japaneseName": "termID",
-        "description": "termID。bm25_postings における term_id の値を保持する。分類と更新主体はmetadataで管理する。",
+        "description": "termID。bm25_posting_events から導出される読み取り最適化値であり、状態の正本ではなくprojectionである。",
         "dataClassification": "internal",
         "sourceOfTruthKind": "projection",
-        "updateOwner": "api"
+        "derivedFrom": "bm25_posting_events",
+        "updateOwner": "worker"
       },
       {
         "name": "doc_id",
         "logicalType": "uuid",
         "nullable": false,
         "japaneseName": "docID",
-        "description": "docID。bm25_postings における doc_id の値を保持する。分類と更新主体はmetadataで管理する。",
+        "description": "docID。bm25_posting_events から導出される読み取り最適化値であり、状態の正本ではなくprojectionである。",
         "dataClassification": "internal",
         "sourceOfTruthKind": "projection",
-        "updateOwner": "api"
+        "derivedFrom": "bm25_posting_events",
+        "updateOwner": "worker"
       },
       {
         "name": "field_id",
         "logicalType": "integer",
         "nullable": false,
         "japaneseName": "fieldID",
-        "description": "fieldID。bm25_postings における field_id の値を保持する。分類と更新主体はmetadataで管理する。",
+        "description": "fieldID。bm25_posting_events から導出される読み取り最適化値であり、状態の正本ではなくprojectionである。",
         "dataClassification": "internal",
         "sourceOfTruthKind": "projection",
-        "updateOwner": "api"
+        "derivedFrom": "bm25_posting_events",
+        "updateOwner": "worker"
       },
       {
         "name": "tf",
         "logicalType": "integer",
         "nullable": false,
         "japaneseName": "tf",
-        "description": "tf。bm25_postings における tf の値を保持する。分類と更新主体はmetadataで管理する。",
+        "description": "tf。bm25_posting_events から導出される読み取り最適化値であり、状態の正本ではなくprojectionである。",
         "dataClassification": "internal",
         "sourceOfTruthKind": "projection",
-        "updateOwner": "api"
+        "derivedFrom": "bm25_posting_events",
+        "updateOwner": "worker"
       },
       {
         "name": "field_len",
         "logicalType": "integer",
         "nullable": false,
         "japaneseName": "fieldlen",
-        "description": "fieldlen。bm25_postings における field_len の値を保持する。分類と更新主体はmetadataで管理する。",
+        "description": "fieldlen。bm25_posting_events から導出される読み取り最適化値であり、状態の正本ではなくprojectionである。",
         "dataClassification": "internal",
         "sourceOfTruthKind": "projection",
-        "updateOwner": "api"
+        "derivedFrom": "bm25_posting_events",
+        "updateOwner": "worker"
       }
     ]
   },
   {
     "tableName": "bm25_term_stats",
     "japaneseName": "BM25F term統計",
-    "description": "termごとのdf/idfを保持する検索用read model。",
+    "description": "termごとのdf/idfを保持する検索用read model。bm25_term_stat_events から導出する。",
     "domain": "rag",
     "sourceOfTruthKind": "projection",
     "primaryKey": [
@@ -2778,7 +2813,7 @@ export const dbTableMetadata = [
       "stats_version",
       "term_id"
     ],
-    "lifecycle": "APIまたは管理操作で作成し、業務ルールに従って更新する。",
+    "lifecycle": "bm25_term_stat_events へのevent append後、worker がprojectionとして更新する。",
     "retentionPolicy": "検索index再構築で再生成可能なread modelとして保持する。",
     "columns": [
       {
@@ -2786,67 +2821,73 @@ export const dbTableMetadata = [
         "logicalType": "string",
         "nullable": false,
         "japaneseName": "テナントID",
-        "description": "テナントID。データ分離の最小単位。全業務テーブルで必須のスコープキー。",
+        "description": "テナントID。bm25_term_stat_events から導出される読み取り最適化値であり、状態の正本ではなくprojectionである。",
         "dataClassification": "internal",
         "sourceOfTruthKind": "projection",
-        "updateOwner": "api"
+        "derivedFrom": "bm25_term_stat_events",
+        "updateOwner": "worker"
       },
       {
         "name": "collection_id",
         "logicalType": "uuid",
         "nullable": false,
         "japaneseName": "collectionID",
-        "description": "collectionID。bm25_term_stats における collection_id の値を保持する。分類と更新主体はmetadataで管理する。",
+        "description": "collectionID。bm25_term_stat_events から導出される読み取り最適化値であり、状態の正本ではなくprojectionである。",
         "dataClassification": "internal",
         "sourceOfTruthKind": "projection",
-        "updateOwner": "api"
+        "derivedFrom": "bm25_term_stat_events",
+        "updateOwner": "worker"
       },
       {
         "name": "stats_version",
         "logicalType": "uuid",
         "nullable": false,
         "japaneseName": "stats版",
-        "description": "stats版。bm25_term_stats における stats_version の値を保持する。分類と更新主体はmetadataで管理する。",
+        "description": "stats版。bm25_term_stat_events から導出される読み取り最適化値であり、状態の正本ではなくprojectionである。",
         "dataClassification": "internal",
         "sourceOfTruthKind": "projection",
-        "updateOwner": "api"
+        "derivedFrom": "bm25_term_stat_events",
+        "updateOwner": "worker"
       },
       {
         "name": "term_id",
         "logicalType": "uuid",
         "nullable": false,
         "japaneseName": "termID",
-        "description": "termID。bm25_term_stats における term_id の値を保持する。分類と更新主体はmetadataで管理する。",
+        "description": "termID。bm25_term_stat_events から導出される読み取り最適化値であり、状態の正本ではなくprojectionである。",
         "dataClassification": "internal",
         "sourceOfTruthKind": "projection",
-        "updateOwner": "api"
+        "derivedFrom": "bm25_term_stat_events",
+        "updateOwner": "worker"
       },
       {
         "name": "df",
         "logicalType": "integer",
         "nullable": false,
         "japaneseName": "df",
-        "description": "df。bm25_term_stats における df の値を保持する。分類と更新主体はmetadataで管理する。",
+        "description": "df。bm25_term_stat_events から導出される読み取り最適化値であり、状態の正本ではなくprojectionである。",
         "dataClassification": "internal",
         "sourceOfTruthKind": "projection",
-        "updateOwner": "api"
+        "derivedFrom": "bm25_term_stat_events",
+        "updateOwner": "worker"
       },
       {
         "name": "idf",
         "logicalType": "float",
         "nullable": false,
         "japaneseName": "idf",
-        "description": "idf。bm25_term_stats における idf の値を保持する。分類と更新主体はmetadataで管理する。",
+        "description": "idf。bm25_term_stat_events から導出される読み取り最適化値であり、状態の正本ではなくprojectionである。",
         "dataClassification": "internal",
         "sourceOfTruthKind": "projection",
-        "updateOwner": "api"
+        "derivedFrom": "bm25_term_stat_events",
+        "updateOwner": "worker"
       }
     ]
   },
   {
     "tableName": "bm25_field_stats",
     "japaneseName": "BM25F field統計",
-    "description": "fieldごとの平均長を保持する検索用read model。",
+    "description": "fieldごとの平均長を保持する検索用read model。bm25_field_stat_events から導出する。",
     "domain": "rag",
     "sourceOfTruthKind": "projection",
     "primaryKey": [
@@ -2855,7 +2896,7 @@ export const dbTableMetadata = [
       "stats_version",
       "field_id"
     ],
-    "lifecycle": "APIまたは管理操作で作成し、業務ルールに従って更新する。",
+    "lifecycle": "bm25_field_stat_events へのevent append後、worker がprojectionとして更新する。",
     "retentionPolicy": "検索index再構築で再生成可能なread modelとして保持する。",
     "columns": [
       {
@@ -2863,64 +2904,69 @@ export const dbTableMetadata = [
         "logicalType": "string",
         "nullable": false,
         "japaneseName": "テナントID",
-        "description": "テナントID。データ分離の最小単位。全業務テーブルで必須のスコープキー。",
+        "description": "テナントID。bm25_field_stat_events から導出される読み取り最適化値であり、状態の正本ではなくprojectionである。",
         "dataClassification": "internal",
         "sourceOfTruthKind": "projection",
-        "updateOwner": "api"
+        "derivedFrom": "bm25_field_stat_events",
+        "updateOwner": "worker"
       },
       {
         "name": "collection_id",
         "logicalType": "uuid",
         "nullable": false,
         "japaneseName": "collectionID",
-        "description": "collectionID。bm25_field_stats における collection_id の値を保持する。分類と更新主体はmetadataで管理する。",
+        "description": "collectionID。bm25_field_stat_events から導出される読み取り最適化値であり、状態の正本ではなくprojectionである。",
         "dataClassification": "internal",
         "sourceOfTruthKind": "projection",
-        "updateOwner": "api"
+        "derivedFrom": "bm25_field_stat_events",
+        "updateOwner": "worker"
       },
       {
         "name": "stats_version",
         "logicalType": "uuid",
         "nullable": false,
         "japaneseName": "stats版",
-        "description": "stats版。bm25_field_stats における stats_version の値を保持する。分類と更新主体はmetadataで管理する。",
+        "description": "stats版。bm25_field_stat_events から導出される読み取り最適化値であり、状態の正本ではなくprojectionである。",
         "dataClassification": "internal",
         "sourceOfTruthKind": "projection",
-        "updateOwner": "api"
+        "derivedFrom": "bm25_field_stat_events",
+        "updateOwner": "worker"
       },
       {
         "name": "field_id",
         "logicalType": "integer",
         "nullable": false,
         "japaneseName": "fieldID",
-        "description": "fieldID。bm25_field_stats における field_id の値を保持する。分類と更新主体はmetadataで管理する。",
+        "description": "fieldID。bm25_field_stat_events から導出される読み取り最適化値であり、状態の正本ではなくprojectionである。",
         "dataClassification": "internal",
         "sourceOfTruthKind": "projection",
-        "updateOwner": "api"
+        "derivedFrom": "bm25_field_stat_events",
+        "updateOwner": "worker"
       },
       {
         "name": "avg_len",
         "logicalType": "float",
         "nullable": false,
         "japaneseName": "avglen",
-        "description": "avglen。bm25_field_stats における avg_len の値を保持する。分類と更新主体はmetadataで管理する。",
+        "description": "avglen。bm25_field_stat_events から導出される読み取り最適化値であり、状態の正本ではなくprojectionである。",
         "dataClassification": "internal",
         "sourceOfTruthKind": "projection",
-        "updateOwner": "api"
+        "derivedFrom": "bm25_field_stat_events",
+        "updateOwner": "worker"
       }
     ]
   },
   {
     "tableName": "event_delivery_logs",
     "japaneseName": "イベント配信ログ",
-    "description": "AppSync Eventsなどへの通知配信試行と結果を保持するoperations projection。",
+    "description": "AppSync Eventsなどへの通知配信試行と結果を保持するoperations projection。状態は event_delivery_events から導出する。",
     "domain": "operations",
     "sourceOfTruthKind": "projection",
     "primaryKey": [
       "tenant_id",
       "delivery_id"
     ],
-    "lifecycle": "APIまたは管理操作で作成し、業務ルールに従って更新する。",
+    "lifecycle": "event_delivery_events へのevent append後、worker がprojectionとして更新する。",
     "retentionPolicy": "テナントのデータ保持ポリシーに従って保持する。",
     "columns": [
       {
@@ -2928,90 +2974,99 @@ export const dbTableMetadata = [
         "logicalType": "string",
         "nullable": false,
         "japaneseName": "テナントID",
-        "description": "テナントID。データ分離の最小単位。全業務テーブルで必須のスコープキー。",
+        "description": "テナントID。event_delivery_events から導出される読み取り最適化値であり、状態の正本ではなくprojectionである。",
         "dataClassification": "internal",
         "sourceOfTruthKind": "projection",
-        "updateOwner": "api"
+        "derivedFrom": "event_delivery_events",
+        "updateOwner": "worker"
       },
       {
         "name": "delivery_id",
         "logicalType": "uuid",
         "nullable": false,
         "japaneseName": "deliveryID",
-        "description": "deliveryID。event_delivery_logs における delivery_id の値を保持する。分類と更新主体はmetadataで管理する。",
+        "description": "deliveryID。event_delivery_events から導出される読み取り最適化値であり、状態の正本ではなくprojectionである。",
         "dataClassification": "internal",
         "sourceOfTruthKind": "projection",
-        "updateOwner": "api"
+        "derivedFrom": "event_delivery_events",
+        "updateOwner": "worker"
       },
       {
         "name": "channel_path",
         "logicalType": "string",
         "nullable": false,
         "japaneseName": "channelpath",
-        "description": "channelpath。event_delivery_logs における channel_path の値を保持する。分類と更新主体はmetadataで管理する。",
+        "description": "channelpath。event_delivery_events から導出される読み取り最適化値であり、状態の正本ではなくprojectionである。",
         "dataClassification": "internal",
         "sourceOfTruthKind": "projection",
-        "updateOwner": "api"
+        "derivedFrom": "event_delivery_events",
+        "updateOwner": "worker"
       },
       {
         "name": "event_id",
         "logicalType": "uuid",
         "nullable": false,
         "japaneseName": "イベントID",
-        "description": "イベントID。イベントを一意に識別するID。冪等性確認と監査で利用する。",
+        "description": "イベントID。event_delivery_events から導出される読み取り最適化値であり、状態の正本ではなくprojectionである。",
         "dataClassification": "internal",
         "sourceOfTruthKind": "projection",
-        "updateOwner": "api"
+        "derivedFrom": "event_delivery_events",
+        "updateOwner": "worker"
       },
       {
         "name": "status",
         "logicalType": "string",
         "nullable": false,
         "japaneseName": "現在状態projection",
-        "description": "現在状態projection。対応するdomain eventから導出される読み取り最適化値であり、状態の正本ではなくprojectionである。",
+        "description": "現在状態projection。event_delivery_events から導出される読み取り最適化値であり、状態の正本ではなくprojectionである。",
         "dataClassification": "internal",
         "sourceOfTruthKind": "projection",
-        "updateOwner": "api"
+        "derivedFrom": "event_delivery_events",
+        "updateOwner": "worker"
       },
       {
         "name": "attempt_count",
         "logicalType": "integer",
         "nullable": false,
         "japaneseName": "attemptcount",
-        "description": "attemptcount。event_delivery_logs における attempt_count の値を保持する。分類と更新主体はmetadataで管理する。",
+        "description": "attemptcount。event_delivery_events から導出される読み取り最適化値であり、状態の正本ではなくprojectionである。",
         "dataClassification": "internal",
         "sourceOfTruthKind": "projection",
-        "updateOwner": "api"
+        "derivedFrom": "event_delivery_events",
+        "updateOwner": "worker"
       },
       {
         "name": "error_message",
         "logicalType": "text",
         "nullable": true,
         "japaneseName": "errorメッセージ",
-        "description": "errorメッセージ。event_delivery_logs における error_message の値を保持する。分類と更新主体はmetadataで管理する。",
+        "description": "errorメッセージ。event_delivery_events から導出される読み取り最適化値であり、状態の正本ではなくprojectionである。",
         "dataClassification": "pii",
         "sourceOfTruthKind": "projection",
-        "updateOwner": "api"
+        "derivedFrom": "event_delivery_events",
+        "updateOwner": "worker"
       },
       {
         "name": "created_at",
         "logicalType": "timestamp",
         "nullable": false,
         "japaneseName": "作成at",
-        "description": "作成日時。レコードが初めて作成された日時。業務イベントの発生日時とは区別する。",
+        "description": "作成at。event_delivery_events から導出される読み取り最適化値であり、状態の正本ではなくprojectionである。",
         "dataClassification": "internal",
         "sourceOfTruthKind": "projection",
-        "updateOwner": "api"
+        "derivedFrom": "event_delivery_events",
+        "updateOwner": "worker"
       },
       {
         "name": "updated_at",
         "logicalType": "timestamp",
         "nullable": false,
         "japaneseName": "更新at",
-        "description": "更新at。対応するdomain eventから導出される読み取り最適化値であり、状態の正本ではなくprojectionである。",
+        "description": "更新at。event_delivery_events から導出される読み取り最適化値であり、状態の正本ではなくprojectionである。",
         "dataClassification": "internal",
         "sourceOfTruthKind": "projection",
-        "updateOwner": "api"
+        "derivedFrom": "event_delivery_events",
+        "updateOwner": "worker"
       }
     ]
   },
@@ -3113,14 +3168,14 @@ export const dbTableMetadata = [
   {
     "tableName": "agent_tools",
     "japaneseName": "Agent Tool定義",
-    "description": "AgentCore Gatewayから利用するtoolのschema、scope、timeout、副作用分類を管理する。",
+    "description": "AgentCore Gatewayから利用するtoolのschema、scope、timeout、副作用分類を管理する。状態は agent_tool_events から導出されるprojectionとして扱う。",
     "domain": "rag",
-    "sourceOfTruthKind": "master",
+    "sourceOfTruthKind": "projection",
     "primaryKey": [
       "tenant_id",
       "tool_name"
     ],
-    "lifecycle": "APIまたは管理操作で作成し、業務ルールに従って更新する。",
+    "lifecycle": "agent_tool_events へのevent append後、api がprojectionとして更新する。",
     "retentionPolicy": "テナントのデータ保持ポリシーに従って保持する。",
     "columns": [
       {
@@ -3218,9 +3273,10 @@ export const dbTableMetadata = [
         "logicalType": "string",
         "nullable": false,
         "japaneseName": "現在状態projection",
-        "description": "現在状態projection。対応するdomain eventから導出される読み取り最適化値であり、状態の正本ではなくprojectionである。",
+        "description": "現在状態projection。agent_tool_events から導出される読み取り最適化値であり、状態の正本ではなくprojectionである。",
         "dataClassification": "internal",
         "sourceOfTruthKind": "projection",
+        "derivedFrom": "agent_tool_events",
         "updateOwner": "api"
       },
       {
@@ -3238,9 +3294,10 @@ export const dbTableMetadata = [
         "logicalType": "timestamp",
         "nullable": false,
         "japaneseName": "更新at",
-        "description": "更新at。対応するdomain eventから導出される読み取り最適化値であり、状態の正本ではなくprojectionである。",
+        "description": "更新at。agent_tool_events から導出される読み取り最適化値であり、状態の正本ではなくprojectionである。",
         "dataClassification": "internal",
         "sourceOfTruthKind": "projection",
+        "derivedFrom": "agent_tool_events",
         "updateOwner": "api"
       }
     ]
