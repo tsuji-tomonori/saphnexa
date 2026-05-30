@@ -16,6 +16,7 @@ npm run api:implementation:check
 npm run tools:implementation:check
 npm run implementation-coverage:check
 npm run check:implementation-coverage-source
+npm run model-catalog:check
 npm run check:atomicity
 npm run test:integration:local
 npm run scan:bundle-domains
@@ -125,6 +126,7 @@ git diff --check
 - `npm run tools:implementation:check` が `packages/tool-contract/src/implementation-coverage.js` の 6 Tools API operation について route、schema、usecase、policy、runtime validation、audit、timeout、production の coverage metadata と planned marker を検査すること。`npm run tools:implementation:check:production` は planned marker を拒否する。
 - `npm run implementation-coverage:check` が `packages/api-contract/src/implementation-coverage.ts` と `packages/tool-contract/src/implementation-coverage.ts` から生成される `.js` runtime mirror と committed mirror の一致を検査すること。
 - `npm run check:implementation-coverage-source` が coverage manifest の TypeScript source 型制約、generated `.js` runtime mirror marker、operation/status token drift がないことを検査すること。
+- `npm run model-catalog:check` が `packages/model-catalog/src/models.ts` と `packages/model-catalog/src/cost-estimate.ts` から生成される `.js` runtime mirror と committed mirror の一致を検査すること。
 - `npm run check:atomicity` が API route/schema/repository、Web page、UI package、Agent retrieval/data access の依存境界を検査し、現行 aggregate implementation は planned marker として追跡すること。`npm run check:atomicity:strict` は移行猶予の違反を拒否する。
 - API が `hono/aws-lambda` handler entrypoint、request log / origin / error / session / CSRF middleware 境界、dispatch service、DSQL repository interface、operation-level SQL plan、DSQL query executor interface、shared DB row type boundary を TypeScript source として持つこと。
 - API の Hono app factory、OpenAPI document builder、Zod schema catalog が TypeScript source of record を持ち、主要 success response の concrete Zod schema と既存 Node local tools 用の `.js` runtime mirror が同期していること。

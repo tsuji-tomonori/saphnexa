@@ -60,11 +60,11 @@
     },
     {
       "path": "packages/model-catalog/src/cost-estimate.js",
-      "reason": "runtime compatibility model catalog surface used by current Node checks; TypeScript source exists at packages/model-catalog/src/cost-estimate.ts"
+      "reason": "generated runtime compatibility model catalog mirror used by current Node checks; TypeScript source exists at packages/model-catalog/src/cost-estimate.ts"
     },
     {
       "path": "packages/model-catalog/src/models.js",
-      "reason": "runtime compatibility model catalog surface used by current Node checks; TypeScript source exists at packages/model-catalog/src/models.ts"
+      "reason": "generated runtime compatibility model catalog mirror used by current Node checks; TypeScript source exists at packages/model-catalog/src/models.ts"
     },
     {
       "path": "packages/rag-core/src/fixture-rag.js",

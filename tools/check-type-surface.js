@@ -296,10 +296,12 @@ for (const tool of toolContracts) {
 
 const modelCatalogTs = readText("packages/model-catalog/src/models.ts");
 assert(modelCatalogTs.includes("export interface LlmModelCatalogEntry"), "Model catalog TS source must export LlmModelCatalogEntry");
+assert(modelCatalogTs.includes("export const llmModels"), "Model catalog TS source must export llmModels");
 assert(extractStringArray(modelCatalogTs, "modelIds").length === llmModels.length, "Model id TS source count must match JS runtime");
 for (const model of llmModels) {
   assert(modelCatalogTs.includes(`"${model.model_id}"`), `Model catalog TS source missing ${model.model_id}`);
 }
+execFileSync("node", ["tools/generate-model-catalog-runtime-mirror.js", "--check"], { stdio: "inherit" });
 
 const dbSchemaTs = readText("packages/db-schema/src/tables.ts");
 assert(dbSchemaTs.includes("export type RequiredTableName"), "DB schema TS source must export RequiredTableName");

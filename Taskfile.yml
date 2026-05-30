@@ -210,6 +210,14 @@ tasks:
     desc: Verify generated implementation coverage JavaScript runtime mirrors are current
     cmds:
       - npm run implementation-coverage:check
+  model-catalog:generate:
+    desc: Generate model catalog JavaScript runtime mirrors from TypeScript source
+    cmds:
+      - npm run model-catalog:generate
+  model-catalog:check:
+    desc: Verify generated model catalog JavaScript runtime mirrors are current
+    cmds:
+      - npm run model-catalog:check
   db:integrity:check:
     desc: Verify local DB-like domain invariants and append-only events
     cmds:

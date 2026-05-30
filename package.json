@@ -68,6 +68,8 @@
     "tools:implementation:check:production": "node tools/check-tools-implementation-coverage.js --production-ready",
     "implementation-coverage:generate": "node tools/generate-implementation-coverage-mirror.js",
     "implementation-coverage:check": "node tools/generate-implementation-coverage-mirror.js --check",
+    "model-catalog:generate": "node tools/generate-model-catalog-runtime-mirror.js",
+    "model-catalog:check": "node tools/generate-model-catalog-runtime-mirror.js --check",
     "check:implementation-coverage-source": "node tools/check-implementation-coverage-source.js",
     "check:atomicity": "node tools/check-atomicity.js",
     "check:atomicity:strict": "node tools/check-atomicity.js --strict",
