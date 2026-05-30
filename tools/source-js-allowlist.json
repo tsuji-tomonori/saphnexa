@@ -48,11 +48,11 @@
     },
     {
       "path": "packages/domain/src/index.js",
-      "reason": "runtime compatibility domain surface used by current Node checks; TypeScript source exists at packages/domain/src/index.ts"
+      "reason": "generated runtime compatibility domain mirror used by current Node checks; TypeScript source exists at packages/domain/src/index.ts"
     },
     {
       "path": "packages/domain/src/observability.js",
-      "reason": "runtime compatibility observability surface used by current Node checks; TypeScript source exists at packages/domain/src/observability.ts"
+      "reason": "generated runtime compatibility observability mirror used by current Node checks; TypeScript source exists at packages/domain/src/observability.ts"
     },
     {
       "path": "packages/domain/src/store.js",

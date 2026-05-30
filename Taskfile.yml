@@ -170,6 +170,14 @@ tasks:
     desc: Verify generated DB tables JavaScript runtime mirror is current
     cmds:
       - npm run db-schema:tables:check
+  domain:generate:
+    desc: Generate Domain JavaScript runtime mirrors from TypeScript source
+    cmds:
+      - npm run domain:generate
+  domain:check:
+    desc: Verify generated Domain JavaScript runtime mirrors are current
+    cmds:
+      - npm run domain:check
   db:comments:check:
     desc: Generate and verify DB schema COMMENT SQL from metadata
     cmds:

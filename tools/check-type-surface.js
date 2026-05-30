@@ -414,6 +414,7 @@ assert(ragCoreTs.includes("export interface RagCitation"), "RAG core TS source m
 
 const domainIndexTs = readText("packages/domain/src/index.ts");
 const domainIndexJs = readText("packages/domain/src/index.js");
+execFileSync("node", ["tools/generate-domain-runtime-mirror.js", "--check"], { stdio: "inherit" });
 for (const token of [
   "roles",
   "participantRoles",
