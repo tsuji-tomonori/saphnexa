@@ -1,6 +1,6 @@
 # PR #4 DSQL / projection 修正
 
-状態: doing
+状態: done
 
 ## 背景
 
@@ -63,3 +63,31 @@
 ## リスク
 
 - Aurora DSQL実機適用そのものはこの修正でも未実施。実適用PRで `executeInTransaction=false` の実行証跡が必要。
+
+## 完了結果
+
+- AC-01: 達成。`packages/db-migrations/flyway-dsql.conf` と V002/V003 markerで非transactional実行方針を明示。
+- AC-02: 達成。`check-db-dsql-compat.js` がDDL種別ごとの件数、`COMMENT ON`、`CREATE INDEX ASYNC`、runbook記載を検査。
+- AC-03: 達成。`flyway.executeInTransaction=false` を DSQL profile に追加。
+- AC-04: 達成。projection列の `derivedFrom` を具体 event tableへ接続。
+- AC-05: 達成。曖昧な `derivedFrom` を `check-db-event-source.js` で禁止。
+- AC-06: 達成。projection table mapping と V003 lineage columnsを `check-db-event-source.js` で検査。
+- AC-07: 達成。`npm run db:dsql-compat:check`、`npm run db:event-source:check`、`npm run check:static` は成功。
+
+## 実施済み検証
+
+- `npm run db:metadata:build`: 成功
+- `node tools/build-db-types-source.js`: 成功
+- `npm run db:metadata:check`: 成功
+- `npm run db:docs:check`: 成功
+- `npm run db:dsql-compat:check`: 成功
+- `npm run db:event-source:check`: 成功
+- `npm run check:static`: 成功
+- `npm run ci:check`: 成功
+- `git diff --check`: 成功
+- `npm run verify`: 成功
+
+## PRコメント
+
+- 修正結果: https://github.com/tsuji-tomonori/saphnexa/pull/4#issuecomment-4581276416
+- セルフレビュー: https://github.com/tsuji-tomonori/saphnexa/pull/4#issuecomment-4581277222
