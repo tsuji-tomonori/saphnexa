@@ -13,6 +13,7 @@ npm run api:openapi:check
 npm run check:no-src-js
 npm run api:implementation:check
 npm run tools:implementation:check
+npm run check:implementation-coverage-source
 npm run check:atomicity
 npm run test:integration:local
 npm run scan:bundle-domains
@@ -119,6 +120,7 @@ git diff --check
 - `npm run check:no-src-js` が `apps/**/src` と `packages/**/src` の JavaScript runtime compatibility surface を allowlist で明示し、`--strict` では production-ready TypeScript source-of-truth として残存 JS を拒否すること。
 - `npm run api:implementation:check` が `packages/api-contract/src/implementation-coverage.js` の 40 public API operation について route、schema、usecase、local fixture、production、repository、event、audit、test の coverage metadata と planned marker を検査すること。`npm run api:implementation:check:production` は planned marker を拒否する。
 - `npm run tools:implementation:check` が `packages/tool-contract/src/implementation-coverage.js` の 6 Tools API operation について route、schema、usecase、policy、runtime validation、audit、timeout、production の coverage metadata と planned marker を検査すること。`npm run tools:implementation:check:production` は planned marker を拒否する。
+- `npm run check:implementation-coverage-source` が `packages/api-contract/src/implementation-coverage.ts` と `packages/tool-contract/src/implementation-coverage.ts` を TypeScript source として持ち、`.js` runtime mirror との operation/status token drift がないことを検査すること。
 - `npm run check:atomicity` が API route/schema/repository、Web page、UI package、Agent retrieval/data access の依存境界を検査し、現行 aggregate implementation は planned marker として追跡すること。`npm run check:atomicity:strict` は移行猶予の違反を拒否する。
 - API が `hono/aws-lambda` handler entrypoint、request log / origin / error / session / CSRF middleware 境界、dispatch service、DSQL repository interface、operation-level SQL plan、DSQL query executor interface、shared DB row type boundary を TypeScript source として持つこと。
 - API の Hono app factory、OpenAPI document builder、Zod schema catalog が TypeScript source of record を持ち、主要 success response の concrete Zod schema と既存 Node local tools 用の `.js` runtime mirror が同期していること。
@@ -226,7 +228,7 @@ git diff --check
 - `npm run check:deps` が dependency-cruiser相当の apps/packages 依存境界を検査すること。
 - `npm run check:secrets` が Gitleaks相当の secret pattern gate を検査すること。
 - `npm run check:functional` が class / this / let / mutation 抑制方針と許可境界を検査すること。
-- `npm run check:static` が typecheck、lint、source JS transition allowlist、API/Tools implementation coverage、atomicity、Knip相当、dependency-cruiser相当、Gitleaks相当、DB metadata/comment/event/docs/DSQL、functional lint gate をまとめて検査すること。
+- `npm run check:static` が typecheck、lint、source JS transition allowlist、API/Tools implementation coverage、coverage TS source drift、atomicity、Knip相当、dependency-cruiser相当、Gitleaks相当、DB metadata/comment/event/docs/DSQL、functional lint gate をまとめて検査すること。
 
 ## ローカルでは完了扱いにしないこと
 

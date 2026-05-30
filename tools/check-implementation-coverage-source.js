@@ -1,0 +1,59 @@
+import { publicApiRoutes } from "../packages/api-contract/src/routes.js";
+import { toolContracts } from "../packages/tool-contract/src/tools.js";
+import { assert, readText } from "./lib.js";
+
+const apiTs = "packages/api-contract/src/implementation-coverage.ts";
+const apiJs = "packages/api-contract/src/implementation-coverage.js";
+const toolTs = "packages/tool-contract/src/implementation-coverage.ts";
+const toolJs = "packages/tool-contract/src/implementation-coverage.js";
+
+assert(readText(apiTs).includes("satisfies Record<ApiOperationId, ApiImplementationCoverage>"), "API coverage TS source must be typed against ApiOperationId");
+assert(readText(toolTs).includes("satisfies Record<ToolOperationId, ToolImplementationCoverage>"), "Tool coverage TS source must be typed against ToolOperationId");
+
+assertEntriesMatch(
+  "API implementation coverage",
+  publicApiRoutes.map((route) => route.operationId),
+  extractEntries(apiTs, "api"),
+  extractEntries(apiJs, "api")
+);
+assertEntriesMatch(
+  "Tools implementation coverage",
+  toolContracts.map((contract) => contract.operationId),
+  extractEntries(toolTs, "tool"),
+  extractEntries(toolJs, "tool")
+);
+
+console.log("implementation coverage TS source drift check passed");
+
+function assertEntriesMatch(label, expectedIds, tsEntries, jsEntries) {
+  assert(tsEntries.size === expectedIds.length, `${label} TS source entry count mismatch`);
+  assert(jsEntries.size === expectedIds.length, `${label} JS mirror entry count mismatch`);
+
+  for (const operationId of expectedIds) {
+    assert(tsEntries.has(operationId), `${label} TS source missing ${operationId}`);
+    assert(jsEntries.has(operationId), `${label} JS mirror missing ${operationId}`);
+    assert(
+      normalizeEntry(tsEntries.get(operationId)) === normalizeEntry(jsEntries.get(operationId)),
+      `${label} JS mirror drift for ${operationId}`
+    );
+  }
+
+  const staleTs = [...tsEntries.keys()].filter((operationId) => !expectedIds.includes(operationId));
+  const staleJs = [...jsEntries.keys()].filter((operationId) => !expectedIds.includes(operationId));
+  assert(staleTs.length === 0, `${label} TS source has stale entries: ${staleTs.join(", ")}`);
+  assert(staleJs.length === 0, `${label} JS mirror has stale entries: ${staleJs.join(", ")}`);
+}
+
+function extractEntries(path, factoryName) {
+  const source = readText(path);
+  const entries = new Map();
+  const entryPattern = new RegExp(`^  ([A-Za-z][A-Za-z0-9]+): ${factoryName}\\((.*)\\),?$`, "gm");
+  for (const match of source.matchAll(entryPattern)) {
+    entries.set(match[1], match[2]);
+  }
+  return entries;
+}
+
+function normalizeEntry(value) {
+  return value.replace(/\s+/g, " ").trim();
+}

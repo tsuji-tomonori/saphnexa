@@ -1,0 +1,120 @@
+import type { ApiOperationId } from "./routes";
+
+export type ApiImplementationCoverageStatus = "implemented" | "aggregate" | "external" | "async_boundary" | "planned" | "not_required" | "present";
+
+export interface ApiImplementationCoverage {
+  route: ApiImplementationCoverageStatus;
+  schema: ApiImplementationCoverageStatus;
+  usecase: ApiImplementationCoverageStatus;
+  localFixture: ApiImplementationCoverageStatus;
+  production: ApiImplementationCoverageStatus;
+  repository: ApiImplementationCoverageStatus;
+  domainEvent: ApiImplementationCoverageStatus;
+  audit: ApiImplementationCoverageStatus;
+  openApi: "implemented";
+  unitTest: ApiImplementationCoverageStatus;
+  localIntegrationTest: ApiImplementationCoverageStatus;
+  dsqlSmoke: ApiImplementationCoverageStatus;
+  explicitPlannedMarker: "present" | "not_required";
+  externalReason?: "cognito_redirect" | "cookie_clear" | "handled_by_worker";
+}
+
+interface ApiCoverageOverrides {
+  repository?: ApiImplementationCoverageStatus;
+  domainEvent?: ApiImplementationCoverageStatus;
+  audit?: ApiImplementationCoverageStatus;
+  unitTest?: ApiImplementationCoverageStatus;
+  localIntegrationTest?: ApiImplementationCoverageStatus;
+  dsqlSmoke?: ApiImplementationCoverageStatus;
+  externalReason?: ApiImplementationCoverage["externalReason"];
+}
+
+export const apiImplementationCoverage = {
+  loginStart: api("aggregate", "aggregate", "planned", "planned", "external", { externalReason: "cognito_redirect" }),
+  authCallback: api("aggregate", "aggregate", "planned", "planned", "planned"),
+  logout: api("aggregate", "aggregate", "planned", "planned", "planned"),
+  getMe: api("aggregate", "aggregate", "aggregate", "aggregate", "implemented"),
+  listChatSessions: api("aggregate", "aggregate", "aggregate", "aggregate", "implemented"),
+  createChatSession: api("aggregate", "aggregate", "aggregate", "aggregate", "implemented", { domainEvent: "planned", audit: "implemented" }),
+  getChatSession: api("aggregate", "aggregate", "aggregate", "aggregate", "implemented"),
+  updateChatSession: api("aggregate", "aggregate", "aggregate", "aggregate", "implemented", { domainEvent: "planned" }),
+  deleteChatSession: api("aggregate", "aggregate", "aggregate", "aggregate", "implemented", { domainEvent: "planned" }),
+  listChatParticipants: api("aggregate", "aggregate", "aggregate", "aggregate", "implemented"),
+  addChatParticipant: api("aggregate", "aggregate", "aggregate", "aggregate", "implemented", { domainEvent: "planned", audit: "implemented" }),
+  updateChatParticipant: api("aggregate", "aggregate", "aggregate", "aggregate", "implemented", { domainEvent: "planned", audit: "implemented" }),
+  removeChatParticipant: api("aggregate", "aggregate", "aggregate", "aggregate", "implemented", { domainEvent: "planned", audit: "implemented" }),
+  listMessages: api("aggregate", "aggregate", "aggregate", "aggregate", "implemented"),
+  submitQuestion: api("aggregate", "aggregate", "aggregate", "aggregate", "planned", { domainEvent: "planned" }),
+  listMessageEvents: api("aggregate", "aggregate", "aggregate", "aggregate", "implemented"),
+  cancelAnswerGeneration: api("aggregate", "aggregate", "aggregate", "aggregate", "implemented", { domainEvent: "planned" }),
+  createFeedback: api("aggregate", "aggregate", "aggregate", "aggregate", "implemented", { domainEvent: "planned" }),
+  listFavorites: api("aggregate", "aggregate", "aggregate", "aggregate", "implemented"),
+  addFavorite: api("aggregate", "aggregate", "aggregate", "aggregate", "implemented", { domainEvent: "planned" }),
+  deleteFavorite: api("aggregate", "aggregate", "aggregate", "aggregate", "implemented", { domainEvent: "planned" }),
+  issueWsTicket: api("aggregate", "aggregate", "aggregate", "aggregate", "planned"),
+  listLlmModels: api("aggregate", "aggregate", "aggregate", "aggregate", "planned"),
+  adminListUsers: api("aggregate", "aggregate", "aggregate", "aggregate", "planned", { audit: "planned" }),
+  startUserImport: api("aggregate", "aggregate", "aggregate", "aggregate", "planned", { domainEvent: "planned", audit: "planned" }),
+  getUserImport: api("aggregate", "aggregate", "aggregate", "aggregate", "planned"),
+  adminListDocuments: api("aggregate", "aggregate", "aggregate", "aggregate", "planned", { audit: "planned" }),
+  createDocument: api("aggregate", "aggregate", "aggregate", "aggregate", "planned", { domainEvent: "planned", audit: "planned" }),
+  getDocument: api("aggregate", "aggregate", "aggregate", "aggregate", "planned"),
+  createDocumentVersion: api("aggregate", "aggregate", "aggregate", "aggregate", "planned", { domainEvent: "planned", audit: "planned" }),
+  activateDocumentVersion: api("aggregate", "aggregate", "aggregate", "aggregate", "planned", { domainEvent: "planned", audit: "planned" }),
+  updateDocumentAcl: api("aggregate", "aggregate", "aggregate", "aggregate", "planned", { domainEvent: "planned", audit: "planned" }),
+  suspendDocument: api("aggregate", "aggregate", "aggregate", "aggregate", "planned", { domainEvent: "planned", audit: "planned" }),
+  getIngestionJob: api("aggregate", "aggregate", "aggregate", "aggregate", "planned"),
+  retryIngestionJob: api("aggregate", "aggregate", "aggregate", "aggregate", "planned", { domainEvent: "planned", audit: "planned" }),
+  listEvaluationDatasets: api("aggregate", "aggregate", "aggregate", "aggregate", "planned"),
+  startEvaluationRun: api("aggregate", "aggregate", "aggregate", "aggregate", "planned", { domainEvent: "planned", audit: "planned" }),
+  getEvaluationRun: api("aggregate", "aggregate", "aggregate", "aggregate", "planned"),
+  listPublishedArtifacts: api("aggregate", "aggregate", "aggregate", "aggregate", "planned"),
+  issueArtifactAccessCookie: api("aggregate", "aggregate", "aggregate", "aggregate", "planned", { audit: "planned" })
+} satisfies Record<ApiOperationId, ApiImplementationCoverage>;
+
+function api(
+  route: ApiImplementationCoverageStatus,
+  schema: ApiImplementationCoverageStatus,
+  usecase: ApiImplementationCoverageStatus,
+  localFixture: ApiImplementationCoverageStatus,
+  production: ApiImplementationCoverageStatus,
+  overrides: ApiCoverageOverrides = {}
+): ApiImplementationCoverage {
+  const unitTest = overrides.unitTest ?? "planned";
+  const localIntegrationTest = overrides.localIntegrationTest ?? (localFixture === "planned" ? "planned" : "implemented");
+  const dsqlSmoke = overrides.dsqlSmoke ?? (production === "implemented" ? "planned" : "not_required");
+  return {
+    route,
+    schema,
+    usecase,
+    localFixture,
+    production,
+    repository: overrides.repository ?? production,
+    domainEvent: overrides.domainEvent ?? "not_required",
+    audit: overrides.audit ?? "not_required",
+    openApi: "implemented",
+    unitTest,
+    localIntegrationTest,
+    dsqlSmoke,
+    explicitPlannedMarker: hasPlanned([
+      route,
+      schema,
+      usecase,
+      localFixture,
+      production,
+      overrides.repository,
+      overrides.domainEvent,
+      overrides.audit,
+      unitTest,
+      localIntegrationTest,
+      dsqlSmoke
+    ])
+      ? "present"
+      : "not_required",
+    ...(overrides.externalReason ? { externalReason: overrides.externalReason } : {})
+  };
+}
+
+function hasPlanned(values: Array<ApiImplementationCoverageStatus | undefined>) {
+  return values.includes("planned");
+}

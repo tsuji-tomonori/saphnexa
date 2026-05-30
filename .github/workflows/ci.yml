@@ -127,6 +127,7 @@ jobs:
       - run: npm run check:no-src-js
       - run: npm run api:implementation:check
       - run: npm run tools:implementation:check
+      - run: npm run check:implementation-coverage-source
       - run: npm run check:atomicity
       - run: npm run coverage:check
       - run: npm run ui:check
@@ -170,6 +171,7 @@ jobs:
       - run: npm run check:no-src-js
       - run: npm run api:implementation:check
       - run: npm run tools:implementation:check
+      - run: npm run check:implementation-coverage-source
       - run: npm run check:atomicity
       - run: npm run check:static
 
