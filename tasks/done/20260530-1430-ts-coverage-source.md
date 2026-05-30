@@ -46,7 +46,7 @@ API / Tools implementation coverage manifest に `.ts` source を追加し、`.j
 - [x] AC4: `npm run check:implementation-coverage-source` が定義され、pass する。
 - [x] AC5: `npm run check:static` に drift check が含まれ、pass する。
 - [x] AC6: `git diff --check` が pass する。
-- [ ] AC7: PR に受け入れ条件確認とセルフレビュー更新を日本語で投稿する。
+- [x] AC7: PR に受け入れ条件確認とセルフレビュー更新を日本語で投稿する。
 
 ## 検証計画
 
@@ -68,4 +68,4 @@ API / Tools implementation coverage manifest に `.ts` source を追加し、`.j
 
 ## 状態
 
-in_progress
+done
