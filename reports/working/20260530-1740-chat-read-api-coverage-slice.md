@@ -27,7 +27,7 @@
 
 - `packages/api-contract/src/implementation-coverage.ts`
 - `packages/api-contract/src/implementation-coverage.js`
-- `tasks/do/20260530-1740-chat-read-api-coverage-slice.md`
+- `tasks/done/20260530-1740-chat-read-api-coverage-slice.md`
 
 ## 検証
 
@@ -42,6 +42,7 @@
 - `npm run typecheck:source`: 成功
 - `npm run check:static`: 成功
 - `git diff --check`: 成功
+- GitHub Actions PR checks: 成功
 
 ## fit 評価
 
@@ -52,4 +53,3 @@
 
 - `npm run api:implementation:check:production` は残り29件の planned marker で引き続き失敗する。
 - 対象 API 6件の専用 unit test / 実 DSQL executor smoke は未分割で、現時点では aggregate 検証として扱っている。
-- GitHub Actions の再実行結果は push 後に確認する。

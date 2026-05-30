@@ -1,6 +1,6 @@
 # Chat read API coverage slice
 
-- 状態: doing
+- 状態: done
 - 作業ブランチ: `codex/ts-atomic-coverage`
 - 対象PR: #6
 - 開始: 2026-05-30 17:40 JST
@@ -41,8 +41,8 @@ Auth / LLM models / getMe slices 後も chat read 系 API は planned marker を
 - [x] `npm run typecheck:source` が成功する。
 - [x] `npm run check:static` が成功する。
 - [x] `git diff --check` が成功する。
-- [ ] PR に受け入れ条件確認コメントとセルフレビューコメントを日本語で追加する。
-- [ ] GitHub Actions の PR check が成功する。
+- [x] PR に受け入れ条件確認コメントとセルフレビューコメントを日本語で追加する。
+- [x] GitHub Actions の PR check が成功する。
 
 ## 実施結果
 
@@ -64,3 +64,15 @@ Auth / LLM models / getMe slices 後も chat read 系 API は planned marker を
 - [x] `npm run typecheck:source`
 - [x] `npm run check:static`
 - [x] `git diff --check`
+- [x] PR 受け入れ条件確認コメント
+- [x] PR セルフレビューコメント
+- [x] GitHub Actions の PR check 成功
+
+## PR コメント
+
+- 受け入れ条件確認: https://github.com/tsuji-tomonori/saphnexa/pull/6#issuecomment-4582319910
+- セルフレビュー: https://github.com/tsuji-tomonori/saphnexa/pull/6#issuecomment-4582320407
+
+## CI
+
+- PR checks: 2026-05-30 17:46 JST 時点で全 job pass
