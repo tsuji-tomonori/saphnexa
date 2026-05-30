@@ -36,7 +36,7 @@
 - `packages/api-contract/src/implementation-coverage.js`
 - `tests/integration-local.test.js`
 - `tools/check-atomicity.js`
-- `tasks/do/20260530-1706-auth-api-coverage-slice.md`
+- `tasks/done/20260530-1706-auth-api-coverage-slice.md`
 
 ## 検証
 
@@ -50,6 +50,7 @@
 - `npm run typecheck:source`: 成功
 - `npm run check:static`: 成功
 - `git diff --check`: 成功
+- GitHub Actions PR checks: 成功
 
 ## fit 評価
 
@@ -60,4 +61,3 @@
 
 - `npm run api:implementation:check:production` は残り37件の planned marker で引き続き失敗する。
 - Auth callback の実 Cognito token exchange、HttpOnly cookie 発行、実 DSQL executor smoke は後続タスクとして残る。
-- GitHub Actions の再実行結果は push 後に確認する。
