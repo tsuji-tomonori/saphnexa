@@ -34,7 +34,7 @@
 - `tools/check-type-surface.js`
 - `tools/source-js-allowlist.json`
 - `docs/ops/local-verification.md`
-- `tasks/do/20260530-1629-api-local-runtime-mirror.md`
+- `tasks/done/20260530-1629-api-local-runtime-mirror.md`
 
 ## 検証
 
@@ -44,6 +44,7 @@
 - `npm run check:no-src-js`: 成功
 - `npm run check:static`: 成功
 - `git diff --check`: 成功
+- GitHub Actions PR checks: 成功
 
 ## fit 評価
 
@@ -53,4 +54,3 @@
 ## 未対応・制約・リスク
 
 - API 40 operation の route/schema/usecase 個別分割、production DSQL mapping の planned marker 削減、event append/projector 実装は後続タスクとして残る。
-- GitHub Actions の再実行結果は push 後に確認する。
