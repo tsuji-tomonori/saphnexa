@@ -1,6 +1,6 @@
 # RAG core runtime mirror generation
 
-状態: doing
+状態: done
 タスク種別: 機能追加
 
 ## 背景
@@ -45,7 +45,12 @@
 - [x] `docs/ops/local-verification.md` と `Taskfile.yml` が新しい検証導線を説明する。
 - [x] `npm run rag:quality:check`、`npm run rag:security:check`、`npm run rag:aws-binding:check` が pass する。
 - [x] `npm run check:no-src-js`、`npm run check:static`、`npm run ci:check`、`git diff --check` が pass する。
-- [ ] PR に受け入れ条件確認コメントとセルフレビューコメントを日本語で投稿する。
+- [x] PR に受け入れ条件確認コメントとセルフレビューコメントを日本語で投稿する。
+
+PR コメント:
+
+- 受け入れ条件確認: https://github.com/tsuji-tomonori/saphnexa/pull/6#issuecomment-4581931563
+- セルフレビュー: https://github.com/tsuji-tomonori/saphnexa/pull/6#issuecomment-4581931622
 
 ## 検証計画
 
