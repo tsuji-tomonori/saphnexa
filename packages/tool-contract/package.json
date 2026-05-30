@@ -4,7 +4,8 @@
   "type": "module",
   "private": true,
   "exports": {
-    ".": "./src/tools.js"
+    ".": "./src/tools.js",
+    "./implementation-coverage": "./src/implementation-coverage.js"
   },
   "scripts": {
     "typecheck": "tsc --noEmit --project tsconfig.json"

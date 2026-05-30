@@ -41,6 +41,7 @@ interface DsqlOperationMapping {
   notFoundErrorCode?: string;
   plan: DsqlOperationPlanner;
   map: DsqlOperationMapper;
+  status?: number;
 }
 
 export function createDsqlApiRepository(options: DsqlApiRepositoryOptions = {}): DsqlApiRepository {
@@ -69,7 +70,7 @@ export function createDsqlApiRepository(options: DsqlApiRepositoryOptions = {}):
         });
       }
       return {
-        status: 200,
+        status: mapping.status ?? 200,
         body: await mapping.map(rows, request, options)
       };
     }
@@ -87,6 +88,142 @@ export function createUnboundDsqlApiRepository(): DsqlApiRepository {
 }
 
 const dsqlOperationMappings = {
+  authCallback: {
+    status: 302,
+    notFoundErrorCode: "DSQL_AUTH_USER_NOT_FOUND",
+    plan(request) {
+      return {
+        operationId: "authCallback",
+        resultTable: "web_sessions",
+        sql: `
+          WITH authenticated_user AS (
+            SELECT tenant_id, user_id
+            FROM users
+            WHERE user_id = COALESCE(:user_id, :actor_id)
+              AND status = 'active'
+            LIMIT 1
+          ),
+          created_session AS (
+            INSERT INTO web_sessions (
+              tenant_id, session_id, user_id, refresh_token_ref, csrf_secret_hash, status, expires_at, created_at, updated_at
+            )
+            SELECT
+              u.tenant_id,
+              gen_random_uuid()::varchar,
+              u.user_id,
+              :refresh_token_ref,
+              :csrf_secret_hash,
+              'active',
+              now() + interval '8 hours',
+              now(),
+              now()
+            FROM authenticated_user u
+            RETURNING *
+          ),
+          web_session_event AS (
+            INSERT INTO web_session_events (
+              tenant_id, event_id, aggregate_id, aggregate_type, event_seq, event_name, occurred_at,
+              actor_user_id, correlation_id, causation_id, idempotency_key, payload_json
+            )
+            SELECT
+              s.tenant_id,
+              gen_random_uuid(),
+              s.session_id,
+              'web_session',
+              1,
+              'web_session.started',
+              now(),
+              s.user_id,
+              :state,
+              NULL,
+              :idempotency_key,
+              json_build_object('session_id', s.session_id, 'user_id', s.user_id)
+            FROM created_session s
+            RETURNING aggregate_id
+          )
+          SELECT s.*
+          FROM created_session s
+          JOIN web_session_event e
+            ON e.aggregate_id = s.session_id
+        `,
+        params: {
+          actor_id: request.actorId,
+          user_id: request.input.user_id,
+          state: request.input.state,
+          refresh_token_ref: request.input.refresh_token_ref ?? "cognito-refresh-token-ref",
+          csrf_secret_hash: request.input.csrf_secret_hash ?? "csrf-secret-hash",
+          idempotency_key: `auth-callback:${String(request.input.code ?? "")}`
+        }
+      };
+    },
+    map(rows) {
+      const session = firstRow(rows) as DbRow<"web_sessions">;
+      return { redirect_url: "/chat", session_id: session.session_id };
+    }
+  },
+  logout: {
+    status: 204,
+    plan(request) {
+      return {
+        operationId: "logout",
+        resultTable: "web_sessions",
+        sql: `
+          WITH revoked_session AS (
+            UPDATE web_sessions s
+               SET status = 'revoked',
+                   updated_at = now()
+             WHERE s.user_id = :actor_id
+               AND s.status = 'active'
+               AND (:session_id IS NULL OR s.session_id = :session_id)
+             RETURNING *
+          ),
+          next_event_seq AS (
+            SELECT
+              s.tenant_id,
+              s.session_id,
+              COALESCE(MAX(e.event_seq), 0) + 1 AS event_seq
+            FROM revoked_session s
+            LEFT JOIN web_session_events e
+              ON e.tenant_id = s.tenant_id
+             AND e.aggregate_id = s.session_id
+            GROUP BY s.tenant_id, s.session_id
+          ),
+          web_session_event AS (
+            INSERT INTO web_session_events (
+              tenant_id, event_id, aggregate_id, aggregate_type, event_seq, event_name, occurred_at,
+              actor_user_id, correlation_id, causation_id, idempotency_key, payload_json
+            )
+            SELECT
+              s.tenant_id,
+              gen_random_uuid(),
+              s.session_id,
+              'web_session',
+              n.event_seq,
+              'web_session.logged_out',
+              now(),
+              s.user_id,
+              NULL,
+              NULL,
+              CONCAT('logout:', s.session_id, ':', n.event_seq),
+              json_build_object('session_id', s.session_id)
+            FROM revoked_session s
+            JOIN next_event_seq n
+              ON n.tenant_id = s.tenant_id
+             AND n.session_id = s.session_id
+            RETURNING aggregate_id
+          )
+          SELECT s.*
+          FROM revoked_session s
+          LEFT JOIN web_session_event e
+            ON e.aggregate_id = s.session_id
+        `,
+        params: { actor_id: request.actorId, session_id: request.input.session_id ?? null }
+      };
+    },
+    map() {
+      return null;
+    }
+  },
   getMe: {
     notFoundErrorCode: "DSQL_USER_NOT_FOUND",
     plan(request) {
@@ -206,6 +343,29 @@ const dsqlOperationMappings = {
             FROM created_chat c
             RETURNING chat_id
           ),
+          chat_session_event AS (
+            INSERT INTO chat_session_events (
+              tenant_id, event_id, aggregate_id, aggregate_type, event_seq, event_name,
+              occurred_at, actor_user_id, correlation_id, causation_id, idempotency_key, payload_json
+            )
+            SELECT
+              c.tenant_id,
+              gen_random_uuid(),
+              c.chat_id::varchar,
+              'chat_session',
+              1,
+              'chat.session.created',
+              now(),
+              c.created_by_user_id,
+              NULL,
+              NULL,
+              concat('chat-session:create:', c.chat_id::varchar),
+              json_build_object('chat_id', c.chat_id, 'title', c.title, 'created_by_user_id', c.created_by_user_id)
+            FROM created_chat c
+            JOIN owner_participant op
+              ON op.chat_id = c.chat_id
+            RETURNING aggregate_id
+          ),
           audit_event AS (
             INSERT INTO audit_events (
               tenant_id, audit_event_id, actor_user_id, event_name, category, resource_id, payload_json, created_at
@@ -228,6 +388,8 @@ const dsqlOperationMappings = {
           FROM created_chat c
           JOIN owner_participant op
             ON op.chat_id = c.chat_id
+          JOIN chat_session_event cse
+            ON cse.aggregate_id = c.chat_id::varchar
           JOIN audit_event ae
             ON ae.resource_id = c.chat_id::varchar
         `,
@@ -329,6 +491,32 @@ const dsqlOperationMappings = {
                AND c.status <> 'deleted'
             RETURNING c.*
           ),
+          chat_session_event AS (
+            INSERT INTO chat_session_events (
+              tenant_id, event_id, aggregate_id, aggregate_type, event_seq, event_name,
+              occurred_at, actor_user_id, correlation_id, causation_id, idempotency_key, payload_json
+            )
+            SELECT
+              uc.tenant_id,
+              gen_random_uuid(),
+              uc.chat_id::varchar,
+              'chat_session',
+              COALESCE((
+                SELECT max(e.event_seq)
+                FROM chat_session_events e
+                WHERE e.tenant_id = uc.tenant_id
+                  AND e.aggregate_id = uc.chat_id::varchar
+              ), 0) + 1,
+              'chat.session.title_updated',
+              now(),
+              :actor_id,
+              NULL,
+              NULL,
+              NULL,
+              json_build_object('chat_id', uc.chat_id, 'title', uc.title)
+            FROM updated_chat uc
+            RETURNING aggregate_id
+          ),
           audit_event AS (
             INSERT INTO audit_events (
               tenant_id, audit_event_id, actor_user_id, event_name, category, resource_id, payload_json, created_at
@@ -347,6 +535,8 @@ const dsqlOperationMappings = {
           )
           SELECT uc.*
           FROM updated_chat uc
+          JOIN chat_session_event cse
+            ON cse.aggregate_id = uc.chat_id::varchar
           JOIN audit_event ae
             ON ae.resource_id = uc.chat_id::varchar
         `,
@@ -397,6 +587,37 @@ const dsqlOperationMappings = {
                AND c.status <> 'deleted'
             RETURNING c.*
           ),
+          chat_session_event AS (
+            INSERT INTO chat_session_events (
+              tenant_id, event_id, aggregate_id, aggregate_type, event_seq, event_name,
+              occurred_at, actor_user_id, correlation_id, causation_id, idempotency_key, payload_json
+            )
+            SELECT
+              dc.tenant_id,
+              gen_random_uuid(),
+              dc.chat_id::varchar,
+              'chat_session',
+              COALESCE((
+                SELECT max(e.event_seq)
+                FROM chat_session_events e
+                WHERE e.tenant_id = dc.tenant_id
+                  AND e.aggregate_id = dc.chat_id::varchar
+              ), 0) + 1,
+              'chat.session.deleted',
+              now(),
+              :actor_id,
+              NULL,
+              NULL,
+              NULL,
+              json_build_object(
+                'chat_id', dc.chat_id,
+                'deleted_at', dc.deleted_at,
+                'physical_delete', false,
+                'removed_participants', (SELECT count(*) FROM removed_participants)
+              )
+            FROM deleted_chat dc
+            RETURNING aggregate_id
+          ),
           audit_event AS (
             INSERT INTO audit_events (
               tenant_id, audit_event_id, actor_user_id, event_name, category, resource_id, payload_json, created_at
@@ -420,6 +641,8 @@ const dsqlOperationMappings = {
           )
           SELECT dc.*
           FROM deleted_chat dc
+          JOIN chat_session_event cse
+            ON cse.aggregate_id = dc.chat_id::varchar
           JOIN audit_event ae
             ON ae.resource_id = dc.chat_id::varchar
         `,
@@ -491,29 +714,90 @@ const dsqlOperationMappings = {
             WHERE u.user_id = :user_id
               AND u.role = 'general_user'
               AND u.status = 'active'
+          ),
+          upserted_participant AS (
+            INSERT INTO chat_participants (
+              tenant_id, chat_id, user_id, participant_role, status, added_by_user_id, added_at, removed_at
+            )
+            SELECT
+              op.tenant_id,
+              op.chat_id,
+              tu.user_id,
+              'viewer',
+              'active',
+              op.user_id,
+              now(),
+              NULL
+            FROM owner_participant op
+            JOIN target_user tu
+              ON tu.tenant_id = op.tenant_id
+            ON CONFLICT (tenant_id, chat_id, user_id)
+            DO UPDATE SET
+              participant_role = 'viewer',
+              status = 'active',
+              added_by_user_id = EXCLUDED.added_by_user_id,
+              removed_at = NULL
+            RETURNING *
+          ),
+          chat_participant_event AS (
+            INSERT INTO chat_participant_events (
+              tenant_id, event_id, aggregate_id, aggregate_type, event_seq, event_name,
+              occurred_at, actor_user_id, correlation_id, causation_id, idempotency_key, payload_json
+            )
+            SELECT
+              up.tenant_id,
+              gen_random_uuid(),
+              concat(up.chat_id::varchar, ':', up.user_id),
+              'chat_participant',
+              COALESCE((
+                SELECT max(e.event_seq)
+                FROM chat_participant_events e
+                WHERE e.tenant_id = up.tenant_id
+                  AND e.aggregate_id = concat(up.chat_id::varchar, ':', up.user_id)
+              ), 0) + 1,
+              'chat.participant.added',
+              now(),
+              :actor_id,
+              NULL,
+              NULL,
+              NULL,
+              json_build_object(
+                'chat_id', up.chat_id,
+                'user_id', up.user_id,
+                'participant_role', up.participant_role,
+                'status', up.status,
+                'added_by_user_id', up.added_by_user_id
+              )
+            FROM upserted_participant up
+            RETURNING aggregate_id
+          ),
+          audit_event AS (
+            INSERT INTO audit_events (
+              tenant_id, audit_event_id, actor_user_id, event_name, category, resource_id, payload_json, created_at
+            )
+            SELECT
+              up.tenant_id,
+              gen_random_uuid(),
+              :actor_id,
+              'chat.participant.added',
+              'chat_participant',
+              concat(up.chat_id::varchar, ':', up.user_id),
+              json_build_object(
+                'chat_id', up.chat_id,
+                'user_id', up.user_id,
+                'participant_role', up.participant_role,
+                'status', up.status
+              ),
+              now()
+            FROM upserted_participant up
+            RETURNING resource_id
           )
-          INSERT INTO chat_participants (
-            tenant_id, chat_id, user_id, participant_role, status, added_by_user_id, added_at, removed_at
-          )
-          SELECT
-            op.tenant_id,
-            op.chat_id,
-            tu.user_id,
-            'viewer',
-            'active',
-            op.user_id,
-            now(),
-            NULL
-          FROM owner_participant op
-          JOIN target_user tu
-            ON tu.tenant_id = op.tenant_id
-          ON CONFLICT (tenant_id, chat_id, user_id)
-          DO UPDATE SET
-            participant_role = 'viewer',
-            status = 'active',
-            added_by_user_id = EXCLUDED.added_by_user_id,
-            removed_at = NULL
-          RETURNING *
+          SELECT up.*
+          FROM upserted_participant up
+          JOIN chat_participant_event cpe
+            ON cpe.aggregate_id = concat(up.chat_id::varchar, ':', up.user_id)
+          JOIN audit_event ae
+            ON ae.resource_id = concat(up.chat_id::varchar, ':', up.user_id)
         `,
         params: {
           actor_id: request.actorId,
@@ -591,12 +875,91 @@ const dsqlOperationMappings = {
                AND target.participant_role <> 'owner'
                AND COALESCE(:participant_role, 'viewer') = 'viewer'
             RETURNING target.*
+          ),
+          changed_participants AS (
+            SELECT p.*
+            FROM promoted_owner p
+            UNION ALL
+            SELECT p.*
+            FROM demoted_owner p
+            UNION ALL
+            SELECT p.*
+            FROM reactivated_viewer p
+          ),
+          response_participants AS (
+            SELECT 1 AS sort_order, p.*
+            FROM promoted_owner p
+            UNION ALL
+            SELECT 2 AS sort_order, p.*
+            FROM reactivated_viewer p
+          ),
+          chat_participant_event AS (
+            INSERT INTO chat_participant_events (
+              tenant_id, event_id, aggregate_id, aggregate_type, event_seq, event_name,
+              occurred_at, actor_user_id, correlation_id, causation_id, idempotency_key, payload_json
+            )
+            SELECT
+              cp.tenant_id,
+              gen_random_uuid(),
+              concat(cp.chat_id::varchar, ':', cp.user_id),
+              'chat_participant',
+              COALESCE((
+                SELECT max(e.event_seq)
+                FROM chat_participant_events e
+                WHERE e.tenant_id = cp.tenant_id
+                  AND e.aggregate_id = concat(cp.chat_id::varchar, ':', cp.user_id)
+              ), 0) + 1,
+              'chat.participant.role_updated',
+              now(),
+              :actor_id,
+              NULL,
+              NULL,
+              NULL,
+              json_build_object(
+                'chat_id', cp.chat_id,
+                'user_id', cp.user_id,
+                'participant_role', cp.participant_role,
+                'status', cp.status
+              )
+            FROM changed_participants cp
+            RETURNING aggregate_id
+          ),
+          audit_event AS (
+            INSERT INTO audit_events (
+              tenant_id, audit_event_id, actor_user_id, event_name, category, resource_id, payload_json, created_at
+            )
+            SELECT
+              cp.tenant_id,
+              gen_random_uuid(),
+              :actor_id,
+              'chat.participant.role_updated',
+              'chat_participant',
+              concat(cp.chat_id::varchar, ':', cp.user_id),
+              json_build_object(
+                'chat_id', cp.chat_id,
+                'user_id', cp.user_id,
+                'participant_role', cp.participant_role,
+                'status', cp.status
+              ),
+              now()
+            FROM changed_participants cp
+            RETURNING resource_id
           )
-          SELECT *
-          FROM promoted_owner
-          UNION ALL
-          SELECT *
-          FROM reactivated_viewer
+          SELECT
+            rp.tenant_id,
+            rp.chat_id,
+            rp.user_id,
+            rp.participant_role,
+            rp.status,
+            rp.added_by_user_id,
+            rp.added_at,
+            rp.removed_at
+          FROM response_participants rp
+          JOIN chat_participant_event cpe
+            ON cpe.aggregate_id = concat(rp.chat_id::varchar, ':', rp.user_id)
+          JOIN audit_event ae
+            ON ae.resource_id = concat(rp.chat_id::varchar, ':', rp.user_id)
+          ORDER BY rp.sort_order ASC
         `,
         params: {
           actor_id: request.actorId,
@@ -624,17 +987,79 @@ const dsqlOperationMappings = {
               AND chat_id = :chat_id
               AND participant_role = 'owner'
               AND status = 'active'
+          ),
+          removed_participant AS (
+            UPDATE chat_participants target
+               SET status = 'removed',
+                   removed_at = now()
+              FROM owner_participant op
+             WHERE target.tenant_id = op.tenant_id
+               AND target.chat_id = op.chat_id
+               AND target.user_id = :user_id
+               AND target.participant_role = 'viewer'
+               AND target.status = 'active'
+            RETURNING target.*
+          ),
+          chat_participant_event AS (
+            INSERT INTO chat_participant_events (
+              tenant_id, event_id, aggregate_id, aggregate_type, event_seq, event_name,
+              occurred_at, actor_user_id, correlation_id, causation_id, idempotency_key, payload_json
+            )
+            SELECT
+              rp.tenant_id,
+              gen_random_uuid(),
+              concat(rp.chat_id::varchar, ':', rp.user_id),
+              'chat_participant',
+              COALESCE((
+                SELECT max(e.event_seq)
+                FROM chat_participant_events e
+                WHERE e.tenant_id = rp.tenant_id
+                  AND e.aggregate_id = concat(rp.chat_id::varchar, ':', rp.user_id)
+              ), 0) + 1,
+              'chat.participant.removed',
+              now(),
+              :actor_id,
+              NULL,
+              NULL,
+              NULL,
+              json_build_object(
+                'chat_id', rp.chat_id,
+                'user_id', rp.user_id,
+                'participant_role', rp.participant_role,
+                'status', rp.status,
+                'removed_at', rp.removed_at
+              )
+            FROM removed_participant rp
+            RETURNING aggregate_id
+          ),
+          audit_event AS (
+            INSERT INTO audit_events (
+              tenant_id, audit_event_id, actor_user_id, event_name, category, resource_id, payload_json, created_at
+            )
+            SELECT
+              rp.tenant_id,
+              gen_random_uuid(),
+              :actor_id,
+              'chat.participant.removed',
+              'chat_participant',
+              concat(rp.chat_id::varchar, ':', rp.user_id),
+              json_build_object(
+                'chat_id', rp.chat_id,
+                'user_id', rp.user_id,
+                'participant_role', rp.participant_role,
+                'status', rp.status,
+                'removed_at', rp.removed_at
+              ),
+              now()
+            FROM removed_participant rp
+            RETURNING resource_id
           )
-          UPDATE chat_participants target
-             SET status = 'removed',
-                 removed_at = now()
-            FROM owner_participant op
-           WHERE target.tenant_id = op.tenant_id
-             AND target.chat_id = op.chat_id
-             AND target.user_id = :user_id
-             AND target.participant_role = 'viewer'
-             AND target.status = 'active'
-          RETURNING target.*
+          SELECT rp.*
+          FROM removed_participant rp
+          JOIN chat_participant_event cpe
+            ON cpe.aggregate_id = concat(rp.chat_id::varchar, ':', rp.user_id)
+          JOIN audit_event ae
+            ON ae.resource_id = concat(rp.chat_id::varchar, ':', rp.user_id)
         `,
         params: {
           actor_id: request.actorId,
@@ -841,6 +1266,64 @@ const dsqlOperationMappings = {
              AND e.chat_id = cr.chat_id
              AND e.message_id = cr.message_id
             GROUP BY cr.tenant_id, cr.chat_id, cr.message_id, cr.run_id
+          ),
+          chat_run_event AS (
+            INSERT INTO chat_run_events (
+              tenant_id, event_id, aggregate_id, aggregate_type, event_seq, event_name,
+              occurred_at, actor_user_id, correlation_id, causation_id, idempotency_key, payload_json
+            )
+            SELECT
+              cr.tenant_id,
+              gen_random_uuid(),
+              cr.run_id::varchar,
+              'chat_run',
+              COALESCE((
+                SELECT max(e.event_seq)
+                FROM chat_run_events e
+                WHERE e.tenant_id = cr.tenant_id
+                  AND e.aggregate_id = cr.run_id::varchar
+              ), 0) + 1,
+              'chat.run.canceled',
+              now(),
+              :actor_id,
+              NULL,
+              NULL,
+              NULL,
+              json_build_object(
+                'run_id', cr.run_id,
+                'chat_id', cr.chat_id,
+                'message_id', cr.message_id,
+                'status', 'canceled',
+                'reason', :reason
+              )
+            FROM canceled_run cr
+            RETURNING aggregate_id
+          ),
+          chat_message_lifecycle_event AS (
+            INSERT INTO chat_message_lifecycle_events (
+              tenant_id, event_id, aggregate_id, aggregate_type, event_seq, event_name,
+              occurred_at, actor_user_id, correlation_id, causation_id, idempotency_key, payload_json
+            )
+            SELECT
+              ne.tenant_id,
+              gen_random_uuid(),
+              concat(ne.chat_id::varchar, ':', ne.message_id::varchar),
+              'chat_message',
+              COALESCE((
+                SELECT max(e.event_seq)
+                FROM chat_message_lifecycle_events e
+                WHERE e.tenant_id = ne.tenant_id
+                  AND e.aggregate_id = concat(ne.chat_id::varchar, ':', ne.message_id::varchar)
+              ), 0) + 1,
+              'chat.run.canceled',
+              now(),
+              :actor_id,
+              NULL,
+              NULL,
+              NULL,
+              json_build_object('run_id', ne.run_id, 'status', 'canceled', 'reason', :reason)
+            FROM next_event ne
+            RETURNING aggregate_id
           )
           INSERT INTO chat_message_events (
             tenant_id, chat_id, message_id, event_seq, event_id, event_name, event_type, payload_json, created_at
@@ -856,6 +1339,10 @@ const dsqlOperationMappings = {
             json_build_object('run_id', ne.run_id, 'status', 'canceled', 'reason', :reason),
             now()
           FROM next_event ne
+          JOIN chat_run_event cre
+            ON cre.aggregate_id = ne.run_id::varchar
+          JOIN chat_message_lifecycle_event cmle
+            ON cmle.aggregate_id = concat(ne.chat_id::varchar, ':', ne.message_id::varchar)
           RETURNING (
             SELECT row_to_json(cr)
             FROM canceled_run cr
@@ -900,34 +1387,100 @@ const dsqlOperationMappings = {
               AND m.message_id = :message_id
               AND m.sender_type = 'assistant'
               AND :rating IN ('positive', 'negative')
+          ),
+          upserted_feedback AS (
+            INSERT INTO message_feedback (
+              tenant_id, feedback_id, chat_id, message_id, user_id, rating, comment, problem_type, created_at
+            )
+            SELECT
+              a.tenant_id,
+              COALESCE(existing.feedback_id, gen_random_uuid()),
+              rm.chat_id,
+              rm.message_id,
+              a.user_id,
+              :rating,
+              :comment,
+              :problem_type,
+              COALESCE(existing.created_at, now())
+            FROM actor a
+            JOIN readable_message rm
+              ON rm.tenant_id = a.tenant_id
+            LEFT JOIN message_feedback existing
+              ON existing.tenant_id = a.tenant_id
+             AND existing.chat_id = rm.chat_id
+             AND existing.message_id = rm.message_id
+             AND existing.user_id = a.user_id
+            ON CONFLICT (tenant_id, chat_id, message_id, user_id)
+            DO UPDATE SET
+              rating = EXCLUDED.rating,
+              comment = EXCLUDED.comment,
+              problem_type = EXCLUDED.problem_type
+            RETURNING *
+          ),
+          next_event AS (
+            SELECT
+              uf.tenant_id,
+              uf.chat_id,
+              uf.message_id,
+              COALESCE(MAX(e.event_seq), 0) + 1 AS event_seq,
+              uf.feedback_id,
+              uf.rating
+            FROM upserted_feedback uf
+            LEFT JOIN chat_message_events e
+              ON e.tenant_id = uf.tenant_id
+             AND e.chat_id = uf.chat_id
+             AND e.message_id = uf.message_id
+            GROUP BY uf.tenant_id, uf.chat_id, uf.message_id, uf.feedback_id, uf.rating
+          ),
+          chat_message_lifecycle_event AS (
+            INSERT INTO chat_message_lifecycle_events (
+              tenant_id, event_id, aggregate_id, aggregate_type, event_seq, event_name,
+              occurred_at, actor_user_id, correlation_id, causation_id, idempotency_key, payload_json
+            )
+            SELECT
+              ne.tenant_id,
+              gen_random_uuid(),
+              concat(ne.chat_id::varchar, ':', ne.message_id::varchar),
+              'chat_message',
+              COALESCE((
+                SELECT max(e.event_seq)
+                FROM chat_message_lifecycle_events e
+                WHERE e.tenant_id = ne.tenant_id
+                  AND e.aggregate_id = concat(ne.chat_id::varchar, ':', ne.message_id::varchar)
+              ), 0) + 1,
+              'chat.feedback.recorded',
+              now(),
+              :actor_id,
+              NULL,
+              NULL,
+              NULL,
+              json_build_object('feedback_id', ne.feedback_id, 'rating', ne.rating)
+            FROM next_event ne
+            RETURNING aggregate_id
+          ),
+          message_event AS (
+            INSERT INTO chat_message_events (
+              tenant_id, chat_id, message_id, event_seq, event_id, event_name, event_type, payload_json, created_at
+            )
+            SELECT
+              ne.tenant_id,
+              ne.chat_id,
+              ne.message_id,
+              ne.event_seq,
+              gen_random_uuid(),
+              'chat.feedback.recorded',
+              'progress',
+              json_build_object('feedback_id', ne.feedback_id, 'rating', ne.rating),
+              now()
+            FROM next_event ne
+            JOIN chat_message_lifecycle_event cmle
+              ON cmle.aggregate_id = concat(ne.chat_id::varchar, ':', ne.message_id::varchar)
+            RETURNING message_id
           )
-          INSERT INTO message_feedback (
-            tenant_id, feedback_id, chat_id, message_id, user_id, rating, comment, problem_type, created_at
-          )
-          SELECT
-            a.tenant_id,
-            COALESCE(existing.feedback_id, gen_random_uuid()),
-            rm.chat_id,
-            rm.message_id,
-            a.user_id,
-            :rating,
-            :comment,
-            :problem_type,
-            COALESCE(existing.created_at, now())
-          FROM actor a
-          JOIN readable_message rm
-            ON rm.tenant_id = a.tenant_id
-          LEFT JOIN message_feedback existing
-            ON existing.tenant_id = a.tenant_id
-           AND existing.chat_id = rm.chat_id
-           AND existing.message_id = rm.message_id
-           AND existing.user_id = a.user_id
-          ON CONFLICT (tenant_id, chat_id, message_id, user_id)
-          DO UPDATE SET
-            rating = EXCLUDED.rating,
-            comment = EXCLUDED.comment,
-            problem_type = EXCLUDED.problem_type
-          RETURNING *
+          SELECT uf.*
+          FROM upserted_feedback uf
+          JOIN message_event me
+            ON me.message_id = uf.message_id
         `,
         params: {
           actor_id: request.actorId,
@@ -1075,6 +1628,79 @@ const dsqlOperationMappings = {
       return undefined;
     }
   },
+  issueWsTicket: {
+    status: 201,
+    notFoundErrorCode: "DSQL_WS_TICKET_ACTOR_NOT_FOUND",
+    plan(request) {
+      return {
+        operationId: "issueWsTicket",
+        resultTable: "ws_tickets",
+        sql: `
+          WITH actor AS (
+            SELECT tenant_id, user_id
+            FROM users
+            WHERE user_id = :actor_id
+              AND status = 'active'
+          ),
+          created_ticket AS (
+            INSERT INTO ws_tickets (
+              tenant_id, ticket_id, session_id, user_id, channel_scope_json, status, expires_at, used_at
+            )
+            SELECT
+              a.tenant_id,
+              gen_random_uuid()::varchar,
+              gen_random_uuid()::varchar,
+              a.user_id,
+              json_build_object('channels', json_build_array(concat('/', a.user_id, '/chat/*'))),
+              'active',
+              now() + interval '60 seconds',
+              NULL
+            FROM actor a
+            RETURNING *
+          ),
+          ws_ticket_event AS (
+            INSERT INTO ws_ticket_events (
+              tenant_id, event_id, aggregate_id, aggregate_type, event_seq, event_name,
+              occurred_at, actor_user_id, correlation_id, causation_id, idempotency_key, payload_json
+            )
+            SELECT
+              t.tenant_id,
+              gen_random_uuid(),
+              t.ticket_id,
+              'ws_ticket',
+              1,
+              'ws.ticket.issued',
+              now(),
+              t.user_id,
+              NULL,
+              NULL,
+              concat('ws-ticket:issue:', t.ticket_id),
+              json_build_object(
+                'ticket_id', t.ticket_id,
+                'user_id', t.user_id,
+                'channels', t.channel_scope_json -> 'channels',
+                'expires_at', t.expires_at
+              )
+            FROM created_ticket t
+            RETURNING aggregate_id
+          )
+          SELECT t.*
+          FROM created_ticket t
+          JOIN ws_ticket_event wte
+            ON wte.aggregate_id = t.ticket_id
+        `,
+        params: { actor_id: request.actorId }
+      };
+    },
+    map(rows) {
+      const ticket = firstRow(rows) as DbRow<"ws_tickets">;
+      return {
+        ticket: ticket.ticket_id,
+        expires_in_seconds: 60,
+        channels: channelScope(ticket.channel_scope_json)
+      };
+    }
+  },
   listPublishedArtifacts: {
     plan(request) {
       return {
@@ -1110,12 +1736,71 @@ const dsqlOperationMappings = {
       return { artifacts: rows };
     }
   },
+  issueArtifactAccessCookie: {
+    status: 201,
+    plan(request) {
+      return {
+        operationId: "issueArtifactAccessCookie",
+        resultTable: "audit_events",
+        sql: `
+          WITH actor AS (
+            SELECT tenant_id, user_id
+            FROM users
+            WHERE user_id = :actor_id
+              AND role = 'admin'
+              AND status = 'active'
+          )
+          INSERT INTO audit_events (
+            tenant_id, audit_event_id, actor_user_id, event_name, category, resource_id, payload_json, created_at
+          )
+          SELECT
+            a.tenant_id,
+            gen_random_uuid(),
+            a.user_id,
+            'admin.artifact.cookie_issued',
+            'artifact_access',
+            'artifact-cookie',
+            json_build_object('expires_in_seconds', 300),
+            now()
+          FROM actor a
+          RETURNING *
+        `,
+        params: { actor_id: request.actorId }
+      };
+    },
+    map() {
+      return { cookie_issued: true, expires_in_seconds: 300 };
+    }
+  },
   adminListUsers: {
     plan(request) {
       return {
         operationId: "adminListUsers",
         resultTable: "users",
         sql: `
+          WITH actor AS (
+            SELECT tenant_id, user_id
+            FROM users
+            WHERE user_id = :actor_id
+              AND role = 'admin'
+              AND status = 'active'
+          ),
+          audit_event AS (
+            INSERT INTO audit_events (
+              tenant_id, audit_event_id, actor_user_id, event_name, category, resource_id, payload_json, created_at
+            )
+            SELECT
+              a.tenant_id,
+              gen_random_uuid(),
+              a.user_id,
+              'admin.users.listed',
+              'admin_user',
+              a.tenant_id,
+              json_build_object('scope', 'tenant_users'),
+              now()
+            FROM actor a
+            RETURNING actor_user_id
+          )
           SELECT
             target.tenant_id,
             target.user_id,
@@ -1127,12 +1812,11 @@ const dsqlOperationMappings = {
             target.status,
             target.created_at,
             target.updated_at
-          FROM users actor
+          FROM actor
           JOIN users target
             ON target.tenant_id = actor.tenant_id
-          WHERE actor.user_id = :actor_id
-            AND actor.role = 'admin'
-            AND actor.status = 'active'
+          JOIN audit_event ae
+            ON ae.actor_user_id = actor.user_id
           ORDER BY target.email ASC
         `,
         params: { actor_id: request.actorId }
@@ -1142,12 +1826,88 @@ const dsqlOperationMappings = {
       return { users: rows };
     }
   },
+  getUserImport: {
+    plan(request) {
+      return {
+        operationId: "getUserImport",
+        resultTable: "user_import_jobs",
+        sql: `
+          SELECT
+            j.tenant_id,
+            j.import_id,
+            j.status,
+            j.result_s3_prefix,
+            j.created_by_user_id,
+            j.created_at,
+            COALESCE(
+              json_agg(
+                json_build_object(
+                  'tenant_id', r.tenant_id,
+                  'import_id', r.import_id,
+                  'row_number', r.row_number,
+                  'status', r.status,
+                  'error_message', r.error_message
+                )
+                ORDER BY r.row_number
+              ) FILTER (WHERE r.row_number IS NOT NULL),
+              '[]'::json
+            ) AS rows
+          FROM user_import_jobs j
+          JOIN users u
+            ON u.tenant_id = j.tenant_id
+           AND u.user_id = :actor_id
+           AND u.role = 'admin'
+           AND u.status = 'active'
+          LEFT JOIN user_import_rows r
+            ON r.tenant_id = j.tenant_id
+           AND r.import_id = j.import_id
+          WHERE j.import_id = :import_id
+          GROUP BY j.tenant_id, j.import_id, j.status, j.result_s3_prefix, j.created_by_user_id, j.created_at
+          LIMIT 1
+        `,
+        params: { actor_id: request.actorId, import_id: request.input.import_id }
+      };
+    },
+    map(rows) {
+      const row = rows[0] as
+        | (DbRow<"user_import_jobs"> & {
+            rows?: unknown;
+          })
+        | undefined;
+      if (!row) return { import: undefined, rows: [] };
+      const { rows: importRows, ...job } = row;
+      return { import: job, rows: arrayValue(importRows) };
+    }
+  },
   adminListDocuments: {
     plan(request) {
       return {
         operationId: "adminListDocuments",
         resultTable: "documents",
         sql: `
+          WITH actor AS (
+            SELECT tenant_id, user_id
+            FROM users
+            WHERE user_id = :actor_id
+              AND role = 'admin'
+              AND status = 'active'
+          ),
+          audit_event AS (
+            INSERT INTO audit_events (
+              tenant_id, audit_event_id, actor_user_id, event_name, category, resource_id, payload_json, created_at
+            )
+            SELECT
+              a.tenant_id,
+              gen_random_uuid(),
+              a.user_id,
+              'admin.documents.listed',
+              'document',
+              a.tenant_id,
+              json_build_object('scope', 'tenant_documents'),
+              now()
+            FROM actor a
+            RETURNING actor_user_id
+          )
           SELECT
             d.tenant_id,
             d.document_id,
@@ -1157,11 +1917,10 @@ const dsqlOperationMappings = {
             d.created_at,
             d.updated_at
           FROM documents d
-          JOIN users u
-            ON u.tenant_id = d.tenant_id
-           AND u.user_id = :actor_id
-           AND u.role = 'admin'
-           AND u.status = 'active'
+          JOIN actor a
+            ON a.tenant_id = d.tenant_id
+          JOIN audit_event ae
+            ON ae.actor_user_id = a.user_id
           WHERE d.status <> 'deleted'
           ORDER BY d.updated_at DESC
         `,
@@ -1806,25 +2565,84 @@ const dsqlOperationMappings = {
             WHERE user_id = :actor_id
               AND role = 'admin'
               AND status = 'active'
+          ),
+          retried_job AS (
+            UPDATE ingestion_jobs j
+               SET status = 'queued',
+                   error_code = NULL
+              FROM admin_actor a
+             WHERE j.tenant_id = a.tenant_id
+               AND j.job_id = :job_id
+               AND j.status = 'failed'
+            RETURNING
+              j.tenant_id,
+              j.job_id,
+              j.document_id,
+              j.version_id,
+              j.status,
+              10 AS progress_percent,
+              j.raw_s3_uri,
+              j.parsed_s3_prefix,
+              j.error_code,
+              j.created_at
+          ),
+          ingestion_job_event AS (
+            INSERT INTO ingestion_job_events (
+              tenant_id, event_id, aggregate_id, aggregate_type, event_seq, event_name,
+              occurred_at, actor_user_id, correlation_id, causation_id, idempotency_key, payload_json
+            )
+            SELECT
+              rj.tenant_id,
+              gen_random_uuid(),
+              rj.job_id,
+              'ingestion_job',
+              COALESCE((
+                SELECT max(e.event_seq)
+                FROM ingestion_job_events e
+                WHERE e.tenant_id = rj.tenant_id
+                  AND e.aggregate_id = rj.job_id
+              ), 0) + 1,
+              'document.ingestion.retried',
+              now(),
+              a.user_id,
+              NULL,
+              NULL,
+              NULL,
+              json_build_object(
+                'job_id', rj.job_id,
+                'document_id', rj.document_id,
+                'version_id', rj.version_id,
+                'status', rj.status
+              )
+            FROM retried_job rj
+            JOIN admin_actor a
+              ON a.tenant_id = rj.tenant_id
+            RETURNING aggregate_id
+          ),
+          audit_event AS (
+            INSERT INTO audit_events (
+              tenant_id, audit_event_id, actor_user_id, event_name, category, resource_id, payload_json, created_at
+            )
+            SELECT
+              rj.tenant_id,
+              gen_random_uuid(),
+              a.user_id,
+              'document.ingestion.retried',
+              'admin_operation',
+              rj.job_id,
+              json_build_object('document_id', rj.document_id, 'version_id', rj.version_id),
+              now()
+            FROM retried_job rj
+            JOIN admin_actor a
+              ON a.tenant_id = rj.tenant_id
+            RETURNING resource_id
           )
-          UPDATE ingestion_jobs j
-             SET status = 'queued',
-                 error_code = NULL
-            FROM admin_actor a
-           WHERE j.tenant_id = a.tenant_id
-             AND j.job_id = :job_id
-             AND j.status = 'failed'
-          RETURNING
-            j.tenant_id,
-            j.job_id,
-            j.document_id,
-            j.version_id,
-            j.status,
-            10 AS progress_percent,
-            j.raw_s3_uri,
-            j.parsed_s3_prefix,
-            j.error_code,
-            j.created_at
+          SELECT rj.*
+          FROM retried_job rj
+          JOIN ingestion_job_event ije
+            ON ije.aggregate_id = rj.job_id
+          JOIN audit_event ae
+            ON ae.resource_id = rj.job_id
         `,
         params: { actor_id: request.actorId, job_id: request.input.job_id }
       };
@@ -1862,4 +2680,10 @@ function messagePageLimit(limit: unknown): number {
 
 function arrayValue(value: unknown): unknown[] {
   return Array.isArray(value) ? value : [];
+}
+
+function channelScope(value: unknown): string[] {
+  if (!value || typeof value !== "object") return [];
+  const channels = (value as { channels?: unknown }).channels;
+  return Array.isArray(channels) ? channels.filter((channel): channel is string => typeof channel === "string") : [];
 }

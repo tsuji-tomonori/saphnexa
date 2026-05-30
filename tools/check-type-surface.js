@@ -75,7 +75,7 @@ for (const file of [
   "apps/agent/src/runtime/agentCoreHandler.ts",
   "apps/agent/src/clients/toolsApiClient.ts",
   "apps/agent/src/clients/bedrockRuntimeClient.ts",
-  "apps/agent/src/clients/dsqlClient.ts",
+  "apps/agent/src/clients/retrievalPolicyClient.ts",
   "apps/agent/src/agent/queryRewrite.ts",
   "apps/agent/src/agent/contextPacking.ts",
   "apps/agent/src/agent/answerGeneration.ts",
@@ -84,6 +84,7 @@ for (const file of [
   "apps/workers/src/event-publisher.ts",
   "apps/web/src/main.tsx",
   "apps/web/src/pages/ChatPage.tsx",
+  "apps/web/src/hooks/useWsTicket.ts",
   "apps/web/src/features/chat/AssistantRuntimeBoundary.tsx",
   "apps/web/src/features/chat/MessageHistoryPanel.tsx",
   "apps/web/src/features/admin/DocumentRegistrationForm.tsx",
@@ -296,10 +297,12 @@ for (const tool of toolContracts) {
 
 const modelCatalogTs = readText("packages/model-catalog/src/models.ts");
 assert(modelCatalogTs.includes("export interface LlmModelCatalogEntry"), "Model catalog TS source must export LlmModelCatalogEntry");
+assert(modelCatalogTs.includes("export const llmModels"), "Model catalog TS source must export llmModels");
 assert(extractStringArray(modelCatalogTs, "modelIds").length === llmModels.length, "Model id TS source count must match JS runtime");
 for (const model of llmModels) {
   assert(modelCatalogTs.includes(`"${model.model_id}"`), `Model catalog TS source missing ${model.model_id}`);
 }
+execFileSync("node", ["tools/generate-model-catalog-runtime-mirror.js", "--check"], { stdio: "inherit" });
 
 const dbSchemaTs = readText("packages/db-schema/src/tables.ts");
 assert(dbSchemaTs.includes("export type RequiredTableName"), "DB schema TS source must export RequiredTableName");
@@ -307,9 +310,11 @@ assert(extractStringArray(dbSchemaTs, "requiredTableNames").length === requiredT
 for (const table of requiredTables) {
   assert(dbSchemaTs.includes(`"${table}"`), `DB schema TS source missing ${table}`);
 }
+execFileSync("node", ["tools/generate-db-tables-runtime-mirror.js", "--check"], { stdio: "inherit" });
 
 const dbTableMetadataTs = readText("packages/db-schema/src/table-metadata.ts");
 const dbMigrationSql = readText("packages/db-migrations/migrations/V001__initial_saphnexa_schema.sql");
+execFileSync("node", ["tools/build-db-metadata-source.js", "--check"], { stdio: "inherit" });
 for (const tableName of [
   "chat_sessions",
   "chat_participants",
@@ -390,6 +395,7 @@ for (const metadataTable of extractTableNamesFromMetadata(dbTableMetadataTs)) {
 
 const ragCoreTs = readText("packages/rag-core/src/fixture-rag.ts");
 const ragCoreJs = readText("packages/rag-core/src/fixture-rag.js");
+execFileSync("node", ["tools/generate-rag-core-runtime-mirror.js", "--check"], { stdio: "inherit" });
 for (const token of [
   "createFixtureRagAdapter",
   "createLocalTools",
@@ -411,6 +417,7 @@ assert(ragCoreTs.includes("export interface RagCitation"), "RAG core TS source m
 
 const domainIndexTs = readText("packages/domain/src/index.ts");
 const domainIndexJs = readText("packages/domain/src/index.js");
+execFileSync("node", ["tools/generate-domain-runtime-mirror.js", "--check"], { stdio: "inherit" });
 for (const token of [
   "roles",
   "participantRoles",
@@ -506,6 +513,8 @@ assert(apiLambdaSource.includes("hono/aws-lambda"), "API Lambda entry must use H
 assert(apiLambdaSource.includes("export const handler"), "API Lambda entry must export handler");
 
 const honoOpenApiSource = readText("apps/api/src/hono-openapi-app.ts");
+const honoOpenApiMirror = readText("apps/api/src/hono-openapi-app.js");
+execFileSync("node", ["tools/generate-api-openapi-runtime-mirror.js", "--check"], { stdio: "inherit" });
 assert(honoOpenApiSource.includes("interface ApiDispatcher"), "API Hono source must type dispatcher boundary");
 assert(honoOpenApiSource.includes("buildRouteZodSchemas"), "API Hono source must use Zod route schemas");
 assert(honoOpenApiSource.includes("buildOpenApiDocument"), "API Hono source must use OpenAPI document builder");
@@ -513,6 +522,7 @@ assert(honoOpenApiSource.includes("validateSuccessResponse"), "API Hono source m
 assert(honoOpenApiSource.includes("RESPONSE_VALIDATION_FAILED"), "API Hono source must map response validation failures to standard errors");
 for (const middleware of ["errorMiddleware", "requestLogMiddleware", "originMiddleware", "sessionMiddleware", "csrfBoundaryMiddleware"]) {
   assert(honoOpenApiSource.includes(middleware), `API Hono source must attach ${middleware}`);
+  assert(honoOpenApiMirror.includes(middleware), `API Hono runtime mirror must attach ${middleware}`);
 }
 
 const apiRepositorySource = readText("apps/api/src/repositories/dsql/apiRepository.ts");
@@ -612,6 +622,14 @@ const apiDispatchServiceSource = readText("apps/api/src/services/apiDispatchServ
 assert(apiDispatchServiceSource.includes("createApiDispatchServiceFromEnvironment"), "API must expose environment-based dispatch service factory");
 assert(apiDispatchServiceSource.includes("createDsqlApiRepository"), "API dispatch service must use DSQL repository factory in dsql mode");
 
+const apiLocalTsSource = readText("apps/api/src/local-api.ts");
+const apiLocalJsSource = readText("apps/api/src/local-api.js");
+execFileSync("node", ["tools/generate-api-local-runtime-mirror.js", "--check"], { stdio: "inherit" });
+for (const token of ["createLocalApi", "enforceCsrf", "createFixtureRagAdapter", "submitQuestion", "issueWsTicket", "consumeWsTicket"]) {
+  assert(apiLocalTsSource.includes(token), `API local TS source missing ${token}`);
+  assert(apiLocalJsSource.includes(token), `API local runtime mirror missing ${token}`);
+}
+
 const ragAgentSource = readText("apps/agent/src/agent/ragAgent.ts");
 const agentCoreAppSource = readText("apps/agent/src/app.ts");
 const agentCoreHandlerSource = readText("apps/agent/src/runtime/agentCoreHandler.ts");
@@ -647,6 +665,14 @@ const citationBindingSource = readText("apps/agent/src/agent/citationBinding.ts"
 assert(citationBindingSource.includes("citationFormat"), "citation binding must use citation formatter");
 assert(citationBindingSource.includes("evidence: input.evidence"), "citation binding must bind citations to evidence");
 
+const agentPolicyTsSource = readText("apps/agent/src/agent/retrievalPolicy.ts");
+const agentPolicyJsSource = readText("apps/agent/src/rag-agent.js");
+execFileSync("node", ["tools/generate-agent-policy-runtime-mirror.js", "--check"], { stdio: "inherit" });
+for (const token of ["assertRetrievalPolicyNotRelaxed", "normalizeRetrievalPolicy", "retrieval_policy top_k was relaxed", "retrieval_policy scope was relaxed"]) {
+  assert(agentPolicyTsSource.includes(token), `Agent policy TS source missing ${token}`);
+  assert(agentPolicyJsSource.includes(token), `Agent policy runtime mirror missing ${token}`);
+}
+
 assert(agentToolsClientSource.includes("createHttpToolsApiClient"), "Agent Tools client must expose HTTP Tools API client");
 assert(agentToolsClientSource.includes("toolPathByOperation"), "Agent Tools client must use contract paths by operation");
 assert(agentToolsClientSource.includes("ToolsApiHttpError"), "Agent Tools client must distinguish HTTP tool failures");
@@ -664,8 +690,16 @@ for (const tool of toolContracts) {
   assert(toolsApiSource.includes(tool.operationId), `Tools API source missing ${tool.operationId}`);
 }
 
+const toolsLocalTsSource = readText("apps/tools-api/src/local-tools-api.ts");
+const toolsLocalJsSource = readText("apps/tools-api/src/local-tools-api.js");
+execFileSync("node", ["tools/generate-tools-local-runtime-mirror.js", "--check"], { stdio: "inherit" });
+assert(toolsLocalTsSource.includes("toolContracts.map"), "Tools local TS source must derive handlers from tool contracts");
+assert(toolsLocalJsSource.includes("toolContracts.map"), "Tools local runtime mirror must derive handlers from tool contracts");
+assert(toolsLocalJsSource.includes("TOOL_NOT_FOUND"), "Tools local runtime mirror must keep not found response");
+
 const workerEventPublisherTs = readText("apps/workers/src/event-publisher.ts");
 const workerEventPublisherJs = readText("apps/workers/src/event-publisher.js");
+execFileSync("node", ["tools/generate-workers-runtime-mirror.js", "--check"], { stdio: "inherit" });
 for (const token of [
   "createLightweightNotification",
   "assertNotificationIsLightweight",

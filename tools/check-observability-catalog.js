@@ -4,7 +4,10 @@ import {
   requiredMetricCatalog,
   retentionPolicyCatalog
 } from "../packages/domain/src/observability.js";
+import { execFileSync } from "node:child_process";
 import { assert } from "./lib.js";
+
+execFileSync("node", ["tools/generate-domain-runtime-mirror.js", "--check"], { stdio: "inherit" });
 
 const requiredMetrics = ["api_latency_ms", "api_5xx_count", "rag_latency_ms", "retrieval_count", "dlq_message_count", "ingestion_failed_count", "evaluation_failed_count"];
 const requiredAlarms = ["api_5xx_alarm", "dlq_depth_alarm", "rag_failure_rate_alarm", "ingestion_failed_alarm", "evaluation_failed_alarm", "waf_block_spike_alarm"];

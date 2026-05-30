@@ -1,5 +1,8 @@
 import { localCostEstimate } from "../packages/model-catalog/src/cost-estimate.js";
+import { execFileSync } from "node:child_process";
 import { assert } from "./lib.js";
+
+execFileSync("node", ["tools/generate-model-catalog-runtime-mirror.js", "--check"], { stdio: "inherit" });
 
 const total = localCostEstimate.line_items.reduce((sum, item) => sum + item.monthly_usd, 0);
 assert(total === localCostEstimate.monthly_usd, "cost estimate line items must sum to monthly_usd");

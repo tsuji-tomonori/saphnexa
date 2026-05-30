@@ -124,6 +124,11 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: "22"
+      - run: npm run check:no-src-js
+      - run: npm run api:implementation:check
+      - run: npm run tools:implementation:check
+      - run: npm run check:implementation-coverage-source
+      - run: npm run check:atomicity
       - run: npm run coverage:check
       - run: npm run ui:check
       - run: npm run web:flow:check
@@ -163,6 +168,11 @@ jobs:
         with:
           node-version: "22"
       - run: npm ci
+      - run: npm run check:no-src-js
+      - run: npm run api:implementation:check
+      - run: npm run tools:implementation:check
+      - run: npm run check:implementation-coverage-source
+      - run: npm run check:atomicity
       - run: npm run check:static
 
   admin-offline-restore:

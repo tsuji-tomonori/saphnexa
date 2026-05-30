@@ -14,8 +14,20 @@ tasks:
     desc: Verify API and Tools API contract metadata
     cmds:
       - npm run test:contract
+  contract-mirror:generate:
+    desc: Generate API and Tools contract JavaScript runtime mirrors from TypeScript source
+    cmds:
+      - npm run contract-mirror:generate
+  contract-mirror:check:
+    desc: Verify generated API and Tools contract JavaScript runtime mirrors are current
+    cmds:
+      - npm run contract-mirror:check
+  api:openapi:generate:
+    desc: Generate API Hono/Zod/OpenAPI JavaScript runtime mirrors from TypeScript source
+    cmds:
+      - npm run api:openapi:generate
   api:openapi:check:
-    desc: Verify Hono/Zod/OpenAPI route implementation metadata
+    desc: Verify generated API Hono/Zod/OpenAPI runtime mirrors and route implementation metadata
     cmds:
       - npm run api:openapi:check
   integration:local:
@@ -146,14 +158,50 @@ tasks:
     desc: Verify local RAG first notification and final answer timing gates
     cmds:
       - npm run rag:perf:local
+  rag-core:generate:
+    desc: Generate RAG core JavaScript runtime mirror from TypeScript source
+    cmds:
+      - npm run rag-core:generate
+  rag-core:check:
+    desc: Verify generated RAG core JavaScript runtime mirror is current
+    cmds:
+      - npm run rag-core:check
+  workers:generate:
+    desc: Generate Workers JavaScript runtime mirrors from TypeScript source
+    cmds:
+      - npm run workers:generate
+  workers:check:
+    desc: Verify generated Workers JavaScript runtime mirrors are current
+    cmds:
+      - npm run workers:check
   db:migration:check:
     desc: Verify local Flyway SQL migration naming and schema coverage
     cmds:
       - npm run db:migration:check
+  db:metadata:build:
+    desc: Generate DB v0.17 table and column metadata source from migration SQL
+    cmds:
+      - npm run db:metadata:build
   db:metadata:check:
-    desc: Verify DB v0.17 table and column metadata coverage
+    desc: Verify generated DB v0.17 table and column metadata source is current
     cmds:
       - npm run db:metadata:check
+  db-schema:tables:generate:
+    desc: Generate DB tables JavaScript runtime mirror from TypeScript source
+    cmds:
+      - npm run db-schema:tables:generate
+  db-schema:tables:check:
+    desc: Verify generated DB tables JavaScript runtime mirror is current
+    cmds:
+      - npm run db-schema:tables:check
+  domain:generate:
+    desc: Generate Domain JavaScript runtime mirrors from TypeScript source
+    cmds:
+      - npm run domain:generate
+  domain:check:
+    desc: Verify generated Domain JavaScript runtime mirrors are current
+    cmds:
+      - npm run domain:check
   db:comments:check:
     desc: Generate and verify DB schema COMMENT SQL from metadata
     cmds:
@@ -174,6 +222,42 @@ tasks:
     desc: Run repository static analysis gates
     cmds:
       - npm run check:static
+  check:no-src-js:
+    desc: Verify source JavaScript transition allowlist for TypeScript source-of-truth
+    cmds:
+      - npm run check:no-src-js
+  api:implementation:check:
+    desc: Verify API implementation coverage metadata against the public API contract
+    cmds:
+      - npm run api:implementation:check
+  tools:implementation:check:
+    desc: Verify Tools API implementation coverage metadata against the tool contract
+    cmds:
+      - npm run tools:implementation:check
+  check:atomicity:
+    desc: Verify API, Agent, Web, and UI atomicity boundary metadata
+    cmds:
+      - npm run check:atomicity
+  check:implementation-coverage-source:
+    desc: Verify implementation coverage TypeScript source and JavaScript runtime mirror stay synchronized
+    cmds:
+      - npm run check:implementation-coverage-source
+  implementation-coverage:generate:
+    desc: Generate implementation coverage JavaScript runtime mirrors from TypeScript source
+    cmds:
+      - npm run implementation-coverage:generate
+  implementation-coverage:check:
+    desc: Verify generated implementation coverage JavaScript runtime mirrors are current
+    cmds:
+      - npm run implementation-coverage:check
+  model-catalog:generate:
+    desc: Generate model catalog JavaScript runtime mirrors from TypeScript source
+    cmds:
+      - npm run model-catalog:generate
+  model-catalog:check:
+    desc: Verify generated model catalog JavaScript runtime mirrors are current
+    cmds:
+      - npm run model-catalog:check
   db:integrity:check:
     desc: Verify local DB-like domain invariants and append-only events
     cmds:

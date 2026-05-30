@@ -180,6 +180,30 @@ test("state-changing APIs reject missing or mismatched CSRF tokens", () => {
   assert.equal(mismatched.body.error_code, "CSRF_TOKEN_INVALID");
 });
 
+test("auth APIs issue local session events and revoke sessions on logout", () => {
+  const api = createLocalApi();
+  const login = api.request(undefined, "loginStart", { state: "state-1" });
+  assert.equal(login.status, 302);
+  assert.equal(login.body.redirect_url.includes("/auth/callback"), true);
+  assert.equal(login.body.redirect_url.includes("state-1"), true);
+
+  const missingCode = api.request(undefined, "authCallback", { state: "state-1" });
+  assert.equal(missingCode.status, 400);
+  assert.equal(missingCode.body.error_code, "AUTH_CODE_MISSING");
+
+  const callback = api.request(undefined, "authCallback", { code: "code-1", state: "state-1", user_id: "user-owner" });
+  assert.equal(callback.status, 302);
+  assert.equal(callback.body.redirect_url, "/chat");
+  assert.equal(callback.body.csrf_token, "csrf-user-owner");
+  assert.equal(api.store.state.web_sessions.some((session) => session.session_id === callback.body.session_id && session.status === "active"), true);
+  assert.equal(api.store.state.web_session_events.some((event) => event.event_name === "web_session.started" && event.aggregate_id === callback.body.session_id), true);
+
+  const logout = api.request("user-owner", "logout", { csrf_token: "csrf-user-owner", session_id: callback.body.session_id });
+  assert.equal(logout.status, 204);
+  assert.equal(api.store.state.web_sessions.find((session) => session.session_id === callback.body.session_id).status, "revoked");
+  assert.equal(api.store.state.web_session_events.some((event) => event.event_name === "web_session.logged_out" && event.aggregate_id === callback.body.session_id), true);
+});
+
 test("WebSocket ticket rejects reuse, expiration, and other-user consumption", () => {
   const api = createLocalApi();
   const ownerCsrf = csrf(api, "user-owner");
