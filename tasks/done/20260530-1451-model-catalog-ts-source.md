@@ -51,7 +51,7 @@ Model catalog と local cost estimate の実データを TypeScript source に�
 - [x] AC6: `npm run check:no-src-js` が pass する。
 - [x] AC7: `npm run check:static` が pass する。
 - [x] AC8: `git diff --check` が pass する。
-- [ ] AC9: PR に受け入れ条件確認とセルフレビュー更新を日本語で投稿する。
+- [x] AC9: PR に受け入れ条件確認とセルフレビュー更新を日本語で投稿する。
 
 ## 検証計画
 
@@ -74,4 +74,4 @@ Model catalog と local cost estimate の実データを TypeScript source に�
 
 ## 状態
 
-in_progress
+done
