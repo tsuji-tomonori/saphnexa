@@ -49,7 +49,7 @@
 - [x] AC4: `npm run check:atomicity` が定義され、route/repository/schema/UI/Agent 境界の静的検査を実行できる。
 - [x] AC5: `npm run check:static` と `npm run verify` に新しい gate が含まれる。
 - [x] AC6: 変更範囲に見合う検証を実行し、未実施項目は理由を記録する。
-- [ ] AC7: PR 作成後に受け入れ条件確認コメントとセルフレビューコメントを日本語で投稿する。
+- [x] AC7: PR 作成後に受け入れ条件確認コメントとセルフレビューコメントを日本語で投稿する。
 
 ## 検証計画
 
@@ -75,4 +75,4 @@
 
 ## 状態
 
-in_progress
+done
