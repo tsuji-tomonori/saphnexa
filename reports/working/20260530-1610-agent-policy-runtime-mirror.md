@@ -32,7 +32,7 @@
 - `tools/check-type-surface.js`
 - `tools/source-js-allowlist.json`
 - `docs/ops/local-verification.md`
-- `tasks/do/20260530-1610-agent-policy-runtime-mirror.md`
+- `tasks/done/20260530-1610-agent-policy-runtime-mirror.md`
 
 ## 検証
 
@@ -42,6 +42,7 @@
 - `npm run check:no-src-js`: 成功
 - `npm run check:static`: 成功
 - `git diff --check`: 成功
+- GitHub Actions PR checks: 成功
 
 ## fit 評価
 
@@ -51,4 +52,3 @@
 ## 未対応・制約・リスク
 
 - Agent 全体の pipeline 分割、Tools API client 経由強制、`apps/agent/src` からの JS 完全排除は後続タスクとして残る。
-- GitHub Actions の再実行結果は push 後に確認する。
