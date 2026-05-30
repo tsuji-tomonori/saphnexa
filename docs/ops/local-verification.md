@@ -9,6 +9,7 @@
 ```bash
 npm run typecheck
 npm run test:contract
+npm run contract-mirror:check
 npm run api:openapi:check
 npm run check:no-src-js
 npm run api:implementation:check
@@ -106,6 +107,7 @@ git diff --check
 ## ローカルで確認できること
 
 - 公開 API 40 件と Tools API 6 件の contract metadata。
+- `npm run contract-mirror:check` が `packages/api-contract/src/routes.ts` と `packages/tool-contract/src/tools.ts` から生成される `.js` runtime mirror と committed mirror の一致を検査すること。
 - API route、Tools API、model catalog、required DB tables の TypeScript source が既存 JS runtime mirror と件数・主要 ID で同期していること。
 - Tools API 6 件が `toolContracts` の operationId / path に沿った Zod request/response schema を持ち、invalid request は 400、handler response schema drift は 500 として分離されること。
 - `@saphnexa/api-client` が API contract 由来の全 40 public route helper と viewer path template を TypeScript source として持ち、Web の主要 fetch が `/api/*` typed route helper を使うこと。

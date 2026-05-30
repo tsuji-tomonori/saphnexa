@@ -18,6 +18,8 @@
     "api:openapi:check": "node tools/check-api-openapi.js",
     "api-client:operation-types:build": "node tools/build-api-client-operation-types.js",
     "api-client:operation-types:check": "node tools/build-api-client-operation-types.js --check",
+    "contract-mirror:generate": "node tools/generate-contract-runtime-mirror.js",
+    "contract-mirror:check": "node tools/generate-contract-runtime-mirror.js --check",
     "test:integration:local": "node --test tests/integration-local.test.js",
     "test:e2e:local": "node --test tests/e2e-local.test.js",
     "cdk:constructs:check": "node tools/check-cdk-real-constructs.js",

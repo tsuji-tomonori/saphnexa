@@ -32,7 +32,7 @@
     },
     {
       "path": "packages/api-contract/src/routes.js",
-      "reason": "runtime compatibility contract surface used by current Node tests; TypeScript source exists at packages/api-contract/src/routes.ts"
+      "reason": "generated runtime compatibility contract mirror used by current Node tests; TypeScript source exists at packages/api-contract/src/routes.ts"
     },
     {
       "path": "packages/api-contract/src/implementation-coverage.js",
@@ -84,7 +84,7 @@
     },
     {
       "path": "packages/tool-contract/src/tools.js",
-      "reason": "runtime compatibility tool contract surface used by current Node tests; TypeScript source exists at packages/tool-contract/src/tools.ts"
+      "reason": "generated runtime compatibility tool contract mirror used by current Node tests; TypeScript source exists at packages/tool-contract/src/tools.ts"
     },
     {
       "path": "packages/tool-contract/src/implementation-coverage.js",

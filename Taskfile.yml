@@ -14,6 +14,14 @@ tasks:
     desc: Verify API and Tools API contract metadata
     cmds:
       - npm run test:contract
+  contract-mirror:generate:
+    desc: Generate API and Tools contract JavaScript runtime mirrors from TypeScript source
+    cmds:
+      - npm run contract-mirror:generate
+  contract-mirror:check:
+    desc: Verify generated API and Tools contract JavaScript runtime mirrors are current
+    cmds:
+      - npm run contract-mirror:check
   api:openapi:check:
     desc: Verify Hono/Zod/OpenAPI route implementation metadata
     cmds:
