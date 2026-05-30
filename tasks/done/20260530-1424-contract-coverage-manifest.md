@@ -48,7 +48,7 @@ API / Tools implementation coverage manifest を contract package 配下へ移�
 - [x] AC4: `tools/check-tools-implementation-coverage.js` が `packages/tool-contract` 側の manifest を参照する。
 - [x] AC5: `tools/implementation-coverage-manifest.js` が残っていない。
 - [x] AC6: `npm run api:implementation:check`、`npm run tools:implementation:check`、`npm run check:static`、`git diff --check` が pass する。
-- [ ] AC7: PR に受け入れ条件確認とセルフレビュー更新を日本語で投稿する。
+- [x] AC7: PR に受け入れ条件確認とセルフレビュー更新を日本語で投稿する。
 
 ## 検証計画
 
@@ -69,4 +69,4 @@ API / Tools implementation coverage manifest を contract package 配下へ移�
 
 ## 状態
 
-in_progress
+done
