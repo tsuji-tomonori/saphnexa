@@ -1,6 +1,6 @@
 # Chat session domain events coverage slice
 
-- 状態: doing
+- 状態: done
 - 作業ブランチ: `codex/ts-atomic-coverage`
 - 対象PR: #6
 - 開始: 2026-05-30 18:03 JST
@@ -39,22 +39,22 @@ Admin/read slice 後も chat session の state-changing API 3件は DSQL mapping
 
 ## 受け入れ条件
 
-- [ ] 対象 API 3件の DSQL query plan が `chat_session_events` に domain event を append する。
-- [ ] 対象 API 3件の既存 owner / active participant 境界を弱めない。
-- [ ] 対象 API 3件の existing audit append を維持する。
-- [ ] `packages/api-contract/src/implementation-coverage.ts` 上で対象 API 3件に planned marker が残らない。
-- [ ] generated coverage mirror が更新される。
-- [ ] `npm run implementation-coverage:generate` が成功する。
-- [ ] `npm run implementation-coverage:check` が成功する。
-- [ ] `npm run api:implementation:check` が成功し、planned marker 数が 21 件になる。
-- [ ] `npm run api:implementation:check:production` の失敗リストから対象 API 3件が消える。
-- [ ] `npm run test:integration:local` が成功する。
-- [ ] `npm run web:flow:check` が成功する。
-- [ ] `npm run typecheck:source` が成功する。
-- [ ] `npm run check:static` が成功する。
-- [ ] `git diff --check` が成功する。
-- [ ] PR に受け入れ条件確認コメントとセルフレビューコメントを日本語で追加する。
-- [ ] GitHub Actions の PR check が成功する。
+- [x] 対象 API 3件の DSQL query plan が `chat_session_events` に domain event を append する。
+- [x] 対象 API 3件の既存 owner / active participant 境界を弱めない。
+- [x] 対象 API 3件の existing audit append を維持する。
+- [x] `packages/api-contract/src/implementation-coverage.ts` 上で対象 API 3件に planned marker が残らない。
+- [x] generated coverage mirror が更新される。
+- [x] `npm run implementation-coverage:generate` が成功する。
+- [x] `npm run implementation-coverage:check` が成功する。
+- [x] `npm run api:implementation:check` が成功し、planned marker 数が 21 件になる。
+- [x] `npm run api:implementation:check:production` の失敗リストから対象 API 3件が消える。
+- [x] `npm run test:integration:local` が成功する。
+- [x] `npm run web:flow:check` が成功する。
+- [x] `npm run typecheck:source` が成功する。
+- [x] `npm run check:static` が成功する。
+- [x] `git diff --check` が成功する。
+- [x] PR に受け入れ条件確認コメントとセルフレビューコメントを日本語で追加する。
+- [x] GitHub Actions の PR check が成功する。
 
 ## PR レビュー観点
 
@@ -67,3 +67,34 @@ Admin/read slice 後も chat session の state-changing API 3件は DSQL mapping
 
 - 現時点では projection table の直接 update も残るため、完全な projector 化ではない。今回の scope は domain event append を追加して coverage planned marker を削減することに限定する。
 - `chat_participant_events`、`chat_run_events`、`chat_message_lifecycle_events` などの他 event append は別 slice で対応する。
+
+## 実施結果
+
+- `apps/api/src/repositories/dsql/apiRepository.ts` の `createChatSession`、`updateChatSession`、`deleteChatSession` に `chat_session_events` append CTE を追加した。
+- 既存の owner / active participant 境界と `audit_events` append は維持した。
+- `packages/api-contract/src/implementation-coverage.ts` と generated mirror から対象 API 3件の planned marker を外した。
+- API implementation coverage は 24 planned markers から 21 planned markers へ減少した。
+
+## 検証
+
+- [x] `npm run implementation-coverage:generate`
+- [x] `npm run implementation-coverage:check`
+- [x] `npm run api:implementation:check` (`40 operations, 21 planned markers`)
+- [x] `npm run api:implementation:check:production` は失敗するが、失敗リストから対象 API 3件が消えた
+- [x] `npm run test:integration:local`
+- [x] `npm run web:flow:check`
+- [x] `npm run typecheck:source`
+- [x] `npm run check:static`
+- [x] `git diff --check`
+- [x] PR 受け入れ条件確認コメント
+- [x] PR セルフレビューコメント
+- [x] GitHub Actions の PR check 成功
+
+## PR コメント
+
+- 受け入れ条件確認: https://github.com/tsuji-tomonori/saphnexa/pull/6#issuecomment-4582355720
+- セルフレビュー: https://github.com/tsuji-tomonori/saphnexa/pull/6#issuecomment-4582356899
+
+## CI
+
+- PR checks: 2026-05-30 18:10 JST 時点で全 job pass
