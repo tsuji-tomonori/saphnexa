@@ -67,7 +67,7 @@ const manifest = {
   },
   db_migration: {
     tool: "Flyway",
-    latest_version: "V001",
+    latest_version: "V003",
     checksum_status: "matched"
   },
   test_reports: {

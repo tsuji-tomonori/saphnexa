@@ -98,7 +98,7 @@
   },
   "dsql_flyway": {
     "cluster_identifier": "saphnexa-uat-dsql",
-    "latest_version": "V001",
+    "latest_version": "V003",
     "checksum_status": "matched"
   },
   "hono_openapi": {

@@ -5,7 +5,8 @@
   "private": true,
   "exports": {
     ".": "./src/tables.js",
-    "./metadata": "./src/table-metadata.ts"
+    "./metadata": "./src/table-metadata.js",
+    "./metadata-types": "./src/table-metadata.ts"
   },
   "scripts": {
     "typecheck": "tsc --noEmit --project tsconfig.json"

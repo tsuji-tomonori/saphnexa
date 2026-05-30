@@ -17,7 +17,7 @@
     "cluster_identifier": "saphnexa-dev-dsql",
     "endpoint": "saphnexa-dev-dsql.cluster-abcdef123456.ap-northeast-1.dsql.amazonaws.com",
     "flyway_schema_history_table": "schema_migrations",
-    "latest_version": "V001",
+    "latest_version": "V003",
     "checksum_status": "matched",
     "applied_by": "flyway"
   },

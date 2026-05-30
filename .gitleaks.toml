@@ -1,0 +1,8 @@
+title = "Saphnexa secret scanning policy"
+
+[allowlist]
+description = "Repository fixtures and generated docs are allowed to contain placeholder-only values."
+paths = [
+  '''docs/acceptance/evidence/raw/.*''',
+  '''reports/working/.*'''
+]

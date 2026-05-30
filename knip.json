@@ -1,0 +1,21 @@
+{
+  "entry": [
+    "apps/*/src/**/*.ts",
+    "apps/*/src/**/*.tsx",
+    "packages/*/src/**/*.ts",
+    "infra/src/**/*.ts",
+    "tools/*.js"
+  ],
+  "project": [
+    "apps/**/*.ts",
+    "apps/**/*.tsx",
+    "packages/**/*.ts",
+    "infra/**/*.ts",
+    "tools/*.js"
+  ],
+  "ignore": [
+    "dist/**",
+    "reports/**",
+    "docs/generated/**"
+  ]
+}

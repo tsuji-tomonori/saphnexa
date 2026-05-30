@@ -14,6 +14,7 @@ const requiredJobs = [
   "admin-artifacts",
   "quality-gates",
   "db-observability",
+  "static-analysis",
   "admin-offline-restore",
   "contract-generation-diff"
 ];
@@ -50,7 +51,13 @@ for (const command of [
   "npm run rag:security:check",
   "npm run rag:perf:local",
   "npm run db:migration:check",
+  "npm run db:metadata:check",
+  "npm run db:comments:check",
+  "npm run db:event-source:check",
+  "npm run db:docs:check",
+  "npm run db:dsql-compat:check",
   "npm run db:integrity:check",
+  "npm run check:static",
   "npm run search:local:check",
   "npm run observability:check",
   "npm run admin:workflow:check",

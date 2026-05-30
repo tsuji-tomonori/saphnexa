@@ -50,7 +50,7 @@ function assertDsqlFlyway(section) {
   assertFinalText(section.cluster_identifier, "dsql_flyway.cluster_identifier");
   assertDnsName(section.endpoint, "dsql_flyway.endpoint");
   assert(section.flyway_schema_history_table === "schema_migrations", "dsql_flyway.flyway_schema_history_table must be schema_migrations");
-  assert(section.latest_version === "V001", "dsql_flyway.latest_version must be V001");
+  assert(section.latest_version === "V003", "dsql_flyway.latest_version must be V003");
   assert(section.checksum_status === "matched", "dsql_flyway.checksum_status must be matched");
   assert(section.applied_by === "flyway", "dsql_flyway.applied_by must be flyway");
 }

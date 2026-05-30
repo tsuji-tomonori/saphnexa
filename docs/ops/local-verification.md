@@ -208,9 +208,22 @@ git diff --check
 - `npm run aws:dev-uat:validation:check` が E2E・性能・RAG品質結果の fixture 構造と閾値を検査し、`npm run aws:dev-uat:validation:fixture:check` が fixture/negative path を検査し、実証跡では `npm run test:e2e:aws`、`npm run perf:aws`、`npm run rag:quality:aws`、`npm run aws:dev-uat:validation:final` が必要であること。
 - `npm run aws:dev-uat:evidence:fixture:check` が sample raw input を一時ディレクトリへ変換し、既存 final checker で builder output を検査すること。raw input の `capture_provenance` 欠落時と `output_ref` 参照先欠落時に builder が fail することも検査する。
 - GitHub issue tracker snapshot に基づく Blocker/Critical open defect 0 件の defect list draft。最終検収では `gh issue list --state open --json number,title,labels,state` による defect-snapshot-refresh が必要であり、ローカル snapshot だけでは完了扱いにしないこと。
+- `npm run db:metadata:check` が V001 全テーブル・全カラムの metadata、日本語説明、domain、sourceOfTruth、保持方針、PII分類、更新主体を検査すること。
+- `npm run db:comments:check` が `packages/db-schema` metadata から `packages/db-migrations/generated/schema-comments.sql` と `docs/generated/db/schema-comments.sql` を生成し、`COMMENT ON TABLE/COLUMN` 件数が table/column 件数と一致することを検査すること。
+- `npm run db:event-source:check` が v0.17 案Bの domain event table、projection metadata columns、状態系カラムの「正本ではなくprojection」分類、`chat_message_events` と domain event 正本の違いを検査すること。
+- `npm run db:docs:check` が `docs/generated/db/tables.md`、`columns.md`、`er.md`、`lifecycle.md`、`projections.md`、`schema-comments.sql` を生成・検査すること。
+- `npm run db:dsql-compat:check` が migration 本体に未検証の `COMMENT ON` を入れていないこと、Aurora DSQL COMMENT ON は実機検証 TODO として扱い `docs/generated/db/schema-comments.sql` をコメント正本にすることを検査すること。
+- `npm run db:dsql-compat:check` が Aurora DSQL の `1 DDL / transaction` 制約に合わせ、複数DDLを含むFlyway migrationを `packages/db-migrations/flyway-dsql.conf` の `flyway.executeInTransaction=false` で実行する方針を検査すること。DSQL実適用ではこのprofileを使い、DDLとDMLを別transactionに分ける。
+- `npm run check:dead` が Knip相当の entry/project 設定を検査すること。
+- `npm run check:deps` が dependency-cruiser相当の apps/packages 依存境界を検査すること。
+- `npm run check:secrets` が Gitleaks相当の secret pattern gate を検査すること。
+- `npm run check:functional` が class / this / let / mutation 抑制方針と許可境界を検査すること。
+- `npm run check:static` が typecheck、lint、Knip相当、dependency-cruiser相当、Gitleaks相当、DB metadata/comment/event/docs/DSQL、functional lint gate をまとめて検査すること。
 
 ## ローカルでは完了扱いにしないこと
 
+- Aurora DSQL COMMENT ON の実機可否。`COMMENT ON TABLE/COLUMN` SQL は `docs/generated/db/schema-comments.sql` と `packages/db-migrations/generated/schema-comments.sql` に生成するが、DSQL本体のmigrationには入れない。実接続環境で可否を確認できるまでは metadata と generated docs をコメント正本として扱う。
+- Aurora DSQL へのFlyway実適用。local gateは `flyway.executeInTransaction=false` 方針と `1 DDL / transaction` 制約への静的対応を検査するが、実DSQL clusterへのapply証跡ではない。
 - AWS dev/UAT での Cognito、DSQL、S3、CloudFront、AppSync Events、Bedrock KB、S3 Vectors、AgentCore の実接続。
 - Hono runtime の実 Lambda 起動、Cognito authorizer、CSRF cookie integration、CloudFront 経由の実 HTTP request。`apps/api/src/index.ts` は Lambda handler source と local success response validation boundary を持つが、AWS 上での起動確認と実 HTTP validation は別途行う。
 - API TypeScript source of record は source gate と実 `tsc --noEmit` で検査する。DSQL repository は read系 operation の SQL plan と executor interface までを検査し、実 Aurora DSQL driver、IAM auth token、connection pool、`.ts` からの runtime bundle 生成は別途確認する。既存 local tools/tests は標準 `node` 実行のため `.js` runtime mirror を使う。

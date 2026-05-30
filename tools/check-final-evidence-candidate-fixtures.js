@@ -496,7 +496,7 @@ function buildReadyCandidate() {
       ],
       db_migration: {
         tool: "Flyway",
-        latest_version: "V001__initial_saphnexa_schema.sql",
+        latest_version: "V003__projection_metadata_columns.sql",
         checksum_status: "matched"
       },
       test_reports: {

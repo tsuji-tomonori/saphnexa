@@ -141,7 +141,7 @@ function manifestInputFixture() {
     git_tag: "v0.16.0-acceptance.1",
     github_release_url: "https://github.com/tsuji-tomonori/saphnexa/releases/tag/v0.16.0-acceptance.1",
     db_migration: {
-      latest_version: "V001__initial_saphnexa_schema.sql",
+      latest_version: "V003__projection_metadata_columns.sql",
       checksum_status: "matched"
     },
     test_reports: {
